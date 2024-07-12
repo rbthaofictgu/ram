@@ -1,0 +1,45 @@
+
+:root {
+  --bs-gobierno1: #88cfe0;;
+  --bs-gobierno2: #949699;
+  --bs-gobierno3: #db473c;
+}
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 2.5;
+  color: #333;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+.bottom { 
+	position: sticky; 
+	bottom: 0px;  
+	width: 100%;
+  }
+  .active .bs-stepper-circle {
+	background-color: var(--bs-gobierno1);
+  }
+  .active .bs-stepper-label {
+	color: var(--bs-gobierno1);
+  }
+  .gobierno1 {
+	color: var(--bs-gobierno1);
+  }
+  .gobierno3 {
+	color: var(--bs-gobierno3);
+  }
+  .errortxt {
+	color: var(--bs-gobierno3);
+	border-color:  var(--bs-gobierno3);
+	border-width: 3px;
+  }
+  .errorlabel {
+	color: var(--bs-gobierno3);
+	border-width: 3px;
+  }
+  .form-control:focus {
+    box-shadow: 0 0 10px var(--bs-gobierno1)(0, 123, 255, 0.5); /* Ajusta la sombra según tus necesidades */
+    border-color: var(--bs-gobierno1)(0, 123, 255, 0.8); /* Ajusta el color del borde según tus necesidades */
+  }
