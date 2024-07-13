@@ -18,31 +18,41 @@ body {
 	position: sticky; 
 	bottom: -10px;  
 	width: 100%;
-  }
-  .active .bs-stepper-circle {
-	background-color: var(--bs-gobierno1);
-  }
-  .active .bs-stepper-label {
-	color: var(--bs-gobierno1);
-  }
-  .gobierno1 {
-	color: var(--bs-gobierno1);
-  }
-  .gobierno3 {
-	color: var(--bs-gobierno3);
-  }
-  .errortxt {
-	color: var(--bs-gobierno3);
-	border-color:  var(--bs-gobierno3);
-	border-width: 3px;
-  }
-  .errorlabel {
-	color: var(--bs-gobierno3);
-	border-width: 3px;
-  }
-  .form-control:focus {
-    border-color: var(--bs-gobierno1);
-    outline: 0;
-    box-shadow: 0 0 0 0.25rem rgba(136, 207, 224, 0.25);
-  }
-  
+}
+.active .bs-stepper-circle {
+background-color: var(--bs-gobierno1);
+}
+.active .bs-stepper-label {
+color: var(--bs-gobierno1);
+}
+.gobierno1 {
+color: var(--bs-gobierno1);
+}
+.gobierno3 {
+color: var(--bs-gobierno3);
+}
+.errortxt {
+  position: relative; /* Position the input relative to its container */
+  color: var(--bs-gobierno3);
+  border-color: var(--bs-gobierno3);
+  border-width: 3px;
+  padding-right: 30px; /* Add space for the icon */
+}
+.errortxt::after {
+  content: '❌'; /* Error icon, you can use a different icon here */
+  position: absolute;
+  right: 10px; /* Position the icon inside the input */
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--bs-gobierno3); /* Same color as the border */
+  pointer-events: none; /* So the icon doesn't interfere with input */
+}
+.errorlabel {
+  color: var(--bs-gobierno3);
+  border-width: 3px;
+}
+.form-control:focus {
+  border-color: var(--bs-gobierno1);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(136, 207, 224, 0.25);
+}

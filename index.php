@@ -208,6 +208,7 @@ include_once('configuracion/configuracion_js.php');
       var stepperForm;
       var isDirty = Array();
       var hasData = Array();
+      var setFocus = true;
       // Pocicionando el cursos en el primer input de la pantalla id=colapoderado
       function setFocusElement(){
         document.getElementById("colapoderado").focus(); 
@@ -458,7 +459,10 @@ include_once('configuracion/configuracion_js.php');
           // If de si el valor es valido para preventDefault
           if (!isValid) {
             event.preventDefault();
-            event.target.select();
+            // Pocicionando el cursos en el input actual
+            if (setFocus == true) {
+              event.target.focus();
+            }
             event.target.classList.add("errortxt");
             document.getElementById(event.target.id + 'label').classList.add("errorlabel");
             document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
@@ -495,6 +499,10 @@ include_once('configuracion/configuracion_js.php');
             // Fi de si el valor es valido para preventDefault
             if (!isValid) {
               event.preventDefault();
+              // Pocicionando el cursos en el input actual
+              if (setFocus == true) {
+                event.target.focus();
+              }
               event.target.select();
               event.target.classList.add("errortxt");
               document.getElementById(event.target.id + 'label').classList.add("errorlabel");
@@ -537,27 +545,23 @@ include_once('configuracion/configuracion_js.php');
     })      
 
     function fGetInputs() {
-        console.log(currentstep);
-        // Get the element by its ID
-        var element = document.getElementById('test-form-'+(currentstep+1));
-        
-        // Get all input elements inside this element
-        var inputs = element.querySelectorAll('.test-controls');
-        console.log(inputs);
-        // Convert NodeList to Array for easier manipulation (optional)
-        inputs = Array.from(inputs);
-        
-        // Log the inputs to the console
-        inputs.forEach(input => {
-           // Creando un nuevo evento 'change'
-           var event = new Event('change', {
-                'bubbles': true,
-                'cancelable': true
-            });
-
-            // Despachando el evento
-            input.dispatchEvent(event);
-        });
+      setFocus = false;
+      // Get the element by its ID
+      var element = document.getElementById('test-form-'+(currentstep+1));
+      // Get all input elements inside this element
+      var inputs = element.querySelectorAll('.test-controls');
+      // Convert NodeList to Array for easier manipulation (optional)
+      inputs = Array.from(inputs);
+      // Log the inputs to the console
+      inputs.forEach(input => {
+          // Creando un nuevo evento 'change'
+          var event = new Event('change', {
+              'bubbles': true,
+              'cancelable': true
+          });
+          // Despachando el evento
+          input.dispatchEvent(event);
+      });
     }
 
   </script> 
