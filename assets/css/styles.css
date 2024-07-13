@@ -14,19 +14,31 @@ body {
   margin: 0;
   padding: 0;
 }
-.bottom { 
-	position: sticky; 
-	bottom: -10px;  
-	width: 100%;
+.menu{
+	background-color:var(--bs-gobierno1);
+	color: var(--bs-gobierno2);
+}
+.bottom {
+  position: fixed;
+  bottom: -10;
+  width: 100%;
+  background-color: #f8f9fa; /* Background color for the bottom bar */
+  border-top: 3px solid var(--bs-gobierno1); /* Optional border for styling */
+  padding: 3px 0; /* Padding for content inside the bar */
+  text-align: center; /* Center the content inside the bar */
+  box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for visual depth */
 }
 .active .bs-stepper-circle {
-background-color: var(--bs-gobierno1);
+  background-color: var(--bs-gobierno1);
 }
 .active .bs-stepper-label {
 color: var(--bs-gobierno1);
 }
 .gobierno1 {
 color: var(--bs-gobierno1);
+}
+.gobierno2 {
+	color: var(--bs-gobierno2);
 }
 .gobierno3 {
 color: var(--bs-gobierno3);
@@ -55,4 +67,231 @@ color: var(--bs-gobierno3);
   border-color: var(--bs-gobierno1);
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(136, 207, 224, 0.25);
+}
+/********************************LISTA DE BOTONES******************************/
+
+.btn-light{
+	background-color:#F5F6F7;
+	color:    #BDADB5;
+	border: 5px solid    #BDADB5;
+	font-variant: small-caps;
+}
+
+.btn-light:hover {
+	background-color :#ADBDAD;
+	color:  #F5F6F7;
+	border: 5px solid    #EAECEF;
+	-webkit-box-shadow: 12px 12px 5px -3px  #ADBDAD;
+	-moz-box-shadow: 12px 12px 5px -3px #ADBDAD;;
+	box-shadow: 12px 12px 5px -3px #ADBDAD;;
+	font-variant: small-caps;
+}
+
+.btn-light:active,
+.btn-light:focus {
+	 background-color: #F5F6F7;
+	color: #8B7877;
+	border: 5px solid  #ADBDAD;
+	-webkit-box-shadow: 12px 12px 5px -3px  #BDADB5;
+	-moz-box-shadow: 12px 12px 5px -3px   #BDADB5;
+	box-shadow: 12px 12px 5px -3px  #BDADB5;
+	font-variant: small-caps;
+}
+
+.btn-info{
+	background-color: #A4EBF9;
+	color:  #949699;
+	border: 5px solid  #949699;
+	font-variant: small-caps;
+}
+
+.btn-info:hover {
+	background-color :#46A5B8;
+	color:  #D2EDF3;
+	border: 5px solid   #A4EBF9;
+	-webkit-box-shadow: 12px 12px 5px -3px  #46A5B8;
+	-moz-box-shadow: 12px 12px 5px -3px #46A5B8;
+	box-shadow: 12px 12px 5px -3px #46A5B8;
+	font-variant: small-caps;
+}
+
+.btn-info:active,
+.btn-info:focus {
+	 background-color:  #D2EDF3;
+	color:  #EDA39D;
+	border: 5px solid  #46A5B8;
+	-webkit-box-shadow: 12px 12px 5px -3px    #949699;
+	-moz-box-shadow: 12px 12px 5px -3px     #949699;
+	box-shadow: 12px 12px 5px -3px    #949699;
+	font-variant: small-caps;
+}
+
+.btn-warning{
+	background-color: #FFE8A2;
+	color:  #E05E54;
+	border: 5px solid  #E05E54;
+	font-variant: small-caps;
+}
+
+.btn-warning:hover {
+	background-color :#949699;
+	color:  #D2EDF3;
+	border: 5px solid  #FFE8A2;
+	-webkit-box-shadow: 12px 12px 5px -3px #949699;
+	-moz-box-shadow: 12px 12px 5px -3px #949699;
+	box-shadow: 12px 12px 5px -3px #949699;
+	font-variant: small-caps;
+}
+
+.btn-warning:active,
+.btn-warning:focus {
+	 background-color:  #D2EDF3;
+	color:  #EDA39D;
+	border: 5px solid  #949699;
+	-webkit-box-shadow: 12px 12px 5px -3px   #E05E54;
+	-moz-box-shadow: 12px 12px 5px -3px    #E05E54;
+	box-shadow: 12px 12px 5px -3px   #E05E54;
+	font-variant: small-caps;
+}
+
+.btn-success{
+	background-color: #8CC3AA;
+	color:  #446870;
+	border: 5px solid #446870;
+	font-variant: small-caps;
+}
+
+.btn-success:hover {
+	background-color :#69927F;
+	color:  #E2F0EA;
+	border: 5px solid  #8CC3AA;
+	-webkit-box-shadow: 12px 12px 5px -3px #69927F;
+	-moz-box-shadow: 12px 12px 5px -3px #69927F;
+	box-shadow: 12px 12px 5px -3px #69927F; 
+	font-variant: small-caps;
+}
+
+.btn-success:active,
+.btn-success:focus {
+	 background-color:   #E2F0EA;
+	color:  #949699;
+	border: 5px solid  #69927F; 
+	-webkit-box-shadow: 12px 12px 5px -3px  #446870;
+	-moz-box-shadow: 12px 12px 5px -3px   #446870;
+	box-shadow: 12px 12px 5px -3px  #446870;
+	font-variant: small-caps;
+}
+
+.btn-primary{
+	background-color: #C3DBFF;
+	color:  #8F7876;
+	border: 5px solid #8F7876;
+	font-variant: small-caps;
+}
+
+.btn-primary:hover {
+	background-color:#637B9F;
+	color: #E1EDFF;
+	border: 5px solid  #C3DBFF;
+	-webkit-box-shadow: 12px 12px 5px -3px #637B9F;
+	-moz-box-shadow: 12px 12px 5px -3px #637B9F;
+	box-shadow: 12px 12px 5px -3px #637B9F;
+	font-variant: small-caps;
+}
+
+.btn-primary:active,
+.btn-primary:focus {
+	background-color:  #E1EDFF;
+  font-size: 16px;
+	color:  #4677BE;
+	border: 5px solid #637B9F;
+	-webkit-box-shadow: 12px 12px 5px -3px  #8F7876;
+	-moz-box-shadow: 12px 12px 5px -3px    #8F7876;
+	box-shadow: 12px 12px 5px -3px #8F7876;
+	font-variant: small-caps;
+}
+
+.btn-secondary{
+	background-color: #949699;
+	color:  #88CFE0;
+	border: 5px solid #88CFE0;
+	font-variant: small-caps;
+}
+
+.btn-secondary:hover {
+	background-color:#88CFE0;
+	color: #949699;
+	border: 5px solid #949699;
+	-webkit-box-shadow: 12px 12px 5px -3px #949699;
+	-moz-box-shadow: 12px 12px 5px -3px #949699;
+	box-shadow: 12px 12px 5px -3px #949699;
+	font-variant: small-caps;
+
+}
+
+
+.btn-secondary:active {
+	 background-color: #88a3e0;
+	color:#f0f9fb;
+	border: 5px solid #55818c;
+	-webkit-box-shadow: 12px 12px 5px -3px #d2edf3;
+	-moz-box-shadow: 12px 12px 5px -3px  #d2edf3;
+	box-shadow: 12px 12px 5px -3px #d2edf3;
+	font-variant: small-caps;
+}
+
+.btn-secondary:focus{
+	 background-color: #c03e35;
+	color:#f0f9fb;
+	border: 5px solid #55818c;
+	-webkit-box-shadow: 12px 12px 5px -3px #d2edf3;
+	-moz-box-shadow: 12px 12px 5px -3px  #d2edf3;
+	box-shadow: 12px 12px 5px -3px #d2edf3;
+	font-variant: small-caps;
+}
+.dt-button.secundaty {
+	background-color: #c03e35;
+	color:#f0f9fb;
+	border: 5px solid #55818c;
+	-webkit-box-shadow: 12px 12px 5px -3px #d2edf3;
+	-moz-box-shadow: 12px 12px 5px -3px  #d2edf3;
+	box-shadow: 12px 12px 5px -3px #d2edf3;
+	font-variant: small-caps;
+}
+
+.btn-danger{
+	background-color: #db473c;
+	color: #f6d1ce;
+	border: 5px solid #f2bab6;
+	font-variant: small-caps;
+}
+
+.btn-danger:hover {
+	background-color: #f6d1ce;
+	color: #db473c;
+	border: 5px solid #db473c;
+	-webkit-box-shadow: 12px 12px 5px -3px #f6d1ce;;
+	-moz-box-shadow: 12px 12px 5px -3px #f6d1ce;;
+	box-shadow: 12px 12px 5px -3px #f6d1ce;;
+	font-variant: small-caps;
+}
+
+.btn-danger:active {
+	 background-color: #db473c;
+	color: #e4e5e6;
+	border: 5px solid #eda39d;
+	-webkit-box-shadow: 12px 12px 5px -3px #d2edf3;
+	-moz-box-shadow: 12px 12px 5px -3px  #d2edf3;
+	box-shadow: 12px 12px 5px -3px #d2edf3;
+	font-variant: small-caps;
+}
+
+.btn-danger:focus{
+	 background-color: #db473c;
+	color: #e4e5e6;
+	border: 5px solid #eda39d;
+	-webkit-box-shadow: 12px 12px 5px -3px #d2edf3;
+	-moz-box-shadow: 12px 12px 5px -3px  #d2edf3;
+	box-shadow: 12px 12px 5px -3px #d2edf3;
+	font-variant: small-caps;
 }

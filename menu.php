@@ -2,10 +2,10 @@
 <?php
 //<div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom">
 $menu = 
-'<div class="d-flex flex-column flex-md-row align-items-center border-bottom">
+'<div class="d-flex flex-column flex-md-row align-items-center border-bottom menu">
     <a href="'. $appcfg_Dominio . 'src/ramasivas/' .'" class="d-flex align-items-center link-body-emphasis text-decoration-none">
         <img title="' . $appcfg_title_logo . '" src="' . $appcfg_logo .'" width="50" height="42">&nbsp;&nbsp;
-        <span class="fs-4"><strong class="gobierno3">'. $appcfg_Aplicacion.'</strong></span>
+        <span class="fs-4"><strong style="color:white;" >'. $appcfg_Aplicacion.'</strong></span>
     </a>';
     $menu = $menu . '<nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">';
     $menu = $menu .  '<a class="me-3 py-2 link-body-emphasis text-decoration-none" href="'. $appcfg_Dominio_Corto . '"><strong>'.$appcfg_inicio.'</strong></a>';

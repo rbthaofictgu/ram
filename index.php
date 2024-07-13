@@ -36,7 +36,7 @@ include_once('configuracion/configuracion_js.php');
         <!-- *** -->    
         <!-- <div class="mb-4 p-3 bg-white shadow-sm"></div> -->    
         <div class="bg-white shadow-sm">
-        <h3 class="gobierno1 fw-bolder px-3" style="text-decoration: underline;">INGRESO DE SOLICITUDES PREFORMA</h3>
+        <h3 class="gobierno2 fw-bolder px-3" style="text-decoration: underline;">INGRESO DE SOLICITUDES PREFORMA</h3>
         <div id="stepperForm" class="bs-stepper linear">
           <div class="bs-stepper-header" role="tablist">
             <div class="step" data-target="#test-form-1">
@@ -62,15 +62,15 @@ include_once('configuracion/configuracion_js.php');
             <div class="bs-stepper-line"></div>
             <div class="step" data-target="#test-form-4">
               <button class="step-trigger" role="tab" id="stepperFormTrigger4" aria-controls="test-form-4" aria-selected="false">
-                <span class="bs-stepper-circle"><i class="fas fa-bus"></i></span>
-                <span class="bs-stepper-label">Unidades</span>
+                <span class="bs-stepper-circle"><i class="far fa-file-alt"></i></span>
+                <span class="bs-stepper-label">Tramites</span>
               </button>
             </div>            
             <div class="bs-stepper-line"></div>
             <div class="step" data-target="#test-form-5">
               <button class="step-trigger" role="tab" id="stepperFormTrigger5" aria-controls="test-form-5" aria-selected="false">
-                <span class="bs-stepper-circle"><i class="far fa-file-alt"></i></span>
-                <span class="bs-stepper-label">Tramites</span>
+                <span class="bs-stepper-circle"><i class="fas fa-bus"></i></span>
+                <span class="bs-stepper-label">Unidades</span>
               </button>
             </div>                        
             <div class="bs-stepper-line"></div>
@@ -148,33 +148,199 @@ include_once('configuracion/configuracion_js.php');
                   </div>
                 </div>
                 
-                <button onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente</button>
-
+                <button id="btnnext0" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
+                <br>
+                <br>
               </div>
 
               <div id="test-form-2" role="tabpanel" class="bs-stepper-pane fade active dstepper-block" aria-labelledby="stepperFormTrigger2">
-                <div class="form-group">
-                  <label id="passwordlabel" for="inputPasswordForm">Password <span class="text-danger font-weight-bold">*</span></label>
-                  <input pattern="^[a-zA-Z0-9\s,.\-]{4,20}$"  id="password" type="password" class="form-control form-control-sm test-controls" placeholder="Password" required minlength="4">
-                  <div id="passwordlabelerror" style="visibility:hidden" class="errorlabel">Please fill the password field</div>
+
+              <div class="row">
+                  <!--DATOS DEL RTN Y TIPO SOLICITANTE-->
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label class="col-form-label" for="rtnsoli">RNT Solicitante:</label>
+                      <input pattern="^[0-9]\d{14}$" type="text" class="form-control form-control-sm test-controls" id="rtnsoli" onkeydown="return maxlength="14">
+                    </div>
+                  </div>
+
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <label>Tipo Solicitante:</label>
+                      <select onchange="ValidarCardContacto(this);" id="tiposoli" class="form-control form-control-sm" style="width: 100%;" readonly>
+                        <option value="-1" selected>TIPO DE SOLICITANTE</option>
+                        @@TIPOSOLICITANTE@@
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-md-8">
+                    <div class="form-group">
+                      <label class="col-form-label" for="nomsoli">Nombre Completo del Solicitante:</label>
+                      <input type="text" class="form-control form-control-sm" id="nomsoli" placeholder="" readonly>
+                    </div>
+                  </div>
+
+
+                </div>              
+                <div class="row">
+
+
+                  <!--DATOS DEL DOMICILIO Y DENOMINACION SOCIAL-->
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-form-label" for="domiciliosoli">Domicilio del Solicitante:</label>
+                      <input type="text" class="form-control form-control-sm" id="domiciliosoli" placeholder="" readonly>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="col-form-label" for="denominacionsoli">Denominación Social:</label>
+                      <input type="text" class="form-control form-control-sm" id="denominacionsoli" placeholder="" readonly>
+                    </div>
+                  </div>
+
                 </div>
-                <button type="button" class="btn btn-success btn-previous-form">Previa</button>
-                <button type="button" class="btn btn-primary btn-next-form">Siguiente</button>
+
+
+
+                <div id="detconstitucion" >
+
+                  <div class="row">
+                    <!--DATOS DE LA ESCRITURA Y NOMBRE NOTARIO-->
+                    <div class="col-md-2">
+                      <div class="form-group">
+                        <label class="col-form-label" for="numescritura">No de Escritura de Constituci&oacute;n:</label>
+                        <input type="text" class="form-control form-control-sm" id="numescritura" placeholder="" onkeydown="returnisNumber(event)">
+                      </div>
+                    </div>
+
+                    <div class="col-md-2">
+                      <div class="form-group">
+                        <label class="col-form-label" for="rtnnotario">RTN Notario Autorizante:</label>
+                        <input type="text" class="form-control form-control-sm" id="rtnnotario" placeholder="" onkeydown="return maxlength="14">
+                      </div>
+                    </div>
+
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label class="col-form-label" for="nombrenotario">Notario Autorizante:</label>
+                        <input type="text" class="form-control form-control-sm" id="nombrenotario" placeholder="">
+                      </div>
+                    </div>
+
+                    <!--DATOS DEL LUGAR Y FECHA DE LA CONSTITUCION-->
+                    <div class="col-md-3">
+                      <div class="form-group">
+                        <label class="col-form-label" for="lugarcons">Lugar de Constituci&oacute;n:</label>
+                        <input type="text" class="form-control form-control-sm" id="lugarcons" placeholder="">
+                      </div>
+                    </div>
+
+                    <div class="col-md-2">
+                      <div class="form-group">
+                        <label for="fecha">Fecha Constituci&oacute;n:</label>
+                        <input type="text" class="form-control form-control-sm" id="fecha" data-inputmask-alias="datetime" data-inputmask-inputformat="mm/dd/yyyy" data-mask2>
+                      </div>
+                    </div>
+
+                  </div>
+
+                </div><!--cierre div datos constitucion-->
+
+                <div class="row">
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label>Departamento:</label>
+                      <select onchange="Municipios(this);" id="Departamentos" class="form-control form-control-sm" style="width: 100%;" readonly>
+                        <option value="-1" selected>DEPARTAMENTO</option>
+                        {{Departamentos}}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label>Municipio:</label>
+                      <select onchange="Aldeas(this);" id="Municipios" class="form-control form-control-sm" style="width: 100%;" readonly>
+                        <option value="-1" selected>MUNICIPIO</option>
+                        
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label>Aldea:</label>
+                      <select id="Aldeas" class="form-control form-control-sm" style="width: 100%;" readonly>
+                        <option value="-1" disabled selected>ALDEA</option>
+                      </select>
+                    </div>
+                  </div>
+
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label id="lbl-telsoli" for="telsoli">Tel&eacute;fono/Celular:</label>
+                      <input type="text" class="form-control form-control-sm" id="telsoli" placeholder="" maxlength="8">
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label id="lbl-emailsoli" for="emailsoli">Correo Electr&oacute;nico:</label>
+                      <input type="email" class="form-control form-control-sm" id="emailsoli" placeholder="">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Presentación Documentos:</label>
+                      <select id="tipopresentacion" class="form-control form-control-sm" style="width: 100%;" readonly>
+                        <option value="-1" disabled selected>SELECCIONE QUIEN PRESENTA</option>
+                        <option value="CON">CONCESIONARIO</option>
+                        <option value="APO" selected>APODERADO LEGAL</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Entrega de sus Documentos:</label>
+                      <select id="entregadocs" class="form-control form-control-sm" style="width: 100%;">
+                        <option value="-1" disabled selected>SELECCIONE LA UBICACIÓN</option>
+                      @@UBICACIONES@@
+                      </select>
+                    </div>
+                  </div>
+                  
+                </div>
+                <br>
+                <button id="btnprevious1" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
+                <button id="btnnext1" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
+                <br>
+                <br>
               </div>
               <div id="test-form-3" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger3">
-                <button type="button" class="btn btn-success btn-previous-form">Previa</button>
+                <button type="button" class="btn btn-success btn-previous-form">Anterior</button>
                 <button type="button" class="btn btn-primary btn-next-form">Siguiente</button>
               </div>
               <div id="test-form-4" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger4">
-                <button type="button" class="btn btn-success btn-previous-form">Previa</button>
+                <button type="button" class="btn btn-success btn-previous-form">Anterior</button>
                 <button type="button" class="btn btn-primary btn-next-form">Siguiente</button>
               </div>
               <div id="test-form-5" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger5">
-                <button type="button" class="btn btn-success btn-previous-form">Previa</button>
+                <button type="button" class="btn btn-success btn-previous-form">Anterior</button>
                 <button type="button" class="btn btn-primary btn-next-form">Siguiente</button>
               </div>              
               <div id="test-form-6" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger6">
-                <button type="button" class="btn btn-success btn-previous-form">Previa</button>
+                <button type="button" class="btn btn-success btn-previous-form">Anterior</button>
                 <button onclick="f_finalizar();" type="button" class="btn btn-primary">Finalizar</button>
               </div>
           </div>
@@ -183,11 +349,11 @@ include_once('configuracion/configuracion_js.php');
         <!-- *** -->    
         <!-- Body -->
         <!-- *** -->    
-        <div class="bottom">
-            <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-1">
-                <?php include_once('footer.php')?>
-            </footer>
-        </div>
+    </div>
+    <div class="bottom">
+      <footer class="d-flex flex-wrap justify-content-between align-items-center py-1 my-1">
+          <?php include_once('footer.php')?>
+      </footer>
     </div>
     <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/site/static/docs/5.3/assets/js/validate-forms.js"></script>
@@ -201,6 +367,7 @@ include_once('configuracion/configuracion_js.php');
     <script src="https://kit.fontawesome.com/d40661685b.js" ></script>
     <script>
       var isError = false;
+      var isPrevious = false;
       var hayerror = false;
       var idinput = '';
       var idinputs = Array();
@@ -239,6 +406,22 @@ include_once('configuracion/configuracion_js.php');
               stepperForm.next();
           })
         })
+
+        //************************************************************/
+        //Moviendose al siguiente input
+        //************************************************************/
+        function moveToNextInput(currentInput,value) {
+          var inputs = [].slice.call(document.querySelectorAll('.test-controls'));
+          var currentIndex = inputs.indexOf(currentInput);
+          for (var i = ((currentIndex + 1)+ (value)); i < inputs.length; i++) {
+            if (!inputs[i].disabled) {
+              inputs[i].focus();
+              inputs[i].select();
+              break;
+            }
+          }
+        }
+
 
         function fLimpiarPantalla() {
           //*********************************************************************************/
@@ -293,6 +476,7 @@ include_once('configuracion/configuracion_js.php');
 
         btnNextListprevious.forEach(function (btn) {
           btn.addEventListener('click', function () {
+              isPrevious = true;
               stepperForm.previous();
           })
         })
@@ -330,11 +514,15 @@ include_once('configuracion/configuracion_js.php');
                   document.getElementById('dirapoderado').value = datos.dir_apoderado;
                   document.getElementById('telapoderado').value = datos.tel_apoderado;                
                   document.getElementById('emailapoderado').value = datos.correo_apoderado; 
+                  isError = false;
+                  moveToNextInput(event.target,0);
                 } else {
                   fLimpiarPantalla();
-                  f_sweetalert('INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
+                  console.log('Error Antes FetchCallApoderado:', datos)
+                  fSweetAlertEvent('INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
+                  console.log('Error Despues FetchCallApoderado:', datos)
                   event.preventDefault();
-                  //event.target.select();
+                  event.target.select();
                   event.target.classList.add("errortxt");
                   document.getElementById(event.target.id + 'label').classList.add("errorlabel");
                   paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
@@ -342,9 +530,9 @@ include_once('configuracion/configuracion_js.php');
                 }                  
               } else {
                 fLimpiarPantalla();
-                f_sweetalert('INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
+                fSweetAlertEvent('INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
                 event.preventDefault();
-                //event.target.select();
+                event.target.select();
                 event.target.classList.add("errortxt");
                 document.getElementById(event.target.id + 'label').classList.add("errorlabel");
                 paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
@@ -354,9 +542,9 @@ include_once('configuracion/configuracion_js.php');
             .catch((error) => {
               fLimpiarPantalla();
               console.error('Error Catch f_FetchCallApoderado:', error);
-              f_sweetalert('CONEXÍON', 'Algo raro paso. Intentandolo de nuevo en un momento, si el problema persiste contacta al administrador del sistema', 'warning');
+              fSweetAlertEvent('CONEXÍON', 'Algo raro paso. Intentandolo de nuevo en un momento, si el problema persiste contacta al administrador del sistema', 'warning');
               event.preventDefault();
-              //event.target.select();
+              event.target.select();
               event.target.classList.add("errortxt");
               document.getElementById(event.target.id + 'label').classList.add("errorlabel");
               paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
@@ -382,103 +570,103 @@ include_once('configuracion/configuracion_js.php');
         //Cuando presente el nuevo panel
         stepperFormEl.addEventListener('shown.bs-stepper', function (event) {
           currentstep = event.detail.indexStep;
+          setFocus = true;
+          isError = false;
+          isPrevious = false;
         })
 
         //Antes de hacer la transición al nuevo panel
         stepperFormEl.addEventListener('show.bs-stepper', function (event) {
           //*********************************************************************************/
-          // Dependiendo del panel actual se ejecuta una función para validar los campos
+          // Si va hacia el panel anterior no validar los campos
           //*********************************************************************************/
-          // switch (currentstep)
-          // {
-          //   case 0: paneerror[currentstep] = f_validarapoderado(); break;
-          //   case 1: paneerror[currentstep] = f_validarapoderado(); break;
-          //   case 2: paneerror[currentstep] = f_validarapoderado(); break;
-          //   case 3: paneerror[currentstep] = f_validarapoderado(); break;
-          //   case 4: paneerror[currentstep] = f_validarapoderado(); break;
-          //   default: paneerror[currentstep] = f_validarapoderado(); break;
-          // }
-
-          //*********************************************************************************/
-          //Reduciendo el arreglo de errores por panel para saber si existe algun error
-          //*********************************************************************************/
-          const paneactual = paneerror[currentstep];
-          const sum = paneactual.reduce((accumulator, currentValue) => {
-              return accumulator + currentValue;
-          }, 0);
-          //*************************************************************************************/
-          //Se previene el cambio de panel si hay algun error en el panel actual procesandose
-          //************************************************************************************/
-          if (sum>0){
-            event.preventDefault();
-            hayerror = true;
+          if (isPrevious == false) {
+            //*********************************************************************************/
+            //Reduciendo el arreglo de errores por panel para saber si existe algun error
+            //*********************************************************************************/
+            const paneactual = paneerror[currentstep];
+            const sum = paneactual.reduce((accumulator, currentValue) => {
+                return accumulator + currentValue;
+            }, 0);
+            //*************************************************************************************/
+            //Se previene el cambio de panel si hay algun error en el panel actual procesandose
+            //************************************************************************************/
+            if (sum>0){
+              event.preventDefault();
+              hayerror = true;
+            } else {
+              // Setting the panel isDirty
+              isDirty = true;
+            }
           } else {
-            // Setting the panel isDirty
-            isDirty = true;
+            isError = false;
           }
         })      
 
-        setTimeout(setFocusElement, 250);
+          setTimeout(setFocusElement, 250);
 
-        var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
-        var columnas = testcontrols.length;
-        var filas = stepperPanList.length;
-        // Crear una matriz bidimensional vacía
-        var paneerror = new Array(filas);
-        testcontrols.forEach(function(input) {
-          //********************************************************************/
-          //Definiendo el arreglo de errores por panel e input
-          //********************************************************************/
-          for (var i = 0; i < filas; i++) {
-            paneerror[i] = new Array(columnas);
-          }
-          //*****************************************************************************/
-          //Creando arreglo de inputs para saber posteriormente el indice de cada input
-          //*****************************************************************************/
-          idinputs.push(input.id);
-          //*****************************************************************************/
-          //Creando evento change para cada input
-          //*****************************************************************************/
-          input.addEventListener('change', function(event) {
-          // Marcando que no hay error aun
-          isError == false
-          // Estableciento si el panel actual isDirty
-          isDirty[currentstep] = true;
-          // Obteniendo el id del input
-          idinput = event.target.id;
-          // Salvar la pocisión del cursor
-          var cursorPosition = event.target.selectionStart;
-          // Obtener el valor actual del input
-          var value = event.target.value;
-          // Obteniendo el patrón del atributo 'pattern' del elemento objetivo
-          var patternString = event.target.pattern;
-          // Crear una instancia de RegExp usando el patrón
-          var pattern = new RegExp(patternString);
-          // Veriricar si el valor actual del input es válido
-          var isValid = pattern.test(value);
-          // If de si el valor es valido para preventDefault
-          if (!isValid) {
-            event.preventDefault();
-            // Pocicionando el cursos en el input actual
-            if (setFocus == true) {
-              event.target.focus();
+          var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
+          var columnas = testcontrols.length;
+          var filas = stepperPanList.length;
+          // Crear una matriz bidimensional vacía
+          var paneerror = new Array(filas);
+          testcontrols.forEach(function(input) {
+            //********************************************************************/
+            //Definiendo el arreglo de errores por panel e input
+            //********************************************************************/
+            for (var i = 0; i < filas; i++) {
+              paneerror[i] = new Array(columnas);
             }
-            event.target.classList.add("errortxt");
-            document.getElementById(event.target.id + 'label').classList.add("errorlabel");
-            document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
-            paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
-          } else {
-              event.target.classList.remove("errortxt");
-              document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
-              document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
-              paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-              //Moverse al siguiente input
-              moveToNextInput(input,0);
-              if (idinput=='colapoderado') {
-                f_CaseFetchCalls(value,event,idinput);
+            //*****************************************************************************/
+            //Creando arreglo de inputs para saber posteriormente el indice de cada input
+            //*****************************************************************************/
+            idinputs.push(input.id);
+            //*****************************************************************************/
+            //Creando evento change para cada input
+            //*****************************************************************************/
+            input.addEventListener('change', function(event) {
+            // Estableciento si el panel actual isDirty
+            isDirty[currentstep] = true;
+            // Obteniendo el id del input
+            idinput = event.target.id;
+            // Salvar la pocisión del cursor
+            var cursorPosition = event.target.selectionStart;
+            // Obtener el valor actual del input
+            var value = event.target.value;
+            // Obteniendo el patrón del atributo 'pattern' del elemento objetivo
+            var patternString = event.target.pattern;
+            // Crear una instancia de RegExp usando el patrón
+            var pattern = new RegExp(patternString);
+            // Veriricar si el valor actual del input es válido
+            var isValid = pattern.test(value);
+            // If de si el valor es valido para preventDefault
+            if (!isValid) {
+              event.preventDefault();
+              // Pocicionando el cursos en el input actual
+              if (setFocus == true) {
+                event.target.focus();
+                event.target.select();
+              } else {
+                setFocus = true;
               }
-          }
-        });
+              event.target.classList.add("errortxt");
+              document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+              document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+              paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+            } else {
+                event.target.classList.remove("errortxt");
+                document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
+                document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+                paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+                //Moverse al siguiente input
+                if (idinput=='colapoderado') {
+                  f_CaseFetchCalls(value,event,idinput);
+                } else {
+                  moveToNextInput(input,0);
+                }
+            }
+            isError = false;
+       });
 
         // Handle the keydown event to prevent Tab key from moving focus
         input.addEventListener('keydown', function(event) {
@@ -502,8 +690,10 @@ include_once('configuracion/configuracion_js.php');
               // Pocicionando el cursos en el input actual
               if (setFocus == true) {
                 event.target.focus();
+                event.target.select();
+              } else {
+                setFocus = true;
               }
-              event.target.select();
               event.target.classList.add("errortxt");
               document.getElementById(event.target.id + 'label').classList.add("errorlabel");
               document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
@@ -513,33 +703,19 @@ include_once('configuracion/configuracion_js.php');
               document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
               document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
               paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-              //Mover al siguiente input
-              if (event.key === 'Enter') {
-                moveToNextInput(input,0);
-              }
               if (idinput=='colapoderado') {
                 f_CaseFetchCalls(value,event,idinput);
+              } else {
+                //Mover al siguiente input
+                if (event.key === 'Enter') {
+                  moveToNextInput(input,0);
+                }
               }
            	}
           }
           // Marcando que no hay error aun
-          isError == false
+          isError = false;
         });        
-
-        //************************************************************/
-        //Moviendose al siguiente input
-        //************************************************************/
-        function moveToNextInput(currentInput,value) {
-          var inputs = [].slice.call(document.querySelectorAll('.test-controls'));
-          var currentIndex = inputs.indexOf(currentInput);
-          for (var i = ((currentIndex + 1)+ (value)); i < inputs.length; i++) {
-            if (!inputs[i].disabled) {
-              inputs[i].focus();
-              inputs[i].select();
-              break;
-            }
-          }
-        }
 
       });
     })      
@@ -562,8 +738,20 @@ include_once('configuracion/configuracion_js.php');
           // Despachando el evento
           input.dispatchEvent(event);
       });
+      setFocus = true;
     }
 
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'F2') {
+        event.preventDefault(); // Prevenir la acción predeterminada de F5 (recargar la página)
+        document.getElementById('btnprevious'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
+      } else {
+        if (event.key === 'F10') {
+          event.preventDefault(); // Prevenir la acción predeterminada de F5 (recargar la página)
+          document.getElementById('btnnext'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
+        }
+      }
+    });
   </script> 
   </body>
 </html>
