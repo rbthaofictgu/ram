@@ -9,49 +9,25 @@ ini_set('upload_max_filesize', '100M');
 ini_set('max_execution_time', '1000');
 ini_set('max_input_time', '1000');
 ini_set('memory_limit', '256M');
-require_once("config/conexion.php");
-require_once("config/conexion.php");
+require_once("../config/conexion.php");
 
 class Api_Ram {
 	public function __construct(){
 		if(isset($_POST["action"])){
 			if ($_POST["action"] == "get-solicitante" && isset($_POST["idsolicitante"])) {
-			$this->getSolicitante();/// Recupera la información del solicitante 
-			}else if ($_POST["action"] == "get-apoderado" && isset($_POST["idcolegiacion"])) {
-			$this->getApoderadoAPI($_POST["idcolegiacion"]);/// Recupera la información del apoderado legal 
-			}else if ($_POST["action"] == "get-solicitantesolo" && isset($_POST["idsolicitante"])) {
-			$this->getSolicitanteAPI($_POST["idsolicitante"]);/// Recupera la información del apoderado legal 
-			}else if ($_POST["action"] == "get-certificado") {
-			$this->getCertificado($_POST["idcertificado"]);/// Recupera la información del apoderado legal 
-			}else if ($_POST["action"] == "get-concesion") {
-			$this->getDatosConcesion($_POST["idconcesion"]);/// Recupera la información del apoderado legal 
-			}			
-		}
+			//***********************************************************************************************/
+            //Obtener el solicitante
+            //***********************************************************************************************/				
+			$this->getSolicitante();
+            //***********************************************************************************************/
+            //Obtener el Apoderado Legal
+            //***********************************************************************************************/                
+			}else if ($_POST["action"] == "get-apoderado" && isset($_POST["idApoderado"])) {
+			$this->getApoderadoAPI($_POST["idApoderado"]);/// Recupera la información del apoderado legal 
+			}
+        }
 	}
 	
-	function getCertificado() {
-		$QUERY = "SELECT A.[ID]
-	  ,B.[ID_Placa]
-      ,A.[N_Certificado]
-      ,A.[N_Certificado_Encrypted]
-      ,A.[N_Permiso_Explotacion]
-      ,A.[RTN_Concesionario]
-      ,A.[ID_Vehiculo_Carga]
-      ,A.[Resolucion]
-      ,A.[ID_Expediente]
-      ,A.[Fecha_Emision]
-      ,A.[Fecha_Elaboracion]
-      ,A.[Fecha_Expiracion]
-      ,A.[Numero_Registro]
-      ,A.[Direccion]
-  FROM [IHTT_SGCERP].[dbo].[TB_Certificado_Carga] A,[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] B
-  WHERE A.[ID_Vehiculo_Carga]=B.[ID_Vehiculo_Carga] AND [ID_Estado] IN ('ES-01','ES-02');";
-	$Query = "select A.CodigoAvisoCobro,A.Observaciones,A.FechaEmision,A.RTNConcesionario,A.ID_Solicitud,A.Expediente,A.CertificadoOperacion,A.Placa,A.SistemaFecha,A.NombreConcesionario,
-(Select sum(monto) from [IHTT_Webservice].[dbo].[TB_AvisoCobroDet] B Where A.CodigoAvisoCobro = B.CodigoAvisoCobro) as Multa
-from [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] A
-where (A.RTNConcesionario =  '05019003080160' or A.Placa = 'AAA0101' or A.CertificadoOperacion = 'PES-CNE-0110-19') AND A.AvisoCobroEstado = 1";
-	}
-
 	
 	function select($q, $p) {
 		global $db;
@@ -61,9 +37,8 @@ where (A.RTNConcesionario =  '05019003080160' or A.Placa = 'AAA0101' or A.Certif
 			$datos = $stmt->fetchAll();
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
-				$txt = date('Y m d h:i:s') . '	Usuario: ' . $_SESSION['usuario'] .'-' . $_SESSION['ID_Usuario'] . ' -- ' .'API_MIP.PHP Error Insert: Error q ' . $q . ' $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' .$res[2] . ' $res[3] ' . $res[3];
-				//logErr($txt,'logs/logs.txt');
-				//echo $txt;
+				$txt = date('Y m d h:i:s') . '	Usuario: ' . $_SESSION['usuario'] . ' -- ' .'API_MIP.PHP Error Insert: Error q ' . $q . ' $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' .$res[2] . ' $res[3] ' . $res[3];
+				logErr($txt,'logs/logs.txt');
 				return false;
 			} else {
 				return $datos;
@@ -71,9 +46,9 @@ where (A.RTNConcesionario =  '05019003080160' or A.Placa = 'AAA0101' or A.Certif
 		} catch (PDOException $e) {
 			// Capturar excepciones de PDO (error de base de datos)
 			echo "Error en la consulta: " . $e->getMessage();
-			// Opcional: Loguear el error en un archivo de registro, enviar correo, etc.
-			// Ejemplo: error_log("Error en la consulta: " . $e->getMessage(), 0);
-			return false; // O devolver un valor indicando error
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario: ' . $_SESSION['usuario'] .' - Error' . $e->getMessage();
+			logErr($txt,'logs/logs.txt');
+		return false; // O devolver un valor indicando error
 		}
 	}
 	

@@ -1,6 +1,7 @@
 
 :root {
-  --bs-gobierno1: #88cfe0;;
+  --bs-gobierno1: #88cfe0;
+  --bs-gobierno1-rgb: rgba(136, 207, 224); 
   --bs-gobierno2: #949699;
   --bs-gobierno3: #db473c;
 }
@@ -15,7 +16,7 @@ body {
 }
 .bottom { 
 	position: sticky; 
-	bottom: 0px;  
+	bottom: -10px;  
 	width: 100%;
   }
   .active .bs-stepper-circle {
@@ -40,6 +41,8 @@ body {
 	border-width: 3px;
   }
   .form-control:focus {
-    box-shadow: 0 0 10px var(--bs-gobierno1)(0, 123, 255, 0.5); /* Ajusta la sombra según tus necesidades */
-    border-color: var(--bs-gobierno1)(0, 123, 255, 0.8); /* Ajusta el color del borde según tus necesidades */
+    border-color: var(--bs-gobierno1);
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(136, 207, 224, 0.25);
   }
+  

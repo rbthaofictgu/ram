@@ -27,10 +27,10 @@ include_once('configuracion/configuracion_js.php');
     <link href="<?php echo $appcfg_Dominio;?>assets/css/styles.css" rel="stylesheet">
   </head>
     <body>
-    <div class="container">
-        <header>
-            <?php include_once('menu.php')?>
-        </header>
+    <header>
+      <?php include_once('menu.php')?>
+    </header>
+    <div class="container-fluid" style="border:">
         <!-- *** -->    
         <!-- Body -->
         <!-- *** -->    
@@ -99,7 +99,7 @@ include_once('configuracion/configuracion_js.php');
                     <div class="col-md-6">
                         <div class="form-group">
                           <label class="col-form-label" for="identidadapod">Identificación del Apoderdo Legal:</label>
-                          <input disabled type="text" class="form-control form-control-sm" id="identidadapod" placeholder="" readonly="">
+                          <input readonly type="text" class="form-control form-control-sm" id="identidadapod" placeholder="" readonly="">
                         </div>
                     </div>
 
@@ -109,7 +109,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-12">
                     <div class="form-group">
                       <label class="col-form-label" for="nomapoderado">Nombre Completo del Apoderado Legal:</label>
-                      <input disabled type="text" class="form-control form-control-sm" id="nomapoderado" placeholder="" readonly="">
+                      <input readonly type="text" class="form-control form-control-sm" id="nomapoderado" placeholder="" readonly="">
                     </div>
                   </div>
                 </div>
@@ -130,7 +130,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-6">
                     <div class="form-group">
                       <label id="telapoderadolabel" for="telapoderado">Tel&eacute;fono del Apoderdo Legal:</label>
-                      <input pattern="[0-9]{8}" type="text" class="form-control form-control-sm test-controls" id="telapoderado" minlength="8" maxlength="8" placeholder="95614451">
+                      <input pattern="[0-9]{8}" type="text" class="form-control form-control-sm test-controls" id="telapoderado" minlength="8" maxlength="15" placeholder="95614451">
                       <div  id="telapoderadolabelerror" style="visibility:hidden" class="errorlabel">
                             El número de teléfono es invalido, digite solo numeros sin guiones.
                       </div>
@@ -148,15 +148,15 @@ include_once('configuracion/configuracion_js.php');
                   </div>
                 </div>
                 
-                <button type="button" class="btn btn-primary btn-next-form">Siguiente</button>
+                <button onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente</button>
 
               </div>
 
               <div id="test-form-2" role="tabpanel" class="bs-stepper-pane fade active dstepper-block" aria-labelledby="stepperFormTrigger2">
                 <div class="form-group">
-                  <label for="inputPasswordForm">Password <span class="text-danger font-weight-bold">*</span></label>
-                  <input id="inputPasswordForm" type="password" class="form-control" placeholder="Password" required minlength="4">
-                  <div class="invalid-feedback">Please fill the password field</div>
+                  <label id="passwordlabel" for="inputPasswordForm">Password <span class="text-danger font-weight-bold">*</span></label>
+                  <input pattern="^[a-zA-Z0-9\s,.\-]{4,20}$"  id="password" type="password" class="form-control form-control-sm test-controls" placeholder="Password" required minlength="4">
+                  <div id="passwordlabelerror" style="visibility:hidden" class="errorlabel">Please fill the password field</div>
                 </div>
                 <button type="button" class="btn btn-success btn-previous-form">Previa</button>
                 <button type="button" class="btn btn-primary btn-next-form">Siguiente</button>
@@ -191,6 +191,8 @@ include_once('configuracion/configuracion_js.php');
     </div>
     <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/site/static/docs/5.3/assets/js/validate-forms.js"></script>
+    <script src="<?php echo $appcfg_Dominio;?>assets/js/fetchWithTimeout.js"></script>
+    <script src="<?php echo $appcfg_Dominio;?>assets/js/sweetalert.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.3/dist/sweetalert2.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.all.min.js"></script>
@@ -198,33 +200,38 @@ include_once('configuracion/configuracion_js.php');
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://kit.fontawesome.com/d40661685b.js" ></script>
     <script>
+      var isError = false;
       var hayerror = false;
       var idinput = '';
       var idinputs = Array();
       var currentstep;
       var stepperForm;
-      var dirty = false;
-
+      var isDirty = Array();
+      var hasData = Array();
       // Pocicionando el cursos en el primer input de la pantalla id=colapoderado
       function setFocusElement(){
         document.getElementById("colapoderado").focus(); 
       }
 
       document.addEventListener('DOMContentLoaded', function () {
-
         var stepperFormEl = document.querySelector('#stepperForm')
         stepperForm = new Stepper(stepperFormEl, {
           linear: true,
           animation: true
         })
-
         var btnNextList = [].slice.call(document.querySelectorAll('.btn-next-form'))
         var btnNextListprevious = [].slice.call(document.querySelectorAll('.btn-previous-form'))
         var stepperPanList = [].slice.call(stepperFormEl.querySelectorAll('.bs-stepper-pane'))
         var inputMailForm = document.getElementById('inputMailForm')
         var inputPasswordForm = document.getElementById('inputPasswordForm')
         var form = stepperFormEl.querySelector('.bs-stepper-content form')
-
+        //*****************************************************************/
+        // Marcando false al arreglo de isDirty y hasData
+        //*****************************************************************/
+        for (var i = 0; i < stepperPanList.length; i++) {
+          isDirty[i] = false;
+          hasData[i] = false;
+        }
 
         btnNextList.forEach(function (btn) {
           btn.addEventListener('click', function () {
@@ -232,12 +239,144 @@ include_once('configuracion/configuracion_js.php');
           })
         })
 
+        function fLimpiarPantalla() {
+          //*********************************************************************************/
+          // Dependiendo del panel actual se ejecuta una función para validar los campos
+          //*********************************************************************************/
+          switch (currentstep)
+          {
+            case 0: 
+              document.getElementById('nomapoderado').value = '';
+              document.getElementById('identidadapod').value = '';
+              document.getElementById('dirapoderado').value = '';
+              document.getElementById('telapoderado').value = '';                
+              document.getElementById('emailapoderado').value = ''; 
+              break;
+            case 1: 
+              document.getElementById('nomapoderado').value = '';
+              document.getElementById('identidadapod').value = '';
+              document.getElementById('dirapoderado').value = '';
+              document.getElementById('telapoderado').value = '';                
+              document.getElementById('emailapoderado').value = ''; 
+              break;
+            case 2: 
+              document.getElementById('nomapoderado').value = '';
+              document.getElementById('identidadapod').value = '';
+              document.getElementById('dirapoderado').value = '';
+              document.getElementById('telapoderado').value = '';                
+              document.getElementById('emailapoderado').value = '';               
+              break;
+            case 3: 
+              document.getElementById('nomapoderado').value = '';
+              document.getElementById('identidadapod').value = '';
+              document.getElementById('dirapoderado').value = '';
+              document.getElementById('telapoderado').value = '';                
+              document.getElementById('emailapoderado').value = '';               
+              break;
+            case 4: 
+              document.getElementById('nomapoderado').value = '';
+              document.getElementById('identidadapod').value = '';
+              document.getElementById('dirapoderado').value = '';
+              document.getElementById('telapoderado').value = '';                
+              document.getElementById('emailapoderado').value = '';               
+              break;
+            default: 
+              document.getElementById('nomapoderado').value = '';
+              document.getElementById('identidadapod').value = '';
+              document.getElementById('dirapoderado').value = '';
+              document.getElementById('telapoderado').value = '';                
+              document.getElementById('emailapoderado').value = ''; 
+              break;
+          }
+        }        
 
         btnNextListprevious.forEach(function (btn) {
           btn.addEventListener('click', function () {
               stepperForm.previous();
           })
         })
+
+        function f_FetchCallApoderado(idApoderado,event,idinput) {
+          // URL del Punto de Acceso a la API
+          const url = $appcfg_Dominio + "Api_Ram.php";
+          //  Fetch options
+          // const options = {
+          //   method: 'POST',
+          //   body: fd,
+          //   headers: {
+          //     'Content-Type': 'application/json',
+          //   },
+          // };
+          let fd = new FormData(document.forms.form1);
+          //Adjuntando el action al FormData
+          fd.append("action", 'get-apoderado');
+          //Adjuntando el idApoderado al FormData
+          fd.append("idApoderado", idApoderado);
+          // Fetch options
+          const options = {
+            method: 'POST',
+            body: fd,
+          };
+          // Hacel al solicitud fetch con un timeout de 2 minutos
+          fetchWithTimeout(url, options, 120000)
+            .then(response => response.json())
+            .then(function (datos) {
+              console.log(datos);
+              if (typeof datos.nombre_apoderado != 'undefined') {
+                if (datos.nombre_apoderado != '' && datos.nombre_apoderado != null) {
+                  document.getElementById('nomapoderado').value = datos.nombre_apoderado;
+                  document.getElementById('identidadapod').value = datos.ident_apoderado;
+                  document.getElementById('dirapoderado').value = datos.dir_apoderado;
+                  document.getElementById('telapoderado').value = datos.tel_apoderado;                
+                  document.getElementById('emailapoderado').value = datos.correo_apoderado; 
+                } else {
+                  fLimpiarPantalla();
+                  f_sweetalert('INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
+                  event.preventDefault();
+                  //event.target.select();
+                  event.target.classList.add("errortxt");
+                  document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+                  paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+                  isError = true;
+                }                  
+              } else {
+                fLimpiarPantalla();
+                f_sweetalert('INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
+                event.preventDefault();
+                //event.target.select();
+                event.target.classList.add("errortxt");
+                document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+                paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+                isError = true;
+              }
+            })
+            .catch((error) => {
+              fLimpiarPantalla();
+              console.error('Error Catch f_FetchCallApoderado:', error);
+              f_sweetalert('CONEXÍON', 'Algo raro paso. Intentandolo de nuevo en un momento, si el problema persiste contacta al administrador del sistema', 'warning');
+              event.preventDefault();
+              //event.target.select();
+              event.target.classList.add("errortxt");
+              document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+              paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+              isError = true;
+            });
+        }        
+
+        function f_CaseFetchCalls(value,event,idinput) {
+          //*********************************************************************************/
+          // Dependiendo del panel actual se ejecuta una función para validar los campos
+          //*********************************************************************************/
+          switch (currentstep)
+          {
+            case 0: f_FetchCallApoderado(value,event,idinput); break;
+            case 1: f_FetchCallApoderado(value,event,idinput); break;
+            case 2: f_FetchCallApoderado(value,event,idinput); break;
+            case 3: f_FetchCallApoderado(value,event,idinput); break;
+            case 4: f_FetchCallApoderado(value,event,idinput); break;
+            default: f_FetchCallApoderado(value,event,idinput); break;
+          }
+        }        
 
         //Cuando presente el nuevo panel
         stepperFormEl.addEventListener('shown.bs-stepper', function (event) {
@@ -246,7 +385,6 @@ include_once('configuracion/configuracion_js.php');
 
         //Antes de hacer la transición al nuevo panel
         stepperFormEl.addEventListener('show.bs-stepper', function (event) {
-          let error = false;
           //*********************************************************************************/
           // Dependiendo del panel actual se ejecuta una función para validar los campos
           //*********************************************************************************/
@@ -274,16 +412,12 @@ include_once('configuracion/configuracion_js.php');
             event.preventDefault();
             hayerror = true;
           } else {
-            // Setting the panel dirty
-            dirty = true;
+            // Setting the panel isDirty
+            isDirty = true;
           }
         })      
 
         setTimeout(setFocusElement, 250);
-
-        function f_validarapoderado() {
-          return 0;
-        }
 
         var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
         var columnas = testcontrols.length;
@@ -291,26 +425,37 @@ include_once('configuracion/configuracion_js.php');
         // Crear una matriz bidimensional vacía
         var paneerror = new Array(filas);
         testcontrols.forEach(function(input) {
+          //********************************************************************/
+          //Definiendo el arreglo de errores por panel e input
+          //********************************************************************/
           for (var i = 0; i < filas; i++) {
             paneerror[i] = new Array(columnas);
           }
+          //*****************************************************************************/
+          //Creando arreglo de inputs para saber posteriormente el indice de cada input
+          //*****************************************************************************/
           idinputs.push(input.id);
+          //*****************************************************************************/
+          //Creando evento change para cada input
+          //*****************************************************************************/
           input.addEventListener('change', function(event) {
-          // Setting the panel dirty
-          dirty = true;
-          // Getting the input element id
+          // Marcando que no hay error aun
+          isError == false
+          // Estableciento si el panel actual isDirty
+          isDirty[currentstep] = true;
+          // Obteniendo el id del input
           idinput = event.target.id;
-          // Save cursor position
+          // Salvar la pocisión del cursor
           var cursorPosition = event.target.selectionStart;
-          // Get the current value of the input
+          // Obtener el valor actual del input
           var value = event.target.value;
-          // Get the pattern from the 'pattern' attribute of the target element
+          // Obteniendo el patrón del atributo 'pattern' del elemento objetivo
           var patternString = event.target.pattern;
-          // Create a RegExp instance using the pattern
+          // Crear una instancia de RegExp usando el patrón
           var pattern = new RegExp(patternString);
-          // Check if the current input value is valid
+          // Veriricar si el valor actual del input es válido
           var isValid = pattern.test(value);
-          // If the value is not valid, prevent the default behavior and restore the cursor position
+          // If de si el valor es valido para preventDefault
           if (!isValid) {
             event.preventDefault();
             event.target.select();
@@ -319,32 +464,35 @@ include_once('configuracion/configuracion_js.php');
             document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
           } else {
-            event.target.classList.remove("errortxt");
-            document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
-            document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
-            paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-            //Mover al siguiente input
-            moveToNextInput(input);
+              event.target.classList.remove("errortxt");
+              document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
+              document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+              paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+              //Moverse al siguiente input
+              moveToNextInput(input,0);
+              if (idinput=='colapoderado') {
+                f_CaseFetchCalls(value,event,idinput);
+              }
           }
         });
 
         // Handle the keydown event to prevent Tab key from moving focus
         input.addEventListener('keydown', function(event) {
-          // Setting the panel dirty
-          dirty = true;
-          // Getting the input element id
+          // Estableciento si el panel actual isDirty
+          isDirty[currentstep] = true;
+          // Obteniendo el id del input
           idinput = event.target.id;
-          // Check if the Tab key is pressed
-          if (event.key === 'Tab' || event.key === 'Enter') {
-            // Get the current value of the input
+          // Verificar si se presionó la tecla Tab o Enter
+          if (event.key === 'Tab' || (event.key === 'Enter' && isError == false)) {
+            // Obtener el valor actual del input
             var value = event.target.value;
-            // Get the pattern from the 'pattern' attribute of the target element
+            // Obtener el patrón del atributo 'pattern' del elemento objetivo
             var patternString = event.target.pattern;
-            // Create a RegExp instance using the pattern
+            // Crear una instancia de RegExp usando el patrón
             var pattern = new RegExp(patternString);
-            // Check if the current input value is valid
+            // Verificar si el valor actual del input es válido
             var isValid = pattern.test(value);
-            // If the value is not valid, prevent the default behavior
+            // Fi de si el valor es valido para preventDefault
             if (!isValid) {
               event.preventDefault();
               event.target.select();
@@ -359,16 +507,24 @@ include_once('configuracion/configuracion_js.php');
               paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
               //Mover al siguiente input
               if (event.key === 'Enter') {
-                moveToNextInput(input);
+                moveToNextInput(input,0);
+              }
+              if (idinput=='colapoderado') {
+                f_CaseFetchCalls(value,event,idinput);
               }
            	}
           }
+          // Marcando que no hay error aun
+          isError == false
         });        
 
-        function moveToNextInput(currentInput) {
+        //************************************************************/
+        //Moviendose al siguiente input
+        //************************************************************/
+        function moveToNextInput(currentInput,value) {
           var inputs = [].slice.call(document.querySelectorAll('.test-controls'));
           var currentIndex = inputs.indexOf(currentInput);
-          for (var i = currentIndex + 1; i < inputs.length; i++) {
+          for (var i = ((currentIndex + 1)+ (value)); i < inputs.length; i++) {
             if (!inputs[i].disabled) {
               inputs[i].focus();
               inputs[i].select();
@@ -379,6 +535,31 @@ include_once('configuracion/configuracion_js.php');
 
       });
     })      
+
+    function fGetInputs() {
+        console.log(currentstep);
+        // Get the element by its ID
+        var element = document.getElementById('test-form-'+(currentstep+1));
+        
+        // Get all input elements inside this element
+        var inputs = element.querySelectorAll('.test-controls');
+        console.log(inputs);
+        // Convert NodeList to Array for easier manipulation (optional)
+        inputs = Array.from(inputs);
+        
+        // Log the inputs to the console
+        inputs.forEach(input => {
+           // Creando un nuevo evento 'change'
+           var event = new Event('change', {
+                'bubbles': true,
+                'cancelable': true
+            });
+
+            // Despachando el evento
+            input.dispatchEvent(event);
+        });
+    }
+
   </script> 
   </body>
 </html>
