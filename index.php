@@ -211,7 +211,7 @@ include_once('configuracion/configuracion_js.php');
                     <!--DATOS DE LA ESCRITURA Y NOMBRE NOTARIO-->
                     <div class="col-md-2">
                       <div class="form-group">
-                        <label class="col-form-label" for="numescritura">No de Escritura de Constituci&oacute;n:</label>
+                        <label class="col-form-label" for="numescritura">No Escritura de Constituci&oacute;n:</label>
                         <input type="text" class="form-control form-control-sm" id="numescritura" placeholder="" onkeydown="returnisNumber(event)">
                       </div>
                     </div>

@@ -61,7 +61,7 @@ $appcfg_large_name = 'INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE';
 $appcfg_short_name = 'IHTT';
 $appcfg_telefono = '(+504)-9561-4451';
 $appcfg_title_logo = "RENOVACIONES AUTOMATICAS MASIVAS";
-$appcfg_logo = $appcfg_Dominio . "assets/images/logos/logo.png";
+$appcfg_logo = $appcfg_Dominio . "assets/images/logos/escudo.jpg";
 
 //!*********************MENU*******************************************
 $appcfg_inicio='INICIO';

@@ -3,8 +3,8 @@
 //<div class="d-flex flex-column flex-md-row align-items-center pb-3 mb-4 border-bottom">
 $menu = 
 '<div class="d-flex flex-column flex-md-row align-items-center border-bottom menu">
-    <a href="'. $appcfg_Dominio . 'src/ramasivas/' .'" class="d-flex align-items-center link-body-emphasis text-decoration-none">
-        <img title="' . $appcfg_title_logo . '" src="' . $appcfg_logo .'" width="50" height="42">&nbsp;&nbsp;
+    <a href="'. $appcfg_Dominio .'" class="d-flex align-items-center link-body-emphasis text-decoration-none">
+        <img class="logo" title="' . $appcfg_title_logo . '" src="' . $appcfg_logo .'" width="50px" height="50px">&nbsp;&nbsp;
         <span class="fs-4"><strong style="color:white;" >'. $appcfg_Aplicacion.'</strong></span>
     </a>';
     $menu = $menu . '<nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">';
