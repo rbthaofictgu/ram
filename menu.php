@@ -27,5 +27,7 @@ $menu =
     </nav>
 </div>';
 
+$menu = $menu. '<div id="reading_progress_masterbar_id" style="display:none;" class="pb"><div class="pb_p" id="reading_progress_bar_id" style="width: 0%;"></div></div>';
+
 echo $menu;
 ?>

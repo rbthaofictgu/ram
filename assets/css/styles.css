@@ -308,3 +308,25 @@ color: var(--bs-gobierno3);
 	box-shadow: 12px 12px 5px -3px #d2edf3;
 	font-variant: small-caps;
 }
+.pb{
+	height: .25rem;
+	width: 100%;
+	background: var(--bs-gobierno2);
+	position: fixed;
+	top: 60px;	
+
+}
+.pb_p{
+	height: .25rem;
+	width: 100%;
+	background: var(--bs-gobierno3);
+	position: fixed;
+	top: 60px;
+}
+.menu {
+	position: fixed;
+	top: 0;
+	width: 100%;
+	z-index: 1000; /* Ensure it is above other elements */
+}
+  

@@ -35,6 +35,9 @@ include_once('configuracion/configuracion_js.php');
         <!-- Body -->
         <!-- *** -->    
         <!-- <div class="mb-4 p-3 bg-white shadow-sm"></div> -->    
+        <hr>
+        <hr>
+        <hr>
         <div class="bg-white shadow-sm">
         <h3 class="gobierno2 fw-bolder px-3" style="text-decoration: underline;">INGRESO DE SOLICITUDES PREFORMA</h3>
         <div id="stepperForm" class="bs-stepper linear">
@@ -351,6 +354,7 @@ include_once('configuracion/configuracion_js.php');
     <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/site/static/docs/5.3/assets/js/validate-forms.js"></script>
     <script src="<?php echo $appcfg_Dominio;?>assets/js/fetchWithTimeout.js"></script>
     <script src="<?php echo $appcfg_Dominio;?>assets/js/sweetalert.js"></script>
+    <script src="<?php echo $appcfg_Dominio;?>assets/js/readingBar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.3/dist/sweetalert2.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.all.min.js"></script>

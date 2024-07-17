@@ -3,7 +3,7 @@ var isPrevious = false;
 var hayerror = false;
 var idinput = '';
 var idinputs = Array();
-var currentstep;
+var currentstep=0;
 var stepperForm;
 var isDirty = Array();
 var hasData = Array();
@@ -347,6 +347,26 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   })      
 
+  var ii = 0;
+  console.log('stepperPanList.length'+stepperPanList.length);
+  while (ii < stepperPanList.length) {
+    var element = document.getElementById('test-form-'+(ii+1));
+    // Obtener todos los elementos de entrada dentro de este elemento
+    var inputselect = element.querySelectorAll('.test-select');
+    // Convertir NodeList a Array para facilitar la manipulación (opcional)
+    inputselect = Array.from(inputselect);
+    console.log('inputselect'+inputselect);
+    // Iterar sobre los elementos de entrada y eliminar las clases de error
+    inputselect.forEach(input => {
+      console.log(input.id);
+      input.addEventListener('change', function(event) {
+        console.log(event.target.value);
+      });
+      
+    });
+    ii++;
+  }
+
 
     var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
     var columnas = testcontrols.length;
@@ -408,7 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
             moveToNextInput(input,0);
           }
       }
- });
+  });
 
   // Handle the keydown event to prevent Tab key from moving focus
   input.addEventListener('keydown', function(event) {
@@ -454,7 +474,7 @@ document.addEventListener('DOMContentLoaded', function () {
             moveToNextInput(input,0);
           }
         }
-         }
+          }
     }
     // Marcando que no hay error aun
     isError = false;
@@ -472,6 +492,7 @@ function fGetInputs() {
   var element = document.getElementById('test-form-'+(currentstep+1));
   // Get all input elements inside this element
   var inputs = element.querySelectorAll('.test-controls');
+  inputs = inputs + element.querySelectorAll('.test-select');
   // Convert NodeList to Array for easier manipulation (optional)
   inputs = Array.from(inputs);
   // Iterando entre los inputs para despachar el evento change y validar la data de cada input

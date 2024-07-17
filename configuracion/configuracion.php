@@ -55,8 +55,8 @@ if ($envairoment == 'DEV') { //* Ambiente de desarrollo
 	$appcfg_salir = "https://satt.transporte.gob.hn/login.php?logout";
 }	
 //!*********************FOOTER******************************************
-$appcfg_Aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS'; 
-$appcfg_nombre_aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS';
+$appcfg_Aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS <span class="gobierno2">(RAM)</span>'; 
+$appcfg_nombre_aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS <span class="gobierno2">(RAM)</span>';
 $appcfg_large_name = 'INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE';
 $appcfg_short_name = 'IHTT';
 $appcfg_telefono = '(+504)-9561-4451';
