@@ -81,6 +81,7 @@ color: var(--bs-gobierno3);
 	color:    #BDADB5;
 	border: 5px solid    #BDADB5;
 	font-variant: small-caps;
+	font-weight: 500;
 }
 
 .btn-light:hover {
@@ -109,6 +110,8 @@ color: var(--bs-gobierno3);
 	color:  #949699;
 	border: 5px solid  #949699;
 	font-variant: small-caps;
+	font-weight: 500;
+  
 }
 
 .btn-info:hover {
@@ -137,6 +140,7 @@ color: var(--bs-gobierno3);
 	color:  #E05E54;
 	border: 5px solid  #E05E54;
 	font-variant: small-caps;
+	font-weight: 500;
 }
 
 .btn-warning:hover {
@@ -165,6 +169,7 @@ color: var(--bs-gobierno3);
 	color:  #446870;
 	border: 5px solid #446870;
 	font-variant: small-caps;
+	font-weight: 500;
 }
 
 .btn-success:hover {
@@ -193,6 +198,7 @@ color: var(--bs-gobierno3);
 	color:  #8F7876;
 	border: 5px solid #8F7876;
 	font-variant: small-caps;
+	font-weight: 500;
 }
 
 .btn-primary:hover {
@@ -222,6 +228,7 @@ color: var(--bs-gobierno3);
 	color:  #88CFE0;
 	border: 5px solid #88CFE0;
 	font-variant: small-caps;
+	font-weight: 500;
 }
 
 .btn-secondary:hover {
