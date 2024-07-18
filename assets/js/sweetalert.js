@@ -33,7 +33,6 @@ function fSweetAlertEventSelect(event,title, msg, type, errorcode = null) {
     confirmButtonColor: "#3085d6",
   }).then((result) => {
     if (result.isConfirmed) {
-      console.log(event.target.type);
       if (event.target.type == 'text') {
         event.target.select();
       }

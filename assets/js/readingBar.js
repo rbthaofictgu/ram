@@ -6,13 +6,12 @@ function calcularPorcentajeRestante() {
   const scrollPercentage = (scrollTop / (fullHeight - windowHeight)) * 100;
   return scrollPercentage;
 }
-  
-  // Ejemplo de uso
+// Ejemplo de uso
 window.addEventListener('scroll', () => {
   const porcentaje = calcularPorcentajeRestante();
   if (porcentaje> 15){
     document.getElementById('reading_progress_masterbar_id').style="display:block;"
   }
   document.getElementById('reading_progress_bar_id').style=`width: ${porcentaje.toFixed(2)}%;`
-  console.log(`Falta un ${porcentaje.toFixed(2)}% para llegar al final de la página.`);
+  //console.log(`Porcentaje de scroll ${porcentaje.toFixed(2)}% del total de la altura de la pagina].`);
 });

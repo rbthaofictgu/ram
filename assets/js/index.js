@@ -1,4 +1,7 @@
+var isFromfGetInputs = false;
 var isError = false;
+var isRecordGetted = Array();
+var isTab=false; 
 var isPrevious = false;
 var hayerror = false;
 var idinput = '';
@@ -6,7 +9,6 @@ var idinputs = Array();
 var currentstep=0;
 var stepperForm;
 var isDirty = Array();
-var hasData = Array();
 var setFocus = true;
 // Pocicionando el cursos en el primer input de la pantalla id=colapoderado
 function setFocusElement(){
@@ -30,7 +32,6 @@ document.addEventListener('DOMContentLoaded', function () {
   //*****************************************************************/
   for (var i = 0; i < stepperPanList.length; i++) {
     isDirty[i] = false;
-    hasData[i] = false;
   }
 
   btnNextList.forEach(function (btn) {
@@ -46,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
     var inputs = [].slice.call(document.querySelectorAll('.test-controls'));
     var currentIndex = inputs.indexOf(currentInput);
     for (var i = ((currentIndex + 1)+ (value)); i < inputs.length; i++) {
-      if (!inputs[i].disabled) {
+      if (!inputs[i].disabled && !inputs[i].visible) {
         inputs[i].focus();
         inputs[i].select();
         break;
@@ -69,11 +70,23 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('emailapoderado').value = ''; 
         break;
       case 1: 
-        document.getElementById('nomapoderado').value = '';
-        document.getElementById('identidadapod').value = '';
-        document.getElementById('dirapoderado').value = '';
-        document.getElementById('telapoderado').value = '';                
-        document.getElementById('emailapoderado').value = ''; 
+        document.getElementById('nomsoli').value = '';
+        document.getElementById('denominacionsoli').value = '';
+        document.getElementById('domiciliosoli').value = '';
+        document.getElementById('telapoderado').value = '';
+        document.getElementById('emailsoli').value = '';
+        document.getElementById('numescritura').value = '';
+        document.getElementById('fecha').value = '';
+        document.getElementById('lugarcons').value = '';
+        document.getElementById('rtnnotario').value = '';
+        document.getElementById('nombrenotario').value = '';
+        document.getElementById('tiposolicitante').value = '';
+        document.getElementById('Departamentos').value = '-1';
+        document.getElementById('Municipios').value = '-1';
+        document.getElementById('Municipios').innerHTML = "";
+        document.getElementById('Aldeas').value = '-1';
+        document.getElementById('Aldeas').innerHTML = "";
+        document.getElementById('entregadocs').value = '-1';
         break;
       case 2: 
         document.getElementById('nomapoderado').value = '';
@@ -142,6 +155,7 @@ document.addEventListener('DOMContentLoaded', function () {
       method: 'POST',
       body: fd,
     };
+    isRecordGetted[currentstep] = idApoderado;
     // Hacel al solicitud fetch con un timeout de 2 minutos
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
@@ -156,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('telapoderado').value = datos.tel_apoderado;                
             document.getElementById('emailapoderado').value = datos.correo_apoderado; 
             isError = false;
-            //Moviendose al sigueinte input
+            //Moviendose al siguiente input
             moveToNextInput(event.target,0);
           } else {
               fLimpiarPantalla();
@@ -200,6 +214,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }        
 
   function f_FetchCallSolicitante(idSolicitante,event,idinput) {
+    isRecordGetted[currentstep] = idSolicitante;
     // URL del Punto de Acceso a la API
     const url = $appcfg_Dominio + "Api_Ram.php";
     //  Fetch options
@@ -221,12 +236,10 @@ document.addEventListener('DOMContentLoaded', function () {
       method: 'POST',
       body: fd,
     };
-    // Hacel al solicitud fetch con un timeout de 2 minutos
+    // Hacer al solicitud fetch con un timeout de 2 minutos
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
       .then(function (datos) {
-        console.log(datos);
-        console.log(datos[0]);
         if (typeof datos[0] != 'undefined') {
           if (datos[0] > 0) {
             //Limpiando mensajes de error
@@ -311,6 +324,11 @@ document.addEventListener('DOMContentLoaded', function () {
     setFocus = true;
     isError = false;
     isPrevious = false;
+
+    if (typeof isDirty[currentstep] == 'undefined') {
+      isDirty[currentstep] == false;
+    }
+
     switch (currentstep)
     {
       case 0: document.getElementById("colapoderado").focus(); break;
@@ -348,19 +366,33 @@ document.addEventListener('DOMContentLoaded', function () {
   })      
 
   var ii = 0;
-  console.log('stepperPanList.length'+stepperPanList.length);
   while (ii < stepperPanList.length) {
     var element = document.getElementById('test-form-'+(ii+1));
     // Obtener todos los elementos de entrada dentro de este elemento
     var inputselect = element.querySelectorAll('.test-select');
     // Convertir NodeList a Array para facilitar la manipulación (opcional)
     inputselect = Array.from(inputselect);
-    console.log('inputselect'+inputselect);
     // Iterar sobre los elementos de entrada y eliminar las clases de error
     inputselect.forEach(input => {
-      console.log(input.id);
       input.addEventListener('change', function(event) {
-        console.log(event.target.value);
+        if (event.target.getAttribute('data-valor') > event.target.value) {
+          event.preventDefault();
+          event.target.classList.add("errortxt");
+          document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+          // if (typeof document.getElementById(event.target.id + 'labelerror') != 'undefined') {
+          //   document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+          // }
+          paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+        } else{
+          event.target.classList.remove("errortxt");
+          document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
+          // if (typeof document.getElementById(event.target.id + 'labelerror') != 'undefined') {
+          //   document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+          // }
+          paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+          //Moverse al siguiente input
+          moveToNextInput(input,0);
+        }
       });
       
     });
@@ -388,8 +420,6 @@ document.addEventListener('DOMContentLoaded', function () {
       //Creando evento change para cada input
       //*****************************************************************************/
       input.addEventListener('change', function(event) {
-      // Estableciento si el panel actual isDirty
-      isDirty[currentstep] = true;
       // Obteniendo el id del input
       idinput = event.target.id;
       // Salvar la pocisión del cursor
@@ -409,31 +439,40 @@ document.addEventListener('DOMContentLoaded', function () {
         if (setFocus == true) {
           event.target.focus();
           event.target.select();
-        } else {
-          setFocus = true;
         }
         event.target.classList.add("errortxt");
         document.getElementById(event.target.id + 'label').classList.add("errorlabel");
         document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
         paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
       } else {
-          event.target.classList.remove("errortxt");
-          document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
-          document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
-          paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-          //Moverse al siguiente input
-          if (idinput=='colapoderado' || idinput=='rtnsoli') {
-            f_CaseFetchCalls(value,event,idinput);
-          } else {
+        event.target.classList.remove("errortxt");
+        document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
+        document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+        paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+        //Moverse al siguiente input
+        if (idinput=='colapoderado' || idinput=='rtnsoli') {
+          console.log('currentstep'+currentstep)
+          console.log('isRecordGetted[currentstep]'+isRecordGetted[currentstep]);
+          console.log('event.target.value'+event.target.value);
+          if (typeof isRecordGetted[currentstep] == 'undefined' || isRecordGetted[currentstep] != event.target.value) {
+              if (isDirty[currentstep] == false) {
+                f_CaseFetchCalls(value,event,idinput);
+              } else {
+                isDirty[currentstep] == false;
+              }
+          }
+        } else {	
+          if (isTab==false) {
             moveToNextInput(input,0);
           }
+        }
+        isTab=false; 
+        isFromfGetInputs=false;
       }
   });
 
   // Handle the keydown event to prevent Tab key from moving focus
   input.addEventListener('keydown', function(event) {
-    // Estableciento si el panel actual isDirty
-    isDirty[currentstep] = true;
     // Obteniendo el id del input
     idinput = event.target.id;
     // Verificar si se presionó la tecla Tab o Enter
@@ -466,52 +505,117 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
         document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
         paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-        if (idinput=='colapoderado' || idinput=='rtnsoli') {
-          f_CaseFetchCalls(value,event,idinput);
+        if (idinput=='colapoderado' || idinput=='rtnsoli' && event.key === 'Enter') {
+          isDirty[currentstep] == true;
+          if (typeof isRecordGetted[currentstep] == 'undefined' || isRecordGetted[currentstep] != event.target.value) {
+              if (isDirty[currentstep] == false) {
+                f_CaseFetchCalls(value,event,idinput);
+              } else {
+                //Mover al siguiente input
+                if (event.key === 'Enter') {
+                  moveToNextInput(input,0);
+                }
+              }
+          } else {
+            //Mover al siguiente input
+            if (event.key === 'Enter') {
+              moveToNextInput(input,0);
+            }
+          }	
         } else {
           //Mover al siguiente input
           if (event.key === 'Enter') {
             moveToNextInput(input,0);
           }
         }
-          }
+      }
     }
     // Marcando que no hay error aun
     isError = false;
-  });        
-
+  });  
+  isDirty[currentstep] = false;
 });
 
 setTimeout(setFocusElement, 250);
 
 })      
 
+//**********************************************************************/
+//Obtener todas las entradas enabled para validarlas
+//**********************************************************************/
 function fGetInputs() {
   setFocus = false;
+  isTab=true;
+  isFromfGetInputs = true;
   // Get the element by its ID
   var element = document.getElementById('test-form-'+(currentstep+1));
   // Get all input elements inside this element
   var inputs = element.querySelectorAll('.test-controls');
-  inputs = inputs + element.querySelectorAll('.test-select');
   // Convert NodeList to Array for easier manipulation (optional)
   inputs = Array.from(inputs);
   // Iterando entre los inputs para despachar el evento change y validar la data de cada input
+  var index = 0;
   inputs.forEach(input => {
-      // Creando un nuevo evento 'change'
-      var event = new Event('change', {
-          'bubbles': true,
-          'cancelable': true
-      });
-      // Despachando el evento
-      input.dispatchEvent(event);
+      if (input.disabled == false) {
+        // Creando un nuevo evento 'change'
+        var event = new Event('change', {
+            'bubbles': true,
+            'cancelable': true
+        });
+        input.dispatchEvent(event);
+        if (index == 0) {
+          input.focus();
+          input.select();
+        }
+      }
+      index++;
+  });
+  fGetInputsSelect();
+}
+
+//**********************************************************************/
+//Obtener todas las entradas enabled para validarlas
+//**********************************************************************/
+function fGetInputsSelect() {
+  // Get the element by its ID
+  var element = document.getElementById('test-form-'+(currentstep+1));
+  // Get all input elements inside this element
+  var inputs = element.querySelectorAll('.test-select');
+  // Convert NodeList to Array for easier manipulation (optional)
+  inputs = Array.from(inputs);
+  // Iterando entre los inputs para despachar el evento change y validar la data de cada input
+  var index = 0;
+  inputs.forEach(input => {
+    if (input.disabled == false) {
+      if (input.getAttribute('data-valor') > input.value) {        
+        input.classList.add("errortxt");
+        document.getElementById(input.id + 'label').classList.add("errorlabel");
+        // if (typeof document.getElementById(event.target.id + 'labelerror') != 'undefined') {
+        //   document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+        // }
+        paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+      } else{
+        input.classList.remove("errortxt");
+        document.getElementById(input.id + 'label').classList.remove("errorlabel");
+        // if (typeof document.getElementById(event.target.id + 'labelerror') != 'undefined') {
+        //   document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+        // }
+        paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+        //Moverse al siguiente input
+        moveToNextInput(input,0);
+      }
+    }
+    index++;
   });
   setFocus = true;
+  isTab=false;
 }
 
 //**************************************************************************************/
 //Eliminar todos los mensajes de error
 //**************************************************************************************/
 function fCleanErrorMsg() {
+  //console.log('On fCleanErrorMsg()');
   // Obtener el elemento por su ID
   var element = document.getElementById('test-form-'+(currentstep+1));
   // Obtener todos los elementos de entrada dentro de este elemento
@@ -522,7 +626,27 @@ function fCleanErrorMsg() {
   inputs.forEach(input => {
     input.classList.remove("errortxt");
     document.getElementById(input.id + 'label').classList.remove("errorlabel");
-    document.getElementById(input.id + 'labelerror').style.visibility = "hidden";
+    if (typeof document.getElementById(input.id + 'labelerror') != 'undefined') {
+      document.getElementById(input.id + 'labelerror').style.visibility = "hidden";
+    }
+  });
+  //Limpiando mensajes de elementos .test-select
+  fCleanSelectErrorMsg();
+}
+
+function fCleanSelectErrorMsg() {
+  //console.log('On fCleanSelectErrorMsg()');
+  // Obtener el elemento por su ID
+  var element = document.getElementById('test-form-'+(currentstep+1));
+  // Obtener todos los elementos de entrada dentro de este elemento
+  var inputs = element.querySelectorAll('.test-select');
+  // Convertir NodeList a Array para facilitar la manipulación (opcional)
+  inputs = Array.from(inputs);
+  // Iterar sobre los elementos de entrada y eliminar las clases de error
+  inputs.forEach(inputx => {
+    inputx.classList.remove("errortxt");
+    let id = inputx.id.concat('label');
+    document.getElementById(id).classList.remove("errorlabel");
   });
 }
 

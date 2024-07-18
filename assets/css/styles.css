@@ -309,7 +309,7 @@ color: var(--bs-gobierno3);
 	font-variant: small-caps;
 }
 .pb{
-	height: .25rem;
+	height: .35rem;
 	width: 100%;
 	background: var(--bs-gobierno2);
 	position: fixed;
@@ -317,7 +317,7 @@ color: var(--bs-gobierno3);
 
 }
 .pb_p{
-	height: .25rem;
+	height: .35rem;
 	width: 100%;
 	background: var(--bs-gobierno3);
 	position: fixed;

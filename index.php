@@ -142,7 +142,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-6">
                     <div class="form-group">
                       <label id="emailapoderadolabel" for="emailapoderado">Correo Electrónico:</label>
-                      <input pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$' type="email" class="form-control form-control-sm test-controls" id="emailapoderado" placeholder="rbthaofic@gmail.com">
+                      <input  pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$' type="email" class="form-control form-control-sm test-controls" id="emailapoderado" placeholder="rbthaofic@gmail.com">
                       <div id="emailapoderadolabelerror" style="visibility:hidden" class="errorlabel">
                             El correo electrónico es invalido.
                       </div>
@@ -256,24 +256,24 @@ include_once('configuracion/configuracion_js.php');
 
                   <div class="col-md-4">
                     <div class="form-group">
-                      <label>Departamento:</label>
-                      <select data-value="0"  id="Departamentos" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
+                      <label id="Departamentoslabel">Departamento:</label>
+                      <select data-valor="0"  id="Departamentos" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
                       </select>
                     </div>
                   </div>
 
                   <div class="col-md-4">
                     <div class="form-group">
-                      <label>Municipio:</label>
-                      <select data-value="0" id="Municipios" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
+                      <label id="Municipioslabel">Municipio:</label>
+                      <select data-valor="0" id="Municipios" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
                       </select>
                     </div>
                   </div>
 
                   <div class="col-md-4">
                     <div class="form-group">
-                      <label>Aldea:</label>
-                      <select data-value="0" id="Aldeas" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
+                      <label id="Aldeaslabel">Aldea:</label>
+                      <select data-valor="0" id="Aldeas" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
                       </select>
                     </div>
                   </div>
@@ -283,14 +283,20 @@ include_once('configuracion/configuracion_js.php');
                 <div class="row">
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label id="lbl-telsoli" for="telsoli">Teléfono/Celular:</label>
-                      <input type="text" class="form-control form-control-sm" id="telsoli" placeholder="" maxlength="8">
+                      <label id="telsolilabel" for="telsoli">Teléfono/Celular:</label>
+                      <input pattern="[0-9]{8}" type="text" class="form-control form-control-sm test-controls" id="telsoli" placeholder="95614451" maxlength="8">
+                    </div>
+                    <div id="telsolilabelerror" style="visibility: hidden;" class="errorlabel">
+                            Teléfono Invalido, debe tener  8 Digitos.
                     </div>
                   </div>
                   <div class="col-md-6">
                     <div class="form-group">
-                      <label id="lbl-emailsoli" for="emailsoli">Correo Electrónico:</label>
-                      <input type="email" class="form-control form-control-sm" id="emailsoli" placeholder="">
+                      <label id="emailsolilabel" for="emailsoli">Correo Electrónico:</label>
+                      <input pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$'  type="email" class="form-control form-control-sm test-controls" id="emailsoli" placeholder="rbthaofic@gmail.com">
+                    </div>
+                    <div id="emailsolilabelerror" style="visibility: hidden;" class="errorlabel">
+                            Email Invalido
                     </div>
                   </div>
                 </div>
@@ -310,7 +316,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-6">
                     <div class="form-group">
                       <label id="entregadocslabel">Entrega de sus Documentos:</label>
-                      <select data-value="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
+                      <select data-valor="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
                       </select>
                     </div>
                   </div>
