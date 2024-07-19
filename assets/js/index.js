@@ -10,6 +10,7 @@ var currentstep=0;
 var stepperForm;
 var isDirty = Array();
 var setFocus = true;
+var paneerror = Array(Array());
 // Pocicionando el cursos en el primer input de la pantalla id=colapoderado
 function setFocusElement(){
   document.getElementById("colapoderado").focus(); 
@@ -33,6 +34,27 @@ document.addEventListener('DOMContentLoaded', function () {
   for (var i = 0; i < stepperPanList.length; i++) {
     isDirty[i] = false;
   }
+
+    //*****************************************************************************/
+    //Creando arreglo de inputs para saber posteriormente el indice de cada input
+    //*****************************************************************************/
+    var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
+    var testinputs = document.querySelectorAll('input, select');
+    console.log('testinputs.length'+testinputs.length);
+    var columnas = testinputs.length;
+    var filas = stepperPanList.length;
+    // Crear una matriz bidimensional vacía
+    paneerror = new Array(filas);
+    console.log('paneerror'+paneerror);
+    for (var i = 0; i < filas; i++) {
+      console.log('Panels i'+i);
+      paneerror[i] = new Array(columnas);
+        for (var ii = 0; ii < columnas; ii++) { 
+          paneerror[i][ii] = 0;
+        }
+      console.log('paneerror[i] ' + paneerror[i]);
+    }
+    
 
   btnNextList.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -156,7 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
       body: fd,
     };
     isRecordGetted[currentstep] = idApoderado;
-    // Hacel al solicitud fetch con un timeout de 2 minutos
+    // Hace la solicitud fetch con un timeout de 2 minutos
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
       .then(function (datos) {
@@ -398,28 +420,21 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     ii++;
   }
-
-
-    var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
-    var columnas = testcontrols.length;
-    var filas = stepperPanList.length;
-    // Crear una matriz bidimensional vacía
-    var paneerror = new Array(filas);
-    testcontrols.forEach(function(input) {
+  
+    testinputs.forEach(function(inputtest) {
+      idinputs.push(inputtest.id);
       //********************************************************************/
       //Definiendo el arreglo de errores por panel e input
       //********************************************************************/
-      for (var i = 0; i < filas; i++) {
-        paneerror[i] = new Array(columnas);
-      }
-      //*****************************************************************************/
-      //Creando arreglo de inputs para saber posteriormente el indice de cada input
-      //*****************************************************************************/
-      idinputs.push(input.id);
+    });
+    
+    testcontrols.forEach(function(input) {
       //*****************************************************************************/
       //Creando evento change para cada input
       //*****************************************************************************/
       input.addEventListener('change', function(event) {
+      console.log('change'+event.target.id);
+      console.log('idinputs.indexOf(event.target.id)] '+ idinputs.indexOf(event.target.id));
       // Obteniendo el id del input
       idinput = event.target.id;
       // Salvar la pocisión del cursor
@@ -556,6 +571,7 @@ function fGetInputs() {
   // Iterando entre los inputs para despachar el evento change y validar la data de cada input
   var index = 0;
   inputs.forEach(input => {
+      console.log(input.id);
       if (input.disabled == false) {
         // Creando un nuevo evento 'change'
         var event = new Event('change', {
@@ -580,12 +596,14 @@ function fGetInputsSelect() {
   // Get the element by its ID
   var element = document.getElementById('test-form-'+(currentstep+1));
   // Get all input elements inside this element
-  var inputs = element.querySelectorAll('.test-select');
+  let inputs = element.querySelectorAll('.test-select');
   // Convert NodeList to Array for easier manipulation (optional)
   inputs = Array.from(inputs);
   // Iterando entre los inputs para despachar el evento change y validar la data de cada input
   var index = 0;
   inputs.forEach(input => {
+    console.log('getSelect Input Id'+input.id);
+    console.log('getSelect Input'+input);
     if (input.disabled == false) {
       if (input.getAttribute('data-valor') > input.value) {        
         input.classList.add("errortxt");
@@ -593,14 +611,17 @@ function fGetInputsSelect() {
         // if (typeof document.getElementById(event.target.id + 'labelerror') != 'undefined') {
         //   document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
         // }
-        paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+        console.log(idinputs);
+        console.log(paneerror);
+        console.log(currentstep);
+        paneerror[currentstep][idinputs.indexOf(input.id)] = 1;
       } else{
         input.classList.remove("errortxt");
         document.getElementById(input.id + 'label').classList.remove("errorlabel");
         // if (typeof document.getElementById(event.target.id + 'labelerror') != 'undefined') {
         //   document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
         // }
-        paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+        paneerror[currentstep][idinputs.indexOf(input.id)] = 0;
         //Moverse al siguiente input
         moveToNextInput(input,0);
       }
