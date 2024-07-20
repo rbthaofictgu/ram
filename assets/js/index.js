@@ -175,7 +175,9 @@ document.addEventListener('DOMContentLoaded', function () {
             fLlenarSelect('entregadocs',datos[1],null,false,{Text: 'SELECCIONE UN LUGAR DE ENTREGA', Value: '-1'})            
           }
           if (datos[2].length > 0) {
-            fLlenarSelect('Departamentos',datos[2],-1,false,{Text: 'SELECCIONE UN DEPARTAMENTO', Value: '-1'})            
+            fLlenarSelect('Departamentos',datos[2],-1,false,{Text: 'SELECCIONE UN DEPARTAMENTO', Value: '-1'})     
+            fLlenarSelect('Municipios',[],-1,false,{Text: 'SELECCIONE UN MUNICIPIO', Value: '-1'})            
+            fLlenarSelect('Aldeas',[],-1,disabled=false,{Text: 'SELECCIONE UNA ALDEA', Value: '-1'})            
           }          
         } else {
           if (typeof datos.error != 'undefined') {
@@ -585,9 +587,7 @@ document.addEventListener('DOMContentLoaded', function () {
           //Moverse al siguiente input
           moveToNextInput(input,0);
           if (event.target.id=='Departamentos') {
-            fCargarDwd('get-municipios',event.target.value,'Municipios',-1,{Text: 'SELECCIONE UN MUNICIPIO', Value: '-1'})
-            document.getElementById('Aldeas').innerHTML = '';
-            document.getElementById('Aldeas').innerHTML = '<opcion value="-1">SELECCIONE UNA ALDEA</opcion>';
+            fCargarDwd('get-municipios',event.target.value,'Municipios',-1,{Text: 'SELECCIONE UN MUNICIPIO', Value: '-1'},['Aldeas'],['<option selected value="-1">SELECCIONE UNA ALDEA</option>']);
           } else {
             if (event.target.id=='Municipios') {
               fCargarDwd('get-aldeas',event.target.value,'Aldeas',-1,{Text: 'SELECCIONE UNA ALDEA', Value: '-1'})

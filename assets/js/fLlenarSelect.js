@@ -1,7 +1,7 @@
 //**************************************************************************************/
 // Llenar el select con las opciones del arreglo
 //**************************************************************************************/
-function fLlenarSelect(id,options,selected,disabled=false,defaultOption = {Text: 'SELECCIONE UNA OPCIÓN', Value: '-1'}) {
+function fLlenarSelect(id,options,selected,disabled=false,defaultOption = {Text: 'SELECCIONE UNA OPCIÓN', Value: '-1'},dwd_hijo=false,option_default_hijo=['<opcion value="-1">SELECCIONE UNA ALDEA</opcion>']) {
     var select = document.getElementById(id);
     console.log('fLlenarSelect select:',select);
     // Inicializar el select vaciando su contenido
@@ -29,13 +29,26 @@ function fLlenarSelect(id,options,selected,disabled=false,defaultOption = {Text:
         select.add(option,i);
         i++;
     });
+    //**************************************************************************************/
     select.disabled = disabled;
+    //**************************************************************************************/
+    // Limpiando y estableciendo las opciones por defecto en los select hijos
+    //**************************************************************************************/
+    if (dwd_hijo != false) {
+        i=0;
+        dwd_hijo.forEach(element => {
+            console.log('element:',element);
+            document.getElementById(element).innerHTML = ''; 
+            document.getElementById(element).innerHTML = option_default_hijo[i]; 
+            i++;
+        });
+    }
 }
 
 //**************************************************************************************/
 //Cargando la información por default que debe usar el formulario
 //**************************************************************************************/
-function fCargarDwd(accion,filtro,dwd,selected,option_default={Text: 'SELECCIONE UN OPCIÓN', Value: '-1'}) {
+function fCargarDwd(accion,filtro,dwd,selected,option_default={Text: 'SELECCIONE UN OPCIÓN', Value: '-1'},dwd_hijo=false,option_default_hijo=['<opcion value="-1">SELECCIONE UNA ALDEA</opcion>']) {
     // URL del Punto de Acceso a la API
     const url = $appcfg_Dominio + "Api_Ram.php";
     //  Fetch options
@@ -62,7 +75,7 @@ function fCargarDwd(accion,filtro,dwd,selected,option_default={Text: 'SELECCIONE
         .then(function (datos) {
         if (typeof datos != 'undefined') {
             if (datos != false) {
-                fLlenarSelect(dwd,datos,selected,false,option_default)            
+                fLlenarSelect(dwd,datos,selected,false,option_default,dwd_hijo,option_default_hijo);
             } else {
                 fSweetAlertEventNormal('INFORMACIÓN', 'ALGO RARO PASO, INTENTELO DE NUEVO SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA', 'error');
             }       
@@ -70,6 +83,7 @@ function fCargarDwd(accion,filtro,dwd,selected,option_default={Text: 'SELECCIONE
             if (typeof datos.error != 'undefined') {
                 fSweetAlertEventNormal(datos.errorhead, datos.error + '- ' + datos.errormsg , 'error');
             } else {
+                console.log(datos);
                 fSweetAlertEventNormal('INFORMACIÓN', 'ALGO RARO PASO, INTENTELO DE NUEVO SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA', 'error');
             }
         }
