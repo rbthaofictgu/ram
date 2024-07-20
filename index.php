@@ -88,31 +88,27 @@ include_once('configuracion/configuracion_js.php');
               <div id="test-form-1" role="tabpanel" class="bs-stepper-pane fade dstepper-block dstepper-none" aria-labelledby="stepperFormTrigger1">
 
                 <div class="row">
-
                     <div class="col-md-3">
                         <div class="form-group">
                           <label id="colapoderadolabel" class="col-form-label" for="colapoderado">Colegiaci&oacute;n Apoderado Legal:</label>
                           <input pattern="^[1-9]\d{2,7}$" class="form-control form-control-sm test-controls" id="colapoderado" minlength="3" maxlength="9">
-                          <div title="Número de colegiación en el Colegio de Abogados de Honduras es invalido. Debe tener de 3 a 8 caracteres enteros positivos"  id="colapoderadolabelerror" style="visibility:hidden" class="errorlabel">
-                            Número de colegiación invalido. Debe tener de 3 a 8 dígitos.
+                          <div title="Número de colegiación en el Colegio de Abogados de Honduras es invalido. Debe tener de 3 a 8 digitos enteros positivos"  id="colapoderadolabelerror" style="visibility:hidden" class="errorlabel">
+                            Número de colegiación invalido.
                           </div>
                         </div>
                     </div>
-
                     <div class="col-md-3">
                         <div class="form-group">
                           <label class="col-form-label" for="identidadapod">Identificación del Apoderdo Legal:</label>
                           <input readonly type="text" class="form-control form-control-sm" id="identidadapod" placeholder="" readonly="">
                         </div>
                     </div>
-
                     <div class="col-md-6">
                       <div class="form-group">
                         <label class="col-form-label" for="nomapoderado">Nombre Completo del Apoderado Legal:</label>
                         <input readonly type="text" class="form-control form-control-sm" id="nomapoderado" placeholder="" readonly="">
                       </div>
-                      </div>
-
+                    </div>
                 </div>              
 
 
@@ -149,7 +145,26 @@ include_once('configuracion/configuracion_js.php');
                     </div>
                   </div>
                 </div>
-                
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label>Presentación Documentos:</label>
+                      <select id="tipopresentacion" class="form-control form-control-sm" style="width: 100%;" readonly>
+                        <option value="CON">CONCESIONARIO</option>
+                        <option selected value="APO" selected>APODERADO LEGAL</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label id="entregadocslabel">Entrega de sus Documentos:</label>
+                      <select data-valor="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <br>                
                 <button id="btnnext0" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
                 <br>
                 <br>
@@ -300,28 +315,6 @@ include_once('configuracion/configuracion_js.php');
                     </div>
                   </div>
                 </div>
-
-                <div class="row">
-
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label>Presentación Documentos:</label>
-                      <select id="tipopresentacion" class="form-control form-control-sm" style="width: 100%;" readonly>
-                        <option value="CON">CONCESIONARIO</option>
-                        <option selected value="APO" selected>APODERADO LEGAL</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label id="entregadocslabel">Entrega de sus Documentos:</label>
-                      <select data-valor="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
-                      </select>
-                    </div>
-                  </div>
-                  
-                </div>
                 <br>
                 <button id="btnprevious1" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
                 <button id="btnnext1" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
@@ -361,13 +354,13 @@ include_once('configuracion/configuracion_js.php');
     <script src="<?php echo $appcfg_Dominio;?>assets/js/fetchWithTimeout.js"></script>
     <script src="<?php echo $appcfg_Dominio;?>assets/js/sweetalert.js"></script>
     <script src="<?php echo $appcfg_Dominio;?>assets/js/readingBar.js"></script>
+    <script src="<?php echo $appcfg_Dominio;?>assets/js/fLlenarSelect.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.3/dist/sweetalert2.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.all.min.js"></script>
     <link   href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.min.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
     <script src="https://kit.fontawesome.com/d40661685b.js" ></script>
-    <script src="<?php echo $appcfg_Dominio;?>assets/js/fLlenarSelect.js"></script>
     <script src="<?php echo $appcfg_Dominio;?>assets/js/index.js"></script>
   </body>
 </html>

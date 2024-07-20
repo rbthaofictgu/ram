@@ -19,7 +19,13 @@ class Api_Ram {
 				$this->getApoderadoAPI($_POST["idApoderado"]);
 			} else if ($_POST["action"] == "get-solicitante" && isset($_POST["idSolicitante"])) {				
 				$this->getSolicitante();
-			} else { echo json_encode(array("error" =>1001,"errormsg" =>'NO SE ENCONTRO NINGUNA FUNCION EN EL API PARA LA RUTA REQUERIDA'));}
+			} else if ($_POST["action"] == "get-ubicaciondepartamento") {				
+				$this->getUbicacionDepartamento();				
+			} else if ($_POST["action"] == "get-municipios") {				
+				$this->getMunicipios($_POST["filtro"]);								
+			} else if ($_POST["action"] == "get-aldeas") {				
+				$this->getAldeas($_POST["filtro"]);												
+			} else { echo json_encode(array("error" =>1001,"errorhead" =>'OPPS',"errormsg" =>'NO SE ENCONTRO NINGUNA FUNCION EN EL API PARA LA RUTA REQUERIDA'));}
 		}
 	}
 	
@@ -52,7 +58,7 @@ class Api_Ram {
 	function getApoderadoAPI($col) {
 		$query = "SELECT ID_ColegiacionAPL, Nombre_Apoderado_Legal, Identidad, Email, Telefono, Direccion FROM [IHTT_DB].[dbo].[TB_Apoderado_Legal] WHERE ID_ColegiacionAPL = :IDCOL";
 		$p = array(":IDCOL" => $col);
-		if(isset($_POST["echo"])){
+		if(!isset($_POST["echo"])){
 			$data = $this->select($query, $p );
 			if (count($data)>0) {
 				echo json_encode(array("id_colegiacion" =>$data[0]["ID_ColegiacionAPL"],"nombre_apoderado" =>$data[0]["Nombre_Apoderado_Legal"],"ident_apoderado" =>$data[0]["Identidad"],"correo_apoderado" =>$data[0]["Email"],"tel_apoderado" =>$data[0]["Telefono"],"dir_apoderado" =>$data[0]["Direccion"]));
@@ -64,30 +70,60 @@ class Api_Ram {
 		}
 	}
 
+	function getUbicacionDepartamento(){
+		$datos[1]= $this->getEntregaUbicacion();
+		$datos[2]= $this->getDepartamentos();
+		if ($datos[1] != false && $datos[2] != false) {
+			$datos[0] = count($datos[1]);
+			echo json_encode($datos);
+		} else {
+			echo json_encode(array("error" =>1001,"errormsg" =>'ALGO RARO SUCEDIO RECUPERANDO LOS DATOS DE UBICACIONES Y DEPARTAMENTOS, INTENTELO DE NUEVO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+		}
+	}
 
 	function getDepartamentos(){
 		$q = "SELECT ID_Departamento as Value, DESC_Departamento as Text FROM [IHTT_SELD].[dbo].TB_Departamento";
-		return $this->select($q,array());
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array());
+		} else {
+			echo json_encode($this->select($q,array()));
+		}
 	}
 
 	function getMunicipios($ID_Departamento){
 		$q = "SELECT ID_Municipio as Value, DESC_Municipio as Text FROM [IHTT_SELD].[dbo].TB_Municipio where ID_Departamento = :ID_Departamento";
-		return $this->select($q,array(':ID_Departamento'=> $ID_Departamento));
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array(':ID_Departamento'=> $ID_Departamento));
+		} else {
+			echo json_encode($this->select($q,array(':ID_Departamento'=> $ID_Departamento)));
+		}
 	}
 
 	function getAldeas($ID_Municipio){
 		$q = "SELECT ID_Aldea as Value, DESC_Aldea as Text FROM [IHTT_PREFORMA].[dbo].[TB_Aldea] where ID_Municipio = :ID_Municipio";
-		return $this->select($q,array(':ID_Municipio'=> $ID_Municipio));
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array(':ID_Municipio'=> $ID_Municipio));
+		} else {
+			echo json_encode($this->select($q,array(':ID_Municipio'=> $ID_Municipio)));
+		}
 	}
 
 	
 	function getEntregaUbicacion() {
 		$q = "SELECT ID_Ubicacion as Value, DESC_Ubicacion as Text FROM IHTT_DB.dbo.TB_Entrega_Ubicaciones";
-		return $this->select($q,array());
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array());
+		} else {
+			echo json_encode($this->select($q,array()));
+		}
 	 }
 	function getTipoSolicitante() {
 		$q="SELECT * FROM [IHTT_SELD].[dbo].[TB_Tipo_Solicitante]";
-		return $this->select($q,array());
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array());
+		} else {
+			echo json_encode($this->select($q,array()));
+		}		
 	}
 
 	/*************************************************************************************/
@@ -130,10 +166,8 @@ class Api_Ram {
 			'Lugar_Elaboracion_Representante'=>$data[0]['Lugar_Elaboracion_Representante'],'Numero_Inscripcion'=>$data[0]['Numero_Inscripcion'],
 			'ID_Notario_Representante'=>$data[0]['ID_Notario_Representante'],'Nombre_Notario_Representante'=>$data[0]['Nombre_Notario_Representante']);
 			$datos[2]= $this->getTipoSolicitante();
-			$datos[3]= $this->getEntregaUbicacion();
-			$datos[4]= $this->getDepartamentos();
-			$datos[5] = $this->getMunicipios(isset($Aldeas['Departamento']) ? $Aldeas['Departamento'] : 0);
-			$datos[6] = $this->getAldeas(isset($Aldeas['Municipio']) ? $Aldeas['Municipio'] : 0);
+			$datos[3] = $this->getMunicipios(isset($Aldeas['Departamento']) ? $Aldeas['Departamento'] : 0);
+			$datos[4] = $this->getAldeas(isset($Aldeas['Municipio']) ? $Aldeas['Municipio'] : 0);
 		}
 		echo json_encode($datos);
 	}
@@ -141,7 +175,7 @@ class Api_Ram {
 }
 
 if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
-	echo json_encode(array("error" =>1000,"errormsg" =>'NO HAY UNA SESSION INICIADA, FAVOR INICIE SESION Y VUELVA A INTENTARLO'));
+	echo json_encode(array("error" =>1000,"errorhead" =>'INICIO DE SESSIÓN',"errormsg" =>'NO HAY UNA SESSION INICIADA, FAVOR INICIE SESION Y VUELVA A INTENTARLO'));
 } else {
 	$api = new Api_Ram();	
 }
