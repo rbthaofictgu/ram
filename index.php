@@ -272,7 +272,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-4">
                     <div class="form-group">
                       <label id="Departamentoslabel">Departamento:</label>
-                      <select data-valor="0"  id="Departamentos" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
+                      <select data-valor="0"  id="Departamentos" class="form-control form-control-sm test-select" style="width: 100%;">
                       </select>
                     </div>
                   </div>
@@ -280,7 +280,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-4">
                     <div class="form-group">
                       <label id="Municipioslabel">Municipio:</label>
-                      <select data-valor="0" id="Municipios" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
+                      <select data-valor="0" id="Municipios" class="form-control form-control-sm test-select" style="width: 100%;">
                       </select>
                     </div>
                   </div>
@@ -288,7 +288,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-4">
                     <div class="form-group">
                       <label id="Aldeaslabel">Aldea:</label>
-                      <select data-valor="0" id="Aldeas" class="form-control form-control-sm test-select" style="width: 100%;" readonly>
+                      <select data-valor="0" id="Aldeas" class="form-control form-control-sm test-select" style="width: 100%;">
                       </select>
                     </div>
                   </div>

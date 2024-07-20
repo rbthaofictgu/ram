@@ -19,7 +19,6 @@ var paneerror = Array(Array());
     //var inputs = [].slice.call(document.querySelectorAll('input select'));
     let inputs = document.querySelectorAll('input, select');  
     inputs = Array.from(inputs);  
-    console.log('inputs en moveTo '+inputs);
     var currentIndex = inputs.indexOf(currentInput);
     var wasMoved=false;
     for (var i = ((currentIndex + 1)+ (value)); i < inputs.length; i++) {
@@ -28,14 +27,12 @@ var paneerror = Array(Array());
       } else {
         var readonly = false;
       }
-      //if (inputs[i].getAttribute('disabled') == false && inputs[i].getAttribute('readonly') == false) {
-      if (!inputs[i].disabled && !inputs[i].visible && readonly == false) {      
+      if (!inputs[i].disabled && !inputs[i].visible && inputs[i].getAttribute('readonly') == null) {      
         inputs[i].focus();
         if (inputs[i].type != 'select-one') {
-          console.log(inputs[i].type);
           inputs[i].select();
-          wasMoved=true;
         }
+        wasMoved=true;
         break;
       }
     }
