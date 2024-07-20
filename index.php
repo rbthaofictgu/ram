@@ -85,7 +85,7 @@ include_once('configuracion/configuracion_js.php');
             </div>            
           </div>
           <div class="bs-stepper-content">
-              <div id="test-form-1" role="tabpanel" class="bs-stepper-pane fade dstepper-block dstepper-none" aria-labelledby="stepperFormTrigger1">
+              <div id="test-form-1" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger1">
 
                 <div class="row">
                     <div class="col-md-3">
@@ -170,7 +170,7 @@ include_once('configuracion/configuracion_js.php');
                 <br>
               </div>
 
-              <div id="test-form-2" role="tabpanel" class="bs-stepper-pane fade active dstepper-block" aria-labelledby="stepperFormTrigger2">
+              <div id="test-form-2" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger2">
 
               <div class="row">
                   <!--DATOS DEL RTN Y TIPO SOLICITANTE-->
