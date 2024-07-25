@@ -28,8 +28,9 @@ include_once('configuracion/configuracion_js.php');
   </head>
     <body>
     <header>
-      <?php include_once('menu.php')?>
+    <?php include_once('menu.php')?>
     </header>
+    <!--<input id="dominio_raiz" name="dominio_raiz" type="hidden" value=""> -->
     <div class="container-fluid">
         <!-- *** -->    
         <!-- Body -->
@@ -39,7 +40,7 @@ include_once('configuracion/configuracion_js.php');
         <hr>
         <hr>
         <div class="bg-white shadow-sm">
-        <h3 class="gobierno2 fw-bolder px-3" style="text-decoration: underline;">INGRESO DE SOLICITUDES PREFORMA</h3>
+        <h4 style="font-size: 2.0rem;" class="gobierno2 fw-bolder px-3" style="text-decoration: underline;font-weight: 1000;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA</h4>
         <div id="stepperForm" class="bs-stepper linear">
           <div class="bs-stepper-header" role="tablist">
             <div class="step" data-target="#test-form-1">
@@ -59,7 +60,7 @@ include_once('configuracion/configuracion_js.php');
             <div class="step" data-target="#test-form-3">
               <button class="step-trigger" role="tab" id="stepperFormTrigger3" aria-controls="test-form-3" aria-selected="false">
                 <span class="bs-stepper-circle"><i class="fas fa-certificate"></i></span>
-                <span class="bs-stepper-label">Conceciones</span>
+                <span class="bs-stepper-label">Concesiones</span>
               </button>
             </div>
             <div class="bs-stepper-line"></div>
@@ -85,10 +86,10 @@ include_once('configuracion/configuracion_js.php');
             </div>            
           </div>
           <div class="bs-stepper-content">
-              <div id="test-form-1" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger1">
-
+              <div id="test-form-1" role="tabpanel" class="bs-stepper-pane fade text-left dstepper-none" aria-labelledby="stepperFormTrigger1">
+              <hr>
                 <div class="row">
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="form-group">
                           <label id="colapoderadolabel" class="col-form-label" for="colapoderado">Colegiaci&oacute;n Apoderado Legal:</label>
                           <input pattern="^[1-9]\d{2,7}$" class="form-control form-control-sm test-controls" id="colapoderado" minlength="3" maxlength="9">
@@ -97,45 +98,45 @@ include_once('configuracion/configuracion_js.php');
                           </div>
                         </div>
                     </div>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <div class="form-group">
-                          <label class="col-form-label" for="identidadapod">Identificación del Apoderdo Legal:</label>
+                          <label class="col-form-label" for="identidadapod">Documento de Identificación</label>
                           <input readonly type="text" class="form-control form-control-sm" id="identidadapod" placeholder="" readonly="">
                         </div>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-3">
                       <div class="form-group">
                         <label class="col-form-label" for="nomapoderado">Nombre Completo del Apoderado Legal:</label>
                         <input readonly type="text" class="form-control form-control-sm" id="nomapoderado" placeholder="" readonly="">
                       </div>
                     </div>
-                </div>              
 
-
-                <div class="row">
-                  <div class="col-md-12">
+                    <div class="col-md-5">
                     <div class="form-group">
                       <label id="dirapoderadolabel" class="col-form-label" for="dirapoderado">Direcci&oacute;n del Apoderado Legal:</label>
                       <input pattern="^[a-zA-Z0-9\s,.\-]{10,200}$" title="La dirección del apoderado legal no puede ser menor de 10 caraceteres ni mayor a 200" type="text" class="form-control form-control-sm test-controls" id="dirapoderado">
                       <div  id="dirapoderadolabelerror" style="visibility:hidden" class="errorlabel">
-                        La dirección del apoderado legal no puede ser menor de 10 caraceteres ni mayor a 200.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-    
-                <div class="row">
-                  <div class="col-md-6">
-                    <div class="form-group">
-                      <label id="telapoderadolabel" for="telapoderado">Tel&eacute;fono del Apoderdo Legal:</label>
-                      <input pattern="[0-9]{8}" type="text" class="form-control form-control-sm test-controls" id="telapoderado" minlength="8" maxlength="15" placeholder="95614451">
-                      <div  id="telapoderadolabelerror" style="visibility:hidden" class="errorlabel">
-                            El número de teléfono es invalido, digite solo numeros sin guiones.
+                          No puede ser menor de 10 caraceteres ni mayor a 200.
                       </div>
                     </div>
                   </div>
 
-                  <div class="col-md-6">
+                </div>              
+
+
+    
+                <div class="row">
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <label id="telapoderadolabel" for="telapoderado">Teléfono del Apoderdo Legal:</label>
+                      <input pattern="[0-9]{8}" type="text" class="form-control form-control-sm test-controls" id="telapoderado" minlength="8" maxlength="15" placeholder="95614451">
+                      <div  id="telapoderadolabelerror" style="visibility:hidden" class="errorlabel">
+                            El número de teléfono es invalido, debe tener 8 digitos.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
                     <div class="form-group">
                       <label id="emailapoderadolabel" for="emailapoderado">Correo Electrónico:</label>
                       <input  pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$' type="email" class="form-control form-control-sm test-controls" id="emailapoderado" placeholder="rbthaofic@gmail.com">
@@ -144,10 +145,8 @@ include_once('configuracion/configuracion_js.php');
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <div class="row">
-                  <div class="col-md-6">
+                  <div class="col-md-3">
                     <div class="form-group">
                       <label>Presentación Documentos:</label>
                       <select id="tipopresentacion" class="form-control form-control-sm" style="width: 100%;" readonly>
@@ -156,7 +155,7 @@ include_once('configuracion/configuracion_js.php');
                       </select>
                     </div>
                   </div>
-                  <div class="col-md-6">
+                  <div class="col-md-3">
                     <div class="form-group">
                       <label id="entregadocslabel">Entrega de sus Documentos:</label>
                       <select data-valor="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
@@ -164,15 +163,17 @@ include_once('configuracion/configuracion_js.php');
                     </div>
                   </div>
                 </div>
-                <br>                
+
                 <button id="btnnext0" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
+
                 <br>
                 <br>
               </div>
 
-              <div id="test-form-2" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger2">
-
+              <div id="test-form-2" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger2">
+              <hr>
               <div class="row">
+
                   <!--DATOS DEL RTN Y TIPO SOLICITANTE-->
                   <div class="col-md-2">
                     <div class="form-group">
@@ -181,7 +182,6 @@ include_once('configuracion/configuracion_js.php');
                       <div id="rtnsolilabelerror" style="visibility:hidden" class="errorlabel">
                             El RTN invalido.
                       </div>
-
                     </div>
                   </div>
 
@@ -192,84 +192,34 @@ include_once('configuracion/configuracion_js.php');
                     </div>
                   </div>
 
-                  <div class="col-md-8">
+                  <div class="col-md-4">
                     <div class="form-group">
                       <label class="col-form-label" for="nomsoli">Nombre Completo del Solicitante:</label>
                       <input type="text" class="form-control form-control-sm" id="nomsoli" placeholder="" readonly>
                     </div>
                   </div>
 
-
-                </div>              
-                <div class="row">
-
-
-                  <!--DATOS DEL DOMICILIO Y DENOMINACION SOCIAL-->
-                  <div class="col-md-8">
+                   <!--DATOS DEL DOMICILIO Y DENOMINACION SOCIAL-->
+                  <div class="col-md-4">
                     <div class="form-group">
                       <label class="col-form-label" for="domiciliosoli">Domicilio del Solicitante:</label>
                       <input type="text" class="form-control form-control-sm" id="domiciliosoli" placeholder="" readonly>
                     </div>
                   </div>
 
-                  <div class="col-md-4">
-                    <div class="form-group">
-                      <label class="col-form-label" for="denominacionsoli">Denominación Social:</label>
-                      <input type="text" class="form-control form-control-sm" id="denominacionsoli" placeholder="" readonly>
+
+              </div>              
+
+              <div class="row">
+
+                <div class="col-md-3">
+                  <div class="form-group">
+                    <label class="col-form-label" for="denominacionsoli">Denominación Social:</label>
+                    <input type="text" class="form-control form-control-sm" id="denominacionsoli" placeholder="" readonly>
                     </div>
                   </div>
 
-                </div>
-
-
-
-                <div id="detconstitucion" >
-
-                  <div class="row" style="display:none">
-                    <!--DATOS DE LA ESCRITURA Y NOMBRE NOTARIO-->
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <label class="col-form-label" for="numescritura">No Escritura de Constituci&oacute;n:</label>
-                        <input type="text" class="form-control form-control-sm" id="numescritura" readonly>
-                      </div>
-                    </div>
-
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <label class="col-form-label" for="rtnnotario">RTN Notario Autorizante:</label>
-                        <input type="text" class="form-control form-control-sm" id="rtnnotario" readonly>
-                      </div>
-                    </div>
-
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label class="col-form-label" for="nombrenotario">Notario Autorizante:</label>
-                        <input type="text" class="form-control form-control-sm" id="nombrenotario" readonly>
-                      </div>
-                    </div>
-
-                    <!--DATOS DEL LUGAR Y FECHA DE LA CONSTITUCION-->
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <label class="col-form-label" for="lugarcons">Lugar de Constituci&oacute;n:</label>
-                        <input type="text" class="form-control form-control-sm" id="lugarcons" readonly>
-                      </div>
-                    </div>
-
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <label for="fecha">Fecha Constituci&oacute;n:</label>
-                        <input type="text" class="form-control form-control-sm" id="fecha" readonly>
-                      </div>
-                    </div>
-
-                  </div>
-
-                </div><!--cierre div datos constitucion-->
-
-                <div class="row">
-
-                  <div class="col-md-4">
+                  <div class="col-md-3">
                     <div class="form-group">
                       <label id="Departamentoslabel">Departamento:</label>
                       <select data-valor="0"  id="Departamentos" class="form-control form-control-sm test-select" style="width: 100%;">
@@ -277,23 +227,25 @@ include_once('configuracion/configuracion_js.php');
                     </div>
                   </div>
 
-                  <div class="col-md-4">
-                    <div class="form-group">
+                  <div class="col-md-3">
+                    <img style="display: none;" width="32px" height="32px" id="Municipiosspinner" src="assets/images/loading-waiting.gif">
+                    <div  id="Municipiosdiv" class="form-group">
                       <label id="Municipioslabel">Municipio:</label>
                       <select data-valor="0" id="Municipios" class="form-control form-control-sm test-select" style="width: 100%;">
                       </select>
                     </div>
                   </div>
 
-                  <div class="col-md-4">
-                    <div class="form-group">
+                  <div class="col-md-3">
+                    <img style="display: none;" width="32px" height="32px" id="Aldeasspinner" src="assets/images/loading-waiting.gif">
+                    <div id="Aldeasdiv" class="form-group">
                       <label id="Aldeaslabel">Aldea:</label>
                       <select data-valor="0" id="Aldeas" class="form-control form-control-sm test-select" style="width: 100%;">
                       </select>
                     </div>
                   </div>
-
                 </div>
+
 
                 <div class="row">
                   <div class="col-md-6">
@@ -308,32 +260,460 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-6">
                     <div class="form-group">
                       <label id="emailsolilabel" for="emailsoli">Correo Electrónico:</label>
-                      <input pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$'  type="email" class="form-control form-control-sm test-controls" id="emailsoli" placeholder="rbthaofic@gmail.com">
+                      <input pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"  type="email" class="form-control form-control-sm test-controls" id="emailsoli" placeholder="rbthaofic@gmail.com">
                     </div>
                     <div id="emailsolilabelerror" style="visibility: hidden;" class="errorlabel">
                             Email Invalido
                     </div>
                   </div>
                 </div>
-                <br>
+
+              <br>
+
                 <button id="btnprevious1" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
                 <button id="btnnext1" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
                 <br>
                 <br>
+                
+            </div>
+
+              <div id="test-form-3" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger3">
+                <hr>
+
+                <div class="row">
+
+
+                  <div class="col-md-3">
+                    <button style="display: none;" id="btnconcesion" onclick="fVerConcesion()" type="button" class="btn btn-light btn-sm"><i class="fa-solid fa-rotate-right"> Recargar</i></button>  
+                  </div>
+
+                  <div class="col-md-2">
+                    <button style="display: none;" id="btnmultas" onclick="fVerMultas()" type="button" class="btn btn-secondary btn-sm"><i class="fas fa-coins"> Multas</i></button>  
+                  </div>
+
+                  <div class="col-md-2">
+                      <div class="form-group">
+                        <input placeholder="INGRESE EL NÚMERO DE CONCESIÓN" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm test-controls" minlength="10" maxlength="25"
+                        title="Digite el número de certificado de operación, permiso especial o permiso de explotación según sea el caso">
+                        <div id="concesionlabelerror" title="Número de Concesión invalida" style="visibility:hidden" class="errorlabel">
+                          Número de Concesión invalida.
+                        </div>
+                      </div>
+                  </div>
+
+
+                  <div class="col-md-2">
+                    <button style="display: none;" id="btnconsultas" onclick="fVerConsultas()" type="button" class="btn btn-success btn-sm"><i class="fas fa-binoculars"> Consultas</i></button>  
+                  </div>
+
+                  <div class="col-md-3">
+                    <button style="display: none;" id="btnperexp" onclick="fVerPerExp()" type="button" class="btn btn-primary btn-sm"><i class="fa-solid fa-file"> Permiso Explotación</i></button>  
+                  </div>
+
+    
+                </div>
+
+                <div class="d-flex justify-content-center" class="row">
+                  <!-- **************************************************************************************************************** -->
+                  <!-- ID de Vista -->
+                  <!-- **************************************************************************************************************** -->
+                  <div id="idVista" class="col-md-10">
+                  <div class="row">
+    <div class="col-md-12 background-top-row-stpc"><div class="form-group"></div>
+</div>
+
+<span class="background-middle-row-stpc">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">&nbsp;</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+                <h3 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp">PE-CNE-5421-20</span></h3>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2 style="text-align: center; font-weight: bold;"><span id="concesion_tipoconcesion">CERTIFICADO DE OPERACIÓN:</span><span id="concesion_concesion"></span></h2>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h3 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION: <span id="concesion_fecven">22/05/2026</span></h3>
+        </div>
+    </div>
+</span>
+
+<span class="background-botton-row-stpc">
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">&nbsp;</div>
+        </div>
+    </div>
+
+
+    <div class="row">
+        <div class="col-md-12 bordered-row-grey">
+            <div class="form-group">
+                    <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>1.1 Concesionario</strong>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="form-group">
+                    <strong><span id="concesion_nombreconcesionario"></span></strong>
+            </div>
+        </div>    
+    </div>
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>1.2 Afiliado/Socio </strong>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="form-group">
+                    <strong><span id="concesion_afiliado">NO APLICA</span></strong>
+            </div>
+        </div>    
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>1.3 RTN Concesionario </strong>
+            </div>
+        </div>
+        <div class="col-md-9">
+            <div class="form-group">
+                    <strong><span id="concesion_rtn"></span></strong>
+            </div>
+        </div>    
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>1.4 Fecha Expedición </strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong><span id="concesion_fecexp"></span></strong>
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>1.5 Resolución</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong><span id="concesion_resolucion">PCDTT-IHTT-T-007568-2024</span></strong>
+            </div>
+        </div>        
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 bordered-row-grey">
+            <div class="form-group">
+                    <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
+                    <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo" class="btn btn-primary btn-sm" style="float:right;"><i class="fa-solid fa-van-shuttle"></i><strong> IP</strong></button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <strong id="concesion_vinlabel">2.1 VIN</strong>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <input title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_vin" minlength="6" maxlength="17">
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <strong id="concesion_placalabel">2.2 Placa</strong>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <input id="concesion_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>            
+            </div>
+        </div>        
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="concesion_serielabel">2.3 Serie</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <input title="La serie no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_serie" minlength="6" maxlength="17">
+                <div  id="concesion_serieerror" style="visibility:hidden" class="errorlabel">
+                    Serie invalida, favor corrija.
+                </div>
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="concesion_motorlabel">2.4 Motor</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <input title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17"  pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="6" maxlength="17">
+                <div  id="concesion_motorerror" style="visibility:hidden" class="errorlabel">
+                    Motor invalido, favor corrija.
+                </div>
+            </div>
+        </div>        
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="marcaslabel">2.5 Marca</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <select data-valor="0"  id="marcas" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                </select>
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="coloreslabel">2.6 Color</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <select data-valor="0"  id="colores" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                </select>
+            </div>
+        </div>        
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="anioslabel">2.7 Año</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <select data-valor="0"  id="anios" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                </select>
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>2.8 Tipo</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <span id="concesion_tipovehiculo"></span>
+            </div>
+        </div>        
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>2.9 Certificado Anterior</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <strong><span id="concesion_cerant"></span></strong>
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong>2.10 Número de Registro DGT </strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <strong><span id="concesion_numregant"></span></strong>
+            </div>
+        </div>        
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 bordered-row-grey">
+            <div class="form-group">
+                    <strong style="font-size: 16px;text-align: center;">NUMERO DE REGISTRO: <span id="concesion_numeroregistro"></span></strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 bordered-row-grey">
+            <div class="form-group">
+                    <strong style="font-size: 16px;">3. DATOS DEL SERVICIO</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-3 bordered-row">
+            <div class="form-group">
+                    <strong>3.1 Categoría</strong>
+            </div>
+        </div>
+        <div class="col-md-9 bordered-row">
+            <div class="form-group">
+                    <strong><span id="concesion_categoria"></span></strong>
+            </div>
+        </div>    
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+        <div class="form-group">&nbsp;</div></div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 bordered-row-grey">
+            <div class="form-group">
+                    <strong style="font-size: 16px;">E. EXTRAS</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="combustibleerrorlabel">E.1 Combustible</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <input title="El combustible puede ser DIESEL, GASOLINA y GAS LICUADO" pattern="^\d{3,8}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="combustible" minlength="6" maxlength="10">
+                <div  id="combustibleerror" style="visibility:hidden" class="errorlabel">
+                    Combustible de la unidad invalido, favor corrija.
+                </div>
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="capacidadlabel">E.2 Capacidad en Kg</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{3,8}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="17">
+                <div  id="capacidaderror" style="visibility:hidden" class="errorlabel">
+                    Capacidad de la unidad invalida, favor corrija.
+                </div>
+            </div>
+        </div>        
+    </div>
+
+    <div class="row bordered-row">
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="altolabel">E.3 Alto</strong>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-group">
+                <input  title="Alto del unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="alto" minlength="6" maxlength="17">
+                <div id="altoerror" style="visibility:hidden" class="errorlabel">
+                    Alto de la unidad invalido, favor corrija.
+                </div>
+            </div>
+        </div>    
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="largolabel">E.4 Largo</strong>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="form-group">
+                <input title="Largo de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="largo" minlength="6" maxlength="17">
+                <div id="largoerror" style="visibility:hidden" class="errorlabel">
+                    Largo de la unidad invalido, favor corrija.
+                </div>
+            </div>
+        </div>        
+
+    </div>
+
+    <div class="row bordered-row">
+
+        <div class="col-md-3">
+            <div class="form-group">
+                    <strong id="ancholabel">E.5 Ancho</strong>
+            </div>
+        </div>
+
+        <div class="col-md-9">
+            <div class="form-group">
+                <input title="El ancho de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="ancho" minlength="6" maxlength="17">
+                <div  id="anchoerror" style="visibility:hidden" class="errorlabel">
+                    Ancho de la unidad invalido, favor corrija.
+                </div>
+            </div>
+        </div> 
+
+    </div>
+    
+    <div class="row">
+            <div class="col-md-12">
+            <div class="form-group">&nbsp;</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">&nbsp;</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">&nbsp;</div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="form-group">&nbsp;</div>
+        </div>
+    </div>
+</span>
+
+                  </div>
+                  <div class="buttom-footer">
+                    <button id="btnprevious2" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
+                    <button id="btnnext2" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
+                  </div>
+                  <br>
+                  <br>
+                </div>
               </div>
-              <div id="test-form-3" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger3">
-                <button id="btnprevious2" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
-                <button id="btnnext2" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
-              </div>
-              <div id="test-form-4" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger4">
+              <div id="test-form-4" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger4">
                 <button id="btnprevious3" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
                 <button id="btnnext3" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
               </div>
-              <div id="test-form-5" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger5">
+              <div id="test-form-5" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger5">
                 <button id="btnprevious4" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
                 <button id="btnnext4" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">Siguiente (F10)</button>
               </div>              
-              <div id="test-form-6" role="tabpanel" class="bs-stepper-pane fade text-center dstepper-none" aria-labelledby="stepperFormTrigger6">
+              <div id="test-form-6" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger6">
                 <button id="btnprevious5" type="button" class="btn btn-success btn-previous-form">Anterior (F2)</button>
                 <button id="btnnext5" onclick="fGetInputs()" type="button" class="btn btn-primary btn-next-form">SALVAR Y CERRAR (F10)</button>
               </div>

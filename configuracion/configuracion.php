@@ -37,16 +37,18 @@ if(isset($_SESSION["usuario"])){
 //************************************************************************************/
 //* Ambiente (Dev=Desarrollo PROD=Producción)
 //************************************************************************************/	
-$envairoment = 'DEV';
-//$envairoment = 'PROD';
-if ($envairoment == 'DEV') { //* Ambiente de desarrollo
+$Environment  = 'DEV';
+//$Environment = 'PROD';
+if ($Environment == 'DEV') { //* Ambiente de desarrollo
+	$appcfg_Dominio_Raiz = "https://satt2.transporte.gob.hn";
 	$appcfg_Dominio = "https://satt2.transporte.gob.hn:285/ram/";
 	$appcfg_Dominio_Corto = "https://satt2.transporte.gob.hn:285/";
-	$appcfg_Dominio_Puerto = ":285";
+	$appcfg_Dominio_Puerto = ":293";
 	$GLOBALS['appcfg_dominio'] = $appcfg_Dominio;
 	$appcfg_menu ="https://satt2.transporte.gob.hn/index.php";
 	$appcfg_salir = "https://satt2.transporte.gob.hn/login.php?logout";
 } else { //* Ambiente de Producción
+	$appcfg_Dominio_Raiz = "https://satt.transporte.gob.hn";
 	$appcfg_Dominio = "https://satt.transporte.gob.hn:293/ram/";
 	$appcfg_Dominio_Corto = "https://satt.transporte.gob.hn";
 	$appcfg_Dominio_Puerto = ":293";

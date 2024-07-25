@@ -29,7 +29,7 @@ body {
   bottom: -10;
   width: 100%;
   background-color: #f8f9fa; /* Background color for the bottom bar */
-  border-top: 3px solid var(--bs-gobierno1); /* Optional border for styling */
+  border-top: 4px solid var(--bs-gobierno1); /* Optional border for styling */
   padding: 3px 0; /* Padding for content inside the bar */
   text-align: center; /* Center the content inside the bar */
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for visual depth */
@@ -329,4 +329,140 @@ color: var(--bs-gobierno3);
 	width: 100%;
 	z-index: 1000; /* Ensure it is above other elements */
 }
-  
+.centrar{
+	display: flex;
+  	justify-content: center;
+  	align-items: center;
+  	height:100vh;
+}  
+.input-icon {
+	position: relative;
+}
+.input-icon input {
+	padding-right: 2.5rem; /* Adjust padding to make room for the icon */
+}
+.input-icon .fa-eye {
+	position: absolute;
+	right: 0.75rem;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #aaa;
+	display: none;
+}
+/* .bs-stepper .line, .bs-stepper-line {
+	-ms-flex: 1 0 32px;
+	flex: 1 0 32px;
+	min-width: 1px;
+	min-height: 4px;
+	margin: auto;
+	background-color:var(--bs-gobierno3);
+} */
+.bordered-row {
+	border: 2px solid black;
+	text-align: left;
+	font-weight: bold;
+}
+.bordered-row-grey {
+	border: 2px solid  black;
+	background-color: rgb(151, 154, 154);
+	text-align: left;
+	font-weight: bold;
+}
+.background-top-row-stpc {
+	width: 1198px;
+	height: 156px;	
+	background-image: url('../images/top_stpc.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-middle-row-stpc {
+	width: 1198px;
+	height: 170px;	
+	background-image: url('../images/enc_stpc.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-botton-row-stpc {
+	width: 1198px;
+	height: 1000px;	
+	background-image: url('../images/bottom_stpc.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-top-row-stec {
+	width: 1198px;
+	height: 156px;	
+	background-image: url('../images/top_stec.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-middle-row-stec {
+	width: 1198px;
+	height: 170px;	
+	background-image: url('../images/enc_stec.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-botton-row-stec {
+	width: 1198px;
+	height: 1000px;	
+	background-image: url('../images/bottom_stec.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-top-row-stpp {
+	width: 1198px;
+	height: 156px;	
+	background-image: url('../images/top_stpp.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-middle-row-stpp {
+	width: 1198px;
+	height: 170px;	
+	background-image: url('../images/enc_stpp.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-botton-row-stpp {
+	width: 1198px;
+	height: 1000px;	
+	background-image: url('../images/bottom_stpp.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-top-row-step {
+	width: 1198px;
+	height: 156px;	
+	background-image: url('../images/top_step.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-middle-row-step {
+	width: 1198px;
+	height: 170px;	
+	background-image: url('../images/enc_step.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.background-botton-row-step {
+	width: 1198px;
+	height: 1000px;	
+	background-image: url('../images/bottom_stec.jpg');
+	background-repeat: no-repeat;
+	background-size: cover;
+}
+.buttom-footer {
+	position: fixed;
+	bottom: 60px;
+	padding: 3px 0; /* Padding for content inside the bar */
+	text-align: center; /* Center the content inside the bar */
+  }
+  .form-control-unbordered {
+	border: none; /* Remove borders */
+	box-shadow: none; /* Remove box shadow */
+	padding: 10px; /* Adjust padding if needed */
+	background-color: rgba(255, 255, 255, 0.2); /* Fondo blanco semitransparente */
+	border: 2px solid transparent; /* Sin borde */
+	box-shadow: none; /* Sin sombra */
+  }

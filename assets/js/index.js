@@ -11,33 +11,52 @@ var stepperForm;
 var isDirty = Array();
 var setFocus = true;
 var paneerror = Array(Array());
+var testinputs;
+var testinputsArray;
+
+
+
+var multas3ra = document.getElementById('btnmultas');
+if (multas3ra != null) {
+    multas3ra.addEventListener('click', function(event) {
+    fVerConcesion();
+  });
+}
+
+var consultas3ra = document.getElementById('btnconsultas');
+if (consultas3ra != null) {
+    consultas3ra.addEventListener('click', function(event) {
+    fVerConcesion();
+  });
+}  
+
+var perexp3ra = document.getElementById('btnperexp');
+if (perexp3ra != null) {
+    perexp3ra.addEventListener('click', function(event) {
+    fVerConcesion();
+  });
+}  
+
 
   //************************************************************/
   // Moviendose al siguiente input
   //************************************************************/
   function moveToNextInput(currentInput,value) {
     //var inputs = [].slice.call(document.querySelectorAll('input select'));
-    let inputs = document.querySelectorAll('input, select');  
-    inputs = Array.from(inputs);  
-    var currentIndex = inputs.indexOf(currentInput);
+    var currentIndex = testinputsArray.indexOf(currentInput);
     var wasMoved=false;
-    for (var i = ((currentIndex + 1)+ (value)); i < inputs.length; i++) {
-      if (inputs[i].getAttribute('readonly') != null) {
-          var readonly = true;
-      } else {
-        var readonly = false;
-      }
-      if (!inputs[i].disabled && !inputs[i].visible && inputs[i].getAttribute('readonly') == null) {      
-        inputs[i].focus();
-        if (inputs[i].type != 'select-one') {
-          inputs[i].select();
+    for (var i = ((currentIndex + 1)+ (value)); i < testinputsArray.length; i++) {
+      if (!testinputsArray[i].disabled && !testinputsArray[i].visible && testinputsArray[i].getAttribute('readonly') == null) {      
+        testinputsArray[i].focus();
+        if (testinputsArray[i].type != 'select-one') {
+          testinputsArray[i].select();
         }
         wasMoved=true;
         break;
       }
     }
   }
-
+  
   //**********************************************************************/
   // Obtener todas las entradas enabled para validarlas
   //**********************************************************************/
@@ -54,47 +73,57 @@ var paneerror = Array(Array());
     // Iterando entre los inputs para despachar el evento change y validar la data de cada input
     var index = 0;
     inputs.forEach(input => {
-        console.log(input.id);
         if (input.disabled == false) {
           // Creando un nuevo evento 'change'
           var event = new Event('change', {
               'bubbles': true,
               'cancelable': true
           });
+
+          console.log(' fGetInputs()  Inputs ' + input.id);
+
           input.dispatchEvent(event);
           if (index == 0) {
             input.focus();
             input.select();
           }
+
         }
+
         index++;
     });
     fGetInputsSelect();
   }
-
-//**********************************************************************/
-// Obtener todas las entradas enabled para validarlas
-//**********************************************************************/
+  
+  //**********************************************************************/
+  // Obtener todas las entradas enabled para validarlas
+  //**********************************************************************/
   function fGetInputsSelect() {
     // Get the element by its ID
     var element = document.getElementById('test-form-'+(currentstep+1));
     // Get all input elements inside this element
-    let inputs = element.querySelectorAll('.test-select');
+    var inputs = element.querySelectorAll('.test-select');
     // Convert NodeList to Array for easier manipulation (optional)
     inputs = Array.from(inputs);
     // Iterando entre los inputs para despachar el evento change y validar la data de cada input
     var index = 0;
     inputs.forEach(input => {
-      console.log('getSelect Input Id'+input.id);
-      console.log('getSelect Input'+input);
       if (input.disabled == false) {
+          console.log(' fGetSelect()  Inputs ' + input.id);
         if (input.getAttribute('data-valor') > input.value) {        
           input.classList.add("errortxt");
           document.getElementById(input.id + 'label').classList.add("errorlabel");
+          var label = document.getElementById(input.id + 'label');
+          if (label != null) {
+            label.classList.add("errorlabel");
+          }
           paneerror[currentstep][idinputs.indexOf(input.id)] = 1;
         } else {
           input.classList.remove("errortxt");
-          document.getElementById(input.id + 'label').classList.remove("errorlabel");
+          var label = document.getElementById(input.id + 'label');
+          if (label != null) {
+            document.getElementById(input.id + 'label').classList.remove("errorlabel");
+          }
           paneerror[currentstep][idinputs.indexOf(input.id)] = 0;
           //Moverse al siguiente input
           moveToNextInput(input,0);
@@ -105,7 +134,7 @@ var paneerror = Array(Array());
     setFocus = true;
     isTab=false;
   }
-
+  
   //**************************************************************************************/
   //Eliminar todos los mensajes de error
   //**************************************************************************************/
@@ -120,15 +149,19 @@ var paneerror = Array(Array());
     // Iterar sobre los elementos de entrada y eliminar las clases de error
     inputs.forEach(input => {
       input.classList.remove("errortxt");
-      document.getElementById(input.id + 'label').classList.remove("errorlabel");
-      if (typeof document.getElementById(input.id + 'labelerror') != 'undefined') {
+      var label = document.getElementById(input.id + 'label');
+      if (label != null) {
+        label.classList.remove("errorlabel");
+      }
+      var labelerror = document.getElementById(input.id + 'labelerror');
+      if (label != null) {
         document.getElementById(input.id + 'labelerror').style.visibility = "hidden";
       }
     });
     //Limpiando mensajes de elementos .test-select
     fCleanSelectErrorMsg();
   }
-
+  
   function fCleanSelectErrorMsg() {
     //console.log('On fCleanSelectErrorMsg()');
     // Obtener el elemento por su ID
@@ -141,10 +174,12 @@ var paneerror = Array(Array());
     inputs.forEach(inputx => {
       inputx.classList.remove("errortxt");
       let id = inputx.id.concat('label');
-      document.getElementById(id).classList.remove("errorlabel");
+      var label = document.getElementById(id);
+      if (label != null) {
+        label.classList.remove("errorlabel");
+      }    
     });
   }
-
 
 document.addEventListener('DOMContentLoaded', function () {
 
@@ -152,7 +187,7 @@ document.addEventListener('DOMContentLoaded', function () {
   function setFocusElement(){
     document.getElementById("colapoderado").focus(); 
   }
-
+   
   //**************************************************************************************/
   //Cargando la información por default que debe usar el formulario
   //**************************************************************************************/
@@ -169,7 +204,7 @@ document.addEventListener('DOMContentLoaded', function () {
     // };
     let fd = new FormData(document.forms.form1);
     //Adjuntando el action al FormData
-    fd.append("action", 'get-ubicaciondepartamento');
+    fd.append("action", 'get-datosporomision');
     // Fetch options
     const options = {
       method: 'POST',
@@ -181,12 +216,12 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function (datos) {
         if (typeof datos[0] != 'undefined') {
           if (datos[1].length > 0) {
-            fLlenarSelect('entregadocs',datos[1],null,false,{Text: 'SELECCIONE UN LUGAR DE ENTREGA', Value: '-1'})            
+            fLlenarSelect('entregadocs',datos[1],null,false,{text: 'SELECCIONE UN LUGAR DE ENTREGA', value: '-1'})            
           }
           if (datos[2].length > 0) {
-            fLlenarSelect('Departamentos',datos[2],-1,false,{Text: 'SELECCIONE UN DEPARTAMENTO', Value: '-1'})     
-            fLlenarSelect('Municipios',[],-1,false,{Text: 'SELECCIONE UN MUNICIPIO', Value: '-1'})            
-            fLlenarSelect('Aldeas',[],-1,disabled=false,{Text: 'SELECCIONE UNA ALDEA', Value: '-1'})            
+            fLlenarSelect('Departamentos',datos[2],-1,false,{text: 'SELECCIONE UN DEPARTAMENTO', value: '-1'})     
+            fLlenarSelect('Municipios',[],-1,false,{text: 'SELECCIONE UN MUNICIPIO', value: '-1'})            
+            fLlenarSelect('Aldeas',[],-1,disabled=false,{text: 'SELECCIONE UNA ALDEA', value: '-1'})            
           }          
         } else {
           if (typeof datos.error != 'undefined') {
@@ -206,44 +241,39 @@ document.addEventListener('DOMContentLoaded', function () {
   // Inicio llamado a la función f_DataOmision que carga los datos por defecto
   //**************************************************************************************/
   f_DataOmision();
-  //**************************************************************************************/
-  // Final llamado a la función f_DataOmision que carga los datos por defecto
-  //**************************************************************************************/
-
-
-  var stepperFormEl = document.querySelector('#stepperForm')
-  stepperForm = new Stepper(stepperFormEl, {
-    linear: true,
-    animation: true
-  })
-  var btnNextList = [].slice.call(document.querySelectorAll('.btn-next-form'))
-  var btnNextListprevious = [].slice.call(document.querySelectorAll('.btn-previous-form'))
-  var stepperPanList = [].slice.call(stepperFormEl.querySelectorAll('.bs-stepper-pane'))
-  var inputMailForm = document.getElementById('inputMailForm')
-  var inputPasswordForm = document.getElementById('inputPasswordForm')
-  var form = stepperFormEl.querySelector('.bs-stepper-content form')
+    //**************************************************************************************/
+    // Final llamado a la función f_DataOmision que carga los datos por defecto
+    //**************************************************************************************/
+    var stepperFormEl = document.querySelector('#stepperForm')
+    stepperForm = new Stepper(stepperFormEl, {
+      linear: true,
+      animation: true
+    })
+    var btnNextList = [].slice.call(document.querySelectorAll('.btn-next-form'))
+    var btnNextListprevious = [].slice.call(document.querySelectorAll('.btn-previous-form'))
+    var stepperPanList = [].slice.call(stepperFormEl.querySelectorAll('.bs-stepper-pane'))
+    var inputMailForm = document.getElementById('inputMailForm')
+    var inputPasswordForm = document.getElementById('inputPasswordForm')
+    var form = stepperFormEl.querySelector('.bs-stepper-content form')
     //*****************************************************************************/
     //Creando arreglo de inputs para saber posteriormente el indice de cada input
     //*****************************************************************************/
     var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
-    var testinputs = document.querySelectorAll('input, select');
-    console.log('testinputs.length'+testinputs.length);
+    var testcontrolsArray  =  Array.from(testcontrols);  
+    console.log(testcontrolsArray);
+    testinputs = document.querySelectorAll('input, select');
+    testinputsArray = Array.from(testinputs);  
     var columnas = testinputs.length;
     var filas = stepperPanList.length;
     // Crear una matriz bidimensional vacía
     paneerror = new Array(filas);
-    console.log('paneerror'+paneerror);
     for (var i = 0; i < filas; i++) {
-      console.log('Panels i => '+i);
-      console.log('isDirty[currentstep] On Filas => '+isDirty[currentstep]);
       paneerror[i] = new Array(columnas);
         for (var ii = 0; ii < columnas; ii++) { 
           paneerror[i][ii] = 0;
         }
       isDirty[i] = false;
       isRecordGetted[i]='';
-      console.log('paneerror[i] ' + paneerror[i]);
-      console.log('isDirty[i] Filas ' + isDirty);
     }
     
 
@@ -272,17 +302,28 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('domiciliosoli').value = '';
         document.getElementById('telapoderado').value = '';
         document.getElementById('emailsoli').value = '';
-        document.getElementById('numescritura').value = '';
-        document.getElementById('fecha').value = '';
-        document.getElementById('lugarcons').value = '';
-        document.getElementById('rtnnotario').value = '';
-        document.getElementById('nombrenotario').value = '';
+        // document.getElementById('numescritura').value = '';
+        // document.getElementById('fecha').value = '';
+        // document.getElementById('lugarcons').value = '';
+        // document.getElementById('rtnnotario').value = '';
+        // document.getElementById('nombrenotario').value = '';
         document.getElementById('tiposolicitante').value = '';
         document.getElementById('Departamentos').value = '-1'; 
         document.getElementById('Municipios').value = '-1';
         document.getElementById('Municipios').innerHTML = "";
         document.getElementById('Aldeas').value = '-1';
         document.getElementById('Aldeas').innerHTML = "";
+        document.getElementById('rtnrep').value = '';
+        document.getElementById('numinscripcionrep').value = '';
+        document.getElementById('nomrep').value = '';
+        document.getElementById('domiciliorep').value = '';
+        // document.getElementById('numescriturarep').value = '';
+        // document.getElementById('rtnnotariorep').value = '';
+        // document.getElementById('notarioautorizante').value = '';
+        // document.getElementById('lugarescriturarep').value = '';
+        // document.getElementById('fechaescriturarep').value = '';
+        // document.getElementById('telrep').value = '';
+        // document.getElementById('emailrep').value = '';        
         break;
       case 2: 
         document.getElementById('nomapoderado').value = '';
@@ -372,7 +413,10 @@ document.addEventListener('DOMContentLoaded', function () {
               fSweetAlertEventSelect(event,'INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
               event.preventDefault();
               event.target.classList.add("errortxt");
-              document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+              var label = document.getElementById(event.target.id + 'label');
+              if (label != null) {
+                label.classList.add("errorlabel");
+              }
               paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
               isError = true;
           }
@@ -382,7 +426,10 @@ document.addEventListener('DOMContentLoaded', function () {
             fSweetAlertEventSelect(event,datos.errorhead, datos.error + '- ' + datos.errormsg , 'error');
             event.preventDefault();
             event.target.classList.add("errortxt");
-            document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+            var label = document.getElementById(event.target.id + 'label');
+            if (label != null) {
+              label.classList.add("errorlabel");
+            }
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
             isError = true;
           } else {
@@ -391,7 +438,10 @@ document.addEventListener('DOMContentLoaded', function () {
             event.preventDefault();
             //event.target.select();
             event.target.classList.add("errortxt");
-            document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+            var label = document.getElementById(event.target.id + 'label');
+            if (label != null) {
+              label.classList.add("errorlabel");
+            }
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
             isError = true;
           }
@@ -402,7 +452,10 @@ document.addEventListener('DOMContentLoaded', function () {
         fSweetAlertEventSelect(event,'CONEXÍON', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'warning');
         event.preventDefault();
         event.target.classList.add("errortxt");
-        document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+        var label = document.getElementById(event.target.id + 'label');
+        if (label != null) {
+          label.classList.add("errorlabel");
+        }
         paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         isError = true;
       });
@@ -441,24 +494,34 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('nomsoli').value = datos[1].nombre_solicitante;
             document.getElementById('denominacionsoli').value = datos[1].nombre_empresa;
             document.getElementById('domiciliosoli').value = datos[1].dir_solicitante;
-            document.getElementById('telapoderado').value = datos[1].tel_solicitante;                
             document.getElementById('emailsoli').value = datos[1].correo_solicitante; 
-            document.getElementById('numescritura').value = datos[1].Numero_Escritura;
-            document.getElementById('fecha').value = datos[1].Fecha_Escritura;
-            document.getElementById('lugarcons').value = datos[1].Lugar_Escritura;
-            document.getElementById('rtnnotario').value = datos[1].ID_Notario;
-            document.getElementById('nombrenotario').value = datos[1].Notario;    
+            document.getElementById('telsoli').value = datos[1].tel_solicitante; 
+            // document.getElementById('numescritura').value = datos[1].Numero_Escritura;
+            // document.getElementById('fecha').value = datos[1].Fecha_Escritura;
+            // document.getElementById('lugarcons').value = datos[1].Lugar_Escritura;
+            // document.getElementById('rtnnotario').value = datos[1].ID_Notario;
+            // document.getElementById('nombrenotario').value = datos[1].Notario;    
+            // document.getElementById('telapoderado').value = datos[1].tel_solicitante;                
             document.getElementById('tiposolicitante').value = datos[1].DESC_Solicitante;  
             if (datos[1].Departamento != null && datos[1].Departamento != '') {
               document.getElementById('Departamentos').value= datos[1].Departamento;
             }else{
               document.getElementById('Departamentos').value= '-1';
             }
-            console.log(datos[3]);
             fLlenarSelect('Municipios',datos[3],datos[1].Municipio,false,{Text: 'SELECCIONE UN MUNICIPIO', Value: '-1'})            
-            console.log(datos[4]);
             fLlenarSelect('Aldeas',datos[4],datos[1].aldea,disabled=false,{Text: 'SELECCIONE UNA ALDEA', Value: '-1'})            
             isError = false;
+            // document.getElementById('rtnrep').value = datos[1].RTN_Representante;
+            // document.getElementById('numinscripcionrep').value = datos[1].Numero_Inscripcion;
+            // document.getElementById('nomrep').value = datos[1].Nombre_Representante;
+            // document.getElementById('domiciliorep').value = datos[1].Direccion_Representante;
+            // document.getElementById('numescriturarep').value = datos[1].Representante_Escritura;
+            // document.getElementById('rtnnotariorep').value = datos[1].ID_Notario_Representante;
+            // document.getElementById('notarioautorizante').value = datos[1].Nombre_Notario_Representante;
+            // document.getElementById('lugarescriturarep').value = datos[1].Lugar_Elaboracion_Representante;
+            // document.getElementById('fechaescriturarep').value = datos[1].Fecha_Elaboracion_Representante;
+            // document.getElementById('telrep').value = datos[1].Telefono_Representante;
+            // document.getElementById('emailrep').value = datos[1].Email_Representante;
             //Moviendose al siguiente input
             moveToNextInput(event.target,0);
           } else {
@@ -466,7 +529,10 @@ document.addEventListener('DOMContentLoaded', function () {
               fSweetAlertEventSelect(event,'INFORMACIÓN', 'EL RTN DEL SOLICITANTE NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
               event.preventDefault();
               event.target.classList.add("errortxt");
-              document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+              var label = document.getElementById(event.target.id + 'label');
+              if (label != null) {
+                label.classList.add("errorlabel");
+              }
               paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
               isError = true;
           }
@@ -476,7 +542,10 @@ document.addEventListener('DOMContentLoaded', function () {
             fSweetAlertEventSelect(event, datos.errorhead , datos.error + '- ' + datos.errormsg , 'error');
             event.preventDefault();
             event.target.classList.add("errortxt");
-            document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+            var label = document.getElementById(event.target.id + 'label');
+            if (label != null) {
+              label.classList.add("errorlabel");
+            }
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
             isError = true;
           } else {
@@ -485,7 +554,10 @@ document.addEventListener('DOMContentLoaded', function () {
             event.preventDefault();
             //event.target.select();
             event.target.classList.add("errortxt");
-            document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+            var label = document.getElementById(event.target.id + 'label');
+            if (label != null) {
+              label.classList.add("errorlabel");
+            }
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
             isError = true;
           }
@@ -496,12 +568,152 @@ document.addEventListener('DOMContentLoaded', function () {
         fSweetAlertEventSelect(event,'CONEXÍON', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'warning');
         event.preventDefault();
         event.target.classList.add("errortxt");
-        document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+        var label = document.getElementById(event.target.id + 'label');
+        if (label != null) {
+          label.classList.add("errorlabel");
+        }
         paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         isError = true;
       });
   }        
-          
+
+  function f_RenderConcesion(datos) {
+    document.getElementById("idVista").style = "display:block;"  
+    document.getElementById("idVista").innerHTML = datos[1][0]['Vista'];
+    document.getElementById("concesion_perexp").innerHTML = datos[1][0]['N_Permiso_Explotacion'];
+    document.getElementById("concesion_concesion").innerHTML = datos[1][0]['N_Certificado'];
+    document.getElementById("concesion_fecven").innerHTML = datos[1][0]['Fecha Vencimiento Certificado'];
+    document.getElementById("concesion_nombreconcesionario").innerHTML = datos[1][0]['Fecha Vencimiento Certificado'];
+    document.getElementById("concesion_tipoconcesion").innerHTML = datos[1][0]['Tipo_Concesion'];
+    document.getElementById("concesion_rtn").innerHTML = datos[1][0]['RTN_Concesionario'];
+    document.getElementById("concesion_fecexp").innerHTML = datos[1][0]['Fecha Emision Certificado'];
+    document.getElementById("concesion_resolucion").innerHTML = datos[1][0]['Resolucion'];
+    if (datos.length > 1 && datos[1].length > 0 && datos[1][0]['Unidad'] && datos[1][0]['Unidad'].length > 0) {
+      document.getElementById("concesion_vin").value = datos[1][0]['Unidad'][0]['VIN'];
+      document.getElementById("concesion_placa").value = datos[1][0]['Unidad'][0]['ID_Placa'];
+      document.getElementById("concesion_serie").value = datos[1][0]['Unidad'][0]['Chasis'];
+      document.getElementById("concesion_motor").value = datos[1][0]['Unidad'][0]['Motor'];
+      fLlenarSelect('marcas',datos[1][0]['Marcas'],datos[1][0]['Unidad'][0]['ID_Marca'],false,{Text: 'SELECCIONE UN AÑO', Value: '-1'});            
+      fLlenarSelect('colores',datos[1][0]['Colores'],datos[1][0]['Unidad'][0]['ID_Color'],false,{Text: 'SELECCIONE UN AÑO', Value: '-1'});
+      fLlenarSelect('anios',datos[1][0]['Anios'],datos[1][0]['Unidad'][0]['Anio'],false,{Text: 'SELECCIONE UN AÑO', Value: '-1'});   
+      document.getElementById("concesion_tipovehiculo").innerHTML = datos[1][0]['Unidad'][0]['DESC_Tipo_Vehiculo'];
+    }    
+    document.getElementById("concesion_cerant").innerHTML = datos[1][0]['Certificado Anterior'];
+    document.getElementById("concesion_numregant").innerHTML = datos[1][0]['Registro_Anterior'];
+    document.getElementById("concesion_numeroregistro").innerHTML = datos[1][0]['Numero_Registro'];
+    document.getElementById("concesion_categoria").innerHTML = datos[1][0]['DESC_Categoria'];
+    //document.getElementById("idVista").style = 'background-image: url("data:image/jpeg;base64,assets/images/copc.jpeg")';
+    document.getElementById("concesion").style = "display:inline;";
+    document.getElementById("btnconcesion").style = "display:inline;";
+    document.getElementById("btnmultas").style = "display:inline;";
+    document.getElementById("btnconsultas").style = "display:inline;";
+    document.getElementById("btnperexp").style = "display:inline;";
+    document.getElementById("concesion_vin").focus();
+  }
+
+  function f_FetchCallConcesion(idConcesion,event,idinput) {
+    isRecordGetted[currentstep] = idConcesion;
+    // URL del Punto de Acceso a la API
+    const url = $appcfg_Dominio + "Api_Ram.php";
+    //  Fetch options
+    // const options = {
+    //   method: 'POST',
+    //   body: fd,
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    // };
+    let fd = new FormData(document.forms.form1);
+    //Adjuntando el action al FormData
+    fd.append("action", 'get-concesion');
+    //Adjuntando el idApoderado al FormData
+    fd.append("RTN_Concesionario", document.getElementById("rtnsoli").value);
+    fd.append("N_Certificado", idConcesion);
+    // Fetch options
+    const options = {
+      method: 'POST',
+      body: fd,
+    };
+    // Hacer al solicitud fetch con un timeout de 2 minutos
+    fetchWithTimeout(url, options, 120000)
+      .then(response => response.json())
+      .then(function (datos) {
+        console.log(datos);
+        if (typeof datos[0] != 'undefined') {
+          if (datos[0] > 0) {
+            f_RenderConcesion(datos);
+          } else {
+              fLimpiarPantalla();
+              fSweetAlertEventSelect(event,'INFORMACIÓN', 'LA CONCESIÓN ASOCIADA AL SOLICITANTE ACTUAL NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
+              event.preventDefault();
+              event.target.classList.add("errortxt");
+              var label = document.getElementById(event.target.id + 'label');
+              if (label != null) {
+                document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+              }
+              paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+              isError = true;
+              document.getElementById("idVista").style = "display:none;";
+              document.getElementById("btnconcesion").style = "display:none;";
+              document.getElementById("btnmultas").style = "display:none;";
+              document.getElementById("btnconsultas").style = "display:none;";
+              document.getElementById("btnperexp").style = "display:none;";              
+            }
+        } else {
+          if (typeof datos.error != 'undefined') {
+            fLimpiarPantalla();
+            fSweetAlertEventSelect(event, datos.errorhead , datos.error + '- ' + datos.errormsg , 'error');
+            event.preventDefault();
+            event.target.classList.add("errortxt");
+            var label = document.getElementById(event.target.id + 'label');
+            if (label != null) {
+              document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+            }
+            paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+            isError = true;
+            document.getElementById("btnconcesion").style = "display:none;";
+            document.getElementById("btnmultas").style = "display:none;";
+            document.getElementById("btnconsultas").style = "display:none;";
+            document.getElementById("btnperexp").style = "display:none;";                          
+            } else {
+              fLimpiarPantalla();
+              fSweetAlertEventSelect(event,'INFORMACIÓN', 'ERROR DESCONOCIDO, INTENTELO DE NUEVO EN UN MOMENTO, SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA', 'error');
+              event.preventDefault();
+              //event.target.select();
+              event.target.classList.add("errortxt");
+              var label = document.getElementById(event.target.id + 'label');
+              if (label != null) {
+                document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+              }
+              paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+              isError = true;
+              document.getElementById("idVista").style = "display:none;";
+              document.getElementById("btnconcesion").style = "display:none;";
+              document.getElementById("btnmultas").style = "display:none;";
+              document.getElementById("btnconsultas").style = "display:none;";
+              document.getElementById("btnperexp").style = "display:none;";              
+            }
+        }
+      })
+      .catch((error) => {
+        fLimpiarPantalla();
+        fSweetAlertEventSelect(event,'CONEXÍON', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'warning');
+        event.preventDefault();
+        event.target.classList.add("errortxt");
+        var label = document.getElementById(event.target.id + 'label');
+        if (label != null) {
+          document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+        }
+        paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+        isError = true;
+        document.getElementById("idVista").style = "display:none;";
+        document.getElementById("btnconcesion").style = "display:none;";
+        document.getElementById("btnmultas").style = "display:none;";
+        document.getElementById("btnconsultas").style = "display:none;";
+        document.getElementById("btnperexp").style = "display:none;";                      
+      });
+  }   
+
   function f_CaseFetchCalls(value,event,idinput) {
     //*********************************************************************************/
     // Dependiendo del panel actual se ejecuta una función para validar los campos
@@ -510,22 +722,41 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       case 0: f_FetchCallApoderado(value,event,idinput); break;
       case 1: f_FetchCallSolicitante(value,event,idinput); break;
-      case 2: f_FetchCallApoderado(value,event,idinput); break;
+      case 2: f_FetchCallConcesion(value,event,idinput); break;
       case 3: f_FetchCallApoderado(value,event,idinput); break;
       case 4: f_FetchCallApoderado(value,event,idinput); break;
       default: f_FetchCallApoderado(value,event,idinput); break;
     }
   }        
 
+  function fVerConcesion() {
+    var event = new Event('change', {
+      'bubbles': true,
+      'cancelable': true
+    });
+    input = document.getElementById('concesion'); 
+    input.dispatchEvent(event);
+    input.focus();
+    input.select();
+    f_FetchCallConcesion(input.value,event,input.id)   
+  }
+  
+  var concesion3ra = document.getElementById('btnconcesion');
+  if (concesion3ra != null) {
+      concesion3ra.addEventListener('click', function(event) {
+      fVerConcesion();
+    });
+  }
+  
   //Cuando presente el nuevo panel
   stepperFormEl.addEventListener('shown.bs-stepper', function (event) {
+
     currentstep = event.detail.indexStep;
     setFocus = true;
     isError = false;
     isPrevious = false;
 
     if (typeof isDirty[currentstep] != 'undefined') {
-      console.log('shown.bs-stepper'+currentstep)
       isDirty[currentstep] == false;
     } 
 
@@ -533,6 +764,10 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       case 0: document.getElementById("colapoderado").focus(); break;
       case 1: document.getElementById("rtnsoli").focus();  break;
+      case 2: 
+      document.getElementById("concesion").focus();  
+      //document.getElementById("idVista").style = "display:none;"  
+      break;
     }
 
   })
@@ -570,12 +805,23 @@ document.addEventListener('DOMContentLoaded', function () {
     // Convertir NodeList a Array para facilitar la manipulación (opcional)
     inputselect = Array.from(inputselect);
     // Iterar sobre los elementos de entrada y eliminar las clases de error
+    var iy = 0;
     inputselect.forEach(input => {
+      console.log('iy => ' + iy);
+      console.log('inputselect.forEach(function(input) => '+ input.value + ' => ' + input.value);
+      iy++;
+      //Definiendo evento change para los elementos select
       input.addEventListener('change', function(event) {
+        if (event.target.id == 'marcas') {
+          console.log(event.target.value + ' => '+ event.target.value);
+        }
         if (event.target.getAttribute('data-valor') > event.target.value) {
           event.preventDefault();
           event.target.classList.add("errortxt");
-          document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+          var label = document.getElementById(event.target.id + 'label');
+          if (label != null) {
+            label.classList.add("errorlabel");
+          }
           var labelid=event.target.id + 'labelerror';
           let labelExists = document.getElementById(labelid) !== null;
           if (labelExists) {
@@ -584,11 +830,12 @@ document.addEventListener('DOMContentLoaded', function () {
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else{
           event.target.classList.remove("errortxt");
-          document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
+          var label = document.getElementById(event.target.id + 'label');
+          if (label != null) {
+            label.classList.remove("errorlabel");
+          }
           var labelid=event.target.id + 'labelerror';
-          console.log('labelid'+labelid);
           let labelExists = document.getElementById(labelid) !== null;
-          console.log('labelExists'+labelExists);
           if (labelExists) {
             document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
           }
@@ -596,15 +843,53 @@ document.addEventListener('DOMContentLoaded', function () {
           //Moverse al siguiente input
           moveToNextInput(input,0);
           if (event.target.id=='Departamentos') {
-            fCargarDwd('get-municipios',event.target.value,'Municipios',-1,{Text: 'SELECCIONE UN MUNICIPIO', Value: '-1'},['Aldeas'],['<option selected value="-1">SELECCIONE UNA ALDEA</option>']);
+            fCargarDwd('get-municipios',event.target.value,'Municipios',-1,{text: 'SELECCIONE UN MUNICIPIO', value: '-1'},['Aldeas'],['<option selected value="-1">SELECCIONE UNA ALDEA</option>']);
           } else {
             if (event.target.id=='Municipios') {
-              fCargarDwd('get-aldeas',event.target.value,'Aldeas',-1,{Text: 'SELECCIONE UNA ALDEA', Value: '-1'})
+              fCargarDwd('get-aldeas',event.target.value,'Aldeas',-1,{text: 'SELECCIONE UNA ALDEA', value: '-1'})
             }
           }
         }
       });
+      //Definiendo evento keydown para los elementos select
+      input.addEventListener('keydown', function(event) {
+        console.log('iy => ' + iy);
+        console.log('inputselect.forEach(function(input) => '+ input.value + ' => ' + input.value);
+        if (event.key === 'Tab' ||  event.key === 'Enter') {
+          if (event.target.getAttribute('data-valor') > event.target.value) {
+            event.preventDefault();
+            event.target.classList.add("errortxt");
+            var label = document.getElementById(event.target.id + 'label');
+            if (label != null) {
+              label.classList.add("errorlabel");
+            }
+            var labelid=event.target.id + 'labelerror';
+            let labelExists = document.getElementById(labelid) !== null;
+            if (labelExists) {
+              document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+            }
+            paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+          } else{
+            event.target.classList.remove("errortxt");
+            var label = document.getElementById(event.target.id + 'label');
+            if (label != null) {
+              label.classList.remove("errorlabel");
+            }
+            var labelid=event.target.id + 'labelerror';
+            let labelExists = document.getElementById(labelid) !== null;
+            if (labelExists) {
+              document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+            }
+            paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+          }
+          //Mover al siguiente input
+          if (event.key === 'Enter') {
+            moveToNextInput(input,0);
+          }
+        }
+      });
       
+
     });
     ii++;
   }
@@ -616,13 +901,17 @@ document.addEventListener('DOMContentLoaded', function () {
     //********************************************************************/
   });
     
+  
+  var ix = 0;
   testcontrols.forEach(function(input) {
+    console.log('ix => ' + ix);
+    console.log('testcontrols.forEach(function(input) => '+ input.id + ' => ' + input.value);
+    ix++;
     //*****************************************************************************/
     //Creando evento change para cada input
     //*****************************************************************************/
     input.addEventListener('change', function(event) {
-    console.log('change'+event.target.id);
-    console.log('idinputs.indexOf(event.target.id)] '+ idinputs.indexOf(event.target.id));
+    console.log('input.addEventListener change => ' +event.target.id + ' => '+ event.target.value);
     // Obteniendo el id del input
     idinput = event.target.id;
     // Salvar la pocisión del cursor
@@ -644,7 +933,10 @@ document.addEventListener('DOMContentLoaded', function () {
         event.target.select();
       }
       event.target.classList.add("errortxt");
-      document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+      var label = document.getElementById(event.target.id + 'label');
+      if (label != null) {
+        label.classList.add("errorlabel");
+      }
       document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
       var labelid=event.target.id + 'labelerror';
       let labelExists = document.getElementById(labelid) !== null;
@@ -654,7 +946,10 @@ document.addEventListener('DOMContentLoaded', function () {
       paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
     } else {
       event.target.classList.remove("errortxt");
-      document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
+      var label = document.getElementById(event.target.id + 'label');
+      if (label != null) {
+        label.classList.remove("errorlabel");
+      }
       document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
       var labelid=event.target.id + 'labelerror';
       let labelExists = document.getElementById(labelid) !== null;
@@ -663,12 +958,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
       //Moverse al siguiente input
-      if (idinput=='colapoderado' || idinput=='rtnsoli') {
-        console.log('change');
-        console.log('currentstep',currentstep);
-        console.log('isDirty[currentstep]',isDirty[currentstep]);
-        console.log('isRecordGetted[currentstep]',isRecordGetted[currentstep]);
-        console.log('event.target.value',event.target.value);
+      if (idinput=='colapoderado' || idinput=='rtnsoli' || idinput=='concesion') {
         if (typeof isRecordGetted[currentstep] == 'undefined' || isRecordGetted[currentstep] != event.target.value) {
             if (isDirty[currentstep] == false) {
               f_CaseFetchCalls(value,event,idinput);
@@ -685,6 +975,10 @@ document.addEventListener('DOMContentLoaded', function () {
       isFromfGetInputs=false;
     }
   });
+
+    idVista.addEventListener('ondblclick', function(event) {
+      alert('hola');
+    });
 
     // Handle the keydown event to prevent Tab key from moving focus
     input.addEventListener('keydown', function(event) {
@@ -711,27 +1005,26 @@ document.addEventListener('DOMContentLoaded', function () {
             setFocus = true;
           }
           event.target.classList.add("errortxt");
-          document.getElementById(event.target.id + 'label').classList.add("errorlabel");
+          var label = document.getElementById(event.target.id + 'label');
+          if (label != null) {
+            label.classList.add("errorlabel");
+          }
           document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
           // Marcando que hay un error en el input actual del panel actual
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else {
           event.target.classList.remove("errortxt");
-          document.getElementById(event.target.id + 'label').classList.remove("errorlabel");
+          var label = document.getElementById(event.target.id + 'label');
+          if (label != null) {
+            label.classList.remove("errorlabel");
+          }
           document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
           paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-          if (idinput=='colapoderado' || idinput=='rtnsoli' && event.key === 'Enter') {
-            console.log('keyDown');
-            console.log('currentstep',currentstep);
-            console.log('isDirty[currentstep]',isDirty[currentstep]);
-            console.log('isRecordGetted[currentstep]',isRecordGetted[currentstep]);
-            console.log('event.target.value',event.target.value);
+          if (idinput=='colapoderado' || idinput=='rtnsoli' || idinput=='concesion' && event.key === 'Enter') {
             if (typeof isRecordGetted[currentstep] == 'undefined' || isRecordGetted[currentstep] != event.target.value) {
-              console.log('f_CaseFetchCalls');                
               f_CaseFetchCalls(value,event,idinput);
               isDirty[currentstep] == true;
             } else {
-              console.log('Else f_CaseFetchCalls');                
               //Mover al siguiente input
               if (event.key === 'Enter') {
                 moveToNextInput(input,0);
@@ -764,9 +1057,7 @@ document.addEventListener('keydown', function(event) {
   } else {
     if (event.key === 'F10') {
       event.preventDefault();
-      console.log('previoclick'+currentstep);
       document.getElementById('btnnext'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
-      console.log('despuesclick'+currentstep);
     }
   }
 });

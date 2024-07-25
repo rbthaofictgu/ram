@@ -1,15 +1,14 @@
 //**************************************************************************************/
 // Llenar el select con las opciones del arreglo
 //**************************************************************************************/
-function fLlenarSelect(id,options,selected,disabled=false,defaultOption = {Text: 'SELECCIONE UNA OPCIÓN', Value: '-1'},dwd_hijo=false,option_default_hijo=['<opcion value="-1">SELECCIONE UNA ALDEA</opcion>']) {
+function fLlenarSelect(id,options,selected,disabled=false,defaultOption = {text: 'SELECCIONE UNA OPCIÓN', value: '-1'},dwd_hijo=false,option_default_hijo=['<opcion value="-1">SELECCIONE UNA ALDEA</opcion>']) {
     var select = document.getElementById(id);
-    console.log('fLlenarSelect select:',select);
     // Inicializar el select vaciando su contenido
     select.innerHTML = '';
     // Creando las opciones del select
     let option = document.createElement("option");
-    option.text = defaultOption.Text;
-    option.value = defaultOption.Value;
+    option.text = defaultOption.text;
+    option.value = defaultOption.value;
     // Estableciendo el valor seleccionado si es igual al valor del arreglo
     if ('' == selected || null == selected) {
         option.selected = true;
@@ -17,11 +16,10 @@ function fLlenarSelect(id,options,selected,disabled=false,defaultOption = {Text:
     select.add(option,0);          
     // Agergar la opción por defecto
     let i = 1;
-    console.log('fLlenarSelect options:',options);
     options.forEach(element => {
         var option = document.createElement("option");
-        option.text = element.Text;
-        option.value = element.Value;
+        option.text = element.text;
+        option.value = element.value;
         // Estableciendo el valor seleccionado si es igual al valor del arreglo
         if (option.value == selected) {
             option.selected = true;
@@ -37,18 +35,33 @@ function fLlenarSelect(id,options,selected,disabled=false,defaultOption = {Text:
     if (dwd_hijo != false) {
         i=0;
         dwd_hijo.forEach(element => {
-            console.log('element:',element);
             document.getElementById(element).innerHTML = ''; 
             document.getElementById(element).innerHTML = option_default_hijo[i]; 
             i++;
         });
+    }
+    let divElement = document.getElementById(id+'div');
+    if (divElement !== null) {    
+        divElement.style = "display:block";
+    }    
+    let spinnerElement = document.getElementById(id + 'spinner');
+    if (spinnerElement !== null) {    
+        spinnerElement.style = "display:none";
     }
 }
 
 //**************************************************************************************/
 //Cargando la información por default que debe usar el formulario
 //**************************************************************************************/
-function fCargarDwd(accion,filtro,dwd,selected,option_default={Text: 'SELECCIONE UN OPCIÓN', Value: '-1'},dwd_hijo=false,option_default_hijo=['<opcion value="-1">SELECCIONE UNA ALDEA</opcion>']) {
+function fCargarDwd(accion,filtro,dwd,selected,option_default={text: 'SELECCIONE UN OPCIÓN', value: '-1'},dwd_hijo=false,option_default_hijo=['<opcion value="-1">SELECCIONE UNA ALDEA</opcion>']) {
+    var divElement = document.getElementById(dwd+'div');
+    if (divElement !== null) {    
+        divElement.style = "display:none;";
+    }    
+    var spinnerElement = document.getElementById(dwd + 'spinner');
+    if (spinnerElement !== null) {    
+        spinnerElement.style = "display:block;";
+    }
     // URL del Punto de Acceso a la API
     const url = $appcfg_Dominio + "Api_Ram.php";
     //  Fetch options
