@@ -33,6 +33,7 @@ body {
   padding: 3px 0; /* Padding for content inside the bar */
   text-align: center; /* Center the content inside the bar */
   box-shadow: 0px -2px 4px rgba(0, 0, 0, 0.1); /* Optional shadow for visual depth */
+  background-image: url('../images/logos/banner-xiomara.jpg');background-repeat: no-repeat;	background-size: contain;background-position: center;  
 }
 .active .bs-stepper-circle {
   background-color: var(--bs-gobierno1);

@@ -91,7 +91,8 @@ include_once('configuracion/configuracion_js.php');
             <div id="test-form-1" role="tabpanel" class="bs-stepper-pane fade text-left dstepper-none" aria-labelledby="stepperFormTrigger1">
             <hr>
               <div class="row">
-                  <div class="col-md-2">
+
+                  <div class="col-md-3">
                       <div class="form-group">
                         <label id="colapoderadolabel" class="col-form-label" for="colapoderado">Colegiaci&oacute;n Apoderado Legal:</label>
                         <input pattern="^[1-9]\d{2,7}$" class="form-control form-control-sm test-controls" id="colapoderado" minlength="3" maxlength="9">
@@ -100,34 +101,15 @@ include_once('configuracion/configuracion_js.php');
                         </div>
                       </div>
                   </div>
-                  <div class="col-md-2">
-                      <div class="form-group">
-                        <label class="col-form-label" for="identidadapod">Documento de Identificación</label>
-                        <input readonly type="text" class="form-control form-control-sm" id="identidadapod" placeholder="" readonly="">
-                      </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="form-group">
-                      <label class="col-form-label" for="nomapoderado">Nombre Completo del Apoderado Legal:</label>
-                      <input readonly type="text" class="form-control form-control-sm" id="nomapoderado" placeholder="" readonly="">
-                    </div>
-                  </div>
 
-                  <div class="col-md-5">
+                  <div class="col-md-3">
                   <div class="form-group">
-                    <label id="dirapoderadolabel" class="col-form-label" for="dirapoderado">Direcci&oacute;n del Apoderado Legal:</label>
-                    <input pattern="^[a-zA-Z0-9\s,.\-]{10,200}$" title="La dirección del apoderado legal no puede ser menor de 10 caraceteres ni mayor a 200" type="text" class="form-control form-control-sm test-controls" id="dirapoderado">
-                    <div  id="dirapoderadolabelerror" style="visibility:hidden" class="errorlabel">
-                        No puede ser menor de 10 caraceteres ni mayor a 200.
-                    </div>
+                    <label id="entregadocslabel">Entrega de sus Documentos:</label>
+                    <select data-valor="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
+                    </select>
                   </div>
                 </div>
 
-              </div>              
-
-
-  
-              <div class="row">
                 <div class="col-md-3">
                   <div class="form-group">
                     <label id="telapoderadolabel" for="telapoderado">Teléfono del Apoderdo Legal:</label>
@@ -148,6 +130,37 @@ include_once('configuracion/configuracion_js.php');
                   </div>
                 </div>
 
+              </div>              
+
+
+  
+              <div class="row">
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                      <label class="col-form-label" for="identidadapod">Documento de Identificación</label>
+                      <input readonly type="text" class="form-control form-control-sm" id="identidadapod" placeholder="" readonly="">
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="form-group">
+                      <label class="col-form-label" for="nomapoderado">Nombre Completo del Apoderado Legal:</label>
+                      <input readonly type="text" class="form-control form-control-sm" id="nomapoderado" placeholder="" readonly="">
+                    </div>
+                  </div>
+
+                  <div class="col-md-3">
+                  <div class="form-group">
+                    <label id="dirapoderadolabel" class="col-form-label" for="dirapoderado">Direcci&oacute;n del Apoderado Legal:</label>
+                    <input pattern="^[a-zA-Z0-9\s,.\-]{10,200}$" title="La dirección del apoderado legal no puede ser menor de 10 caraceteres ni mayor a 200" type="text" class="form-control form-control-sm test-controls" id="dirapoderado">
+                    <div  id="dirapoderadolabelerror" style="visibility:hidden" class="errorlabel">
+                        No puede ser menor de 10 caraceteres ni mayor a 200.
+                    </div>
+                  </div>
+                </div>
+
+
                 <div class="col-md-3">
                   <div class="form-group">
                     <label>Presentación Documentos:</label>
@@ -157,13 +170,8 @@ include_once('configuracion/configuracion_js.php');
                     </select>
                   </div>
                 </div>
-                <div class="col-md-3">
-                  <div class="form-group">
-                    <label id="entregadocslabel">Entrega de sus Documentos:</label>
-                    <select data-valor="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
-                    </select>
-                  </div>
-                </div>
+
+
               </div>
 
               <div class="row">
@@ -342,8 +350,8 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-2"></div>
                   <div class="col-md-2"></div>                  
                   <div class="col-md-2">
-                    <button id="btnnext6" title="Una presionado este botón y finalizado el proceso se da por concluido el registro de Expedientes Masivos. Ya no podrá continuar agregando más concesiones y/o tramites y el expediente pasa a revisión a espera del pago para trabajarlo."
-                     type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (S)</button>
+                    <button id="btnnext6" title="Una presionado este botón y finalizado el proceso se da por concluido el registro de Expedientes Mavins. Ya no podrá continuar agregando más concesiones y/o tramites y el expediente pasa a revisión a espera del pago para trabajarlo."
+                     type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (F10)</button>
                   </div>                  
                </div>
               </div>
@@ -358,6 +366,33 @@ include_once('configuracion/configuracion_js.php');
                 </div>
                 <div id="idVista" class="col-md-10">
                 <span id="idVistaSTPC">
+
+                    <!-- ******************************************************* -->
+                    <!-- Ingreso de Concesion -->
+                    <!-- Modal -->
+                    <!-- ******************************************************* -->
+                    <button style="display: none;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalConcesion">
+                      Launch demo modal
+                    </button>
+                    <div class="modal fade bd-example-modal-lg" id="modalConcesion" tabindex="-1" role="dialog" aria-labelledby="modalConcesionTitle" aria-hidden="true">
+                      <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                          <div class="modal-header" style="background-image: url('assets/images/logos/banner-xiomara.jpg');background-repeat: no-repeat;	background-size: cover;">
+                            <h5 class="modal-title" id="exampleModalLongTitle">INGRESE UNA CONCESIÓN</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true"><i class="fas fa-window-close fa-2x gobierno1"></i></span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                      <input placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm test-controls" minlength="10" maxlength="25" title="Digite el CO, PES o PER EXP">
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>                 
+
                       <div class="row unbordered-row">
                           <div class="col-md-12 background-top-row-stpc"><div class="form-group"></div>
                       </div>
@@ -375,12 +410,9 @@ include_once('configuracion/configuracion_js.php');
                               </div>
                           </div>
                           <div class="row">
-                              <div style="text-align: right; font-weight: 500;" class="col-md-5"><h3 id="concesionlabel" for="concesion">TIPO DE CONCESIÓN:</h3></div>
-                              <div class="col-md-2">
-                                  <input placeholder="INGRESE EL NÚMERO DE CONCESIÓN" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm form-control-unbordered test-controls" minlength="10" maxlength="25"
-                                      title="Digite el CO, PES o PER EXP">
-                              </div>
-                              <div class="col-md-5"></div>
+                              <div class="col-md-12">
+                                      <h3 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span>  <span id="concesion_concesion"></span></h3>
+                              </div>                          
                           </div>
                           <div class="row unbordered-row">
                               <div class="col-md-12">
@@ -471,7 +503,7 @@ include_once('configuracion/configuracion_js.php');
                               <div class="col-md-12">
                                   <div class="form-group">
                                           <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
-                                          <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo" class="btn btn-success btn-sm" style="float:right;"><i class="fa-solid fa-van-shuttle"></i><strong> OBTENER INFORMACIÓN DE UNIDAD DESDE EL IP</strong></button>
+                                          <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo" class="btn btn-primary btn-sm" style="float:right;">OBTENER INFORMACIÓN DEL <i class="fa-solid fa-van-shuttle"></i><strong> DESDE EL IP</strong></button>
                                   </div>
                               </div>
                           </div>

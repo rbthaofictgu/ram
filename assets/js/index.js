@@ -576,8 +576,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (concesionlabel != null) {
       document.getElementById("concesionlabel").innerHTML = datos[1][0]['Tipo_Concesion'];
     }
+    document.getElementById("concesion_concesion").innerHTML = datos[1][0]['N_Certificado'];
     document.getElementById("concesion_perexp").innerHTML = datos[1][0]['N_Permiso_Explotacion'];
-    //document.getElementById("concesion_concesion").innerHTML = datos[1][0]['N_Certificado'];
     document.getElementById("concesion_fecven").innerHTML = datos[1][0]['Fecha Vencimiento Certificado'];
     document.getElementById("concesion_nombreconcesionario").innerHTML = datos[1][0]['NombreSolicitante'];
     document.getElementById("concesion_rtn").innerHTML = datos[1][0]['RTN_Concesionario'];
@@ -635,6 +635,7 @@ document.addEventListener('DOMContentLoaded', function () {
       .then(function (datos) {
         if (typeof datos[0] != 'undefined') {
           if (datos[0] > 0) {
+            $('#modalConcesion').modal('hide');
             f_RenderConcesion(datos);
           } else {
               fLimpiarPantalla();
@@ -759,7 +760,12 @@ document.addEventListener('DOMContentLoaded', function () {
     {
       case 0: document.getElementById("colapoderado").focus(); break;
       case 1: document.getElementById("rtnsoli").focus();      break;
-      case 2: document.getElementById("concesion").focus();    break;
+      case 2: 
+      console.log(1);
+      $('#modalConcesion').modal('show');
+      console.log(2);
+      document.getElementById("concesion").focus();    break;
+      console.log(3);
     }
 
   })
@@ -1063,6 +1069,49 @@ document.addEventListener('DOMContentLoaded', function () {
 })      
 
 
+class CustomBox extends HTMLElement {
+  constructor() {
+      super();
+      this.attachShadow({ mode: 'open' });
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+          <style>
+              :host {
+                  display: block;
+                  width: 200px;
+                  height: 200px;
+                  background-color: lightblue;
+                  overflow: auto;
+                  position: relative;
+              }
+              .content {
+                  padding: 10px;
+              }
+          </style>
+          <div class="content"><slot></slot></div>
+      `;
+      this.shadowRoot.appendChild(wrapper);
+  }
+
+  resize(amount) {
+      const currentWidth = this.offsetWidth;
+      const currentHeight = this.offsetHeight;
+      this.style.width = `${currentWidth + amount}px`;
+      this.style.height = `${currentHeight + amount}px`;
+  }
+}
+
+customElements.define('custom-box', CustomBox);
+
+function resizeBox(action) {
+  const box = document.getElementById('myBox');
+  if (action === 'increase') {
+      box.resize(20); // Increase size by 20px
+  } else if (action === 'decrease') {
+      box.resize(-20); // Decrease size by 20px
+  }
+}
+
 //**************************************************************************************/
 //Habilitando las teclas F2 y F10 para moverse entre los paneles
 //**************************************************************************************/
@@ -1074,12 +1123,6 @@ document.addEventListener('keydown', function(event) {
     if (event.key === 'F10') {
       event.preventDefault();
       document.getElementById('btnnext'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
-    } else {
-      console.log(event.key);
-      if (event.key === 123) {
-        event.preventDefault();
-        document.getElementById('btnnext'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
-      }
     }
   }
 });
