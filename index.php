@@ -32,7 +32,7 @@ include_once('configuracion/configuracion_js.php');
     <?php include_once('menu.php')?>
     </header>
     <!--<input id="dominio_raiz" name="dominio_raiz" type="hidden" value=""> -->
-    <div class="container-fluid">
+    <div class="container-fluid bg-white shadow-sm">
         <!-- *** -->    
         <!-- Body -->
         <!-- *** -->    
@@ -40,8 +40,18 @@ include_once('configuracion/configuracion_js.php');
         <hr>
         <hr>
         <hr>
-        <div class="bg-white shadow-sm">
-        <h4 style="font-size: 2.0rem;" class="gobierno2 fw-bolder px-3" style="text-decoration: underline;font-weight: 1000;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA</h4>
+      <div class="row">
+        <div class="col-md-10">
+          <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 400;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA  
+        </div>
+        <div class="col-md-2 justify-content-rigth">
+          <button style="display: none;" id="addConcesion" type="button" class="btn btn-success">
+            <i title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud" 
+            class="fa-solid fa-plus fa-x2"></i>Concesión
+          </button> 
+          </h6>
+        </div>
+        </div>
         <div id="stepperForm" class="bs-stepper linear">
           <div class="bs-stepper-header" role="tablist">
             <div class="step" data-target="#test-form-1">
@@ -73,14 +83,7 @@ include_once('configuracion/configuracion_js.php');
             </div>            
             <div class="bs-stepper-line"></div>
             <div class="step" data-target="#test-form-5">
-              <button class="step-trigger" role="tab" id="stepperFormTrigger5" aria-controls="test-form-5" aria-selected="false">
-                <span class="bs-stepper-circle"><i class="fas fa-bus"></i></span>
-                <span class="bs-stepper-label">Unidades</span>
-              </button>
-            </div>                        
-            <div class="bs-stepper-line"></div>
-            <div class="step" data-target="#test-form-6">
-              <button class="step-trigger" role="tab" id="stepperFormTrigger6" aria-controls="test-form-6" aria-selected="false" disabled="disabled">
+              <button class="step-trigger" role="tab" id="stepperFormTrigger5" aria-controls="test-form-5" aria-selected="false" disabled="disabled">
                 <span class="bs-stepper-circle"><i class="fas fa-flag-checkered"></i></span>
                 <span class="bs-stepper-label">Finalizar</span>
               </button>
@@ -218,7 +221,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
                   </div>
 
-                   <!--DATOS DEL DOMICILIO Y DENOMINACION SOCIAL-->
+                  <!--DATOS DEL DOMICILIO Y DENOMINACION SOCIAL-->
                   <div class="col-md-4">
                     <div class="form-group">
                       <label class="col-form-label" for="domiciliosoli">Domicilio del Solicitante:</label>
@@ -297,7 +300,7 @@ include_once('configuracion/configuracion_js.php');
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>                  
-                <div class="col-md-2">
+                <div class="col-md-2 justify-content-right">
                   <button id="btnnext1"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>                  
               </div>                  
@@ -307,6 +310,7 @@ include_once('configuracion/configuracion_js.php');
                 
             </div>
 
+           
             <div id="test-form-4" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger4">
               <hr>
                 <div class="row">
@@ -317,29 +321,13 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-2"></div>
                   <div class="col-md-2"></div>
                   <div class="col-md-2"></div>                  
-                  <div class="col-md-2">
+                  <div class="col-md-2 justify-content-right">
                     <button id="btnnext4"   type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                   </div>                  
               </div>
             </div>
 
               <div id="test-form-5" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger5">
-              <hr>
-                <div class="row">
-                  <div class="col-md-2">
-                    <button id="btnprevious5" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
-                  </div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>                  
-                  <div class="col-md-2">
-                    <button id="btnnext5" title="Moverse a la pantalla de salvar y finalizar registro de expediente masivo"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
-                  </div>                  
-                </div>
-              </div>
-
-              <div id="test-form-6" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger6">
                 <hr>
                 <div class="row">
                   <div class="col-md-2">
@@ -349,11 +337,11 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-2"></div>
                   <div class="col-md-2"></div>
                   <div class="col-md-2"></div>                  
-                  <div class="col-md-2">
+                  <div class="col-md-2 justify-content-right">
                     <button id="btnnext6" title="Una presionado este botón y finalizado el proceso se da por concluido el registro de Expedientes Mavins. Ya no podrá continuar agregando más concesiones y/o tramites y el expediente pasa a revisión a espera del pago para trabajarlo."
-                     type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (F10)</button>
+                    type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (F10)</button>
                   </div>                  
-               </div>
+              </div>
               </div>
 
               <div id="test-form-3" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger3">
@@ -362,11 +350,10 @@ include_once('configuracion/configuracion_js.php');
                 <!-- ID de Vista -->
                 <!-- **************************************************************************************************************** -->
                 <div class="col-md-1">
-                <div class="form-group">&nbsp;</div>
+                  <div class="form-group">&nbsp;</div>
                 </div>
                 <div id="idVista" class="col-md-10">
-                <span id="idVistaSTPC">
-
+                  <span id="idVistaSTPC">
                     <!-- ******************************************************* -->
                     <!-- Ingreso de Concesion -->
                     <!-- Modal -->
@@ -406,17 +393,17 @@ include_once('configuracion/configuracion_js.php');
                           </div>
                           <div class="row">
                               <div class="col-md-12">
-                                      <h3 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp"></span></h3>
+                                      <h4 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp"></span></h4>
                               </div>
                           </div>
                           <div class="row">
                               <div class="col-md-12">
-                                      <h3 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span>  <span id="concesion_concesion"></span></h3>
+                                      <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span>  <span id="concesion_concesion"></span></h6>
                               </div>                          
                           </div>
                           <div class="row unbordered-row">
                               <div class="col-md-12">
-                                  <h3 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION:  <span id="concesion_fecven"></span></h3>
+                                  <h4 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION:  <span id="concesion_fecven"></span></h4>
                               </div>
                           </div>
                       </span>
@@ -733,62 +720,15 @@ include_once('configuracion/configuracion_js.php');
                                       <input title="El ancho de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="ancho" minlength="6" maxlength="17">
                                   </div>
                               </div> 
-
                           </div>
-                          
-                          <div class="row">
-                                  <div class="col-md-12">
-                                  <div class="form-group">&nbsp;</div>
-                              </div>
-                          </div>
-
-                          <div class="row">
-                              <div class="col-md-12">
-                                  <div class="form-group">&nbsp;</div>
-                              </div>
-                          </div>
-                          <div class="row">
-                              <div class="col-md-12">
-                                  <div class="form-group">&nbsp;</div>
-                              </div>
-                          </div>
-                          <div class="row">
-                              <div class="col-md-12">
-                                  <div class="form-group">&nbsp;</div>
-                              </div>
-                          </div>
-                      </span>
+                        </span>
                   </span>
-
                 </div>
                 <div class="col-md-1">
-                <div class="form-group">&nbsp;</div>
-              </div>
-              </div>
-
-              <div id="row-1" class="row">
-              <div class="col-md-12">
-                <div class="form-group">&nbsp;</div>
-              </div>
-              </div>
-
-              <div id="row-2" class="row">
-              <div class="col-md-12">
-              <div class="form-group">&nbsp;</div>
-              </div>
-              </div>
-
-              <div id="row-3" class="row">
-              <div class="col-md-12">
-              <div class="form-group">&nbsp;</div>
-              </div>
-              </div>
-
-              <div id="row-4" class="row">
-                <div class="col-md-12">
-                <div class="form-group">&nbsp;</div>
+                  <div class="form-group">&nbsp;</div>
                 </div>
               </div>
+            
 
               <div class="row">
                 <div class="col-md-2">
@@ -806,15 +746,9 @@ include_once('configuracion/configuracion_js.php');
                 <div class="col-md-2">
                   <button style="display: none;" id="btnperexp"  type="button" class="btn btn-danger"><i class="fa-solid fa-file"></i> Per Exp</button>  
                 </div>
-                <div class="col-md-2">
-                  <button id="btnnext2"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
+                <div class="col-md-2 justify-content-right">
+                  <button id="btnnext2" type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>
-              </div>
-
-              <div class="row">
-              <div class="col-md-12">
-              <div class="form-group">&nbsp;</div>
-              </div>
               </div>
 
               <div class="row">
@@ -823,15 +757,10 @@ include_once('configuracion/configuracion_js.php');
                 </div>
               </div>
 
-
-              </br>
-              </br>
-
-            </div>
+            </div>               
 
 
           </div>
-
         </div>
       </div>
         <!-- *** -->    

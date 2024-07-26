@@ -186,12 +186,12 @@ color: var(--bs-gobierno3);
 
 .btn-success:active,
 .btn-success:focus {
-	 background-color:   #E2F0EA;
-	color:  #949699;
-	border: 5px solid  #69927F; 
-	-webkit-box-shadow: 12px 12px 5px -3px  #446870;
-	-moz-box-shadow: 12px 12px 5px -3px   #446870;
-	box-shadow: 12px 12px 5px -3px  #446870;
+	background-color :#69927F;
+	color:  #E2F0EA;
+	border: 5px solid  #8CC3AA;
+	-webkit-box-shadow: 12px 12px 5px -3px #69927F;
+	-moz-box-shadow: 12px 12px 5px -3px #69927F;
+	box-shadow: 12px 12px 5px -3px #69927F; 
 	font-variant: small-caps;
 }
 
@@ -388,63 +388,63 @@ color: var(--bs-gobierno3);
 }
 .background-top-row-stpc {
 	width: 1198px;
-	height: 156px;	
+	height: 125px;	
 	background-image: url('../images/top_stpc.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-middle-row-stpc {
 	width: 1198px;
-	height: 170px;	
+	height: 135px;	
 	background-image: url('../images/enc_stpc.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-botton-row-stpc {
 	width: 1198px;
-	height: 1000px;	
+	height: 940px;	
 	background-image: url('../images/bottom_stpc.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-top-row-stec {
 	width: 1198px;
-	height: 156px;	
+	height: 125px;	
 	background-image: url('../images/top_stec.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-middle-row-stec {
 	width: 1198px;
-	height: 170px;	
+	height: 135px;	
 	background-image: url('../images/enc_stec.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-botton-row-stec {
 	width: 1198px;
-	height: 1000px;	
+	height: 900px;	
 	background-image: url('../images/bottom_stec.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-top-row-stpp {
 	width: 1198px;
-	height: 156px;	
+	height: 125px;	
 	background-image: url('../images/top_stpp.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-middle-row-stpp {
 	width: 1198px;
-	height: 170px;	
+	height: 135px;	
 	background-image: url('../images/enc_stpp.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
 }
 .background-botton-row-stpp {
 	width: 1198px;
-	height: 1000px;	
+	height: 900px;	
 	background-image: url('../images/bottom_stpp.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;
@@ -465,7 +465,7 @@ color: var(--bs-gobierno3);
 }
 .background-botton-row-step {
 	width: 1198px;
-	height: 1000px;	
+	height: 900px;	
 	background-image: url('../images/bottom_stec.jpg');
 	background-repeat: no-repeat;
 	background-size: cover;

@@ -1,4 +1,5 @@
 "use strict";
+
 var isFromfGetInputs = false;
 var isError = false;
 var isRecordGetted = Array();
@@ -14,7 +15,6 @@ var setFocus = true;
 var paneerror = Array(Array());
 var testinputs;
 var testinputsArray;
-
 
 
 var multas3ra = document.getElementById('btnmultas');
@@ -284,7 +284,7 @@ document.addEventListener('DOMContentLoaded', function () {
       isDirty[i] = false;
       isRecordGetted[i]='';
     }
-    
+
 
   btnNextList.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -744,6 +744,20 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
   
+
+  function showModalConcesiones(){
+    $('#modalConcesion').modal('show');
+  }
+
+  addConcesion.addEventListener('click', function(event) {
+    if(currentstep != 2) {
+      stepperForm.to(3);    
+     } else {
+      setTimeout(showModalConcesiones, 250);
+     }
+  });
+
+
   //Cuando presente el nuevo panel
   stepperFormEl.addEventListener('shown.bs-stepper', function (event) {
 
@@ -751,6 +765,7 @@ document.addEventListener('DOMContentLoaded', function () {
     setFocus = true;
     isError = false;
     isPrevious = false;
+
 
     if (typeof isDirty[currentstep] != 'undefined') {
       isDirty[currentstep] == false;
@@ -761,14 +776,17 @@ document.addEventListener('DOMContentLoaded', function () {
       case 0: document.getElementById("colapoderado").focus(); break;
       case 1: document.getElementById("rtnsoli").focus();      break;
       case 2: 
-      console.log(1);
-      $('#modalConcesion').modal('show');
-      console.log(2);
-      document.getElementById("concesion").focus();    break;
-      console.log(3);
+        $('#modalConcesion').modal('show');
+        document.getElementById("addConcesion").style = "display:inline;"    
+        document.getElementById("concesion").focus();    
+        document.getElementById("concesion").select();    
+        break;
     }
 
   })
+
+
+
 
   //Antes de hacer la transición al nuevo panel
   stepperFormEl.addEventListener('show.bs-stepper', function (event) {
@@ -1065,52 +1083,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });  
     isDirty[currentstep] = false;
   });
+
   setTimeout(setFocusElement, 250);
+
+
 })      
-
-
-class CustomBox extends HTMLElement {
-  constructor() {
-      super();
-      this.attachShadow({ mode: 'open' });
-      const wrapper = document.createElement('div');
-      wrapper.innerHTML = `
-          <style>
-              :host {
-                  display: block;
-                  width: 200px;
-                  height: 200px;
-                  background-color: lightblue;
-                  overflow: auto;
-                  position: relative;
-              }
-              .content {
-                  padding: 10px;
-              }
-          </style>
-          <div class="content"><slot></slot></div>
-      `;
-      this.shadowRoot.appendChild(wrapper);
-  }
-
-  resize(amount) {
-      const currentWidth = this.offsetWidth;
-      const currentHeight = this.offsetHeight;
-      this.style.width = `${currentWidth + amount}px`;
-      this.style.height = `${currentHeight + amount}px`;
-  }
-}
-
-customElements.define('custom-box', CustomBox);
-
-function resizeBox(action) {
-  const box = document.getElementById('myBox');
-  if (action === 'increase') {
-      box.resize(20); // Increase size by 20px
-  } else if (action === 'decrease') {
-      box.resize(-20); // Decrease size by 20px
-  }
-}
 
 //**************************************************************************************/
 //Habilitando las teclas F2 y F10 para moverse entre los paneles
