@@ -1,3 +1,4 @@
+"use strict";
 var isFromfGetInputs = false;
 var isError = false;
 var isRecordGetted = Array();
@@ -80,8 +81,6 @@ if (perexp3ra != null) {
               'cancelable': true
           });
 
-          console.log(' fGetInputs()  Inputs ' + input.id);
-
           input.dispatchEvent(event);
           if (index == 0) {
             input.focus();
@@ -108,22 +107,29 @@ if (perexp3ra != null) {
     // Iterando entre los inputs para despachar el evento change y validar la data de cada input
     var index = 0;
     inputs.forEach(input => {
+
       if (input.disabled == false) {
-          console.log(' fGetSelect()  Inputs ' + input.id);
+
         if (input.getAttribute('data-valor') > input.value) {        
+          
           input.classList.add("errortxt");
-          document.getElementById(input.id + 'label').classList.add("errorlabel");
+
           var label = document.getElementById(input.id + 'label');
           if (label != null) {
             label.classList.add("errorlabel");
           }
+          
           paneerror[currentstep][idinputs.indexOf(input.id)] = 1;
+
         } else {
+
           input.classList.remove("errortxt");
+
           var label = document.getElementById(input.id + 'label');
           if (label != null) {
-            document.getElementById(input.id + 'label').classList.remove("errorlabel");
+            label.classList.remove("errorlabel");
           }
+
           paneerror[currentstep][idinputs.indexOf(input.id)] = 0;
           //Moverse al siguiente input
           moveToNextInput(input,0);
@@ -154,8 +160,8 @@ if (perexp3ra != null) {
         label.classList.remove("errorlabel");
       }
       var labelerror = document.getElementById(input.id + 'labelerror');
-      if (label != null) {
-        document.getElementById(input.id + 'labelerror').style.visibility = "hidden";
+      if (labelerror != null) {
+        labelerror.style.visibility = "hidden";
       }
     });
     //Limpiando mensajes de elementos .test-select
@@ -192,6 +198,8 @@ document.addEventListener('DOMContentLoaded', function () {
   //Cargando la información por default que debe usar el formulario
   //**************************************************************************************/
   function f_DataOmision() {
+    var datos;
+    var response;
     // URL del Punto de Acceso a la API
     const url = $appcfg_Dominio + "Api_Ram.php";
     //  Fetch options
@@ -218,11 +226,13 @@ document.addEventListener('DOMContentLoaded', function () {
           if (datos[1].length > 0) {
             fLlenarSelect('entregadocs',datos[1],null,false,{text: 'SELECCIONE UN LUGAR DE ENTREGA', value: '-1'})            
           }
-          if (datos[2].length > 0) {
-            fLlenarSelect('Departamentos',datos[2],-1,false,{text: 'SELECCIONE UN DEPARTAMENTO', value: '-1'})     
-            fLlenarSelect('Municipios',[],-1,false,{text: 'SELECCIONE UN MUNICIPIO', value: '-1'})            
-            fLlenarSelect('Aldeas',[],-1,disabled=false,{text: 'SELECCIONE UNA ALDEA', value: '-1'})            
-          }          
+          if (typeof datos[2] != 'undefined') {
+            if (datos[2].length > 0) {
+              fLlenarSelect('Departamentos',datos[2],-1,false,{text: 'SELECCIONE UN DEPARTAMENTO', value: '-1'})     
+              fLlenarSelect('Municipios',[],-1,false,{text: 'SELECCIONE UN MUNICIPIO', value: '-1'})            
+              fLlenarSelect('Aldeas',[],-1,false,{text: 'SELECCIONE UNA ALDEA', value: '-1'})            
+            }          
+          }
         } else {
           if (typeof datos.error != 'undefined') {
             fSweetAlertEventNormal(datos.errorhead, datos.error + '- ' + datos.errormsg , 'error');
@@ -233,7 +243,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
         .catch((error) => {
         console.log('error'+error);
-        fSweetAlertEventNormal('CONEXÍON', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'warning');
+        fSweetAlertEventNormal('OPPS', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'error');
     });
   }        
 
@@ -260,7 +270,6 @@ document.addEventListener('DOMContentLoaded', function () {
     //*****************************************************************************/
     var testcontrols = [].slice.call(document.querySelectorAll('.test-controls'));
     var testcontrolsArray  =  Array.from(testcontrols);  
-    console.log(testcontrolsArray);
     testinputs = document.querySelectorAll('input, select');
     testinputsArray = Array.from(testinputs);  
     var columnas = testinputs.length;
@@ -279,6 +288,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   btnNextList.forEach(function (btn) {
     btn.addEventListener('click', function () {
+        fGetInputs();
         stepperForm.next();
     })
   })
@@ -313,10 +323,10 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('Municipios').innerHTML = "";
         document.getElementById('Aldeas').value = '-1';
         document.getElementById('Aldeas').innerHTML = "";
-        document.getElementById('rtnrep').value = '';
-        document.getElementById('numinscripcionrep').value = '';
-        document.getElementById('nomrep').value = '';
-        document.getElementById('domiciliorep').value = '';
+        // document.getElementById('rtnrep').value = '';
+        // document.getElementById('numinscripcionrep').value = '';
+        // document.getElementById('nomrep').value = '';
+        // document.getElementById('domiciliorep').value = '';
         // document.getElementById('numescriturarep').value = '';
         // document.getElementById('rtnnotariorep').value = '';
         // document.getElementById('notarioautorizante').value = '';
@@ -496,33 +506,15 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('domiciliosoli').value = datos[1].dir_solicitante;
             document.getElementById('emailsoli').value = datos[1].correo_solicitante; 
             document.getElementById('telsoli').value = datos[1].tel_solicitante; 
-            // document.getElementById('numescritura').value = datos[1].Numero_Escritura;
-            // document.getElementById('fecha').value = datos[1].Fecha_Escritura;
-            // document.getElementById('lugarcons').value = datos[1].Lugar_Escritura;
-            // document.getElementById('rtnnotario').value = datos[1].ID_Notario;
-            // document.getElementById('nombrenotario').value = datos[1].Notario;    
-            // document.getElementById('telapoderado').value = datos[1].tel_solicitante;                
             document.getElementById('tiposolicitante').value = datos[1].DESC_Solicitante;  
             if (datos[1].Departamento != null && datos[1].Departamento != '') {
               document.getElementById('Departamentos').value= datos[1].Departamento;
             }else{
               document.getElementById('Departamentos').value= '-1';
             }
-            fLlenarSelect('Municipios',datos[3],datos[1].Municipio,false,{Text: 'SELECCIONE UN MUNICIPIO', Value: '-1'})            
-            fLlenarSelect('Aldeas',datos[4],datos[1].aldea,disabled=false,{Text: 'SELECCIONE UNA ALDEA', Value: '-1'})            
+            fLlenarSelect('Municipios',datos[3],datos[1].Municipio,false,{text: 'SELECCIONE UN MUNICIPIO', value: '-1'})            
+            fLlenarSelect('Aldeas',datos[4],datos[1].aldea,false,{text: 'SELECCIONE UNA ALDEA', value: '-1'})            
             isError = false;
-            // document.getElementById('rtnrep').value = datos[1].RTN_Representante;
-            // document.getElementById('numinscripcionrep').value = datos[1].Numero_Inscripcion;
-            // document.getElementById('nomrep').value = datos[1].Nombre_Representante;
-            // document.getElementById('domiciliorep').value = datos[1].Direccion_Representante;
-            // document.getElementById('numescriturarep').value = datos[1].Representante_Escritura;
-            // document.getElementById('rtnnotariorep').value = datos[1].ID_Notario_Representante;
-            // document.getElementById('notarioautorizante').value = datos[1].Nombre_Notario_Representante;
-            // document.getElementById('lugarescriturarep').value = datos[1].Lugar_Elaboracion_Representante;
-            // document.getElementById('fechaescriturarep').value = datos[1].Fecha_Elaboracion_Representante;
-            // document.getElementById('telrep').value = datos[1].Telefono_Representante;
-            // document.getElementById('emailrep').value = datos[1].Email_Representante;
-            //Moviendose al siguiente input
             moveToNextInput(event.target,0);
           } else {
               fLimpiarPantalla();
@@ -578,13 +570,16 @@ document.addEventListener('DOMContentLoaded', function () {
   }        
 
   function f_RenderConcesion(datos) {
-    document.getElementById("idVista").style = "display:block;"  
-    document.getElementById("idVista").innerHTML = datos[1][0]['Vista'];
+    //document.getElementById("idVista").style = "display:block;"  
+    //document.getElementById("idVista").innerHTML = datos[1][0]['Vista'];
+    var concesionlabel = document.getElementById("concesionlabel");
+    if (concesionlabel != null) {
+      document.getElementById("concesionlabel").innerHTML = datos[1][0]['Tipo_Concesion'];
+    }
     document.getElementById("concesion_perexp").innerHTML = datos[1][0]['N_Permiso_Explotacion'];
-    document.getElementById("concesion_concesion").innerHTML = datos[1][0]['N_Certificado'];
+    //document.getElementById("concesion_concesion").innerHTML = datos[1][0]['N_Certificado'];
     document.getElementById("concesion_fecven").innerHTML = datos[1][0]['Fecha Vencimiento Certificado'];
-    document.getElementById("concesion_nombreconcesionario").innerHTML = datos[1][0]['Fecha Vencimiento Certificado'];
-    document.getElementById("concesion_tipoconcesion").innerHTML = datos[1][0]['Tipo_Concesion'];
+    document.getElementById("concesion_nombreconcesionario").innerHTML = datos[1][0]['NombreSolicitante'];
     document.getElementById("concesion_rtn").innerHTML = datos[1][0]['RTN_Concesionario'];
     document.getElementById("concesion_fecexp").innerHTML = datos[1][0]['Fecha Emision Certificado'];
     document.getElementById("concesion_resolucion").innerHTML = datos[1][0]['Resolucion'];
@@ -593,17 +588,17 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById("concesion_placa").value = datos[1][0]['Unidad'][0]['ID_Placa'];
       document.getElementById("concesion_serie").value = datos[1][0]['Unidad'][0]['Chasis'];
       document.getElementById("concesion_motor").value = datos[1][0]['Unidad'][0]['Motor'];
-      fLlenarSelect('marcas',datos[1][0]['Marcas'],datos[1][0]['Unidad'][0]['ID_Marca'],false,{Text: 'SELECCIONE UN AÑO', Value: '-1'});            
-      fLlenarSelect('colores',datos[1][0]['Colores'],datos[1][0]['Unidad'][0]['ID_Color'],false,{Text: 'SELECCIONE UN AÑO', Value: '-1'});
-      fLlenarSelect('anios',datos[1][0]['Anios'],datos[1][0]['Unidad'][0]['Anio'],false,{Text: 'SELECCIONE UN AÑO', Value: '-1'});   
+      fLlenarSelect('marcas',datos[1][0]['Marcas'],datos[1][0]['Unidad'][0]['ID_Marca'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});            
+      fLlenarSelect('colores',datos[1][0]['Colores'],datos[1][0]['Unidad'][0]['ID_Color'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});
+      fLlenarSelect('anios',datos[1][0]['Anios'],datos[1][0]['Unidad'][0]['Anio'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});   
       document.getElementById("concesion_tipovehiculo").innerHTML = datos[1][0]['Unidad'][0]['DESC_Tipo_Vehiculo'];
-    }    
+    }
     document.getElementById("concesion_cerant").innerHTML = datos[1][0]['Certificado Anterior'];
     document.getElementById("concesion_numregant").innerHTML = datos[1][0]['Registro_Anterior'];
     document.getElementById("concesion_numeroregistro").innerHTML = datos[1][0]['Numero_Registro'];
     document.getElementById("concesion_categoria").innerHTML = datos[1][0]['DESC_Categoria'];
     //document.getElementById("idVista").style = 'background-image: url("data:image/jpeg;base64,assets/images/copc.jpeg")';
-    document.getElementById("concesion").style = "display:inline;";
+    //document.getElementById("concesion").style = "display:inline;";
     document.getElementById("btnconcesion").style = "display:inline;";
     document.getElementById("btnmultas").style = "display:inline;";
     document.getElementById("btnconsultas").style = "display:inline;";
@@ -638,7 +633,6 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
       .then(function (datos) {
-        console.log(datos);
         if (typeof datos[0] != 'undefined') {
           if (datos[0] > 0) {
             f_RenderConcesion(datos);
@@ -653,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function () {
               }
               paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
               isError = true;
-              document.getElementById("idVista").style = "display:none;";
+              //document.getElementById("idVista").style = "display:none;";
               document.getElementById("btnconcesion").style = "display:none;";
               document.getElementById("btnmultas").style = "display:none;";
               document.getElementById("btnconsultas").style = "display:none;";
@@ -671,6 +665,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
             isError = true;
+            //document.getElementById("idVista").style = "display:none;";
             document.getElementById("btnconcesion").style = "display:none;";
             document.getElementById("btnmultas").style = "display:none;";
             document.getElementById("btnconsultas").style = "display:none;";
@@ -687,7 +682,7 @@ document.addEventListener('DOMContentLoaded', function () {
               }
               paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
               isError = true;
-              document.getElementById("idVista").style = "display:none;";
+              //document.getElementById("idVista").style = "display:none;";
               document.getElementById("btnconcesion").style = "display:none;";
               document.getElementById("btnmultas").style = "display:none;";
               document.getElementById("btnconsultas").style = "display:none;";
@@ -706,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         isError = true;
-        document.getElementById("idVista").style = "display:none;";
+        //document.getElementById("idVista").style = "display:none;";
         document.getElementById("btnconcesion").style = "display:none;";
         document.getElementById("btnmultas").style = "display:none;";
         document.getElementById("btnconsultas").style = "display:none;";
@@ -734,7 +729,7 @@ document.addEventListener('DOMContentLoaded', function () {
       'bubbles': true,
       'cancelable': true
     });
-    input = document.getElementById('concesion'); 
+    var input = document.getElementById('concesion'); 
     input.dispatchEvent(event);
     input.focus();
     input.select();
@@ -763,11 +758,8 @@ document.addEventListener('DOMContentLoaded', function () {
     switch (currentstep)
     {
       case 0: document.getElementById("colapoderado").focus(); break;
-      case 1: document.getElementById("rtnsoli").focus();  break;
-      case 2: 
-      document.getElementById("concesion").focus();  
-      //document.getElementById("idVista").style = "display:none;"  
-      break;
+      case 1: document.getElementById("rtnsoli").focus();      break;
+      case 2: document.getElementById("concesion").focus();    break;
     }
 
   })
@@ -805,40 +797,39 @@ document.addEventListener('DOMContentLoaded', function () {
     // Convertir NodeList a Array para facilitar la manipulación (opcional)
     inputselect = Array.from(inputselect);
     // Iterar sobre los elementos de entrada y eliminar las clases de error
-    var iy = 0;
     inputselect.forEach(input => {
-      console.log('iy => ' + iy);
-      console.log('inputselect.forEach(function(input) => '+ input.value + ' => ' + input.value);
-      iy++;
       //Definiendo evento change para los elementos select
       input.addEventListener('change', function(event) {
-        if (event.target.id == 'marcas') {
-          console.log(event.target.value + ' => '+ event.target.value);
-        }
+
         if (event.target.getAttribute('data-valor') > event.target.value) {
           event.preventDefault();
+
           event.target.classList.add("errortxt");
+
           var label = document.getElementById(event.target.id + 'label');
           if (label != null) {
             label.classList.add("errorlabel");
           }
-          var labelid=event.target.id + 'labelerror';
-          let labelExists = document.getElementById(labelid) !== null;
-          if (labelExists) {
-            document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+
+          let labelerror = document.getElementById(event.target.id + 'labelerror');
+          if (labelerror != null) {
+            labelerror.style.visibility = "visible";
           }
+
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else{
           event.target.classList.remove("errortxt");
+
           var label = document.getElementById(event.target.id + 'label');
           if (label != null) {
             label.classList.remove("errorlabel");
           }
-          var labelid=event.target.id + 'labelerror';
-          let labelExists = document.getElementById(labelid) !== null;
-          if (labelExists) {
-            document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+
+          let labelerror = document.getElementById(event.target.id + 'labelerror');
+          if (labelerror != null) {
+              labelerror.style.visibility = "hidden";
           }
+
           paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
           //Moverse al siguiente input
           moveToNextInput(input,0);
@@ -853,34 +844,42 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       //Definiendo evento keydown para los elementos select
       input.addEventListener('keydown', function(event) {
-        console.log('iy => ' + iy);
-        console.log('inputselect.forEach(function(input) => '+ input.value + ' => ' + input.value);
         if (event.key === 'Tab' ||  event.key === 'Enter') {
+
           if (event.target.getAttribute('data-valor') > event.target.value) {
+
             event.preventDefault();
             event.target.classList.add("errortxt");
             var label = document.getElementById(event.target.id + 'label');
+
             if (label != null) {
               label.classList.add("errorlabel");
             }
-            var labelid=event.target.id + 'labelerror';
-            let labelExists = document.getElementById(labelid) !== null;
-            if (labelExists) {
-              document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+
+            let labelerror = document.getElementById(event.target.id + 'labelerror');
+            if (labelerror != null) {
+              labelerror.style.visibility = "visible";
             }
+
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+
           } else{
+
             event.target.classList.remove("errortxt");
+
             var label = document.getElementById(event.target.id + 'label');
             if (label != null) {
               label.classList.remove("errorlabel");
             }
-            var labelid=event.target.id + 'labelerror';
-            let labelExists = document.getElementById(labelid) !== null;
-            if (labelExists) {
-              document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+
+
+            let labelerror = document.getElementById(event.target.id + 'labelerror');
+            if (labelerror != null) {
+              labelerror.style.visibility = "hidden";
             }
+
             paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
+
           }
           //Mover al siguiente input
           if (event.key === 'Enter') {
@@ -902,16 +901,11 @@ document.addEventListener('DOMContentLoaded', function () {
   });
     
   
-  var ix = 0;
   testcontrols.forEach(function(input) {
-    console.log('ix => ' + ix);
-    console.log('testcontrols.forEach(function(input) => '+ input.id + ' => ' + input.value);
-    ix++;
     //*****************************************************************************/
     //Creando evento change para cada input
     //*****************************************************************************/
     input.addEventListener('change', function(event) {
-    console.log('input.addEventListener change => ' +event.target.id + ' => '+ event.target.value);
     // Obteniendo el id del input
     idinput = event.target.id;
     // Salvar la pocisión del cursor
@@ -926,36 +920,44 @@ document.addEventListener('DOMContentLoaded', function () {
     var isValid = pattern.test(value);
     // If de si el valor es valido para preventDefault
     if (!isValid) {
+
       event.preventDefault();
       // Pocicionando el cursor en el input actual
       if (setFocus == true) {
         event.target.focus();
         event.target.select();
       }
+
       event.target.classList.add("errortxt");
+
       var label = document.getElementById(event.target.id + 'label');
+
       if (label != null) {
         label.classList.add("errorlabel");
       }
-      document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
-      var labelid=event.target.id + 'labelerror';
-      let labelExists = document.getElementById(labelid) !== null;
-      if (labelExists) {
-        document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+
+      var labelerror = document.getElementById(event.target.id + 'labelerror');
+
+      if (labelerror != null) {
+        labelerror.style.visibility = "visible";
       }
+
       paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
+
     } else {
+
       event.target.classList.remove("errortxt");
+
       var label = document.getElementById(event.target.id + 'label');
       if (label != null) {
         label.classList.remove("errorlabel");
       }
-      document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
-      var labelid=event.target.id + 'labelerror';
-      let labelExists = document.getElementById(labelid) !== null;
-      if (labelExists) {
-        document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+
+      let labelerror = document.getElementById(event.target.id + 'labelerror');
+      if (labelerror != null) {
+        labelerror.style.visibility = "hidden";
       }
+
       paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
       //Moverse al siguiente input
       if (idinput=='colapoderado' || idinput=='rtnsoli' || idinput=='concesion') {
@@ -1004,21 +1006,35 @@ document.addEventListener('DOMContentLoaded', function () {
           } else {
             setFocus = true;
           }
+
           event.target.classList.add("errortxt");
+
           var label = document.getElementById(event.target.id + 'label');
           if (label != null) {
             label.classList.add("errorlabel");
           }
-          document.getElementById(event.target.id + 'labelerror').style.visibility = "visible";
+
+          var labelerror = document.getElementById(event.target.id + 'labelerror');
+          if (labelerror != null) {
+            labelerror.style.visibility = "visible"
+          }
+
           // Marcando que hay un error en el input actual del panel actual
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else {
+          
           event.target.classList.remove("errortxt");
+          
           var label = document.getElementById(event.target.id + 'label');
           if (label != null) {
             label.classList.remove("errorlabel");
           }
-          document.getElementById(event.target.id + 'labelerror').style.visibility = "hidden";
+          
+          var labelerror = document.getElementById(event.target.id + 'labelerror');
+          if (labelerror != null) {
+            labelerror.style.visibility = "hidden"
+          }
+
           paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
           if (idinput=='colapoderado' || idinput=='rtnsoli' || idinput=='concesion' && event.key === 'Enter') {
             if (typeof isRecordGetted[currentstep] == 'undefined' || isRecordGetted[currentstep] != event.target.value) {
@@ -1058,6 +1074,12 @@ document.addEventListener('keydown', function(event) {
     if (event.key === 'F10') {
       event.preventDefault();
       document.getElementById('btnnext'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
+    } else {
+      console.log(event.key);
+      if (event.key === 123) {
+        event.preventDefault();
+        document.getElementById('btnnext'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
+      }
     }
   }
 });

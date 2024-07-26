@@ -1,9 +1,9 @@
                     <span id="idVistaSTPC">
-                        <div class="row unbordered-row">
+                        <div class="row">
                             <div class="col-md-12 background-top-row-stpc"><div class="form-group"></div>
                         </div>
 
-                        <span class="background-middle-row-stpc unbordered-row">
+                        <span class="background-middle-row-stpc">
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="form-group">&nbsp;</div>
@@ -11,25 +11,28 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                        <h3 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp"></span></h3>
+                                        <h4 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp"></span></h4>
                                 </div>
                             </div>
                             <div class="row">
-                                <div style="text-align: right; font-weight: 500;" class="col-md-5"><h3 id="concesionlabel" for="concesion">TIPO DE CONCESIÓN:</h3></div>
+                                <div class="col-md-5"></div>
                                 <div class="col-md-2">
-                                    <input placeholder="INGRESE EL NÚMERO DE CONCESIÓN" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm form-control-unbordered test-controls" minlength="10" maxlength="25"
-                                        title="Digite el CO, PES o PER EXP">
+                                    <span style="text-align: center; font-weight: bold;">
+                                            <span id="labelconcesion" for="concesion">TIPO DE CONCESIÓN:</span>
+                                            <input placeholder="INGRESE EL NÚMERO DE CONCESIÓN" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm form-control-unbordered test-controls" minlength="10" maxlength="25"
+                                                title="Digite el CO, PES o PER EXP">
+                                    </span>
                                 </div>
                                 <div class="col-md-5"></div>
                             </div>
-                            <div class="row unbordered-row">
+                            <div class="row">
                                 <div class="col-md-12">
-                                    <h3 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION:  <span id="concesion_fecven"></span></h3>
+                                    <h4 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION:  <span id="concesion_fecven"></span></h4>
                                 </div>
                             </div>
                         </span>
 
-                        <span class="background-botton-row-stpc unbordered-row">
+                        <span class="background-botton-row-stpc">
 
                             <div class="row">
                                 <div class="col-md-12">
@@ -38,8 +41,8 @@
                             </div>
 
 
-                            <div class="row bordered-row-grey">
-                                <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12 bordered-row-grey">
                                     <div class="form-group">
                                             <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
                                     </div>
@@ -107,8 +110,8 @@
                                 </div>        
                             </div>
 
-                            <div class="row bordered-row-grey">
-                                <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12 bordered-row-grey">
                                     <div class="form-group">
                                             <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
                                             <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo" class="btn btn-primary btn-sm" style="float:right;"><i class="fa-solid fa-van-shuttle"></i><strong> OBTENER INFORMACIÓN DE UNIDAD DESDE EL IP</strong></button>
@@ -123,6 +126,9 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <input title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_vin" minlength="6" maxlength="17">
+                                        <div   id="concesion_vinlabelerror" style="visibility:hidden" class="errorlabel">
+                                            VIN invalido
+                                        </div>
                                     </div>
                                 </div>    
                                 <div class="col-md-3">
@@ -131,6 +137,9 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <input id="concesion_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>            
+                                        <div id="concesion_placalabelerror" style="visibility:hidden" class="errorlabel">
+                                        Placa invalida
+                                        </div>
                                     </div>
                                 </div>        
                             </div>
@@ -144,6 +153,9 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <input title="La serie no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_serie" minlength="6" maxlength="17">
+                                        <div  id="concesion_serielabelerror" style="visibility:hidden" class="errorlabel">
+                                            Serie invalida
+                                        </div>
                                     </div>
                                 </div>    
                                 <div class="col-md-3">
@@ -154,6 +166,9 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <input title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17"  pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="6" maxlength="17">
+                                        <div  id="concesion_motorlabelerror" style="visibility:hidden" class="errorlabel">
+                                            Motor invalido
+                                        </div>
                                     </div>
                                 </div>        
                             </div>
@@ -208,51 +223,51 @@
                             </div>
 
                             <div class="row bordered-row">
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                             <strong>2.9 Certificado Anterior</strong>
                                     </div>
                                 </div>
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <strong><span id="concesion_cerant"></span></strong>
                                     </div>
                                 </div>    
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                             <strong>2.10 Número de Registro DGT </strong>
                                     </div>
                                 </div>
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <strong><span id="concesion_numregant"></span></strong>
                                     </div>
                                 </div>        
                             </div>
 
-                            <div class="row bordered-row-grey">
-                                <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12 bordered-row-grey">
                                     <div class="d-flex justify-content-center">
                                             <strong style="font-size: 16px;text-align: center;">NUMERO DE REGISTRO: <span id="concesion_numeroregistro"></span></strong>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row bordered-row-grey">
-                                <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12 bordered-row-grey">
                                     <div class="form-group">
                                             <strong style="font-size: 16px;">3. DATOS DEL SERVICIO</strong>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="row bordered-row">
-                                <div class="col-md-3">
+                            <div class="row">
+                                <div class="col-md-3 bordered-row">
                                     <div class="form-group">
                                             <strong>3.1 Categoría</strong>
                                     </div>
                                 </div>
-                                <div class="col-md-9">
+                                <div class="col-md-9 bordered-row">
                                     <div class="form-group">
                                             <strong><span id="concesion_categoria"></span></strong>
                                     </div>
@@ -264,8 +279,8 @@
                                 <div class="form-group">&nbsp;</div></div>
                             </div>
 
-                            <div class="row bordered-row-grey">
-                                <div class="col-md-12">
+                            <div class="row">
+                                <div class="col-md-12 bordered-row-grey">
                                     <div class="form-group">
                                             <strong style="font-size: 16px;">E. EXTRAS</strong>
                                     </div>
@@ -273,48 +288,60 @@
                             </div>
 
                             <div class="row bordered-row">
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                             <strong id="combustiblelabel">E.1 Combustible</strong>
                                     </div>
                                 </div>
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <input title="El combustible puede ser DIESEL, GASOLINA y GAS LICUADO" pattern="^[a-zA-Z]{6,10}$" class="form-control form-control-sm form-control-unbordered test-controls" id="combustible" minlength="6" maxlength="10">
+                                        <div  id="combustiblelabelerror" style="visibility:hidden" class="errorlabel">
+                                            Combustible de la unidad invalido
+                                        </div>
                                     </div>
                                 </div>    
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                             <strong id="capacidadlabel">E.2 Capacidad en Kg</strong>
                                     </div>
                                 </div>
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{3,8}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="17">
+                                        <div  id="capacidadlabelerror" style="visibility:hidden" class="errorlabel">
+                                            Capacidad de la unidad invalida
+                                        </div>
                                     </div>
                                 </div>        
                             </div>
 
                             <div class="row bordered-row">
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                             <strong id="altolabel">E.3 Alto</strong>
                                     </div>
                                 </div>
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <input  title="Alto del unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="alto" minlength="6" maxlength="17">
+                                        <div id="altolabelerror" style="visibility:hidden" class="errorlabel">
+                                            Alto de la unidad invalido
+                                        </div>
                                     </div>
                                 </div>    
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                             <strong id="largolabel">E.4 Largo</strong>
                                     </div>
                                 </div>
 
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <input title="Largo de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="largo" minlength="6" maxlength="17">
+                                        <div id="largolabelerror" style="visibility:hidden" class="errorlabel">
+                                            Largo de la unidad invalido
+                                        </div>
                                     </div>
                                 </div>        
 
@@ -322,15 +349,18 @@
 
                             <div class="row bordered-row">
 
-                                <div class="col-md-3 bordered-row">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                             <strong id="ancholabel">E.5 Ancho</strong>
                                     </div>
                                 </div>
 
-                                <div class="col-md-9 bordered-row">
+                                <div class="col-md-9">
                                     <div class="form-group">
                                         <input title="El ancho de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="ancho" minlength="6" maxlength="17">
+                                        <div  id="ancholabelerror" style="visibility:hidden" class="errorlabel">
+                                            Ancho de la unidad invalido
+                                        </div>
                                     </div>
                                 </div> 
 

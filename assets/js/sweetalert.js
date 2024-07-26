@@ -1,11 +1,19 @@
 //*******************************************************/
 //******INICIO: FUNCION DE ALERTA PARA LOS ERRORES.******/
 //*******************************************************/
-function fSweetAlertEventNormal(title, msg, type, errorcode = null) {
+function fSweetAlertEventNormal(title, msg, type, errorcode = 'success') {
     if (errorcode != null) {
       console.log('errorcode:',errorcode);
     }
-    Swal.fire({
+
+    const swalWithBootstrapButtons = Swal.mixin({
+      customClass: {
+        confirmButton: "btn btn-"+errorcode
+      },
+      buttonsStyling: false
+    });
+  
+    swalWithBootstrapButtons.fire({
       title: title,
       text: msg,
       icon: type,
