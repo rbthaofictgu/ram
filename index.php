@@ -41,13 +41,12 @@ include_once('configuracion/configuracion_js.php');
         <hr>
         <hr>
       <div class="row">
-        <div class="col-md-10">
+        <div class="col-md-8">
           <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 400;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA  
         </div>
-        <div class="col-md-2 justify-content-rigth">
-          <button style="display: none;" id="addConcesion" type="button" class="btn btn-success">
-            <i title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud" 
-            class="fa-solid fa-plus fa-x2"></i>Concesión
+        <div class="col-md-4 d-flex justify-content-end">
+          <button title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud"  style="display: none;" id="addConcesion" type="button" class="btn btn-success">
+            <i class="fa-solid fa-plus fa-x2"></i> Agregar Concesión
           </button> 
           </h6>
         </div>
@@ -126,7 +125,7 @@ include_once('configuracion/configuracion_js.php');
                 <div class="col-md-3">
                   <div class="form-group">
                     <label id="emailapoderadolabel" for="emailapoderado">Correo Electrónico:</label>
-                    <input  pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$' type="email" class="form-control form-control-sm test-controls" id="emailapoderado" placeholder="rbthaofic@gmail.com">
+                    <input  pattern='^[^\s@]+@[^\s@]+\.[^\s@]+$' style="text-transform: uppercase;" type="email" class="form-control form-control-sm test-controls" id="emailapoderado" placeholder="rbthaofic@gmail.com">
                     <div id="emailapoderadolabelerror" style="visibility:hidden" class="errorlabel">
                           El correo electrónico es invalido.
                     </div>
@@ -183,7 +182,7 @@ include_once('configuracion/configuracion_js.php');
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>                  
-                <div class="col-md-2">
+                <div class="col-md-2 d-flex justify-content-end">
                   <button id="btnnext0"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>                  
               </div>                  
@@ -273,7 +272,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-6">
                     <div class="form-group">
                       <label id="telsolilabel" for="telsoli">Teléfono/Celular:</label>
-                      <input pattern="[0-9]{8}" type="text" class="form-control form-control-sm test-controls" id="telsoli" placeholder="95614451" maxlength="8">
+                      <input pattern="[0-9]{8}" type="text" class="form-control form-control-sm test-controls" id="telsoli" placeholder="Ej: 95614451" maxlength="8">
                     </div>
                     <div id="telsolilabelerror" style="visibility: hidden;" class="errorlabel">
                             Teléfono Invalido, debe tener  8 Digitos.
@@ -282,7 +281,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-6">
                     <div class="form-group">
                       <label id="emailsolilabel" for="emailsoli">Correo Electrónico:</label>
-                      <input pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$"  type="email" class="form-control form-control-sm test-controls" id="emailsoli" placeholder="rbthaofic@gmail.com">
+                      <input pattern="^[^\s@]+@[^\s@]+\.[^\s@]+$" style="text-transform: uppercase;" type="email" class="form-control form-control-sm test-controls" id="emailsoli" placeholder="Ej: rbthaofic@gmail.com">
                     </div>
                     <div id="emailsolilabelerror" style="visibility: hidden;" class="errorlabel">
                             Email Invalido
@@ -300,59 +299,29 @@ include_once('configuracion/configuracion_js.php');
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>                  
-                <div class="col-md-2 justify-content-right">
+                <div class="col-md-2 d-flex justify-content-end">
                   <button id="btnnext1"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>                  
               </div>                  
 
-                <br>
-                <br>
+              <div class="row">
+                <div class="col-md-12">
+                  &nbsp;
+                </div>
+              </div>
                 
             </div>
 
-           
-            <div id="test-form-4" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger4">
-              <hr>
-                <div class="row">
-                  <div class="col-md-2">
-                    <button id="btnprevious4" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
-                  </div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>                  
-                  <div class="col-md-2 justify-content-right">
-                    <button id="btnnext4"   type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
-                  </div>                  
-              </div>
-            </div>
 
-              <div id="test-form-5" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger5">
-                <hr>
-                <div class="row">
-                  <div class="col-md-2">
-                    <button id="btnprevious6" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
-                  </div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>
-                  <div class="col-md-2"></div>                  
-                  <div class="col-md-2 justify-content-right">
-                    <button id="btnnext6" title="Una presionado este botón y finalizado el proceso se da por concluido el registro de Expedientes Mavins. Ya no podrá continuar agregando más concesiones y/o tramites y el expediente pasa a revisión a espera del pago para trabajarlo."
-                    type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (F10)</button>
-                  </div>                  
-              </div>
-              </div>
-
-              <div id="test-form-3" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger3">
-              <div class="d-flex justify-content-center row">
+            <div id="test-form-3" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger3">
+              <div id="idVista" class="row d-flex justify-content-center">
                 <!-- **************************************************************************************************************** -->
                 <!-- ID de Vista -->
                 <!-- **************************************************************************************************************** -->
                 <div class="col-md-1">
                   <div class="form-group">&nbsp;</div>
                 </div>
-                <div id="idVista" class="col-md-10">
+                <div class="col-md-10">
                   <span id="idVistaSTPC">
                     <!-- ******************************************************* -->
                     <!-- Ingreso de Concesion -->
@@ -379,349 +348,381 @@ include_once('configuracion/configuracion_js.php');
                         </div>
                       </div>
                     </div>                 
+                    <div class="row unbordered-row">
+                            <div class="col-md-12 background-top-row-stpc"><div class="form-group"></div>
+                        </div>
 
-                      <div class="row unbordered-row">
-                          <div class="col-md-12 background-top-row-stpc"><div class="form-group"></div>
-                      </div>
-
-                      
-                      <span class="background-middle-row-stpc unbordered-row">
-                          <div class="row">
-                              <div class="col-md-12">
-                                  <div class="form-group">&nbsp;</div>
-                              </div>
-                          </div>
-                          <div class="row">
-                              <div class="col-md-12">
-                                      <h4 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp"></span></h4>
-                              </div>
-                          </div>
-                          <div class="row">
-                              <div class="col-md-12">
-                                      <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span>  <span id="concesion_concesion"></span></h6>
-                              </div>                          
-                          </div>
-                          <div class="row unbordered-row">
-                              <div class="col-md-12">
-                                  <h4 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION:  <span id="concesion_fecven"></span></h4>
-                              </div>
-                          </div>
-                      </span>
-
-                      <span class="background-botton-row-stpc unbordered-row">
-
-                          <div class="row">
-                              <div class="col-md-12">
-                                  <div class="form-group">&nbsp;</div>
-                              </div>
-                          </div>
-
-
-                          <div class="row bordered-row-grey">
-                              <div class="col-md-12">
-                                  <div class="form-group">
-                                          <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
-                                  </div>
-                              </div>
-                          </div>
-
-                          <div class="row bordered-row">
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong>1.1 Concesionario</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-9">
-                                  <div class="form-group">
-                                          <strong><span id="concesion_nombreconcesionario"></span></strong>
-                                  </div>
-                              </div>    
-                          </div>
-                          <div class="row bordered-row">
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong>1.2 Afiliado/Socio </strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-9">
-                                  <div class="form-group">
-                                          <strong><span id="concesion_afiliado">NO APLICA</span></strong>
-                                  </div>
-                              </div>    
-                          </div>
-
-                          <div class="row bordered-row">
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong>1.3 RTN Concesionario </strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-9">
-                                  <div class="form-group">
-                                          <strong><span id="concesion_rtn"></span></strong>
-                                  </div>
-                              </div>    
-                          </div>
-
-                          <div class="row bordered-row">
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong>1.4 Fecha Expedición </strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong><span id="concesion_fecexp"></span></strong>
-                                  </div>
-                              </div>    
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong>1.5 Resolución</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong><span id="concesion_resolucion"></span></strong>
-                                  </div>
-                              </div>        
-                          </div>
-
-                          <div class="row bordered-row-grey">
-                              <div class="col-md-12">
-                                  <div class="form-group">
-                                          <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
-                                          <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo" class="btn btn-primary btn-sm" style="float:right;">OBTENER INFORMACIÓN DEL <i class="fa-solid fa-van-shuttle"></i><strong> DESDE EL IP</strong></button>
-                                  </div>
-                              </div>
-                          </div>
-
-                          <div class="row p-0m-0">
-                              <div class="col-md-3 bordered-row">
-                                  <strong id="concesion_vinlabel">2.1 VIN</strong>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_vin" minlength="6" maxlength="17">
-                                  </div>
-                              </div>    
-                              <div class="col-md-3 bordered-row">
-                                  <strong id="concesion_placalabel">2.2 Placa</strong>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input id="concesion_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>            
-                                  </div>
-                              </div>        
-                          </div>
-
-                          <div class="row p-0m-0">
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="concesion_serielabel">2.3 Serie</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input title="La serie no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_serie" minlength="6" maxlength="17">
-                                  </div>
-                              </div>    
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="concesion_motorlabel">2.4 Motor</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17"  pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="6" maxlength="17">
-                                  </div>
-                              </div>        
-                          </div>
-
-                          <div class="row p-0m-0">
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="marcaslabel">2.5 Marca</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <select data-valor="0"  id="marcas" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
-                                      </select>
-                                  </div>
-                              </div>    
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="coloreslabel">2.6 Color</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <select data-valor="0"  id="colores" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
-                                      </select>
-                                  </div>
-                              </div>        
-                          </div>
-
-                          <div class="row p-0m-0">
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="anioslabel">2.7 Año</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <select data-valor="0"  id="anios" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
-                                      </select>
-                                  </div>
-                              </div>    
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong>2.8 Tipo</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <span id="concesion_tipovehiculo"></span>
-                                  </div>
-                              </div>        
-                          </div>
-
-                          <div class="row p-0m-0">
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong>2.9 Certificado Anterior</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <strong><span id="concesion_cerant"></span></strong>
-                                  </div>
-                              </div>    
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong>2.10 Número de Registro DGT </strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <strong><span id="concesion_numregant"></span></strong>
-                                  </div>
-                              </div>        
-                          </div>
-
-                          <div class="row bordered-row-grey">
-                              <div class="col-md-12">
-                                  <div class="d-flex justify-content-center">
-                                          <strong style="font-size: 16px;text-align: center;">NUMERO DE REGISTRO: <span id="concesion_numeroregistro"></span></strong>
-                                  </div>
-                              </div>
-                          </div>
-
-                          <div class="row bordered-row-grey">
-                              <div class="col-md-12">
-                                  <div class="form-group">
-                                          <strong style="font-size: 16px;">3. DATOS DEL SERVICIO</strong>
-                                  </div>
-                              </div>
-                          </div>
-
-                          <div class="row bordered-row">
-                              <div class="col-md-3">
-                                  <div class="form-group">
-                                          <strong>3.1 Categoría</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-9">
-                                  <div class="form-group">
-                                          <strong><span id="concesion_categoria"></span></strong>
-                                  </div>
-                              </div>    
-                          </div>
-
-                          <div class="row">
-                              <div class="col-md-12">
-                              <div class="form-group">&nbsp;</div></div>
-                          </div>
-
-                          <div class="row bordered-row-grey">
-                              <div class="col-md-12">
-                                  <div class="form-group">
-                                          <strong style="font-size: 16px;">E. EXTRAS</strong>
-                                  </div>
-                              </div>
-                          </div>
-
-                          <div class="row p-0m-0">
-
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="combustiblelabel">E.1 Combustible</strong>
-                                  </div>
-                              </div>
-
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input title="El combustible puede ser DIESEL, GASOLINA y GAS LICUADO" pattern="^[a-zA-Z]{6,11}$" 
-                                      class="form-control form-control-sm form-control-unbordered test-controls"
-                                      id="combustible" minlength="6" maxlength="10">
-                                  </div>
-                              </div>    
-
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="capacidadlabel">E.2 Capacidad en Kg</strong>
-                                  </div>
-                              </div>
-
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{3,8}(\.\d{1,2})?$" 
-                                      class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="17">
-                                  </div>
-                              </div>        
-
-                          </div>
-
-                          <div class="row p-0m-0">
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="altolabel">E.3 Alto</strong>
-                                  </div>
-                              </div>
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input  title="Alto del unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="alto" minlength="6" maxlength="17">
-                                  </div>
-                              </div>    
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="largolabel">E.4 Largo</strong>
-                                  </div>
-                              </div>
-
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                      <input title="Largo de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="largo" minlength="6" maxlength="17">
-                                  </div>
-                              </div>        
-
-                          </div>
-
-                          <div class="row p-0m-0">
-
-                              <div class="col-md-3 bordered-row">
-                                  <div class="form-group">
-                                          <strong id="ancholabel">E.5 Ancho</strong>
-                                  </div>
-                              </div>
-
-                              <div class="col-md-9 bordered-row">
-                                  <div class="form-group">
-                                      <input title="El ancho de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="ancho" minlength="6" maxlength="17">
-                                  </div>
-                              </div> 
-                          </div>
+                          
+                        <span class="background-middle-row-stpc unbordered-row">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">&nbsp;</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                        <h4 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp"></span></h4>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                        <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span>  <span id="concesion_concesion"></span></h6>
+                                </div>                          
+                            </div>
+                            <div class="row unbordered-row">
+                                <div class="col-md-12">
+                                    <h4 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION:  <span id="concesion_fecven"></span></h4>
+                                </div>
+                            </div>
                         </span>
+                        <span class="background-botton-row-stpc unbordered-row">
+
+                              <div class="row">
+                                  <div class="col-md-12">
+                                      <div class="form-group">&nbsp;</div>
+                                  </div>
+                              </div>
+
+
+                              <div class="row bordered-row-grey">
+                                  <div class="col-md-12">
+                                      <div class="form-group">
+                                              <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="row bordered-row">
+
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                            <strong>1.1 Concesionario</strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-9">
+                                    <div class="form-group">
+                                            <strong><span id="concesion_nombreconcesionario"></span></strong>
+                                    </div>
+                                </div>    
+                              </div>
+
+                              <div class="row bordered-row">
+
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong>1.2 Afiliado/Socio </strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-9">
+                                      <div class="form-group">
+                                              <strong><span id="concesion_afiliado">NO APLICA</span></strong>
+                                      </div>
+                                  </div>    
+
+                              </div>
+
+                              <div class="row bordered-row">
+
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong>1.3 RTN Concesionario </strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-9">
+                                      <div class="form-group">
+                                              <strong><span id="concesion_rtn"></span></strong>
+                                      </div>
+                                  </div>    
+
+                              </div>
+
+                              <div class="row bordered-row">
+
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong>1.4 Fecha Expedición </strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong><span id="concesion_fecexp"></span></strong>
+                                      </div>
+                                  </div>    
+
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong>1.5 Resolución</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong><span id="concesion_resolucion"></span></strong>
+                                      </div>
+                                  </div>        
+
+                              </div>
+
+                              <div class="row bordered-row-grey">
+                                  <div class="col-md-12">
+                                      <div class="form-group">
+                                              <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
+                                              <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo" class="btn btn-primary btn-sm" style="float:right;">OBTENER INFORMACIÓN DEL <i class="fa-solid fa-van-shuttle"></i><strong> DESDE EL IP</strong></button>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="row p-0m-0">
+
+                                  <div class="col-md-3 bordered-row">
+                                      <strong id="concesion_vinlabel">2.1 VIN</strong>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input style="text-transform: uppercase;" title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_vin" minlength="6" maxlength="17">
+                                      </div>
+                                  </div>    
+
+                                  <div class="col-md-3 bordered-row">
+                                      <strong id="concesion_placalabel">2.2 Placa</strong>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input style="text-transform: uppercase;" id="concesion_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>            
+                                      </div>
+                                  </div>        
+
+                              </div>
+
+                              <div class="row p-0m-0">
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="concesion_serielabel">2.3 Serie</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input style="text-transform: uppercase;" title="La serie no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_serie" minlength="6" maxlength="17">
+                                      </div>
+                                  </div>    
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="concesion_motorlabel">2.4 Motor</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17"  pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="6" maxlength="17">
+                                      </div>
+                                  </div>        
+
+                              </div>
+
+                              <div class="row p-0m-0">
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="marcaslabel">2.5 Marca</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <select data-valor="0"  id="marcas" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                                          </select>
+                                      </div>
+                                  </div>    
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="coloreslabel">2.6 Color</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <select data-valor="0"  id="colores" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                                          </select>
+                                      </div>
+                                  </div>        
+
+                              </div>
+
+                              <div class="row p-0m-0">
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="anioslabel">2.7 Año</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <select data-valor="0"  id="anios" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                                          </select>
+                                      </div>
+                                  </div>    
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong>2.8 Tipo</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <span id="concesion_tipovehiculo"></span>
+                                      </div>
+                                  </div>        
+
+                              </div>
+
+                              <div class="row p-0m-0">
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong>2.9 Certificado Anterior</strong>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <strong><span id="concesion_cerant"></span></strong>
+                                      </div>
+                                  </div>    
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong>2.10 Número de Registro DGT </strong>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <strong><span id="concesion_numregant"></span></strong>
+                                      </div>
+                                  </div>        
+                              </div>
+
+                              <div class="row bordered-row-grey">
+                                  <div class="col-md-12">
+                                      <div class="d-flex justify-content-center">
+                                              <strong style="font-size: 16px;text-align: center;">NUMERO DE REGISTRO: <span id="concesion_numeroregistro"></span></strong>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="row bordered-row-grey">
+                                  <div class="col-md-12">
+                                      <div class="form-group">
+                                              <strong style="font-size: 16px;">3. DATOS DEL SERVICIO</strong>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="row bordered-row">
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong>3.1 Categoría</strong>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-9">
+                                      <div class="form-group">
+                                              <strong><span id="concesion_categoria"></span></strong>
+                                      </div>
+                                  </div>    
+                              </div>
+
+                              <div class="row">
+                                  <div class="col-md-12">
+                                  <div class="form-group">&nbsp;</div></div>
+                              </div>
+
+                              <div class="row bordered-row-grey">
+                                  <div class="col-md-12">
+                                      <div class="form-group">
+                                              <strong style="font-size: 16px;">E. EXTRAS</strong>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="row p-0m-0">
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="combustiblelabel">E.1 Combustible</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input style="text-transform: uppercase;" title="El combustible puede ser DIESEL, GASOLINA y GAS LICUADO" pattern="^[a-zA-Z]{6,11}$" 
+                                          class="form-control form-control-sm form-control-unbordered test-controls"
+                                          id="combustible" minlength="6" maxlength="10">
+                                      </div>
+                                  </div>    
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="capacidadlabel">E.2 Capacidad en Kg</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{3,8}(\.\d{1,2})?$" 
+                                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="17">
+                                      </div>
+                                  </div>        
+
+                              </div>
+
+                              <div class="row p-0m-0">
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                            <strong id="altolabel">E.3 Alto</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                        <input  title="Alto del unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="alto" minlength="6" maxlength="17">
+                                    </div>
+                                </div>    
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                            <strong id="largolabel">E.4 Largo</strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                        <input title="Largo de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="largo" minlength="6" maxlength="17">
+                                    </div>
+                                </div>        
+                              </div>
+
+                              <div class="row p-0m-0">
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="ancholabel">E.5 Ancho</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-9 bordered-row">
+                                      <div class="form-group">
+                                          <input title="El ancho de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="ancho" minlength="6" maxlength="17">
+                                      </div>
+                                  </div> 
+                              </div>
+                        </span>
+                    </div>
                   </span>
                 </div>
                 <div class="col-md-1">
@@ -758,6 +759,443 @@ include_once('configuracion/configuracion_js.php');
               </div>
 
             </div>               
+
+            
+            <div id="test-form-4" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger4">
+
+              <!-------             -->    
+              <!------- FINAL VISTA -->    
+              <!-------             -->    
+              <div id="idVista1" class="row d-flex justify-content-center">
+                  <div id="concesion_tramites" class="col-md-5">
+                  </div>
+                  <div class="col-md-7">
+                    <span id="idVistaSTPC1">
+                      <div class="row unbordered-row">
+                              <div class="col-md-12 background-top-row-stpc"><div class="form-group"></div>
+                          </div>
+
+                            
+                          <span class="background-middle-row-stpc unbordered-row">
+                              <div class="row">
+                                  <div class="col-md-12">
+                                      <div class="form-group">&nbsp;</div>
+                                  </div>
+                              </div>
+                              <div class="row">
+                                  <div class="col-md-12">
+                                          <h4 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN:  <span id="concesion1_perexp"></span></h4>
+                                  </div>
+                              </div>
+                              <div class="row">
+                                  <div class="col-md-12">
+                                          <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span>  <span id="concesion1_concesion"></span></h6>
+                                  </div>                          
+                              </div>
+                              <div class="row unbordered-row">
+                                  <div class="col-md-12">
+                                      <h4 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION:  <span id="concesion1_fecven"></span></h4>
+                                  </div>
+                              </div>
+                          </span>
+                          <span class="background-botton-row-stpc unbordered-row">
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <div class="form-group">&nbsp;</div>
+                                    </div>
+                                </div>
+
+
+                                <div class="row bordered-row-grey">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                                <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row bordered-row">
+
+                                  <div class="col-md-3">
+                                      <div class="form-group">
+                                              <strong>1.1 Concesionario</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-9">
+                                      <div class="form-group">
+                                              <strong><span id="concesion1_nombreconcesionario"></span></strong>
+                                      </div>
+                                  </div>    
+                                </div>
+
+                                <div class="row bordered-row">
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                                <strong>1.2 Afiliado/Socio </strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-9">
+                                        <div class="form-group">
+                                                <strong><span id="concesion1_afiliado">NO APLICA</span></strong>
+                                        </div>
+                                    </div>    
+
+                                </div>
+
+                                <div class="row bordered-row">
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                                <strong>1.3 RTN Concesionario </strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-9">
+                                        <div class="form-group">
+                                                <strong><span id="concesion1_rtn"></span></strong>
+                                        </div>
+                                    </div>    
+
+                                </div>
+
+                                <div class="row bordered-row">
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                                <strong>1.4 Fecha Expedición </strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                                <strong><span id="concesion1_fecexp"></span></strong>
+                                        </div>
+                                    </div>    
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                                <strong>1.5 Resolución</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                                <strong><span id="concesion1_resolucion"></span></strong>
+                                        </div>
+                                    </div>        
+
+                                </div>
+
+                                <div class="row bordered-row-grey">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                                <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
+                                                <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo1" class="btn btn-primary btn-sm" style="float:right;">OBTENER INFORMACIÓN DEL <i class="fa-solid fa-van-shuttle"></i><strong> DESDE EL IP</strong></button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row p-0m-0">
+
+                                    <div class="col-md-3 bordered-row">
+                                        <strong id="concesion1_vinlabel">2.1 VIN</strong>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <input style="text-transform: uppercase;" title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_vin" minlength="6" maxlength="17">
+                                        </div>
+                                    </div>    
+
+                                    <div class="col-md-3 bordered-row">
+                                        <strong id="concesion1_placalabel">2.2 Placa</strong>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <input style="text-transform: uppercase;" id="concesion1_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>            
+                                        </div>
+                                    </div>        
+
+                                </div>
+
+                                <div class="row p-0m-0">
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="concesion1_serielabel">2.3 Serie</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <input style="text-transform: uppercase;" title="La serie no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_serie" minlength="6" maxlength="17">
+                                        </div>
+                                    </div>    
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="concesion1_motorlabel">2.4 Motor</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17"  pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_motor" minlength="6" maxlength="17">
+                                        </div>
+                                    </div>        
+
+                                </div>
+
+                                <div class="row p-0m-0">
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="marcas1label">2.5 Marca</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <select data-valor="0"  id="marcas1" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                                            </select>
+                                        </div>
+                                    </div>    
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="colores1label">2.6 Color</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <select data-valor="0"  id="colores1" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                                            </select>
+                                        </div>
+                                    </div>        
+
+                                </div>
+
+                                <div class="row p-0m-0">
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="anios1label">2.7 Año</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <select data-valor="0"  id="anios1" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                                            </select>
+                                        </div>
+                                    </div>    
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong>2.8 Tipo</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <span id="concesion1_tipovehiculo"></span>
+                                        </div>
+                                    </div>        
+
+                                </div>
+
+                                <div class="row p-0m-0">
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong>2.9 Certificado Anterior</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <strong><span id="concesion1_cerant"></span></strong>
+                                        </div>
+                                    </div>    
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong>2.10 Número de Registro DGT </strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <strong><span id="concesion1_numregant"></span></strong>
+                                        </div>
+                                    </div>        
+                                </div>
+
+                                <div class="row bordered-row-grey">
+                                    <div class="col-md-12">
+                                        <div class="d-flex justify-content-center">
+                                                <strong style="font-size: 16px;text-align: center;">NUMERO DE REGISTRO: <span id="concesion1_numeroregistro"></span></strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row bordered-row-grey">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                                <strong style="font-size: 16px;">3. DATOS DEL SERVICIO</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row bordered-row">
+                                    <div class="col-md-3">
+                                        <div class="form-group">
+                                                <strong>3.1 Categoría</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-9">
+                                        <div class="form-group">
+                                                <strong><span id="concesion1_categoria"></span></strong>
+                                        </div>
+                                    </div>    
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                    <div class="form-group">&nbsp;</div></div>
+                                </div>
+
+                                <div class="row bordered-row-grey">
+                                    <div class="col-md-12">
+                                        <div class="form-group">
+                                                <strong style="font-size: 16px;">E. EXTRAS</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row p-0m-0">
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="combustible1label">E.1 Combustible</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <input style="text-transform: uppercase;" title="El combustible puede ser DIESEL, GASOLINA y GAS LICUADO" pattern="^[a-zA-Z]{6,11}$" 
+                                            class="form-control form-control-sm form-control-unbordered test-controls"
+                                            id="combustible1" minlength="6" maxlength="10">
+                                        </div>
+                                    </div>    
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="capacidad1label">E.2 Capacidad en Kg</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                            <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{3,8}(\.\d{1,2})?$" 
+                                            class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad1" minlength="6" maxlength="17">
+                                        </div>
+                                    </div>        
+
+                                </div>
+
+                                <div class="row p-0m-0">
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="alto1label">E.3 Alto</strong>
+                                      </div>
+                                  </div>
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input  title="Alto del unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="alto1" minlength="6" maxlength="17">
+                                      </div>
+                                  </div>    
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                              <strong id="largo1label">E.4 Largo</strong>
+                                      </div>
+                                  </div>
+
+                                  <div class="col-md-3 bordered-row">
+                                      <div class="form-group">
+                                          <input title="Largo de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="largo1" minlength="6" maxlength="17">
+                                      </div>
+                                  </div>        
+                                </div>
+
+                                <div class="row p-0m-0">
+
+                                    <div class="col-md-3 bordered-row">
+                                        <div class="form-group">
+                                                <strong id="ancho1label">E.5 Ancho</strong>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-9 bordered-row">
+                                        <div class="form-group">
+                                            <input title="El ancho de la unidad no puede tener menos de 1 caracteres ni más de 5" pattern="^\d{1,3}(\.\d{1,2})?$" class="form-control form-control-sm form-control-unbordered test-controls" id="ancho1" minlength="6" maxlength="17">
+                                        </div>
+                                    </div> 
+                                </div>
+                          </span>
+                      </div>
+                    </span>
+                  </div>
+              </div>
+              <!-------             -->    
+              <!------- FINAL VISTA -->    
+              <!-------             -->    
+              <div class="row">
+                <div class="col-md-12">
+                  &nbsp;
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-2">
+                  <button id="btnprevious3" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
+                </div>
+                <div class="col-md-2"></div>
+                <div class="col-md-2"></div>
+                <div class="col-md-2"></div>
+                <div class="col-md-2"></div>                  
+                <div class="col-md-2 d-flex justify-content-end">
+                  <button id="btnnext3" title="Al presionar este boton ira a la pantalla de finalizacion (recuerde que aun podra regresar a las pantallas anteriores)"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
+                </div>                  
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  &nbsp;
+                </div>
+              </div>
+
+
+            </div>
+
+              <div id="test-form-5" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger5">
+                <hr>
+                <div class="row">
+                 <div div class="col-md-2">
+                    <button id="btnprevious4" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
+                  </div>
+                  <div class="col-md-2"></div>
+                  <div class="col-md-2"></div>
+                  <div class="col-md-2"></div>
+                  <div class="col-md-2"></div>                  
+                  <div class="col-md-2 d-flex justify-content-end">
+                    <button id="btnnext4" title="Una presionado este botón y finalizado el proceso se da por concluido el registro de la PREFORMA. Ya no podrá continuar agregando más concesiones y/o tramites y el expediente pasa a revisión de los abogados  a espera del pago para trabajarlo."
+                    type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (F10)</button>
+                  </div>                  
+              </div>
+              </div>
 
 
           </div>

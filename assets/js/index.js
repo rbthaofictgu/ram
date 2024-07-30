@@ -222,6 +222,8 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
       .then(function (datos) {
+        console.log('datosomison');
+        console.log(datos);
         if (typeof datos[0] != 'undefined') {
           if (datos[1].length > 0) {
             fLlenarSelect('entregadocs',datos[1],null,false,{text: 'SELECCIONE UN LUGAR DE ENTREGA', value: '-1'})            
@@ -576,6 +578,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (concesionlabel != null) {
       document.getElementById("concesionlabel").innerHTML = datos[1][0]['Tipo_Concesion'];
     }
+    console.log(datos[1][0]['Tramites']);
+    document.getElementById("concesion_tramites").innerHTML = datos[1][0]['Tramites'];
     document.getElementById("concesion_concesion").innerHTML = datos[1][0]['N_Certificado'];
     document.getElementById("concesion_perexp").innerHTML = datos[1][0]['N_Permiso_Explotacion'];
     document.getElementById("concesion_fecven").innerHTML = datos[1][0]['Fecha Vencimiento Certificado'];
@@ -753,7 +757,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if(currentstep != 2) {
       stepperForm.to(3);    
      } else {
-      setTimeout(showModalConcesiones, 250);
+      setTimeout(showModalConcesiones, 100);
      }
   });
 
@@ -1089,20 +1093,154 @@ document.addEventListener('DOMContentLoaded', function () {
 
 })      
 
+  function fReviewCheck(el) {
+    // Separando el valor del input
+    const [tipo_tramite,clase_tramite,acronimo_tipo,acronimo_clase] = el.value.split('_');
+
+    // Verificadno si es cambio de unidad o cambio de placa
+    if (acronimo_clase && (acronimo_clase === 'CU' || acronimo_clase === 'CL')) {
+      // Cache the DOM element
+      const element = document.getElementById(`concesion_tramite_placa_${acronimo_clase}`);
+      if (element) {
+        if (el.checked) {
+          console.log('el.checked CU CL');
+          element.style.display = "inline";
+          // Si es cambio de unidad
+          if (acronimo_clase === 'CU') {
+            document.getElementById('row_tramite_M_CL').style.display = "none";
+            document.getElementById('row_tramite_M_CM').style.display = "none";
+            document.getElementById('row_tramite_M_CC').style.display = "none";
+            document.getElementById('row_tramite_M_CS').style.display = "none";
+          }else{
+            // Si cambio de placa
+            document.getElementById('row_tramite_M_CU').style.display = "none";
+            document.getElementById('row_tramite_M_CM').style.display = "contents";
+            document.getElementById('row_tramite_M_CC').style.display = "contents";
+            document.getElementById('row_tramite_M_CS').style.display = "contents";
+          }
+        } else {
+          console.log('el.UNchecked CU y CL');
+          element.style.display = "none";
+          element.value = "";
+          if (acronimo_clase === 'CU') {
+            document.getElementById('row_tramite_M_CL').style.display = "contents";
+            document.getElementById('row_tramite_M_CM').style.display = "contents";
+            document.getElementById('row_tramite_M_CC').style.display = "contents";
+            document.getElementById('row_tramite_M_CS').style.display = "contents";
+          }else{
+            // Si es cambio de placa
+            if (document.getElementById('row_tramite_M_CL').checked == false && document.getElementById('row_tramite_M_CM').checked == false && 
+              document.getElementById('row_tramite_M_CC').checked == false && document.getElementById('row_tramite_M_CS').checked == false) {
+              document.getElementById('row_tramite_M_CU').style.display = "contents";
+            }
+          }
+        }
+      } else {
+        console.error(`Element with id 'concesion_tramite_placa_${acronimo_clase}' not found.`);
+      }
+    } else {
+      if (acronimo_tipo === 'M') {
+        if (el.checked) {
+            // Si cambio de placa
+            document.getElementById('row_tramite_M_CU').style.display = "none";
+            document.getElementById('row_tramite_M_CL').style.display = "contents";
+            document.getElementById('row_tramite_M_CM').style.display = "contents";
+            document.getElementById('row_tramite_M_CC').style.display = "contents";
+            document.getElementById('row_tramite_M_CS').style.display = "contents";
+        } else {
+          const checkboxIds = ['IHTTTRA-03_CLATRA-15_M_CL', 'IHTTTRA-03_CLATRA-17_M_CM', 'IHTTTRA-03_CLATRA-18_M_CC', 'IHTTTRA-03_CLATRA-19_M_CS'];
+          var checked = false;
+          for (let id of checkboxIds) {
+            const checkbox = document.getElementById(id);
+            if (checkbox && checkbox.checked) {
+              var checked = true;
+            }
+          }          
+          if (checked == false) {
+            document.getElementById('row_tramite_M_CU').style.display = "inline";
+          }
+        }
+      } else {
+        if (acronimo_tipo === 'R') {
+          if (el.checked) {
+            if (acronimo_clase === 'CO') {
+              document.getElementById('row_tramite_X_CO').style.display = "none";
+            } else {
+              if (acronimo_clase === 'PE') {
+                document.getElementById('row_tramite_X_PE').style.display = "none";
+              } else {
+                if (acronimo_clase === 'PS') {
+                  document.getElementById('row_tramite_X_PS').style.display = "none";
+                }
+              }
+            }
+          } else {
+            if (acronimo_clase === 'CO') {
+              document.getElementById('row_tramite_X_CO').style.display = "inline";
+            } else {
+              if (acronimo_clase === 'PE') {
+                document.getElementById('row_tramite_X_PE').style.display = "inline";
+              }else {
+                if (acronimo_clase === 'PS') {
+                  document.getElementById('row_tramite_X_PS').style.display = "inline";
+                }
+              }
+            }
+          }
+        } else {
+          if (acronimo_tipo === 'X') {
+            if (el.checked) {
+              if (acronimo_clase === 'CO') {
+                document.getElementById('row_tramite_R_CO').style.display = "none";
+              } else {
+                if (acronimo_clase === 'PE') {
+                  document.getElementById('row_tramite_R_PE').style.display = "none";
+                } else {
+                  if (acronimo_clase === 'PS') {
+                    document.getElementById('row_tramite_R_PS').style.display = "none";
+                  }
+                }
+              }
+            } else {
+              if (acronimo_clase === 'CO') {
+                document.getElementById('row_tramite_R_CO').style.display = "inline";
+              } else {
+                if (acronimo_clase === 'PE') {
+                  document.getElementById('row_tramite_R_PE').style.display = "inline";
+                } else {
+                  if (acronimo_clase === 'PS') {
+                    document.getElementById('row_tramite_R_PS').style.display = "inline";
+                  }
+                }
+              }
+            }
+          }        
+        }
+      }
+    }
+  }
+  
 //**************************************************************************************/
 //Habilitando las teclas F2 y F10 para moverse entre los paneles
 //**************************************************************************************/
 document.addEventListener('keydown', function(event) {
   if (event.key === 'F2') {
     event.preventDefault();
-    document.getElementById('btnprevious'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
+    var btn = document.getElementById('btnprevious'+currentstep);
+    if (btn != null) {
+      btn.click();
+    } else {
+      console.log('No existe el boton: btnprevious'+currentstep);
+    }
   } else {
     if (event.key === 'F10') {
       event.preventDefault();
-      document.getElementById('btnnext'+currentstep).click(); // Simular un clic en el botón con el ID 'btn-f5-trigger'
+      var btn = document.getElementById('btnnext'+currentstep);
+      if (btn != null) {
+        btn.click();
+      } else {
+        console.log('No existe el boton: btnnext'+currentstep);
+      }  
     }
   }
-});
-
-
-  
+}); 

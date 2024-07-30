@@ -28,6 +28,8 @@ class Api_Ram {
 				$this->getMunicipios($_POST["filtro"]);								
 			} else if ($_POST["action"] == "get-aldeas") {				
 				$this->getAldeas($_POST["filtro"]);												
+			} else if ($_POST["action"] == "get-TipoTramiteyClaseTramite") {				
+				$this->getTipoTramiteyClaseTramite();																
 			} else { echo json_encode(array("error" =>1001,"errorhead" =>'OPPS',"errormsg" =>'NO SE ENCONTRO NINGUNA FUNCION EN EL API PARA LA ACCIÓN REQUERIDA'));}
 		}
 	}
@@ -112,16 +114,16 @@ class Api_Ram {
 	}
 
 	
-	function getEntregaUbicacion() {
-		$q = "SELECT ID_Ubicacion as value, DESC_Ubicacion as text FROM IHTT_DB.dbo.TB_Entrega_Ubicaciones";
+	function getEntregaUbicacion($filtro=null) {
+		$q = "SELECT ID_Ubicacion as value, DESC_Ubicacion as text FROM IHTT_DB.dbo.TB_Entrega_Ubicaciones   " . ($filtro ? "WHERE ID_Tipo_Solicitante = $filtro " : "") . "  order by DESC_Ubicacion ";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q,array());
 		} else {
 			echo json_encode($this->select($q,array()));
 		}
 	 }
-	function getTipoSolicitante() {
-		$q="SELECT * FROM [IHTT_SELD].[dbo].[TB_Tipo_Solicitante]";
+	function getTipoSolicitante($filtro=null) {
+		$q="SELECT * FROM [IHTT_SELD].[dbo].[TB_Tipo_Solicitante]  " . ($filtro ? "WHERE ID_Tipo_Solicitante = $filtro " : "") . "  order by DESC_Solicitante ";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q,array());
 		} else {
@@ -129,8 +131,8 @@ class Api_Ram {
 		}		
 	}
 
-	function getColor() {
-		$q = "SELECT ID_Color as value, DESC_Color as text FROM [IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] order by DESC_Color ";
+	function getColor($filtro=null) {
+		$q = "SELECT ID_Color as value, DESC_Color as text FROM [IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] " . ($filtro ? "WHERE ID_Color = $filtro " : "") . "  order by DESC_Color ";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q,array());
 		} else {
@@ -138,8 +140,8 @@ class Api_Ram {
 		}
 	 }
 
-	 function getMarca() {
-		$q = "SELECT ID_Marca as value, DESC_Marca as text FROM [IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] order by DESC_Marca ";
+	 function getMarca($filtro=null) {
+		$q = "SELECT ID_Marca as value, DESC_Marca as text FROM [IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] " . ($filtro ? "WHERE ID_Marca = $filtro " : "") . "  order by DESC_Marca ";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q,array());
 		} else {
@@ -157,6 +159,27 @@ class Api_Ram {
 			echo json_encode($datos);
 		}
 	 }	 
+
+	 function getAreaOperacion($filtro=null) {
+		$q = "SELECT [ID] as value, [DESC_Area_Operacion] as text FROM [IHTT_DB].[dbo].[TB_Area_Operacion] " . ($filtro ? "WHERE ID = $filtro " : "") . " order by [DESC_Area_Operacion]";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array());
+		} else {
+			echo json_encode($this->select($q,array()));
+		}
+	 }
+
+	 
+	 function getCategoriaEspecilizadaCarga($filtro=null) {
+		$q = "SELECT [ID_Clase_Servicio] as value, [DESC_Tipo] as text FROM [IHTT_DB].[dbo].[TB_Tipo_Categoria] " . ($filtro ? "WHERE ID = $filtro " : "") . " order by [DESC_Tipo]";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array());
+		} else {
+			echo json_encode($this->select($q,array()));
+		}
+	 }
+
+	 
 	 function getUnidad($tabla,$campo_filtro,$filtro,$campos) {
 		$q = "SELECT " . $campos .  " FROM ". $tabla . $campo_filtro . " = :ID_Vehiculo"; 
 		if (!isset($_POST["echo"])) {
@@ -213,6 +236,46 @@ class Api_Ram {
 		echo json_encode($datos);
 	}
 
+
+	function getTipoTramiteyClaseTramite ($filtro=Array()) {
+		$joined_string = "'" . implode("', '", $filtro) . "'";
+		$q =  "SELECT CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT( T.ID_Tipo_Tramite,'_'),C.ID_Clase_Tramite),'_'),T.Acronimo_Tramite),'_'),C.Acronimo_Clase) AS ID_CHECK,
+					CONCAT(CONCAT (T.DESC_Tipo_Tramite,' '),C.DESC_Clase_Tramite) as descripcion_larga,
+					T.ID_Tipo_Tramite,
+					C.ID_Tipo_Tramite as ID_Tipo_Tramite_Array,
+					T.DESC_Tipo_Tramite,
+					T.Acronimo_Tramite,
+					C.ID_Clase_Tramite,
+					C.DESC_Clase_Tramite,
+					C.Acronimo_Clase
+					FROM 
+						[IHTT_DB].[DBO].[TB_TIPO_TRAMITE] T
+					JOIN 
+						[IHTT_DB].[DBO].[TB_CLASE_TRAMITE] C
+					ON 
+						C.ID_Tipo_Tramite LIKE '%' + CAST(T.ID_Tipo_Tramite AS VARCHAR) + '%'
+					WHERE 
+						T.Es_Renovacion_Automatica = 1 
+						AND C.ID_Tipo_Tramite IS NOT NULL 
+						AND C.Acronimo_Clase IN (" . $joined_string . ")						
+					ORDER BY 
+						T.ID_Tipo_Tramite";
+		$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
+		$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-9"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
+		$rows = ($this->select($q,array()));
+		foreach ($rows as $row) {
+			if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
+				$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_CHECK"].'"></div><div class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2"><input style="display:none;text-transform: uppercase;" onclick="fGetDataIp()" id="concesion_tramite_placa_' .$row['Acronimo_Clase']. '" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" placeholder="PLACA" class="form-control form-control-sm test-controls" minlength="7" maxlength="7"></div></div>';
+			} else {
+				$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_CHECK"].'"></div><div class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2">&nbsp;</div></div>';
+			}
+		}
+		if (!isset($_POST["echo"])) {
+			return $html;
+		} else {
+			echo json_encode($html);
+		}	
+	}
 	/*************************************************************************************/
 	/* FUNCION PARA RECUPERAR EL SOLICITANTE
 	/*************************************************************************************/
@@ -224,30 +287,53 @@ class Api_Ram {
 		if ($datos[0]>0) {
 			$data[0]["Marcas"] = $this->getMarca();
 			$data[0]["Anios"] = $this->getAnios();
-			$data[0]["Colores"] = $this->getColor();
+			$data[0]["Colores"] = $this->getColor();	
+			$data[0]["Tipo_Categoria_Especilizada"] = '';
+			$data[0]["Desc_Categoria_Especilizada"] = '';
+			$data[0]["ID_Area_Operacion"] = '';
+			$data[0]["Desc_Area_Operacion"] = '';			
 			if ($data[0]["Clase Servicio"] == 'STEC') {
 				$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoEsp-Carga&PermisoEspecial=".$data[0]["CertificadoEncriptado"];
 				$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
 				$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] t where v.ID_Vehiculo_Carga = p.ID_Vehiculo_Carga and v.ID_Tipo_Vehiculo_Carga = t.ID_Tipo_Vehiculo_Carga and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Carga ",$data[0]["ID_Vehiculo"]," t.DESC_Tipo_Vehiculo,* ");
 				$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
+				$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PS','CU','CL','CM','CC','CS','X']);
+				$tipo = $this->getCategoriaEspecilizadaCarga();
+				if (count($tipo)>0) {
+					$data[0]["Tipo_Categoria_Especilizada"] = $tipo[0]['value'];
+					$data[0]["Desc_Categoria_Especilizada"] = $tipo[0]['text'];
+				}
 			} else {
 				if ($data[0]["Clase Servicio"] == 'STEP') {
 					$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoEsp-Pas&PermisoEspecial=".$data[0]["CertificadoEncriptado"];
 					$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
 					$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] t where v.ID_Vehiculo_Transporte = p.ID_Vehiculo_Transporte and v.ID_Tipo_Vehiculo_Transporte_Pas = t.ID_Tipo_Vehiculo_Transporte_Pas and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Transporte ",$data[0]["ID_Vehiculo"]," DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,* ");					
 					$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
+					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PS','CU','CL','CM','CC','CS','X']);
+					// $area = $this->getAreaOperacion();
+					// if (count($area)>0) {
+					// 	$data[0]["Tipo_Categoria_Especilizada"] = $area[0]['value'];
+					// 	$data[0]["Desc_Categoria_Especilizada"] = $area[0]['text'];
+					// }
 				} else {
 				if ($data[0]["Clase Servicio"] == 'STPC') {
 					$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado-Carga&Certificado=".$data[0]["CertificadoEncriptado"];
 					$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
 					$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] t where v.ID_Vehiculo_Carga = p.ID_Vehiculo_Carga and v.ID_Tipo_Vehiculo_Carga = t.ID_Tipo_Vehiculo_Carga and p.Estado = 'ACTIVA' and"," v.ID_Vehiculo_Carga ",$data[0]["ID_Vehiculo"]," t.DESC_Tipo_Vehiculo,* ");					
 					$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
+					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PE','CO','CL','CM','CC','CS','PE','CU']);
+					// $tipo = $this->getCategoriaEspecilizadaCarga($data[0]["Tipo_Concesion"]);
+					// if (count($tipo)>0) {
+					// 	$data[0]["Tipo_Categoria_Especilizada"] = $tipo[0]['value'];
+					// 	$data[0]["Desc_Categoria_Especilizada"] = $tipo[0]['text'];
+					// }
 					//$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Carga&Permiso=".$data[0]["PerExpEncriptado"];
 					} else {
 						$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado&Certificado=".$data[0]["CertificadoEncriptado"];
 						$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
 						$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] t where v.ID_Vehiculo_Transporte = p.ID_Vehiculo_Transporte and v.ID_Tipo_Vehiculo_Transporte_Pas = t.ID_Tipo_Vehiculo_Transporte_Pas and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Transporte ",$data[0]["ID_Vehiculo"]," DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,* ");											
 						$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
+						$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PE','CO','CL','CM','CC','CS','PE','CU']);
 						//$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Pas&Permiso=".$data[0]["PerExpEncriptado"];
 					}
 				}

@@ -483,3 +483,12 @@ color: var(--bs-gobierno3);
 	border: 2px solid transparent; /* Sin borde */
 	box-shadow: none; /* Sin sombra */
 }
+.form-check-input {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 0.25em; /* Optional: to make the corners less rounded */
+}
+.form-check-input:checked{
+	background-color:var(--bs-gobierno2); 
+	border: 2px solid var(--bs-gobierno1); /* Optional: custom border color */
+}
