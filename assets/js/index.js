@@ -1103,8 +1103,8 @@ document.addEventListener('DOMContentLoaded', function () {
       const element = document.getElementById(`concesion_tramite_placa_${acronimo_clase}`);
       if (element) {
         if (el.checked) {
-          console.log('el.checked CU CL');
-          element.style.display = "inline";
+          element.style.display = "flex";
+          element.focus();
           // Si es cambio de unidad
           if (acronimo_clase === 'CU') {
             document.getElementById('row_tramite_M_CL').style.display = "none";
@@ -1114,39 +1114,46 @@ document.addEventListener('DOMContentLoaded', function () {
           }else{
             // Si cambio de placa
             document.getElementById('row_tramite_M_CU').style.display = "none";
-            document.getElementById('row_tramite_M_CM').style.display = "contents";
-            document.getElementById('row_tramite_M_CC').style.display = "contents";
-            document.getElementById('row_tramite_M_CS').style.display = "contents";
+            document.getElementById('row_tramite_M_CM').style.display = "flex";
+            document.getElementById('row_tramite_M_CC').style.display = "flex";
+            document.getElementById('row_tramite_M_CS').style.display = "flex";
           }
         } else {
           console.log('el.UNchecked CU y CL');
           element.style.display = "none";
           element.value = "";
           if (acronimo_clase === 'CU') {
-            document.getElementById('row_tramite_M_CL').style.display = "contents";
-            document.getElementById('row_tramite_M_CM').style.display = "contents";
-            document.getElementById('row_tramite_M_CC').style.display = "contents";
-            document.getElementById('row_tramite_M_CS').style.display = "contents";
+            document.getElementById('row_tramite_M_CL').style.display = "flex";
+            document.getElementById('row_tramite_M_CM').style.display = "flex";
+            document.getElementById('row_tramite_M_CC').style.display = "flex";
+            document.getElementById('row_tramite_M_CS').style.display = "flex";
           }else{
             // Si es cambio de placa
-            if (document.getElementById('row_tramite_M_CL').checked == false && document.getElementById('row_tramite_M_CM').checked == false && 
-              document.getElementById('row_tramite_M_CC').checked == false && document.getElementById('row_tramite_M_CS').checked == false) {
-              document.getElementById('row_tramite_M_CU').style.display = "contents";
+            const checkboxIds = ['IHTTTRA-03_CLATRA-15_M_CL', 'IHTTTRA-03_CLATRA-17_M_CM', 'IHTTTRA-03_CLATRA-18_M_CC', 'IHTTTRA-03_CLATRA-19_M_CS'];
+            var checked = false;
+            for (let id of checkboxIds) {
+              const checkbox = document.getElementById(id);
+              if (checkbox && checkbox.checked) {
+                var checked = true;
+              }
+            }          
+            if (checked == false) {
+              document.getElementById('row_tramite_M_CU').style.display = "flex";
             }
           }
         }
       } else {
-        console.error(`Element with id 'concesion_tramite_placa_${acronimo_clase}' not found.`);
+        console.error(`Element con id 'concesion_tramite_placa_${acronimo_clase}' no encontrado.`);
       }
     } else {
       if (acronimo_tipo === 'M') {
         if (el.checked) {
             // Si cambio de placa
             document.getElementById('row_tramite_M_CU').style.display = "none";
-            document.getElementById('row_tramite_M_CL').style.display = "contents";
-            document.getElementById('row_tramite_M_CM').style.display = "contents";
-            document.getElementById('row_tramite_M_CC').style.display = "contents";
-            document.getElementById('row_tramite_M_CS').style.display = "contents";
+            document.getElementById('row_tramite_M_CL').style.display = "flex";
+            document.getElementById('row_tramite_M_CM').style.display = "flex";
+            document.getElementById('row_tramite_M_CC').style.display = "flex";
+            document.getElementById('row_tramite_M_CS').style.display = "flex";
         } else {
           const checkboxIds = ['IHTTTRA-03_CLATRA-15_M_CL', 'IHTTTRA-03_CLATRA-17_M_CM', 'IHTTTRA-03_CLATRA-18_M_CC', 'IHTTTRA-03_CLATRA-19_M_CS'];
           var checked = false;
@@ -1157,7 +1164,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           }          
           if (checked == false) {
-            document.getElementById('row_tramite_M_CU').style.display = "inline";
+            document.getElementById('row_tramite_M_CU').style.display = "flex";
           }
         }
       } else {
@@ -1176,13 +1183,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           } else {
             if (acronimo_clase === 'CO') {
-              document.getElementById('row_tramite_X_CO').style.display = "inline";
+              document.getElementById('row_tramite_X_CO').style.display = "flex";
             } else {
               if (acronimo_clase === 'PE') {
-                document.getElementById('row_tramite_X_PE').style.display = "inline";
+                document.getElementById('row_tramite_X_PE').style.display = "flex";
               }else {
                 if (acronimo_clase === 'PS') {
-                  document.getElementById('row_tramite_X_PS').style.display = "inline";
+                  document.getElementById('row_tramite_X_PS').style.display = "flex";
                 }
               }
             }
@@ -1203,13 +1210,13 @@ document.addEventListener('DOMContentLoaded', function () {
               }
             } else {
               if (acronimo_clase === 'CO') {
-                document.getElementById('row_tramite_R_CO').style.display = "inline";
+                document.getElementById('row_tramite_R_CO').style.display = "flex";
               } else {
                 if (acronimo_clase === 'PE') {
-                  document.getElementById('row_tramite_R_PE').style.display = "inline";
+                  document.getElementById('row_tramite_R_PE').style.display = "flex";
                 } else {
                   if (acronimo_clase === 'PS') {
-                    document.getElementById('row_tramite_R_PS').style.display = "inline";
+                    document.getElementById('row_tramite_R_PS').style.display = "flex";
                   }
                 }
               }
