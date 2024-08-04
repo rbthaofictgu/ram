@@ -29,9 +29,9 @@ class Api_Ram {
 			} else if ($_POST["action"] == "get-municipios") {				
 				$this->getMunicipios($_POST["filtro"]);								
 			} else if ($_POST["action"] == "get-aldeas") {				
-				$this->getAldeas($_POST["filtro"]);				
+				$this->getAldeas($_POST["filtro"]);		
 			} else if ($_POST["action"] == "get-vehiculo") {				
-				echo json_encode($this->getDatosUnidadDesdeIP($_POST["ID_Placa"]));								
+				echo json_encode($this->getDatosUnidadDesdeIP($_POST["ID_Placa"]));						
 			} else if ($_POST["action"] == "get-TipoTramiteyClaseTramite") {				
 				$this->getTipoTramiteyClaseTramite();																
 			} else { echo json_encode(array("error" =>1001,"errorhead" =>'OPPS',"errormsg" =>'NO SE ENCONTRO NINGUNA FUNCION EN EL API PARA LA ACCIÓN REQUERIDA'));}
@@ -302,7 +302,7 @@ class Api_Ram {
 		$rows = ($this->select($q,array()));
 		foreach ($rows as $row) {
 			if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
-				$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_CHECK"].'"></div><div class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2"><input onchange="getVehiculoDesdeIP(this);"  style="display:none;text-transform: uppercase;" id="concesion_tramite_placa_' .$row['Acronimo_Clase']. '" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" placeholder="PLACA" class="form-control form-control-sm test-controls" minlength="7" maxlength="7"></div></div>';
+				$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_CHECK"].'"></div><div class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2"><input onclick="getVehiculoDesdeIP(this);" style="display:none;text-transform: uppercase;" onclick="fGetDataIp()" id="concesion_tramite_placa_' .$row['Acronimo_Clase']. '" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" placeholder="PLACA" class="form-control form-control-sm test-controls" minlength="7" maxlength="7"></div></div>';
 			} else {
 				$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_CHECK"].'"></div><div class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2">&nbsp;</div></div>';
 			}
@@ -457,11 +457,9 @@ class Api_Ram {
 						if ($vehiculo->cargaUtil->placa != $vehiculo->cargaUtil->placaAnterior) {
 							$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
 							if (isset($row_rs_stmt['MONTO'])) {
-								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'S';
-								$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = 'S';
+								$vehiculo->estaPagadoElCambiodePlaca = 'S';
 							} else {
-								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'N';
-								$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = 'S';
+								$vehiculo->estaPagadoElCambiodePlaca = 'N';
 							}
 						}							
 						$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
@@ -488,10 +486,8 @@ class Api_Ram {
 						$data[0]["Unidad"][0]['Estado_Vehiculo'] = strtoupper($vehiculo->cargaUtil->estadoVehiculo);
 						if (strtoupper($vehiculo->cargaUtil->estadoVehiculo) == 'NO BLOQUEADO'){
 							$data[0]["Unidad"][0]['Bloqueado'] = false;
-							$vehiculo->cargaUtil->Bloqueado = false;
 						} else {
 							$data[0]["Unidad"][0]['Bloqueado'] = true;
-							$vehiculo->cargaUtil->Bloqueado = true;
 						}
 					}
 					//$data[0]["Unidad_IP"] = $vehiculo;
@@ -507,13 +503,6 @@ class Api_Ram {
 				}
 			} else {
 				if ($data[0]["Clase Servicio"] == 'STEP') {
-					$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
-					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PS','CU','CL','CM','CC','CS','X']);
-					$area = $this->getAreaOperacion();
-					if (count($area)>0) {
-						$data[0]["Tipo_Categoria_Especilizada"] = $area[0]['value'];
-						$data[0]["Desc_Categoria_Especilizada"] = $area[0]['text'];
-					}
 					$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoEsp-Pas&PermisoEspecial=".$data[0]["CertificadoEncriptado"];
 					$data[0]["Vista"] = file_get_contents("vistas/pes_pasajero.html");
 					$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] t where v.ID_Vehiculo_Transporte = p.ID_Vehiculo_Transporte and v.ID_Tipo_Vehiculo_Transporte_Pas = t.ID_Tipo_Vehiculo_Transporte_Pas and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Transporte ",$data[0]["ID_Vehiculo"]," DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,* ");					
@@ -523,9 +512,9 @@ class Api_Ram {
 							if ($vehiculo->cargaUtil->placa != $vehiculo->cargaUtil->placaAnterior) {
 								$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
 								if (isset($row_rs_stmt['MONTO'])) {
-									$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'S';
+									$vehiculo->estaPagadoElCambiodePlaca = 'S';
 								} else {
-									$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'N';
+									$vehiculo->estaPagadoElCambiodePlaca = 'N';
 								}
 							}							
 							$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
@@ -557,31 +546,82 @@ class Api_Ram {
 							}
 						}
 						//$data[0]["Unidad_IP"] = $vehiculo;
+					} else {
+						$data[0]["Unidad_IP"][0] = false; 
+					}
+					$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
+					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PS','CU','CL','CM','CC','CS','X']);
+					$area = $this->getAreaOperacion();
+					if (count($area)>0) {
+						$data[0]["Tipo_Categoria_Especilizada"] = $area[0]['value'];
+						$data[0]["Desc_Categoria_Especilizada"] = $area[0]['text'];
 					}
 				} else {
-					if ($data[0]["Clase Servicio"] == 'STPC') {
+				if ($data[0]["Clase Servicio"] == 'STPC') {
+					$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado-Carga&Certificado=".$data[0]["CertificadoEncriptado"];
+					$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
+					$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] t where v.ID_Vehiculo_Carga = p.ID_Vehiculo_Carga and v.ID_Tipo_Vehiculo_Carga = t.ID_Tipo_Vehiculo_Carga and p.Estado = 'ACTIVA' and"," v.ID_Vehiculo_Carga ",$data[0]["ID_Vehiculo"]," t.DESC_Tipo_Vehiculo,* ");					
+					if ($data && $data[0] && $data[0]["Unidad"] && $data[0]["Unidad"][0]['ID_Placa']) {
+						$vehiculo = $this->getDatosUnidadDesdeIP($data[0]["Unidad"][0]['ID_Placa']);
+						if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
+							if ($vehiculo->cargaUtil->placa != $vehiculo->cargaUtil->placaAnterior) {
+								$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
+								if (isset($row_rs_stmt['MONTO'])) {
+									$vehiculo->estaPagadoElCambiodePlaca = 'S';
+								} else {
+									$vehiculo->estaPagadoElCambiodePlaca = 'N';
+								}
+							}							
+							$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
+							$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
+							$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
+							if (isset($vehiculo->cargaUtil->marcacodigo)) {
+								$data[0]["Unidad"][0]['ID_Marca'] = $vehiculo->cargaUtil->marcacodigo;
+							} else {
+								$data[0]["Unidad"][0]['ID_Marca'] = '';
+							}
+							if (isset($vehiculo->cargaUtil->colorcodigo)) {
+								$data[0]["Unidad"][0]['ID_Color'] = $vehiculo->cargaUtil->colorcodigo;
+							} else {
+								$data[0]["Unidad"][0]['ID_Color'] = '';
+							}
+							$data[0]["Unidad"][0]['Anio'] = $vehiculo->cargaUtil->axo;
+							$data[0]["Unidad"][0]['ID_Placa'] = $vehiculo->cargaUtil->placa;
+							$data[0]["Unidad"][0]['ID_Placa_Anterior'] = $vehiculo->cargaUtil->placaAnterior;
+							$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
+							$data[0]["Unidad"][0]['Modelo'] = $vehiculo->cargaUtil->modelo;
+							$data[0]["Unidad"][0]['Tipo'] = $vehiculo->cargaUtil->tipo;
+							$data[0]["Unidad"][0]['Identificacion'] = $vehiculo->cargaUtil->propietario->identificacion;
+							$data[0]["Unidad"][0]['Nombre'] = strtoupper($vehiculo->cargaUtil->propietario->nombre);
+							$data[0]["Unidad"][0]['Estado_Vehiculo'] = strtoupper($vehiculo->cargaUtil->estadoVehiculo);
+							if (strtoupper($vehiculo->cargaUtil->estadoVehiculo) == 'NO BLOQUEADO'){
+								$data[0]["Unidad"][0]['Bloqueado'] = false;
+							} else {
+								$data[0]["Unidad"][0]['Bloqueado'] = true;
+							}
+						}
 						//$data[0]["Unidad_IP"] = $vehiculo;
 						$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
 						$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PE','CO','CL','CM','CC','CS','PE','CU']);
-						$tipo = $this->getCategoriaEspecilizadaCarga($data[0]["Id_Tipo_Categoria"]);
+						$tipo = $this->getCategoriaEspecilizadaCarga($data[0]["Tipo_Concesion"]);
 						if (count($tipo)>0) {
 							$data[0]["Tipo_Categoria_Especilizada"] = $tipo[0]['value'];
 							$data[0]["Desc_Categoria_Especilizada"] = $tipo[0]['text'];
 						}
-						// Pendiente de ir a trae el certificado de explotación
-						//$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Carga&Permiso=".$data[0]["PerExpEncriptado"];
-						$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado-Carga&Certificado=".$data[0]["CertificadoEncriptado"];
-						$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
-						$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] t where v.ID_Vehiculo_Carga = p.ID_Vehiculo_Carga and v.ID_Tipo_Vehiculo_Carga = t.ID_Tipo_Vehiculo_Carga and p.Estado = 'ACTIVA' and"," v.ID_Vehiculo_Carga ",$data[0]["ID_Vehiculo"]," t.DESC_Tipo_Vehiculo,* ");					
+						$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Carga&Permiso=".$data[0]["PerExpEncriptado"];
+					} else {
+						$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado&Certificado=".$data[0]["CertificadoEncriptado"];
+						$data[0]["Vista"] = file_get_contents("vistas/certificado_pasajero.html");
+						$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] t where v.ID_Vehiculo_Transporte = p.ID_Vehiculo_Transporte and v.ID_Tipo_Vehiculo_Transporte_Pas = t.ID_Tipo_Vehiculo_Transporte_Pas and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Transporte ",$data[0]["ID_Vehiculo"]," DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,* ");											
 						if ($data && $data[0] && $data[0]["Unidad"] && $data[0]["Unidad"][0]['ID_Placa']) {
 							$vehiculo = $this->getDatosUnidadDesdeIP($data[0]["Unidad"][0]['ID_Placa']);
 							if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
 								if ($vehiculo->cargaUtil->placa != $vehiculo->cargaUtil->placaAnterior) {
 									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
 									if (isset($row_rs_stmt['MONTO'])) {
-										$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'S';
+										$vehiculo->estaPagadoElCambiodePlaca = 'S';
 									} else {
-										$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'N';
+										$vehiculo->estaPagadoElCambiodePlaca = 'N';
 									}
 								}							
 								$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
@@ -612,56 +652,14 @@ class Api_Ram {
 									$data[0]["Unidad"][0]['Bloqueado'] = true;
 								}
 							}
-						} else {
 							//$data[0]["Unidad_IP"] = $vehiculo;
-							$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
-							$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PE','CO','CL','CM','CC','CS','PE','CU']);
-							//$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Pas&Permiso=".$data[0]["PerExpEncriptado"];
-							$data[0]["Link"] = "https://satt.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado&Certificado=".$data[0]["CertificadoEncriptado"];
-							$data[0]["Vista"] = file_get_contents("vistas/certificado_pasajero.html");
-							$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] t where v.ID_Vehiculo_Transporte = p.ID_Vehiculo_Transporte and v.ID_Tipo_Vehiculo_Transporte_Pas = t.ID_Tipo_Vehiculo_Transporte_Pas and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Transporte ",$data[0]["ID_Vehiculo"]," DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,* ");											
-							if ($data && $data[0] && $data[0]["Unidad"] && $data[0]["Unidad"][0]['ID_Placa']) {
-								$vehiculo = $this->getDatosUnidadDesdeIP($data[0]["Unidad"][0]['ID_Placa']);
-								if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
-									if ($vehiculo->cargaUtil->placa != $vehiculo->cargaUtil->placaAnterior) {
-										$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
-										if (isset($row_rs_stmt['MONTO'])) {
-											$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'S';
-										} else {
-											$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = 'N';
-										}
-									}							
-									$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
-									$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
-									$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
-									if (isset($vehiculo->cargaUtil->marcacodigo)) {
-										$data[0]["Unidad"][0]['ID_Marca'] = $vehiculo->cargaUtil->marcacodigo;
-									} else {
-										$data[0]["Unidad"][0]['ID_Marca'] = '';
-									}
-									if (isset($vehiculo->cargaUtil->colorcodigo)) {
-										$data[0]["Unidad"][0]['ID_Color'] = $vehiculo->cargaUtil->colorcodigo;
-									} else {
-										$data[0]["Unidad"][0]['ID_Color'] = '';
-									}
-									$data[0]["Unidad"][0]['Anio'] = $vehiculo->cargaUtil->axo;
-									$data[0]["Unidad"][0]['ID_Placa'] = $vehiculo->cargaUtil->placa;
-									$data[0]["Unidad"][0]['ID_Placa_Anterior'] = $vehiculo->cargaUtil->placaAnterior;
-									$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
-									$data[0]["Unidad"][0]['Modelo'] = $vehiculo->cargaUtil->modelo;
-									$data[0]["Unidad"][0]['Tipo'] = $vehiculo->cargaUtil->tipo;
-									$data[0]["Unidad"][0]['Identificacion'] = $vehiculo->cargaUtil->propietario->identificacion;
-									$data[0]["Unidad"][0]['Nombre'] = strtoupper($vehiculo->cargaUtil->propietario->nombre);
-									$data[0]["Unidad"][0]['Estado_Vehiculo'] = strtoupper($vehiculo->cargaUtil->estadoVehiculo);
-									if (strtoupper($vehiculo->cargaUtil->estadoVehiculo) == 'NO BLOQUEADO'){
-										$data[0]["Unidad"][0]['Bloqueado'] = false;
-									} else {
-										$data[0]["Unidad"][0]['Bloqueado'] = true;
-									}
-								}
-								//$data[0]["Unidad_IP"] = $vehiculo;
-							} 
+						} else {
+							$data[0]["Unidad_IP"][0] = false; 
 						}
+						//$data[0]["Unidad_IP"] = $vehiculo;
+						$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
+						$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PE','CO','CL','CM','CC','CS','PE','CU']);
+						$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Pas&Permiso=".$data[0]["PerExpEncriptado"];
 					}
 				}
 			}
@@ -783,7 +781,7 @@ class Api_Ram {
 }
 
 if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
-	echo json_encode(array("error" =>1000,"errorhead" =>"SESSIÓN","errorhead" =>'INICIO DE SESSIÓN',"errormsg" =>'NO HAY UNA SESSION INICIADA, FAVOR INICIE SESION Y VUELVA A INTENTARLO'));
+	echo json_encode(array("error" =>1000,"errorhead" =>'INICIO DE SESSIÓN',"errormsg" =>'NO HAY UNA SESSION INICIADA, FAVOR INICIE SESION Y VUELVA A INTENTARLO'));
 } else {
 	$api = new Api_Ram();	
 }

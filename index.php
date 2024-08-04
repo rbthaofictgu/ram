@@ -33,6 +33,8 @@ include_once('configuracion/configuracion_js.php');
     </header>
     <!--<input id="dominio_raiz" name="dominio_raiz" type="hidden" value=""> -->
     <div class="container-fluid bg-white shadow-sm">
+      <div style="display: none;" id="concesion_tramites" class="col-md-5 scroll-div">
+      </div>
         <!-- *** -->    
         <!-- Body -->
         <!-- *** -->    
@@ -42,11 +44,11 @@ include_once('configuracion/configuracion_js.php');
         <hr>
       <div class="row">
         <div class="col-md-8">
-          <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 400;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA  
+          <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA  
         </div>
         <div class="col-md-4 d-flex justify-content-end">
           <button title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud"  style="display: none;" id="addConcesion" type="button" class="btn btn-success">
-            <i class="fa-solid fa-plus fa-x2"></i> Agregar Concesión
+            <i class="fa-solid fa-plus fa-x2"></i> Agregar CO ó PES
           </button> 
           </h6>
         </div>
@@ -489,7 +491,7 @@ include_once('configuracion/configuracion_js.php');
                                   </div>    
 
                                   <div class="col-md-3 bordered-row">
-                                      <strong id="concesion_placalabel">2.2 Placa</strong>
+                                      <strong id="concesion_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<span title="Placa anterior del vehiculo" class="gobierno1" style="display: none; font: weight 800px;" id="concesion_placaanterior"></span></strong></strong>
                                   </div>
 
                                   <div class="col-md-3 bordered-row">
@@ -721,11 +723,63 @@ include_once('configuracion/configuracion_js.php');
                                       </div>
                                   </div> 
                               </div>
+
+                              <div class="row bordered-row-grey">
+                                  <div class="col-md-12">
+                                      <div class="form-group">
+                                              <strong style="font-size: 16px;">P. INFORMACIÓN DEL PROPIETARIO DEL VEHÍCULO</strong>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="row p-0m-0">
+
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                            <strong >E.6 Nombre Propietario</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                      <strong><span id="concesion_nombre_propietario"></span></strong>
+                                    </div>
+                                </div>    
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                            <strong >E.7 Identidad del Propietario</strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                    <strong><span id="concesion_identidad_propietario"></span></strong>
+                                    </div>
+                                </div>        
+
+                              </div>
+
+                              
                         </span>
                     </div>
                   </span>
                 </div>
-                <div class="col-md-1">
+
+              <!-------             -->    
+              <!------- FINAL VISTA -->    
+              <!-------             -->    
+              <div class="row">
+                <div class="col-md-12">
+                  &nbsp;
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  &nbsp;
+                </div>
+              </div>
+
+              <div class="col-md-1">
                   <div class="form-group">&nbsp;</div>
                 </div>
               </div>
@@ -767,7 +821,8 @@ include_once('configuracion/configuracion_js.php');
               <!------- FINAL VISTA -->    
               <!-------             -->    
               <div id="idVista1" class="row d-flex justify-content-center">
-                  <div id="concesion_tramites" class="col-md-5">
+                  <div class="col-md-5">
+                    &nbsp;
                   </div>
                   <div class="col-md-7">
                     <span id="idVistaSTPC1">
@@ -912,7 +967,7 @@ include_once('configuracion/configuracion_js.php');
                                     </div>    
 
                                     <div class="col-md-3 bordered-row">
-                                        <strong id="concesion1_placalabel">2.2 Placa</strong>
+                                    <strong id="concesion1_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<span title="Placa anterior del vehiculo" class="gobierno1" style="display: none; font: weight 400px;" id="concesion1_placaanterior"></span></strong></strong>
                                     </div>
 
                                     <div class="col-md-3 bordered-row">
@@ -1144,14 +1199,62 @@ include_once('configuracion/configuracion_js.php');
                                         </div>
                                     </div> 
                                 </div>
+
+                                <div class="row bordered-row-grey">
+                                  <div class="col-md-12">
+                                      <div class="form-group">
+                                              <strong style="font-size: 16px;">P. INFORMACIÓN DEL PROPIETARIO DEL VEHÍCULO</strong>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <div class="row p-0m-0">
+                                
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                            <strong >E.6 Nombre Propietario</strong>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                      <strong><span id="concesion1_nombre_propietario"></span></strong>
+                                    </div>
+                                </div>    
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                            <strong >E.7 Identidad del Propietario</strong>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-3 bordered-row">
+                                    <div class="form-group">
+                                    <strong><span id="concesion1_identidad_propietario"></span></strong>
+                                    </div>
+                                </div>        
+
+                              </div>
+
                           </span>
                       </div>
                     </span>
                   </div>
               </div>
+
               <!-------             -->    
               <!------- FINAL VISTA -->    
               <!-------             -->    
+              <div class="row">
+                <div class="col-md-12">
+                  &nbsp;
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                  &nbsp;
+                </div>
+              </div>
+
               <div class="row">
                 <div class="col-md-12">
                   &nbsp;

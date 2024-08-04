@@ -15,26 +15,31 @@ var setFocus = true;
 var paneerror = Array(Array());
 var testinputs;
 var testinputsArray;
+var showModalFromShown = true;
+var claseDeServicio = "";
+var dataConcesion;
+var isChangeOfVehicule = false;
+var isVehiculeBlock = false;
 
 
 var multas3ra = document.getElementById('btnmultas');
 if (multas3ra != null) {
     multas3ra.addEventListener('click', function(event) {
-    fVerConcesion();
+    showConcesion();
   });
 }
 
 var consultas3ra = document.getElementById('btnconsultas');
 if (consultas3ra != null) {
     consultas3ra.addEventListener('click', function(event) {
-    fVerConcesion();
+    showConcesion();
   });
 }  
 
 var perexp3ra = document.getElementById('btnperexp');
 if (perexp3ra != null) {
     perexp3ra.addEventListener('click', function(event) {
-    fVerConcesion();
+    showConcesion();
   });
 }  
 
@@ -222,8 +227,6 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
       .then(function (datos) {
-        console.log('datosomison');
-        console.log(datos);
         if (typeof datos[0] != 'undefined') {
           if (datos[1].length > 0) {
             fLlenarSelect('entregadocs',datos[1],null,false,{text: 'SELECCIONE UN LUGAR DE ENTREGA', value: '-1'})            
@@ -572,13 +575,25 @@ document.addEventListener('DOMContentLoaded', function () {
   }        
 
   function f_RenderConcesion(datos) {
-    //document.getElementById("idVista").style = "display:block;"  
-    //document.getElementById("idVista").innerHTML = datos[1][0]['Vista'];
+    /************************************************************************************/
+    /* Almacenando la información de la concesión en una variable global*/
+    /************************************************************************************/
+    dataConcesion = datos;
+    
     var concesionlabel = document.getElementById("concesionlabel");
     if (concesionlabel != null) {
       document.getElementById("concesionlabel").innerHTML = datos[1][0]['Tipo_Concesion'];
     }
-    console.log(datos[1][0]['Tramites']);
+    claseDeServicio = datos[1][0]['ID_Clase_Servico'];
+    // if (claseDeServicio == 'STPP' || claseDeServicio == 'STPC') {
+    //   document.getElementById("addConcesion").innerHTML = '<i class="fa-solid fa-plus fa-x2"></i> Agregar Certificado de Operacion';
+    // } else {
+    //   if (claseDeServicio == 'STSP' || claseDeServicio == 'STSC') {
+    //   document.getElementById("addConcesion").innerHTML = '<i class="fa-solid fa-plus fa-x2"></i> Agregar Permiso Especial';
+    //   } else {
+    //     document.getElementById("addConcesion").innerHTML = '<i class="fa-solid fa-plus fa-x2"></i> Agregar Concesión';
+    //   }
+    // }
     document.getElementById("concesion_tramites").innerHTML = datos[1][0]['Tramites'];
     document.getElementById("concesion_concesion").innerHTML = datos[1][0]['N_Certificado'];
     document.getElementById("concesion_perexp").innerHTML = datos[1][0]['N_Permiso_Explotacion'];
@@ -588,6 +603,25 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("concesion_fecexp").innerHTML = datos[1][0]['Fecha Emision Certificado'];
     document.getElementById("concesion_resolucion").innerHTML = datos[1][0]['Resolucion'];
     if (datos.length > 1 && datos[1].length > 0 && datos[1][0]['Unidad'] && datos[1][0]['Unidad'].length > 0) {
+      console.log(0);
+      console.log('1'+document.getElementById("concesion_nombre_propietario").innerHTML);
+      console.log('2'+datos[1][0]['Unidad'][0]['Identificacion']);
+      console.log('3'+document.getElementById("concesion_identidad_propietario").innerHTML);
+      console.log('4'+datos[1][0]['Unidad'][0]['Nombre']);
+      document.getElementById("concesion_nombre_propietario").innerHTML = datos[1][0]['Unidad'][0]['Nombre'];
+      document.getElementById("concesion_identidad_propietario").innerHTML = datos[1][0]['Unidad'][0]['Identificacion'];
+      if (datos[1] && datos[1][0] && datos[1][0]['Unidad'] && datos[1][0]['Unidad'][0] && datos[1][0]['Unidad'][0]['ID_Placa_Anterior']) {
+        console.log('5'+document.getElementById("concesion_placaanterior").innerHTML);
+        console.log('6'+datos[1][0]['Unidad'][0]['ID_Placa_Anterior']);
+        document.getElementById("concesion_placaanterior").style = 'display:inline;';
+        document.getElementById("concesion_placaanterior").innerHTML = datos[1][0]['Unidad'][0]['ID_Placa_Anterior'];
+      } else {
+        document.getElementById("concesion_placaanterior").style = 'display:none;';
+        document.getElementById("concesion_placaanterior").innerHTML = '';
+      }
+      //document.getElementById("tipo_vehiculo").value = datos[1][0]['Unidad'][0]['tipo'];
+      //document.getElementById("modelo_vehiculo").value = datos[1][0]['Unidad'][0]['modelo'];          
+      document.getElementById("combustible").value = datos[1][0]['Unidad'][0]['Combustible'];
       document.getElementById("concesion_vin").value = datos[1][0]['Unidad'][0]['VIN'];
       document.getElementById("concesion_placa").value = datos[1][0]['Unidad'][0]['ID_Placa'];
       document.getElementById("concesion_serie").value = datos[1][0]['Unidad'][0]['Chasis'];
@@ -608,7 +642,44 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("btnconsultas").style = "display:inline;";
     document.getElementById("btnperexp").style = "display:inline;";
     document.getElementById("concesion_vin").focus();
+    f_RenderConcesionTramites(datos);
   }
+  
+  function f_RenderConcesionTramites(datos) {
+    //document.getElementById("idVista").style = "display:block;"  
+    //document.getElementById("idVista").innerHTML = datos[1][0]['Vista'];
+    var concesionlabel = document.getElementById("concesion1label");
+    if (concesionlabel != null) {
+      concesionlabel.innerHTML = datos[1][0]['Tipo_Concesion'];
+    }
+    document.getElementById("concesion1_concesion").innerHTML = datos[1][0]['N_Certificado'];
+    document.getElementById("concesion1_perexp").innerHTML = datos[1][0]['N_Permiso_Explotacion'];
+    document.getElementById("concesion1_fecven").innerHTML = datos[1][0]['Fecha Vencimiento Certificado'];
+    document.getElementById("concesion1_nombreconcesionario").innerHTML = datos[1][0]['NombreSolicitante'];
+    document.getElementById("concesion1_rtn").innerHTML = datos[1][0]['RTN_Concesionario'];
+    document.getElementById("concesion1_fecexp").innerHTML = datos[1][0]['Fecha Emision Certificado'];
+    document.getElementById("concesion1_resolucion").innerHTML = datos[1][0]['Resolucion'];
+    if (datos.length > 1 && datos[1].length > 0 && datos[1][0]['Unidad'] && datos[1][0]['Unidad'].length > 0) {
+      document.getElementById("concesion1_nombre_propietario").value = datos[1][0]['Unidad'][0]['Identificacion'];
+      document.getElementById("concesion1_identidad_propietario").value = datos[1][0]['Unidad'][0]['Nombre'];
+      document.getElementById("concesion1_placaanterior").innerHTML = datos[1][0]['Unidad'][0]['ID_Placa_Anterior'];
+      //document.getElementById("tipo_vehiculo").value = datos[1][0]['Unidad'][0]['tipo'];
+      //document.getElementById("modelo_vehiculo").value = datos[1][0]['Unidad'][0]['modelo'];          
+      document.getElementById("combustible1").value = datos[1][0]['Unidad'][0]['Combustible'];      
+      document.getElementById("concesion1_vin").value = datos[1][0]['Unidad'][0]['VIN'];
+      document.getElementById("concesion1_placa").value = datos[1][0]['Unidad'][0]['ID_Placa'];
+      document.getElementById("concesion1_serie").value = datos[1][0]['Unidad'][0]['Chasis'];
+      document.getElementById("concesion1_motor").value = datos[1][0]['Unidad'][0]['Motor'];
+      fLlenarSelect('marcas1',datos[1][0]['Marcas'],datos[1][0]['Unidad'][0]['ID_Marca'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});            
+      fLlenarSelect('colores1',datos[1][0]['Colores'],datos[1][0]['Unidad'][0]['ID_Color'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});
+      fLlenarSelect('anios1',datos[1][0]['Anios'],datos[1][0]['Unidad'][0]['Anio'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});   
+      document.getElementById("concesion1_tipovehiculo").innerHTML = datos[1][0]['Unidad'][0]['DESC_Tipo_Vehiculo'];
+    }
+    document.getElementById("concesion1_cerant").innerHTML = datos[1][0]['Certificado Anterior'];
+    document.getElementById("concesion1_numregant").innerHTML = datos[1][0]['Registro_Anterior'];
+    document.getElementById("concesion1_numeroregistro").innerHTML = datos[1][0]['Numero_Registro'];
+    document.getElementById("concesion1_categoria").innerHTML = datos[1][0]['DESC_Categoria'];
+  }  
 
   function f_FetchCallConcesion(idConcesion,event,idinput) {
     isRecordGetted[currentstep] = idConcesion;
@@ -729,7 +800,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }        
 
-  function fVerConcesion() {
+  function showConcesion() {
     var event = new Event('change', {
       'bubbles': true,
       'cancelable': true
@@ -744,16 +815,55 @@ document.addEventListener('DOMContentLoaded', function () {
   var concesion3ra = document.getElementById('btnconcesion');
   if (concesion3ra != null) {
       concesion3ra.addEventListener('click', function(event) {
-      fVerConcesion();
+      showConcesion();
     });
   }
   
+  //********************************************************************************************/
+  //Funcion ejecutada por timeout para pocicionar el cursos en el campo concesión
+  //********************************************************************************************/
+  function setFocusElementConcesion() {
+    document.getElementById("concesion").focus();    
+    document.getElementById("concesion").select(); 
+  }
+
+  //**********************************************************************************************/
+  // Funcion para mover informacion de la pantalla de concesiones a la de tramites
+  //**********************************************************************************************/
+  function setDataPreviewFormalities() {
+    if (currentstep == 3) {
+      // Si es la primera vez que entra al paso 3 o si no tiene el tramite cambio de unidad
+      if (isRecordGetted[currentstep] == '' || isChangeOfVehicule == false) {
+        isRecordGetted[currentstep] = document.getElementById("concesion_placa").value;
+        dataConcesion[1][0]['Unidad'][0]['VIN'] = document.getElementById("concesion_vin").value;
+        dataConcesion[1][0]['Unidad'][0]['ID_Placa'] = document.getElementById("concesion_placa").value;
+        dataConcesion[1][0]['Unidad'][0]['Chasis'] = document.getElementById("concesion_serie").value;
+        dataConcesion[1][0]['Unidad'][0]['Motor'] = document.getElementById("concesion_motor").value;
+        dataConcesion[1][0]['Unidad'][0]['ID_Marca'] = document.getElementById("marcas").value;
+        dataConcesion[1][0]['Unidad'][0]['ID_Color'] = document.getElementById("colores").value;
+        dataConcesion[1][0]['Unidad'][0]['ID_Anio'] = document.getElementById("anios").value;
+        dataConcesion[1][0]['Unidad'][0]['combustible'] = document.getElementById("combustible").value;
+        dataConcesion[1][0]['Unidad'][0]['capacidad'] = document.getElementById("capacidad").value;
+        dataConcesion[1][0]['Unidad'][0]['alto'] = document.getElementById("alto").value;
+        dataConcesion[1][0]['Unidad'][0]['largo'] = document.getElementById("largo").value;
+        dataConcesion[1][0]['Unidad'][0]['ancho'] = document.getElementById("ancho").value;
+        // Moviendo datos de la pantalla de Concesiones a la de Tramite
+        document.getElementById("combustible1").value = document.getElementById("combustible").value;
+        document.getElementById("capacidad1").value = document.getElementById("capacidad").value;
+        document.getElementById("alto1").value = document.getElementById("alto").value;
+        document.getElementById("largo1").value = document.getElementById("largo").value;
+        document.getElementById("ancho1").value = document.getElementById("ancho").value;
+      }
+    }
+  }
+
 
   function showModalConcesiones(){
     $('#modalConcesion').modal('show');
   }
 
   addConcesion.addEventListener('click', function(event) {
+    showModalFromShown = true;
     if(currentstep != 2) {
       stepperForm.to(3);    
      } else {
@@ -777,15 +887,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
     switch (currentstep)
     {
-      case 0: document.getElementById("colapoderado").focus(); break;
-      case 1: document.getElementById("rtnsoli").focus();      break;
+      case 0: 
+      document.getElementById("concesion_tramites").style = "display:none;"    
+      document.getElementById("colapoderado").focus(); break;
+      case 1: 
+      document.getElementById("concesion_tramites").style = "display:none;"    
+      document.getElementById("rtnsoli").focus();      break;
       case 2: 
-        $('#modalConcesion').modal('show');
-        document.getElementById("addConcesion").style = "display:inline;"    
-        document.getElementById("concesion").focus();    
-        document.getElementById("concesion").select();    
+      document.getElementById("concesion_tramites").style = "display:none;"    
+        if (showModalFromShown == true) {
+          showModalFromShown = false;
+          $('#modalConcesion').modal('show');
+          setTimeout(setFocusElementConcesion, 250);
+        } else {
+          document.getElementById("concesion_vin").focus();    
+        }        
         break;
-    }
+      case 3: 
+        document.getElementById("concesion_tramites").style = "display:fixed;"    
+        setTimeout(setDataPreviewFormalities, 1000);
+        window.scrollTo(0, 0); 
+        //*********************************************************************************/
+        //* Pocisionandose */
+        //*********************************************************************************/
+        console.log(claseDeServicio);
+        if (claseDeServicio == "STPP" || claseDeServicio == "STPC") {
+          var el = document.getElementById("IHTTTRA-02_CLATRA-01_R_PE");
+          if (el != null) {
+            el.focus();    
+          }          
+        } else {
+          var el =  document.getElementById("IHTTTRA-02_CLATRA-03_R_PS");    
+          if (el != null) {
+            console.log(el);
+            el.focus();    
+          }
+        }
+        break;        
+      }
 
   })
 
@@ -987,7 +1126,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-      //Moverse al siguiente input
+      // Si son los input colapoderado o rtnsoli o concesion
       if (idinput=='colapoderado' || idinput=='rtnsoli' || idinput=='concesion') {
         if (typeof isRecordGetted[currentstep] == 'undefined' || isRecordGetted[currentstep] != event.target.value) {
             if (isDirty[currentstep] == false) {
@@ -1087,12 +1226,12 @@ document.addEventListener('DOMContentLoaded', function () {
     });  
     isDirty[currentstep] = false;
   });
-
   setTimeout(setFocusElement, 250);
-
-
 })      
 
+  //**************************************************************************************/
+  //Validaciones sobre Check Box de Tramites
+  //**************************************************************************************/
   function fReviewCheck(el) {
     // Separando el valor del input
     const [tipo_tramite,clase_tramite,acronimo_tipo,acronimo_clase] = el.value.split('_');
@@ -1102,11 +1241,13 @@ document.addEventListener('DOMContentLoaded', function () {
       // Cache the DOM element
       const element = document.getElementById(`concesion_tramite_placa_${acronimo_clase}`);
       if (element) {
+        //Validaciones si el elemento viene checked
         if (el.checked) {
           element.style.display = "flex";
           element.focus();
           // Si es cambio de unidad
           if (acronimo_clase === 'CU') {
+            isChangeOfVehicule = true;
             document.getElementById('row_tramite_M_CL').style.display = "none";
             document.getElementById('row_tramite_M_CM').style.display = "none";
             document.getElementById('row_tramite_M_CC').style.display = "none";
@@ -1119,16 +1260,18 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('row_tramite_M_CS').style.display = "flex";
           }
         } else {
-          console.log('el.UNchecked CU y CL');
+          //Validaciones si el elemento  no viene checked          
           element.style.display = "none";
           element.value = "";
+          // Si es cambio de unidad
           if (acronimo_clase === 'CU') {
+            isChangeOfVehicule = false;
             document.getElementById('row_tramite_M_CL').style.display = "flex";
             document.getElementById('row_tramite_M_CM').style.display = "flex";
             document.getElementById('row_tramite_M_CC').style.display = "flex";
             document.getElementById('row_tramite_M_CS').style.display = "flex";
           }else{
-            // Si es cambio de placa
+            // Si cambio de placa
             const checkboxIds = ['IHTTTRA-03_CLATRA-15_M_CL', 'IHTTTRA-03_CLATRA-17_M_CM', 'IHTTTRA-03_CLATRA-18_M_CC', 'IHTTTRA-03_CLATRA-19_M_CS'];
             var checked = false;
             for (let id of checkboxIds) {
@@ -1146,6 +1289,7 @@ document.addEventListener('DOMContentLoaded', function () {
         console.error(`Element con id 'concesion_tramite_placa_${acronimo_clase}' no encontrado.`);
       }
     } else {
+      // Si son modificaciones
       if (acronimo_tipo === 'M') {
         if (el.checked) {
             // Si cambio de placa
@@ -1168,6 +1312,7 @@ document.addEventListener('DOMContentLoaded', function () {
           }
         }
       } else {
+        // Si son renovaciones
         if (acronimo_tipo === 'R') {
           if (el.checked) {
             if (acronimo_clase === 'CO') {
@@ -1195,6 +1340,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
           }
         } else {
+          // Si son reimpresiones
           if (acronimo_tipo === 'X') {
             if (el.checked) {
               if (acronimo_clase === 'CO') {
@@ -1226,6 +1372,94 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     }
   }
+
+  
+  function getVehiculoDesdeIP(obj) {
+    // URL del Punto de Acceso a la API
+    const url = $appcfg_Dominio + "Api_Ram.php";
+    //  Fetch options
+    // const options = {
+    //   method: 'POST',
+    //   body: fd,
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    // };
+    let fd = new FormData(document.forms.form1);
+    //Adjuntando el action al FormData
+    fd.append("action", 'get-vehiculo');
+    //Adjuntando el idApoderado al FormData
+    fd.append("ID_Placa", obj.value);
+    // Fetch options
+    const options = {
+      method: 'POST',
+      body: fd,
+    };
+    // Hacer al solicitud fetch con un timeout de 2 minutos
+    fetchWithTimeout(url, options, 120000)
+      .then(response => response.json())
+      .then(function (vehiculo) {
+        console.log(vehiculo);
+        if (!vehiculo.error) {
+          if (vehiculo.codigo && vehiculo.codigo == 200) {
+            if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
+              isVehiculeBlock = false;
+              console.log(vehiculo.cargaUtil.propietario.identificacion);
+              console.log(vehiculo.cargaUtil.propietario.nombre);
+              document.getElementById("concesion1_nombre_propietario").innerHTML = vehiculo.cargaUtil.propietario.identificacion;
+              document.getElementById("concesion1_identidad_propietario").innerHTML = vehiculo.cargaUtil.propietario.nombre;
+              console.log(vehiculo.cargaUtil.placaAnterior);
+              if (vehiculo && vehiculo.cargaUtil && vehiculo.cargaUtil.placaAnterior) {
+                console.log('5'+document.getElementById("concesion1_placaanterior").innerHTML);
+                console.log('6'+vehiculo.cargaUtil.placaAnterior);
+                document.getElementById("concesion1_placaanterior").style = 'display:inline;';
+                document.getElementById("concesion1_placaanterior").innerHTML = vehiculo.cargaUtil.placaAnterior;
+              } else {
+                document.getElementById("concesion1_placaanterior").style = 'display:none;';
+                document.getElementById("concesion1_placaanterior").innerHTML = '';
+              }              
+              //document.getElementById("tipo_vehiculo").value = datos[1][0]['Unidad'][0]['tipo'];
+              //document.getElementById("modelo_vehiculo").value = datos[1][0]['Unidad'][0]['modelo'];          
+              document.getElementById("combustible1").value = vehiculo.cargaUtil.combustible;
+              document.getElementById("concesion1_vin").value = vehiculo.cargaUtil.vin;
+              document.getElementById("concesion1_placa").value = vehiculo.cargaUtil.placa;
+              document.getElementById("concesion1_serie").value = vehiculo.cargaUtil.chasis;
+              document.getElementById("concesion1_motor").value = vehiculo.cargaUtil.motor;
+              document.getElementById("marcas1").value = vehiculo.cargaUtil.marcacodigo;
+              document.getElementById("colores1").value = vehiculo.cargaUtil.colorcodigo;
+              document.getElementById("anios1").value = vehiculo.cargaUtil.axo;
+            }  else {
+              if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
+                fSweetAlertEventNormal('BLOQUEADO', 'EL VEHICULO ESTA BLOQUEADO EN EL INSTITUTO DE LA PROPIEDAD', 'error');
+                console.log(vehiculo);
+                isVehiculeBlock = true;
+              } else {
+                if (isset(vehiculo.codigo) == 407 || vehiculo.codigo == 408) {
+                  fSweetAlertEventNormal('ADVERTENCIA', 'NO HEMOS PODIDO CONECTARNOS CON EL INSTITUTO DE LA PROPIEDAD, FAVOR INTENTENLO EN UN MOMENTO SI EL PROBLEMA PERSIOSTE CONTACTE AL ADMINISTRADOR DEL SISTEMA', 'warning');
+                  console.log(vehiculo);
+                  isVehiculeBlock = true;
+                } else {
+                  fSweetAlertEventNormal('ERROR', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'error');
+                  console.log(vehiculo);
+                  isVehiculeBlock = true;
+                }
+              }
+            }
+          } else {
+            fSweetAlertEventNormal('INFORMACIÓN', 'EL VEHICULO NO HA SIDO ENCONTRADO EN LA BASE DE DATOS DEL IP', 'warning');
+            isVehiculeBlock = true;
+          }
+        } else {
+          fSweetAlertEventNormal(vehiculo.errorhead, vehiculo.error + '- ' + vehiculo.errormsg , 'error');
+        }
+      })
+      .catch((error) => {
+        fSweetAlertEventNormal('ERROR CATCH', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'error');
+        console.log(error);
+        isVehiculeBlock = true;
+      });    
+    }  
+  
   
 //**************************************************************************************/
 //Habilitando las teclas F2 y F10 para moverse entre los paneles
@@ -1251,3 +1485,18 @@ document.addEventListener('keydown', function(event) {
     }
   }
 }); 
+
+var scrollDiv = document.querySelector('.scroll-div');
+var initialOffset = 165; // Offset inicial de 165px desde el top
+var minOffset = 75; // Mínimo offset cuando se desplaza más de 165px
+
+window.addEventListener('scroll', () => {
+    // Obtén la posición de desplazamiento vertical actual
+    var scrollPosition = window.scrollY;
+
+    // Calcula la nueva posición vertical del div
+    var newYPosition = Math.max(initialOffset - scrollPosition, minOffset);
+
+    // Actualiza la posición del div
+    scrollDiv.style.top = `${newYPosition}px`;
+});
