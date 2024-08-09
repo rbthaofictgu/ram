@@ -33,8 +33,41 @@ include_once('configuracion/configuracion_js.php');
     </header>
     <!--<input id="dominio_raiz" name="dominio_raiz" type="hidden" value=""> -->
     <div class="container-fluid bg-white shadow-sm">
-      <div style="display: none;" id="concesion_tramites" class="col-md-5 scroll-div">
-      </div>
+        <!-- ******************************************************* -->
+        <!-- Inicio de Modal de Ingreso Número Concesion -->
+        <!-- ******************************************************* -->
+        <button style="display: none;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalConcesion">
+          Launch demo modal
+        </button>
+        <div class="modal fade bd-example-modal-lg" id="modalConcesion" tabindex="-1" role="dialog" aria-labelledby="modalConcesionTitle" aria-hidden="true">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header" style="background-image: url('assets/images/logos/banner-xiomara.jpg');background-repeat: no-repeat;	background-size: cover;">
+                <h5 class="modal-title" id="exampleModalLongTitle">INGRESE UNA CONCESIÓN</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true"><i class="fas fa-window-close fa-2x gobierno1"></i></span>
+                </button>
+              </div>
+              <div class="modal-body">
+                <input placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm test-controls" minlength="10" maxlength="25" title="Digite el CO, PES o PER EXP">
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- ******************************************************* -->
+        <!-- Final de Modal de Ingreso Número Concesion -->
+        <!-- ******************************************************* -->
+        <!-- ******************************************************* -->
+        <!-- Inicio de Div De Tramites                               -->
+        <!-- ******************************************************* -->
+        <div style="display: none;" id="concesion_tramites" class="col-md-5 scroll-div">
+        </div>
+        <!-- ******************************************************* -->
+        <!-- Final de Div De Tramites                               -->
+        <!-- ******************************************************* -->
         <!-- *** -->    
         <!-- Body -->
         <!-- *** -->    
@@ -47,7 +80,7 @@ include_once('configuracion/configuracion_js.php');
           <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA  
         </div>
         <div class="col-md-4 d-flex justify-content-end">
-          <button title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud"  style="display: none;" id="addConcesion" type="button" class="btn btn-success">
+          <button title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud"  style="display: none;" id="addConcesion" type="button" class="btn btn-success btn-sm">
             <i class="fa-solid fa-plus fa-x2"></i> Agregar CO ó PES
           </button> 
           </h6>
@@ -185,7 +218,7 @@ include_once('configuracion/configuracion_js.php');
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>                  
                 <div class="col-md-2 d-flex justify-content-end">
-                  <button id="btnnext0"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
+                  <button id="btnnext0"  type="button" class="btn btn-primary btn-sm btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>                  
               </div>                  
 
@@ -295,14 +328,14 @@ include_once('configuracion/configuracion_js.php');
 
               <div class="row">
                 <div class="col-md-2">
-                  <button id="btnprevious1" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
+                  <button id="btnprevious1" type="button" class="btn btn-success btn-sm btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
                 </div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>                  
                 <div class="col-md-2 d-flex justify-content-end">
-                  <button id="btnnext1"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
+                  <button id="btnnext1"  type="button" class="btn btn-primary btn-sm btn-sm btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>                  
               </div>                  
 
@@ -325,31 +358,6 @@ include_once('configuracion/configuracion_js.php');
                 </div>
                 <div class="col-md-10">
                   <span id="idVistaSTPC">
-                    <!-- ******************************************************* -->
-                    <!-- Ingreso de Concesion -->
-                    <!-- Modal -->
-                    <!-- ******************************************************* -->
-                    <button style="display: none;" type="button" class="btn btn-primary" data-toggle="modal" data-target="#modalConcesion">
-                      Launch demo modal
-                    </button>
-                    <div class="modal fade bd-example-modal-lg" id="modalConcesion" tabindex="-1" role="dialog" aria-labelledby="modalConcesionTitle" aria-hidden="true">
-                      <div class="modal-dialog modal-dialog-centered" role="document">
-                        <div class="modal-content">
-                          <div class="modal-header" style="background-image: url('assets/images/logos/banner-xiomara.jpg');background-repeat: no-repeat;	background-size: cover;">
-                            <h5 class="modal-title" id="exampleModalLongTitle">INGRESE UNA CONCESIÓN</h5>
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                              <span aria-hidden="true"><i class="fas fa-window-close fa-2x gobierno1"></i></span>
-                            </button>
-                          </div>
-                          <div class="modal-body">
-                      <input placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm test-controls" minlength="10" maxlength="25" title="Digite el CO, PES o PER EXP">
-                          </div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>                 
                     <div class="row unbordered-row">
                             <div class="col-md-12 background-top-row-stpc"><div class="form-group"></div>
                         </div>
@@ -473,7 +481,6 @@ include_once('configuracion/configuracion_js.php');
                                   <div class="col-md-12">
                                       <div class="form-group">
                                               <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
-                                              <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo" class="btn btn-primary btn-sm" style="float:right;">OBTENER INFORMACIÓN DEL <i class="fa-solid fa-van-shuttle"></i><strong> DESDE EL IP</strong></button>
                                       </div>
                                   </div>
                               </div>
@@ -787,22 +794,22 @@ include_once('configuracion/configuracion_js.php');
 
               <div class="row">
                 <div class="col-md-2">
-                    <button id="btnprevious2" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
+                    <button id="btnprevious2" type="button" class="btn btn-success btn-sm btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
                 </div>
                 <div class="col-md-2">
-                  <button style="display: none;" id="btnconcesion" type="button" class="btn btn-light"><i class="fa-solid fa-rotate-right"></i> Recargar</button>  
+                  <button style="display: none;" id="btnconcesion" type="button" class="btn btn-light btn-sm"><i class="fa-solid fa-rotate-right"></i> Recargar</button>  
                 </div>
                 <div class="col-md-2">
-                  <button style="display: none;" id="btnmultas"  type="button" class="btn btn-secondary"><i class="fas fa-coins btn-custom"></i> Multas</button>  
+                  <button style="display: none;" id="btnmultas"  type="button" class="btn btn-secondary btn-sm"><i class="fas fa-coins btn-custom"></i> Multas</button>  
                 </div>
                 <div class="col-md-2">
-                  <button style="display: none;" id="btnconsultas"  type="button" class="btn btn-warning"><i class="fas fa-binoculars"></i> Consultas</button>  
+                  <button style="display: none;" id="btnconsultas"  type="button" class="btn btn-warning btn-sm"><i class="fas fa-binoculars"></i> Consultas</button>  
                 </div>
                 <div class="col-md-2">
-                  <button style="display: none;" id="btnperexp"  type="button" class="btn btn-danger"><i class="fa-solid fa-file"></i> Per Exp</button>  
+                  <button style="display: none;" id="btnperexp"  type="button" class="btn btn-danger btn-sm"><i class="fa-solid fa-file"></i> Per Exp</button>  
                 </div>
                 <div class="col-md-2 justify-content-right">
-                  <button id="btnnext2" type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
+                  <button id="btnnext2" type="button" class="btn btn-primary btn-sm btn-sm btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>
               </div>
 
@@ -811,6 +818,19 @@ include_once('configuracion/configuracion_js.php');
                 <div class="form-group">&nbsp;</div>
                 </div>
               </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                <div class="form-group">&nbsp;</div>
+                </div>
+              </div>
+
+              <div class="row">
+                <div class="col-md-12">
+                <div class="form-group">&nbsp;</div>
+                </div>
+              </div>
+
 
             </div>               
 
@@ -949,7 +969,6 @@ include_once('configuracion/configuracion_js.php');
                                     <div class="col-md-12">
                                         <div class="form-group">
                                                 <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
-                                                <button title="Presione el boton para actualizar los datos del vehiculo con la información del Instituto de la Propiedad" id="btnaddvehiculo1" class="btn btn-primary btn-sm" style="float:right;">OBTENER INFORMACIÓN DEL <i class="fa-solid fa-van-shuttle"></i><strong> DESDE EL IP</strong></button>
                                         </div>
                                     </div>
                                 </div>
@@ -1263,14 +1282,14 @@ include_once('configuracion/configuracion_js.php');
 
               <div class="row">
                 <div class="col-md-2">
-                  <button id="btnprevious3" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
+                  <button id="btnprevious3" type="button" class="btn btn-success btn-sm btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
                 </div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>
                 <div class="col-md-2"></div>                  
                 <div class="col-md-2 d-flex justify-content-end">
-                  <button id="btnnext3" title="Al presionar este boton ira a la pantalla de finalizacion (recuerde que aun podra regresar a las pantallas anteriores)"  type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
+                  <button id="btnnext3" title="Al presionar este boton ira a la pantalla de finalizacion (recuerde que aun podra regresar a las pantallas anteriores)"  type="button" class="btn btn-primary btn-sm btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
                 </div>                  
               </div>
 
@@ -1287,7 +1306,7 @@ include_once('configuracion/configuracion_js.php');
                 <hr>
                 <div class="row">
                  <div div class="col-md-2">
-                    <button id="btnprevious4" type="button" class="btn btn-success btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
+                    <button id="btnprevious4" type="button" class="btn btn-success btn-sm btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
                   </div>
                   <div class="col-md-2"></div>
                   <div class="col-md-2"></div>
@@ -1295,7 +1314,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-2"></div>                  
                   <div class="col-md-2 d-flex justify-content-end">
                     <button id="btnnext4" title="Una presionado este botón y finalizado el proceso se da por concluido el registro de la PREFORMA. Ya no podrá continuar agregando más concesiones y/o tramites y el expediente pasa a revisión de los abogados  a espera del pago para trabajarlo."
-                    type="button" class="btn btn-primary btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (F10)</button>
+                    type="button" class="btn btn-primary btn-sm btn-next-form"><i class="fa-solid fa-floppy-disk"></i> Salvar y Finalizar (F10)</button>
                   </div>                  
               </div>
               </div>

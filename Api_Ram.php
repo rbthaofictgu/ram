@@ -783,7 +783,7 @@ class Api_Ram {
 }
 
 if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
-	echo json_encode(array("error" =>1000,"errorhead" =>"SESSIÓN","errorhead" =>'INICIO DE SESSIÓN',"errormsg" =>'NO HAY UNA SESSION INICIADA, FAVOR INICIE SESION Y VUELVA A INTENTARLO'));
+	echo json_encode(array("error" =>1000,"errorhead" =>"INICIO DE SESSIÓN","errormsg" =>'NO HAY UNA SESSION INICIADA, FAVOR INICIE SESION Y VUELVA A INTENTARLO'));
 } else {
 	$api = new Api_Ram();	
 }

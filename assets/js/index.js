@@ -20,7 +20,18 @@ var claseDeServicio = "";
 var dataConcesion;
 var isChangeOfVehicule = false;
 var isVehiculeBlock = false;
+var checked = false;
+var concesionIndex = Array();
+var concesionNumber = Array();
+var currentConcesionIndex=0;
 
+function updateCollection(arreglo, elemento) {
+  if (arreglo.indexOf(elemento) === -1) {
+    arreglo.push(elemento);
+    console.log("La nueva colección  es: " + elemento);
+  }
+  return arreglo.indexOf(elemento);
+}
 
 var multas3ra = document.getElementById('btnmultas');
 if (multas3ra != null) {
@@ -371,18 +382,48 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }        
 
+  
+
+  function ProcessFormalities () {
+    var respuesta = false;
+    const chkTramites = document.querySelectorAll('input[name="tramites[]"]');
+    if (chkTramites) {	
+      chkTramites.forEach(function (chk) {
+        if (chk.checked) {
+            respuesta =  true;
+        }
+      });
+    }
+    return respuesta;
+  }
+
+
   btnNextListprevious.forEach(function (btn) {
     btn.addEventListener('click', function () {
-        isPrevious = true;
-        stepperForm.previous();
+        var goPrevious = true;
+        if (currentstep < 3) {
+          if (isRecordGetted[currentstep] != '') {
+            fGetInputs();
+          }
+        } else {
+          if (currentstep == 3) {
+            console.log('goPrevious before getInputs '+ goPrevious);
+            fGetInputs();
+            if (ProcessFormalities() == true) {
+              fSweetAlertEventNormal('ERROR', 'HAY TRAMITES REGISTRADOS, DEBE SALVAR LA INFORMACIÓN DE LA PANTALLA O DESMARCAR LOS TRAMITES', 'error');
+              goPrevious = false;
+            }
+          }
+        }
+        console.log('goPrevious'+goPrevious);
+        // Si no tiene ningun error previo en la validación se entra al siguiente if y se mueve al siguiente panel
+        if (goPrevious==true) {
+          console.log('goPrevious Inside ' + goPrevious);
+          stepperForm.previous();
+        }
     })
   })
 
-
-
-  function myFunction(item, index, arr) {
-    arr[index] = item * 10;
-  } 
 
   
   function f_FetchCallApoderado(idApoderado,event,idinput) {
@@ -872,6 +913,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
 
+ 
   //Cuando presente el nuevo panel
   stepperFormEl.addEventListener('shown.bs-stepper', function (event) {
 
@@ -879,6 +921,8 @@ document.addEventListener('DOMContentLoaded', function () {
     setFocus = true;
     isError = false;
     isPrevious = false;
+
+    console.log('currentstep on shown: '+currentstep);
 
 
     if (typeof isDirty[currentstep] != 'undefined') {
@@ -888,29 +932,48 @@ document.addEventListener('DOMContentLoaded', function () {
     switch (currentstep)
     {
       case 0: 
-      document.getElementById("concesion_tramites").style = "display:none;"    
-      document.getElementById("colapoderado").focus(); break;
+        if (isRecordGetted[2] == '' && document.getElementById("addConcesion").style.display == 'flex') {
+          document.getElementById("addConcesion").style = "display:none;"    
+        }
+        document.getElementById("concesion_tramites").style = "display:none;"    
+        document.getElementById("colapoderado").focus(); 
+        break;
       case 1: 
-      document.getElementById("concesion_tramites").style = "display:none;"    
-      document.getElementById("rtnsoli").focus();      break;
+        document.getElementById("concesion_tramites").style = "display:none;"    
+        document.getElementById("rtnsoli").focus();      
+        break;
       case 2: 
-      document.getElementById("concesion_tramites").style = "display:none;"    
+        document.getElementById("addConcesion").style = "display:flex;"    
+        document.getElementById("concesion_tramites").style = "display:none;"    
         if (showModalFromShown == true) {
           showModalFromShown = false;
           $('#modalConcesion').modal('show');
           setTimeout(setFocusElementConcesion, 250);
         } else {
           document.getElementById("concesion_vin").focus();    
-        }        
+        } 
         break;
       case 3: 
+        //**********************************************************************************************************************/
+        //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
+        //**********************************************************************************************************************/
+        currentConcesionIndex = updateCollection(concesionIndex,document.getElementById("concesion_concesion").innerHTML);
+        //**********************************************************************************************************************/
+        //* Si es la primera vez que entra a la 4ta Pantalla para esta concesion se guarda el objeto con la concesion          */
+        //**********************************************************************************************************************/
+        if (!concesionNumber[currentConcesionIndex]) {
+          concesionNumber[currentConcesionIndex]={concesion: document.getElementById("concesion_concesion").innerHTML, salvada: false, Cambio_Unidad: false, Cambio_Placa: false, Unidad_Recuperada_IP: false};
+        }        
+        console.log(concesionNumber[currentConcesionIndex]);
+        document.getElementById("concesion").value='';
+        document.getElementById("concesion_tramites").value = '';
+        document.getElementById("addConcesion").style = "display:flex;"    
         document.getElementById("concesion_tramites").style = "display:fixed;"    
         setTimeout(setDataPreviewFormalities, 1000);
         window.scrollTo(0, 0); 
         //*********************************************************************************/
-        //* Pocisionandose */
+        //* Pocisionandose en el checkbox que corresponde según sea la Clase de Servicio  */
         //*********************************************************************************/
-        console.log(claseDeServicio);
         if (claseDeServicio == "STPP" || claseDeServicio == "STPC") {
           var el = document.getElementById("IHTTTRA-02_CLATRA-01_R_PE");
           if (el != null) {
@@ -919,14 +982,12 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
           var el =  document.getElementById("IHTTTRA-02_CLATRA-03_R_PS");    
           if (el != null) {
-            console.log(el);
             el.focus();    
           }
         }
-        break;        
-      }
-
-  })
+        break;
+      }       
+    })
 
 
 
@@ -1254,6 +1315,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('row_tramite_M_CS').style.display = "none";
           }else{
             // Si cambio de placa
+            isChangeOfLicencePlate = true;
             document.getElementById('row_tramite_M_CU').style.display = "none";
             document.getElementById('row_tramite_M_CM').style.display = "flex";
             document.getElementById('row_tramite_M_CC').style.display = "flex";
@@ -1271,6 +1333,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('row_tramite_M_CC').style.display = "flex";
             document.getElementById('row_tramite_M_CS').style.display = "flex";
           }else{
+            isChangeOfLicencePlate = false;
             // Si cambio de placa
             const checkboxIds = ['IHTTTRA-03_CLATRA-15_M_CL', 'IHTTTRA-03_CLATRA-17_M_CM', 'IHTTTRA-03_CLATRA-18_M_CC', 'IHTTTRA-03_CLATRA-19_M_CS'];
             var checked = false;
@@ -1399,19 +1462,13 @@ document.addEventListener('DOMContentLoaded', function () {
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
       .then(function (vehiculo) {
-        console.log(vehiculo);
         if (!vehiculo.error) {
           if (vehiculo.codigo && vehiculo.codigo == 200) {
             if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
               isVehiculeBlock = false;
-              console.log(vehiculo.cargaUtil.propietario.identificacion);
-              console.log(vehiculo.cargaUtil.propietario.nombre);
               document.getElementById("concesion1_nombre_propietario").innerHTML = vehiculo.cargaUtil.propietario.identificacion;
               document.getElementById("concesion1_identidad_propietario").innerHTML = vehiculo.cargaUtil.propietario.nombre;
-              console.log(vehiculo.cargaUtil.placaAnterior);
               if (vehiculo && vehiculo.cargaUtil && vehiculo.cargaUtil.placaAnterior) {
-                console.log('5'+document.getElementById("concesion1_placaanterior").innerHTML);
-                console.log('6'+vehiculo.cargaUtil.placaAnterior);
                 document.getElementById("concesion1_placaanterior").style = 'display:inline;';
                 document.getElementById("concesion1_placaanterior").innerHTML = vehiculo.cargaUtil.placaAnterior;
               } else {
@@ -1431,16 +1488,13 @@ document.addEventListener('DOMContentLoaded', function () {
             }  else {
               if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
                 fSweetAlertEventNormal('BLOQUEADO', 'EL VEHICULO ESTA BLOQUEADO EN EL INSTITUTO DE LA PROPIEDAD', 'error');
-                console.log(vehiculo);
                 isVehiculeBlock = true;
               } else {
                 if (isset(vehiculo.codigo) == 407 || vehiculo.codigo == 408) {
                   fSweetAlertEventNormal('ADVERTENCIA', 'NO HEMOS PODIDO CONECTARNOS CON EL INSTITUTO DE LA PROPIEDAD, FAVOR INTENTENLO EN UN MOMENTO SI EL PROBLEMA PERSIOSTE CONTACTE AL ADMINISTRADOR DEL SISTEMA', 'warning');
-                  console.log(vehiculo);
                   isVehiculeBlock = true;
                 } else {
                   fSweetAlertEventNormal('ERROR', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'error');
-                  console.log(vehiculo);
                   isVehiculeBlock = true;
                 }
               }
