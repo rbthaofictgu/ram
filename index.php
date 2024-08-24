@@ -3,34 +3,42 @@
 session_start();
 //*configuración del sistema
 include_once('configuracion/configuracion.php');
+if (!isset($_SESSION['url']) && !isset($_SESSION['user_name'])) {
+    if ($appcfg_Dominio == (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]") {
+      $appcfg_page_url =  (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]" . "index.php";	 
+    }else {
+      $appcfg_page_url =  (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";	 
+    }
+} else {
+  $appcfg_page_url='';
+}
 //*configuración del las variables globales del sistema
 include_once('configuracion/configuracion_js.php');
 ?>
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en" data-bs-theme="auto">
   <head>
-    <title>RENOVACIONES MASIVAS</title>
-    <meta charset="utf-8">
-    <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="SISTEMA DE RENOVACIONES AUTOMATICAS MASIVAS">
-    <meta name="author" content="RONALD THAOFIC BARRIENTOS MEJIA">
-    <link rel="apple-touch-icon" sizes="120x120" href="<?php echo $appcfg_Dominio;?>assets/images/favicon/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo $appcfg_Dominio;?>assets/images/favicon/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo $appcfg_Dominio;?>assets/images/favicon/favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="512x512" href="<?php echo $appcfg_Dominio;?>assets/images/favicon/android-chrome-512x512.png">
-    <link rel="icon" type="image/png" sizes="192x192" href="<?php echo $appcfg_Dominio;?>assets/images/favicon/android-chrome-192x192.png">
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-    <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.3/dist/sweetalert2.min.css" rel="stylesheet">
-    <link href="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> 
-    <link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css" rel="stylesheet"> 
-    <link href="<?php echo $appcfg_Dominio;?>assets/css/styles.css" rel="stylesheet">
+  <?php 
+    include_once('encabezado.php');
+  ?>
   </head>
     <body>
     <header>
     <?php include_once('menu.php')?>
     </header>
+    <input type="hidden" id="Permiso_Explotacion" value="false">
+    <input type="hidden" id="estaPagadoElCambiodePlaca" value="false">
+    <input type="hidden" id="RequiereRenovacionConcesion" value="false">
+    <input type="hidden" id="RequiereRenovacionPerExp" value="false">
+    <input type="hidden" id="NuevaFechaVencimientoConcesion" value="null">
+    <input type="hidden" id="NuevaFechaVencimientoPerExp" value="null">
+    <input type="hidden" id="CantidadRenovacionesConcesion" value="0">
+    <input type="hidden" id="CantidadRenovacionesPerExp" value="null">
+    <input type="hidden" id="ID_Categoria" value="">
+    <input type="hidden" id="ID_Clase_Servicio" value="">
+    <input type="hidden" id="ID_Modalidad" value="">
+    <input type="hidden" id="ID_Tipo_Servicio" value="">
+    
     <!--<input id="dominio_raiz" name="dominio_raiz" type="hidden" value=""> -->
     <div class="container-fluid bg-white shadow-sm">
         <!-- ******************************************************* -->
@@ -81,7 +89,7 @@ include_once('configuracion/configuracion_js.php');
         </div>
         <div class="col-md-4 d-flex justify-content-end">
           <button title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud"  style="display: none;" id="addConcesion" type="button" class="btn btn-success btn-sm">
-            <i class="fa-solid fa-plus fa-x2"></i> Agregar CO ó PES
+            <i class="fa-solid fa-magnifying-glass"></i>&nbsp;&nbsp;BUSCAR
           </button> 
           </h6>
         </div>
@@ -493,6 +501,8 @@ include_once('configuracion/configuracion_js.php');
 
                                   <div class="col-md-3 bordered-row">
                                       <div class="form-group">
+                                          <input type="hidden" id="concesion_modelo_vehiculo" value="">
+                                          <input type="hidden" id="concesion_tipo_vehiculo" value="">
                                           <input style="text-transform: uppercase;" title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_vin" minlength="6" maxlength="17">
                                       </div>
                                   </div>    
@@ -981,6 +991,8 @@ include_once('configuracion/configuracion_js.php');
 
                                     <div class="col-md-3 bordered-row">
                                         <div class="form-group">
+                                            <input type="hidden" id="concesion1_modelo_vehiculo" value="">
+                                            <input type="hidden" id="concesion1_tipo_vehiculo" value="">
                                             <input style="text-transform: uppercase;" title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_vin" minlength="6" maxlength="17">
                                         </div>
                                     </div>    
@@ -1332,19 +1344,15 @@ include_once('configuracion/configuracion_js.php');
           <?php include_once('footer.php')?>
       </footer>
     </div>
-    <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/site/static/docs/5.3/assets/js/validate-forms.js"></script>
-    <script src="<?php echo $appcfg_Dominio;?>assets/js/fetchWithTimeout.js"></script>
-    <script src="<?php echo $appcfg_Dominio;?>assets/js/sweetalert.js"></script>
-    <script src="<?php echo $appcfg_Dominio;?>assets/js/readingBar.js"></script>
-    <script src="<?php echo $appcfg_Dominio;?>assets/js/fLlenarSelect.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bs-stepper/dist/js/bs-stepper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.3/dist/sweetalert2.all.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.all.min.js"></script>
-    <link   href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.min.css" rel="stylesheet">
-    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-    <script src="https://kit.fontawesome.com/d40661685b.js" ></script>
-    <script src="<?php echo $appcfg_Dominio;?>assets/js/index.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <?php 
+    include_once('pie.php');
+    include_once('../sattb/modal_pie.php');    
+    ?>
+    <script>
+      <?php 
+      include_once('../sattb/assets/js/openModalLogin.js');
+      include_once('../sattb/assets/js/login.js');
+      ?>
+    </script>    
   </body>
 </html>

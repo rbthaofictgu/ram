@@ -17,7 +17,7 @@ function fSweetAlertEventNormal(title, msg, type, errorcode = 'success') {
     })
   } 
 
-function fSweetAlertEventSelect(event,title, msg, type, errorcode = null) {
+function fSweetAlertEventSelect(event='',title, msg, type, errorcode = null) {
   const swalWithBootstrapButtons = Swal.mixin({
     customClass: {
       confirmButton: "btn btn-success"
@@ -33,8 +33,11 @@ function fSweetAlertEventSelect(event,title, msg, type, errorcode = null) {
     confirmButtonColor: "#3085d6",
   }).then((result) => {
     if (result.isConfirmed) {
-      if (event.target.type == 'text') {
-        event.target.select();
+      //Si se paso un evento real no un string
+      if (typeof event != 'string') {
+        if (event.target.type == 'text') {
+          event.target.select();
+        }
       }
     }
   });

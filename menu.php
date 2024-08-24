@@ -20,9 +20,13 @@ $menu =
     $menu = $menu .' 
         </a>
         <ul class="dropdown-menu">
-        <li><a class="dropdown-item" href="'.$appcfg_menu.'"><strong>'.$appcfg_menu_satt.'</strong></a></li>
-        <li><a class="dropdown-item" href="'. $appcfg_salir.'"><strong>'.$appcfg_login.'</strong></a></li>
-        </ul>
+        <li><a class="dropdown-item" href="'.$appcfg_menu.'"><strong><i class="fa-solid fa-gear gobierno1"></i> '.$appcfg_menu_satt.'</strong></a></li>';
+        if (!isset($_SESSION['user_name'])) {
+            $menu = $menu . '<li><a class="dropdown-item" onclick="openModalLogin();"><strong><i class="fa-solid fa-right-to-bracket gobierno1"></i> '.$appcfg_login.'</strong></a></li>';
+        }else{
+            $menu = $menu . '<li><a class="dropdown-item" href="'.$appcfg_Dominio . 'salir.php"><strong><i class="fa-solid fa-right-from-bracket gobierno1"></i> SALIR</strong></a></li>';
+        }
+    $menu = $menu .'</ul>
     </li>
     </nav>
 </div>';

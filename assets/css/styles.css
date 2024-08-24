@@ -497,9 +497,9 @@ color: var(--bs-gobierno3);
     top: 165px; /* Puedes ajustar esta posición inicial según sea necesario */
     left: 21%;
     transform: translateX(-50%);
-    background-color: #f4f4f4;
+    background-color: #ffffff;
     padding: 20px;
-    border: 2px solid #ccc;
+    border: 2px solid var(--bs-gobierno1);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
