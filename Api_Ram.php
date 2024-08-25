@@ -1,21 +1,18 @@
 <?php
 //error_reporting(0);
-date_default_timezone_set("America/Tegucigalpa"); 
-header('Content-Type: application/x-javascript; charset=utf-8');
-header('Access-Control-Allow-Origin: *');
 session_start();
 ini_set('post_max_size', '100M');
 ini_set('upload_max_filesize', '100M');
 ini_set('max_execution_time', '1000');
 ini_set('max_input_time', '1000');
 ini_set('memory_limit', '256M');
+date_default_timezone_set("America/Tegucigalpa"); 
+header('Content-Type: application/x-javascript; charset=utf-8');
+header('Access-Control-Allow-Origin: *');
 require_once("../config/conexion.php");
 require_once("../logs/logs.php");
-
 class Api_Ram {
-
 	private $Casa=false;
-
 	public function __construct(){
 		if(isset($_POST["action"])){
 			if ($_POST["action"] == "get-apoderado" && isset($_POST["idApoderado"])) {
@@ -412,7 +409,7 @@ class Api_Ram {
 	/*****************************************************************************************/
 	function getDatosUnidadDesdeIP($placa) {
 		if ($this->getCasa() == false) {
-			$vehiculo = json_decode($this->file_contents("https://satt2.transporte.gob.hn:184/api/Unidad/ConsultarDatosIP/".$placa));
+			$vehiculo = json_decode($this->file_contents($_SESSION["appcfg_Dominio_Raiz"].":184/api/Unidad/ConsultarDatosIP/".$placa));
 			//Recuperando el codigo de la marca del vehiculo
 			if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
 				$marca = $this->getMarcaByDesc($vehiculo->cargaUtil->marca);
@@ -572,7 +569,7 @@ class Api_Ram {
 			$data[0]["Unidad"][0]['ID_Marca'] = '';
 			$data[0]["Unidad"][0]['ID_Color'] = '';
 			if ($data[0]["Clase Servicio"] == 'STEC') {
-				$data[0]["Link"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoEsp-Carga&PermisoEspecial=".$data[0]["CertificadoEncriptado"];
+				$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"].":172/api_rep.php?action=get-PDFPermisoEsp-Carga&PermisoEspecial=".$data[0]["CertificadoEncriptado"];
 				$data[0]["Vista"] = file_get_contents("vistas/pes_carga.html");
 				$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] t where v.ID_Vehiculo_Carga = p.ID_Vehiculo_Carga and v.ID_Tipo_Vehiculo_Carga = t.ID_Tipo_Vehiculo_Carga and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Carga ",$data[0]["ID_Vehiculo"]," t.DESC_Tipo_Vehiculo,* ");
 				if ($data && $data[0] && $data[0]["Unidad"] && $data[0]["Unidad"][0]['ID_Placa']) {
@@ -652,7 +649,7 @@ class Api_Ram {
 						$data[0]["Tipo_Categoria_Especilizada"] = $area[0]['value'];
 						$data[0]["Desc_Categoria_Especilizada"] = $area[0]['text'];
 					}
-					$data[0]["Link"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoEsp-Pas&PermisoEspecial=".$data[0]["CertificadoEncriptado"];
+					$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"].":172/api_rep.php?action=get-PDFPermisoEsp-Pas&PermisoEspecial=".$data[0]["CertificadoEncriptado"];
 					$data[0]["Vista"] = file_get_contents("vistas/pes_pasajero.html");
 					$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] t where v.ID_Vehiculo_Transporte = p.ID_Vehiculo_Transporte and v.ID_Tipo_Vehiculo_Transporte_Pas = t.ID_Tipo_Vehiculo_Transporte_Pas and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Transporte ",$data[0]["ID_Vehiculo"]," DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,* ");					
 					if ($data && $data[0] && $data[0]["Unidad"] && $data[0]["Unidad"][0]['ID_Placa']) {
@@ -722,7 +719,7 @@ class Api_Ram {
 						}
 						// Pendiente de ir a trae el certificado de explotación
 						//$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Carga&Permiso=".$data[0]["PerExpEncriptado"];
-						$data[0]["Link"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado-Carga&Certificado=".$data[0]["CertificadoEncriptado"];
+						$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"].":172/api_rep.php?action=get-PDFCertificado-Carga&Certificado=".$data[0]["CertificadoEncriptado"];
 						$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
 						$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] t where v.ID_Vehiculo_Carga = p.ID_Vehiculo_Carga and v.ID_Tipo_Vehiculo_Carga = t.ID_Tipo_Vehiculo_Carga and p.Estado = 'ACTIVA' and"," v.ID_Vehiculo_Carga ",$data[0]["ID_Vehiculo"]," t.DESC_Tipo_Vehiculo,* ");					
 						if ($data && $data[0] && $data[0]["Unidad"] && $data[0]["Unidad"][0]['ID_Placa']) {
@@ -784,7 +781,7 @@ class Api_Ram {
 							$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
 							$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PE','CO','CL','CM','CC','CS','PE','CU'],$data[0]["Categoria"]);
 							//$data[0]["Link1"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFPermisoExp-Pas&Permiso=".$data[0]["PerExpEncriptado"];
-							$data[0]["Link"] = "https://satt2.transporte.gob.hn:172/api_rep.php?action=get-PDFCertificado&Certificado=".$data[0]["CertificadoEncriptado"];
+							$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"].":172/api_rep.php?action=get-PDFCertificado&Certificado=".$data[0]["CertificadoEncriptado"];
 							$data[0]["Vista"] = file_get_contents("vistas/certificado_pasajero.html");
 							$data[0]["Unidad"] = $this->getUnidad("[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] v,IHTT_SGCERP.[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] p,IHTT_SGCERP.[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] t where v.ID_Vehiculo_Transporte = p.ID_Vehiculo_Transporte and v.ID_Tipo_Vehiculo_Transporte_Pas = t.ID_Tipo_Vehiculo_Transporte_Pas and p.Estado = 'ACTIVA' and "," v.ID_Vehiculo_Transporte ",$data[0]["ID_Vehiculo"]," DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,* ");											
 							if ($data && $data[0] && $data[0]["Unidad"] && $data[0]["Unidad"][0]['ID_Placa']) {

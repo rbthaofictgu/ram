@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', function () {
             isError = false;
             //Moviendose al siguiente input
             moveToNextInput(event.target,0);
-            sendToast("INFORMACIÓN DEL APODERADO RECUPERADA EXITOSAMENTE",7500,'',true,true,"top","right",true,{background: "linear-gradient(to right, #88cfe0, #f5e0db)",Color: "#94969",},function(){},'success',{ x: 100,  y: 100  },'https://satt2.transporte.gob.hn:285/ram/assets/images/check.png');
+            sendToast("INFORMACIÓN DEL APODERADO RECUPERADA EXITOSAMENTE",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);
           } else {
               fLimpiarPantalla();
               fSweetAlertEventSelect(event,'INFORMACIÓN', 'EL NÚMERO DE COLEGIACIÓN NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
@@ -562,7 +562,7 @@ document.addEventListener('DOMContentLoaded', function () {
             fLlenarSelect('Aldeas',datos[4],datos[1].aldea,false,{text: 'SELECCIONE UNA ALDEA', value: '-1'})            
             isError = false;
             moveToNextInput(event.target,0);
-            sendToast("INFORMACIÓN DEL SOLICITANTE RECUPERADA EXITOSAMENTE",7500,'',true,true,"top","right",true,{background: "linear-gradient(to right, #88cfe0, #f5e0db)",Color: "#94969",},function(){},'success',{ x: 100,  y: 100  },'https://satt2.transporte.gob.hn:285/ram/assets/images/check.png');            
+            sendToast("INFORMACIÓN DEL SOLICITANTE RECUPERADA EXITOSAMENTE",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);            
           } else {
               fLimpiarPantalla();
               fSweetAlertEventSelect(event,'INFORMACIÓN', 'EL RTN DEL SOLICITANTE NO EXISTE EN NUESTRA BASE DE DATOS, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE', 'warning');
@@ -866,7 +866,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 //**************************************************************************************************************************/
                 //Enviando Toast de Exito en Recuperación la Información de la Concesión
                 //**************************************************************************************************************************/
-                sendToast("INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE",7500,'',true,true,"top","right",true,{background: "linear-gradient(to right, #88cfe0, #f5e0db)",Color: "#94969",},function(){},'success',{ x: 100,  y: 100  },'https://satt2.transporte.gob.hn:285/ram/assets/images/check.png');
+                sendToast("INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);
               } else {
                 fSweetAlertEventSelect(event,'MULTAS', 'LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE', 'error');
                 event.preventDefault();
@@ -1834,7 +1834,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 document.getElementById("anios1").value = vehiculo.cargaUtil.axo;
                 document.getElementById("concesion1_tipo_vehiculo").value = vehiculo.cargaUtil.tipo;
                 document.getElementById("concesion1_modelo_vehiculo").value = vehiculo.cargaUtil.modelo;          
-                sendToast("INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",7500,'',true,true,"top","right",true,{background: "linear-gradient(to right, #88cfe0, #f5e0db)",},function(){},'success',{ x: 100,  y: 100  },'https://satt2.transporte.gob.hn:285/ram/assets/images/check.png');
+                sendToast("INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);
               }  else {
                 if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
                   fSweetAlertEventNormal('BLOQUEADO', 'EL VEHICULO ESTA BLOQUEADO EN EL INSTITUTO DE LA PROPIEDAD', 'error');

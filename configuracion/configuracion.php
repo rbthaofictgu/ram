@@ -53,16 +53,18 @@ if ($Environment == 'DEV') { //* Ambiente de desarrollo
 	$appcfg_Dominio_Corto = "https://satt.transporte.gob.hn";
 	$appcfg_Dominio_Puerto = ":293";
 	$GLOBALS['appcfg_dominio'] = $appcfg_Dominio;
-	$appcfg_menu ="https://satt2.transporte.gob.hn/index.php";
-	$appcfg_salir = "https://satt2.transporte.gob.hn/login.php?logout";
+	$appcfg_menu ="https://satt.transporte.gob.hn/index.php";
+	$appcfg_salir = "https://satt.transporte.gob.hn/login.php?logout";
 }	
+$_SESSION["appcfg_Dominio_Raiz"] = $appcfg_Dominio_Raiz;
+$_SESSION["appcfg_Dominio"] = $appcfg_Dominio;
+$_SESSION["appcfg_Dominio_Corto"] = $appcfg_Dominio_Corto;
+$_SESSION["appcfg_Dominio_Puerto"] = $appcfg_Dominio_Puerto;
 //************************************************************************************/
 //* Toast
 //************************************************************************************/	
-$appcfg_milisegundos_toast = 7500;
-$appcfg_pocision_toast = { x: 100,  y: 100  };
-$appcfg_icono_toast = $appcfg_Dominio+'/assets/images/check.png';
-$appcfg_background_toast = "linear-gradient(to right, #88cfe0, #f5e0db)";
+$appcfg_milisegundos_toast = 4000;
+$appcfg_icono_toast = $appcfg_Dominio.'/assets/images/check.png';
 //!*********************FOOTER******************************************
 $appcfg_Aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS <span class="gobierno2">(RAM)</span>'; 
 $appcfg_nombre_aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS <span class="gobierno2">(RAM)</span>';
