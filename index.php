@@ -12,6 +12,10 @@ if (!isset($_SESSION['url']) && !isset($_SESSION['user_name'])) {
 } else {
   $appcfg_page_url='';
 }
+
+if (!isset($_SESSION["Es_Renovacion_Automatica"])) {
+  $_SESSION["Es_Renovacion_Automatica"]=true;
+}
 //*configuración del las variables globales del sistema
 include_once('configuracion/configuracion_js.php');
 ?>
@@ -26,6 +30,11 @@ include_once('configuracion/configuracion_js.php');
     <header>
     <?php include_once('menu.php')?>
     </header>
+    <?php if (!isset($_SESSION["Secuencia"])) {?>
+      <input type="hidden" id="Secuencia" value="1">
+    <?php } else { ?>
+      <input type="hidden" id="Secuencia" value="<?php echo $_SESSION["Secuencia"] ?>">
+    <?php } ?>
     <input type="hidden" id="Permiso_Explotacion" value="false">
     <input type="hidden" id="estaPagadoElCambiodePlaca" value="false">
     <input type="hidden" id="RequiereRenovacionConcesion" value="false">

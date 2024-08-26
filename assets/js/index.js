@@ -1009,7 +1009,7 @@ document.addEventListener('DOMContentLoaded', function () {
     //*********************************************************************************************************************/
     // Si es Certificado Entra Aqui para establecer el CO y PE
     //*********************************************************************************************************************/
-    const ConcesionPreforma={Certificado: Certificado, Permiso_Explotacion: Permiso_Explotacion, Permiso_Especial: Permiso_Especial,ID_Categoria : document.getElementById("ID_Categoria").value,ID_Tipo_Servico : document.getElementById("ID_Tipo_Servicio").value,ID_Modalidad : document.getElementById("ID_Modalidad").value, ID_Clase_Servicio: document.getElementById("ID_Clase_Servicio").value, esCambioDePlaca: esCambioDePlaca,esCambioDeVehiculo: esCambioDeVehiculo};
+    const ConcesionPreforma= { Certificado: Certificado, Permiso_Explotacion: Permiso_Explotacion, Permiso_Especial: Permiso_Especial,ID_Categoria : document.getElementById("ID_Categoria").value,ID_Tipo_Servico : document.getElementById("ID_Tipo_Servicio").value,ID_Modalidad : document.getElementById("ID_Modalidad").value, ID_Clase_Servicio: document.getElementById("ID_Clase_Servicio").value, esCambioDePlaca: esCambioDePlaca,esCambioDeVehiculo: esCambioDeVehiculo,esCertificado: esCertificado, Secuencia: document.getElementById("Secuencia").value };
     return ConcesionPreforma;  
   }
   //*********************************************************************************************************************/
@@ -1118,22 +1118,18 @@ document.addEventListener('DOMContentLoaded', function () {
     let fd = new FormData(document.forms.form1);
     // Adjuntando el action al FormData
     fd.append("action", 'save-preforma');    
-    console.log('setConcesion()');
     // Adjuntando el Concesion y Caracterización al FormData
     fd.append("Concesion", JSON.stringify(setConcesion()));    
-    console.log('setApoderado');
     // Adjuntando el Apoderado al FormData
     fd.append("Apoderado", JSON.stringify(setApoderado()));
-    console.log('setSolicitante');
     // Adjuntando el Solicitante al FormData
     fd.append("Solicitante", JSON.stringify(setSolicitante()));
-    console.log('setUnidad');
     // Adjuntando el Unidad al FormData
     fd.append("Unidad", JSON.stringify(setUnidad()));
-    console.log('setUnidad1');
-    // Adjuntando el Unidad1 al FormData
-    fd.append("Unidad1", JSON.stringify(setUnidad1()));
-    console.log('setTramites');
+    // Adjuntando el Unidad1 al FormData Solo si Existe el Tramite Cambio de Unidad
+    if (esCambioDeVehiculo == true) {
+      fd.append("Unidad1", JSON.stringify(setUnidad1()));
+    }
     // Adjuntando el Tramites al FormData
     fd.append("Tramites",JSON.stringify(setTramites()));
     //  Fetch options
@@ -1225,9 +1221,7 @@ document.addEventListener('DOMContentLoaded', function () {
           //**********************************************************************************************************/
           //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
           //**********************************************************************************************************/
-          alert(1);
           response.error = salvarConcesion();
-          alert(2);
         }
       if (response.error == false) {
         stepperForm.to(3);    
