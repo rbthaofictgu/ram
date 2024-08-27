@@ -3,6 +3,18 @@
 header('Content-Type: application/x-javascript; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 session_start();
+//******************************************************************/
+// Es Renovacion Automatica
+//******************************************************************/
+if (!isset($_SESSION["Es_Renovacion_Automatica"])) {
+	$_SESSION["Es_Renovacion_Automatica"]=true;
+}
+//******************************************************************/
+// Es originado en ventanilla
+//******************************************************************/
+if (!isset($_SESSION["Originado_En_Ventanilla"])) {
+	$_SESSION["Originado_En_Ventanilla"]=true;
+}
 ini_set('post_max_size', '100M');
 ini_set('upload_max_filesize', '100M');
 ini_set('max_execution_time', '1000');
@@ -84,6 +96,9 @@ class Api_Ram {
 		return $this->ip;
 	}
 
+	/*************************************************************************************/
+	/* FUNCION PARA EJECUTAR SELECT SOBRE LA BASE DE DATOS
+	/*************************************************************************************/
 	protected function select($q, $p) {
 		try {
 			$stmt = $this->db->prepare($q);
@@ -99,12 +114,59 @@ class Api_Ram {
 			}				
 		} catch (PDOException $e) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] .'; - Error Catch PDOException; ' . $e->getMessage();
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] .'; - Error Catch PDOException; ' . $e->getMessage() . ' QUERY ' .$q;
 			logErr($txt,'../logs/logs.txt');
 			return false; // O devolver un valor indicando error
 		}
 	}
-	
+
+	/*************************************************************************************/
+	/* FUNCION PARA EJECUTAR LA ACTUALIZACION SOBRE LA BASE DE DATOS
+	/*************************************************************************************/
+	function update($q, $p) {
+		$stmt = $this->db->prepare($q);
+		try {
+			$resp = $stmt->execute($p);
+			$res = $stmt->errorInfo();
+			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
+				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' .' UPDATE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' .$res[2] . ' $res[3] ' . $res[3];
+				logErr($txt,'../logs/logs.txt');
+				return false;
+			} else {
+				return true;
+			}	
+		} catch (\Throwable $th) {
+			// Capturar excepciones de PDO (error de base de datos)
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] .'; - Error Catch UPDATE PDOException; ' . $th->getMessage() . ' QUERY ' .$q;
+			logErr($txt,'../logs/logs.txt');
+			return false;
+		}		
+	}
+
+	/*************************************************************************************/
+	/* FUNCION PARA EJECUTAR LA ACTUALIZACION SOBRE LA BASE DE DATOS
+	/*************************************************************************************/
+	function insert($q, $p) {
+		$stmt = $this->db->prepare($q);
+		try {
+			$resp = $stmt->execute($p);
+			$res = $stmt->errorInfo();
+			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
+				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' .' UPDATE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' .$res[2] . ' $res[3] ' . $res[3];
+				logErr($txt,'../logs/logs.txt');
+				return false;
+			} else {
+				return $this->db->lastInsertId();
+			}	
+		} catch (\Throwable $th) {
+			// Capturar excepciones de PDO (error de base de datos)
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] .'; - Error Catch UPDATE PDOException; ' . $th->getMessage() . ' QUERY ' .$q;
+			logErr($txt,'../logs/logs.txt');
+			return false;
+		}		
+	}
+
+
 	/*************************************************************************************/
 	/* FUNCION PARA RECUPERAR EL APODERADO LEGAL DEL PORTAL DE APODERADOS 
 	/*************************************************************************************/
@@ -261,13 +323,13 @@ class Api_Ram {
 	/* FUNCION PARA RECUPERAR EL SOLICITANTE
 	/*************************************************************************************/
 	protected function getSolicitante() {
-		$query = "SELECT a.*,b.DESC_Solicitante FROM ihtt_preforma.dbo.v_Datos_Solicitante a,[IHTT_SELD].[dbo].[TB_Tipo_Solicitante] b WHERE a.CodigoSolicitanteTipo = b.ID_Tipo_Solicitante and a.ID_Solicitante = :IDSOL";
+		$query = "SELECT a.*,b.DESC_Solicitante,b.ID_Tipo_Solicitante FROM ihtt_preforma.dbo.v_Datos_Solicitante a,[IHTT_SELD].[dbo].[TB_Tipo_Solicitante] b WHERE a.CodigoSolicitanteTipo = b.ID_Tipo_Solicitante and a.ID_Solicitante = :IDSOL";
 		$p = array(":IDSOL" => $_POST["idSolicitante"]);
 		$data = $this->select($query, $p );
 		$datos[0]= count($data);
 		if (count($data)>0) {
 			$Aldeas = $this->ALDEASDEPARTAMENTO($data[0]["Aldea"]);
-			$datos[1] = array('DESC_Solicitante' =>$data[0]["DESC_Solicitante"],
+			$datos[1] = array('DESC_Solicitante' =>$data[0]["DESC_Solicitante"],'ID_Tipo_Solicitante' =>$data[0]["ID_Tipo_Solicitante"],
 			"rtn_solicitante" =>$data[0]["RTNSolicitante"],"nombre_solicitante" =>$data[0]["NombreSolicitante"],"nombre_empresa" =>$data[0]["NombreEmpresa"],
 			"codigo_tipo" =>$data[0]["CodigoSolicitanteTipo"],"dir_solicitante" =>$data[0]["Direccion"],"tel_solicitante" =>$data[0]["Telefono"],
 			"correo_solicitante" =>$data[0]["Email"],"aldea" =>$data[0]["Aldea"],'Aldeas'=>$Aldeas['Aldea'],'Municipio'=>$Aldeas['Municipio'],'Departamento'=>$Aldeas['Departamento'],
@@ -985,7 +1047,7 @@ class Api_Ram {
 	//*******************************************************************************************************************/
 	protected function updateSiguienteNumeroRAM ($query,$numero_actual){
 		$p=array(":numero_actual"=> $numero_actual,":usuario_modificacion"=> $_SESSION["user_name"],":ip_modificacion"=> $this->getIp(),":host_modificacion"=> $this->getHost());
-		return $this->select($query, $p);		
+		return $this->update($query, $p);		
 	}
 
 	//*******************************************************************************************************************/
@@ -1023,14 +1085,14 @@ class Api_Ram {
 			//*******************************************************************************************************************/			
 			// Sino se presento ningun error al momento de actualizar el registro de secuencias
 			//*******************************************************************************************************************/			
-			if (trim($responseUpdateSiguienteNumeroRAM) == '') {
+			if (trim($responseUpdateSiguienteNumeroRAM) == true) {
 				//*******************************************************************************************************************/			
 				// Armando el siguiente numero de RAM
 				//*******************************************************************************************************************/			
 				$response['nuevo_numero'] = trim($prefijo). (substr((str_repeat($record['caracter_de_relleno'], $record['tamaño_numero'])).$response['numero_actual'],(-1 * $record['tamaño_numero']))) . trim($sufijo);
 				return $response;
 			} else {
-				$responseUpdateSiguienteNumeroRAM;
+				return $responseUpdateSiguienteNumeroRAM;
 			}
 		} else {
 			$response['error'] = true;
@@ -1051,7 +1113,7 @@ class Api_Ram {
 				if (is_array($record) == true) {
 					return $this->getSiguienteNumeroRAM($record[0],$recordRango[0]);
 				} else {
-					$response['error'] = true;
+					$response['ok'] = false;
 					$response['msg'] = 'YA NO HAY RANGO VALIDO PARA LA FECHA ACTUAL';
 					return $response;
 				}
@@ -1059,14 +1121,221 @@ class Api_Ram {
 				return $this->getSiguienteNumeroRAM($record[0],$record[0]);
 			}
 		} else {
-			$response['error'] = true;
+			$response['ok'] = false;
 			$response['msg'] = 'YA NO HAY RANGO VALIDO';
 			return $response;
 		}
 	}
 
+	protected function saveSolicitud($Concesion,$Apoderado,$Solicitante,$row_usuario_asigna,$row_ciudad,$RAM){
+		$query="INSERT INTO [IHTT_PREFORMA].[dbo].[TB_Solicitante] 
+		(
+		Es_Renovacion_Automatica,
+		Originado_En_Ventanilla,
+		Usuario_Creacion,
+		Codigo_Ciudad,
+		ID_Formulario_Solicitud,
+		ID_Formulario_Solicitud_Encrypted,
+		Nombre_Solicitante,
+		ID_Tipo_Solicitante,
+		RTN_Solicitante,
+		Domicilo_Solicitante,
+		Denominacion_Social,
+		ID_Aldea,
+		Telefono_Solicitante,
+		Email_Solicitante,
+		Numero_Escritura,
+		RTN_Notario,
+		Notario_Autorizante,
+		Lugar_Constitucion,
+		Fecha_Constitucion,
+		Estado_Formulario,
+		Fecha_Cancelacion,
+		Observaciones,
+		Usuario_Cancelacion,
+		Sistema_Fecha,
+		Presentacion_Documentos,
+		Etapa_Preforma,
+		Usuario_Acepta,
+		Fecha_Aceptacion,
+		Codigo_Usuario_Acepta,
+		Tipo_Solicitud,
+		Entrega_Ubicacion) 
+		VALUES(
+		:Es_Renovacion_Automatica,
+		:Originado_En_Ventanilla,
+		:Usuario_Creacion,
+		:Codigo_Ciudad,
+		:ID_Formulario_Solicitud,
+		:ID_Formulario_Solicitud_Encrypted,
+		:Nombre_Solicitante,
+		:ID_Tipo_Solicitante,
+		:RTN_Solicitante,
+		:Domicilo_Solicitante,
+		:Denominacion_Social,
+		:ID_Aldea,
+		:Telefono_Solicitante,
+		:Email_Solicitante,
+		:Numero_Escritura,
+		:RTN_Notario,
+		:Notario_Autorizante,
+		:Lugar_Constitucion,
+		:Fecha_Constitucion,
+		:Estado_Formulario,
+		:Fecha_Cancelacion,
+		:Observaciones,
+		:Usuario_Cancelacion,
+		SYSDATETIME(),
+		:Presentacion_Documentos,
+		:Etapa_Preforma,
+		:Usuario_Acepta,
+		SYSDATETIME(),
+		:Codigo_Usuario_Acepta,
+		:Tipo_Solicitud,
+		:Entrega_Ubicacion)"; 
+		$parametros=array(
+		":Es_Renovacion_Automatica"=>$_SESSION["Es_Renovacion_Automatica"],
+		":Originado_En_Ventanilla"=>$_SESSION["Originado_En_Ventanilla"],
+		":Usuario_Creacion"=>$_SESSION["user_name"],
+		":Codigo_Ciudad"=>$row_ciudad[0]['Codigo_Ciudad'],
+		":ID_Formulario_Solicitud"=>$RAM,
+		":ID_Formulario_Solicitud_Encrypted"=>hash('SHA512', '%^4#09+-~@%&zfg' . $RAM . date('m/d/Y h:i:s a', time()),false),
+		":Nombre_Solicitante"=>strtoupper($Solicitante['Nombre']),
+		":ID_Tipo_Solicitante"=>$Solicitante['Tipo_Solicitante'],
+		":RTN_Solicitante"=>$Solicitante['RTN'],
+		":Domicilo_Solicitante"=>strtoupper($Solicitante['Domicilio']),
+		":Denominacion_Social"=>strtoupper($Solicitante['Denominacion']),":ID_Aldea"=>$Solicitante['Aldea'],
+		":Telefono_Solicitante"=>$Solicitante['Telefono'],
+		":Email_Solicitante"=>$Solicitante['Email'],
+		":Numero_Escritura"=>'',
+		":RTN_Notario"=>'',
+		":Notario_Autorizante"=>'',
+		":Lugar_Constitucion"=>'',
+		":Fecha_Constitucion"=>'1900-01-01',
+		":Estado_Formulario"=>'IDE-7',
+		":Fecha_Cancelacion"=>null,
+		":Observaciones"=>strtoupper(''),
+		":Usuario_Cancelacion"=>'',
+		":Presentacion_Documentos"=>$Apoderado['Tipo_Presentacion'],
+		":Etapa_Preforma"=>1,
+		":Usuario_Acepta"=>$row_usuario_asigna[0]["Nombre_Usuario"], ":Codigo_Usuario_Acepta"=>$row_usuario_asigna[0]["Codigo_Usuario"],
+		":Tipo_Solicitud"=> $Concesion['esCarga'] = true ? 'CARGA' : 'PASAJEROS', ":Entrega_Ubicacion"=>$Apoderado['Lugar_Entrega']);
+		return $this->insert($query, $parametros);		
+	}
+
+	protected function saveApoderado($RAM,$Apoderado){
+		$query="INSERT INTO [IHTT_PREFORMA].[dbo].[TB_Apoderado_Legal]
+		(ID_Formulario_Solicitud,
+		Nombre_Apoderado_Legal,
+		Ident_Apoderado_Legal,
+		ID_Colegiacion,
+		Direccion_Apoderado_Legal,
+		Telefono_Apoderado_Legal,
+		Email_Apoderado_Legal,
+		Sistema_Fecha) 
+		VALUES(
+		:ID_Formulario_Solicitud,
+		:Nombre_Apoderado_Legal,
+		:Ident_Apoderado_Legal,
+		:ID_Colegiacion,
+		:Direccion_Apoderado_Legal,
+		:Telefono_Apoderado_Legal,
+		:Email_Apoderado_Legal,
+		SYSDATETIME())";
+		$parametros=array(
+		":ID_Formulario_Solicitud"=>$RAM,
+		":Nombre_Apoderado_Legal"=>strtoupper($Apoderado['Nombre']),
+		":Ident_Apoderado_Legal"=>$Apoderado['RTN'],
+		":ID_Colegiacion"=>$Apoderado['Numero_Colegiacion'],
+		":Direccion_Apoderado_Legal"=>strtoupper($Apoderado['Direccion']),
+		":Telefono_Apoderado_Legal"=>$Apoderado['Telefono'],
+		":Email_Apoderado_Legal"=>strtoupper($Apoderado['Email']));
+		return $this->insert($query, $parametros);		
+	}
+
+	protected function saveUnidad($RAM,$Unidad,$Concesion,$Estado){
+		$query="INSERT INTO [IHTT_PREFORMA].[dbo].[TB_Vehiculo] (
+		ID_Formulario_Solicitud,
+		RTN_Propietario,
+		Nombre_Propietario,
+		ID_Placa,
+		ID_Marca,
+		Anio,
+		Modelo,
+		Tipo_Vehiculo,
+		ID_Color,
+		Motor,
+		Chasis,
+		VIN,
+		Combustible,
+		Alto,
+		Ancho,
+		Largo,
+		Capacidad_Carga,
+		Peso_Unidad,
+		Permiso_Explotacion,
+		Certificado_Operacion,
+		Permiso_Especial,
+		Sistema_Fecha,
+		Estado,
+		ID_Placa_Antes_Replaqueo)
+		VALUES(
+		:ID_Formulario_Solicitud,
+		:RTN_Propietario,
+		:Nombre_Propietario,
+		:ID_Placa,
+		:ID_Marca,
+		:Anio,
+		:Modelo,
+		:Tipo_Vehiculo,
+		:ID_Color,
+		:Motor,
+		:Chasis,
+		:VIN,
+		:Combustible,
+		:Alto,
+		:Ancho,
+		:Largo,
+		:Capacidad_Carga,
+		:Peso_Unidad,
+		:Permiso_Explotacion,
+		:Certificado_Operacion,
+		:Permiso_Especial,
+		SYSDATETIME(),
+		:Estado,
+		:ID_Placa_Antes_Replaqueo		
+		)";
+		$parametros=array(
+		":ID_Formulario_Solicitud"=>$RAM,
+		":RTN_Propietario"=>$Unidad['RTN_Propietario'],
+		":Nombre_Propietario"=>strtoupper($Unidad['Nombre_Propietario']),
+		":ID_Placa"=>strtoupper($Unidad['Placa']),
+		":ID_Marca"=>$Unidad['Marca'],
+		":Anio"=>$Unidad['Anio'],
+		":Modelo"=>strtoupper($Unidad['Modelo']),
+		":Tipo_Vehiculo"=>strtoupper($Unidad['Tipo']),
+		":ID_Color"=>$Unidad['Color'],
+		":Motor"=>strtoupper($Unidad['Motor']),
+		":Chasis"=>strtoupper($Unidad['Serie']),
+		":VIN"=>strtoupper($Unidad['VIN']),
+		":Combustible"=>strtoupper($Unidad['Combustible']),
+		":Alto"=>$Unidad['Alto'],
+		":Ancho"=>$Unidad['Ancho'],
+		":Largo"=>$Unidad['Largo'],
+		":Capacidad_Carga"=> $Unidad['Capacidad'],
+		":Peso_Unidad"=> 0,
+		":Permiso_Explotacion"=>strtoupper($Concesion['Permiso_Explotacion']),
+		":Certificado_Operacion"=>strtoupper($Concesion['Certificado']),
+		":Permiso_Especial"=>strtoupper($Concesion['Permiso_Especial']),		
+		":Estado"=>$Estado,
+		":ID_Placa_Antes_Replaqueo"=>strtoupper($Unidad['ID_Placa_Antes_Replaqueo']));
+		return $this->insert($query,$parametros);		
+	}
+
 
 	protected function savePreforma(){
+		// BANDERA DE ERROR
+		$ERROR = false;
 		// Start a transaction
 		$this->db->beginTransaction();
 		//*******************************************************************************************************************/
@@ -1075,26 +1344,80 @@ class Api_Ram {
 		$_POST["Concesion"] = json_decode($_POST["Concesion"], true);
 		$_POST["Apoderado"] = json_decode($_POST["Apoderado"], true);
 		$_POST["Solicitante"] = json_decode($_POST["Solicitante"], true);
-		$_POST["Unidad"] = json_decode($_POST["Unidad"], true);
 		$_POST["Tramites"] = json_decode($_POST["Tramites"], true);
+		$_POST["Unidad"] = json_decode($_POST["Unidad"], true);
 		//*******************************************************************************************************************/
 		// Final Decodificando los json recibidos
 		//*******************************************************************************************************************/
 		//*******************************************************************************************************************/
-		// Inicio Decodificando los json recibidos
+		// Inicio Si es Cambio de Unidad
 		//*******************************************************************************************************************/
-		$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo'],($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
-		$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);					
 		if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
 			$_POST["Unidad1"] = json_decode($_POST["Unidad1"], true);
+			$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo'],($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
+			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);					
 			$responseValidarPlacas1 = $this->validarPlaca($_POST["Unidad1"]['Placa'],$_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'],($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
 			$responseValidarMultas1 = $this->getDatosMulta($_POST["Unidad1"]['Placa'],$_POST["Unidad1"]['ID_Placa_Antes_Replaqueo']);					
+		} else {
+			//*******************************************************************************************************************/
+			// Inicio Si NO NO NO es Cambio de Unidad
+			//*******************************************************************************************************************/			
+			$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo'],($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
+			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);					
 		}
-		$Usuario_Asigna = $this->getUsuarioAsigna();
-		$Usuario_Ciudad = $this->getCiudad($_SESSION["ID_Usuario"]);
-		$RAM = $this->getSiguienteRAM($_POST["Concesion"]['Secuencia']);
-		$this->db->commit();
-		echo json_encode(true);
+		$row_usuario_asigna = $this->getUsuarioAsigna();
+		$row_ciudad = $this->getCiudad($_SESSION["ID_Usuario"]);
+		$RAM = $this->getSiguienteRAM($_POST["Concesion"]['Secuencia']);	
+		if ($RAM == false or $row_usuario_asigna == false or $row_ciudad == false   or 
+			(isset($responseValidarPlacas[1]) and $responseValidarPlacas[1] > 0)    or 
+			(isset($responseValidarPlacas1[1])   and $responseValidarPlacas1[1]  > 0)  or 
+			(isset($responseValidarMultas[1]) and $responseValidarMultas[1] > 0)    or  
+			(isset($responseValidarMultas1[1])   and $responseValidarMultas1[1]  > 0)) {
+			$this->db->rollBack();
+			echo json_encode(['RAM'  =>  $RAM,
+							 'Usuario_Asigna'   =>  $Usuario_Asigna,
+							 'Usuario_Ciudad'   =>  $Usuario_Ciudad, 
+							 'responseValidarPlacas'   =>  $responseValidarPlacas, 
+							 'responseValidarPlacas1'  =>  $responseValidarPlacas1 ? $responseValidarPlacas1 : '', 
+							 'responseValidarMultas'   =>  $responseValidarMultas, 
+							 'responseValidarMultas1'  =>  $responseValidarMultas1 ? $responseValidarMultas1 : '']);
+		} else {
+			$isOK = $this->saveSolicitud($_POST["Concesion"],$_POST["Apoderado"],$_POST["Solicitante"],$row_usuario_asigna,$row_ciudad,$RAM['nuevo_numero']);
+			if ($isOK == false) {
+				$this->db->rollBack();
+				echo json_encode(false);	
+			} else {
+				$isOK = $this->saveApoderado($RAM['nuevo_numero'],$_POST["Apoderado"]);
+				if ($isOK == false) {
+					$this->db->rollBack();
+					echo json_encode(false);	
+				} else {
+
+					if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
+						$isOK = $this->saveUnidad($RAM['nuevo_numero'],$_POST["Unidad"],$_POST["Concesion"],'SALE');
+					} else {
+						$isOK = $this->saveUnidad($RAM['nuevo_numero'],$_POST["Unidad"],$_POST["Concesion"],'NORMAL');
+					}
+
+					if ($isOK == false) {
+						$this->db->rollBack();
+						echo json_encode(false);	
+					} else {
+						if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
+							$isOK = $this->saveUnidad($RAM['nuevo_numero'],$_POST["Unidad1"],$_POST["Concesion"],'ENTRA');
+							if ($isOK == false) {
+								$this->db->rollBack();
+								echo json_encode(false);	
+								$ERROR = true;
+							}
+						}
+						if ($ERROR == false) {
+							echo json_encode(true);
+						}
+					}
+				}
+			}
+		}
 	}	
 
 }

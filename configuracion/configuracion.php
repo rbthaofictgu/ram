@@ -63,8 +63,9 @@ $_SESSION["appcfg_Dominio_Puerto"] = $appcfg_Dominio_Puerto;
 //************************************************************************************/
 //* Toast
 //************************************************************************************/	
-$appcfg_milisegundos_toast = 2500;
+$appcfg_milisegundos_toast = 1000;
 $appcfg_icono_toast = $appcfg_Dominio.'/assets/images/check.png';
+$appcfg_max_field_on_net = 1000;
 //!*********************FOOTER******************************************
 $appcfg_Aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS <span class="gobierno2">(RAM)</span>'; 
 $appcfg_nombre_aplicacion = 'RENOVACIONES AUTOMATICAS MASIVAS <span class="gobierno2">(RAM)</span>';

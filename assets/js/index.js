@@ -26,6 +26,7 @@ var concesionIndex = Array();
 var concesionNumber = Array();
 var currentConcesionIndex=-1;
 var dataConcesion = Array();
+var esCarga;
 
 function updateCollection(arreglo, elemento) {
   if (arreglo.indexOf(elemento) === -1) {
@@ -210,7 +211,55 @@ document.addEventListener('DOMContentLoaded', function () {
   function setFocusElement(){
     document.getElementById("colapoderado").focus(); 
   }
-   
+  
+  //**************************************************************************************/
+  //Crear Malla Automaticamente con la información de los arreglos
+  // header el titulo de los campos (el encabezado)
+  // array  los datos en si
+  // fields los campos que se debe traer el arreglo
+  //**************************************************************************************/
+  var Arreglo = Array();
+  var Encabezado = Array();
+  var Fields = Array();
+  var Cols = Array();
+  Arreglo.push({'NOMBRE': 'RONALD','APELLIDO':  'BARRIENTOS'});
+  Encabezado.push({'field': 'NOMBRE SOLICITANTE'});
+  Encabezado.push({'field': 'APELLIDO SOLICITANTE'});
+  Fields.push({'field': 'NOMBRE'});
+  Fields.push({'field': 'APELLIDO'});
+  Cols.push({'col': 6});
+  Cols.push({'col': 6});
+
+  //document.getElementById('Malla').value = createMallaDinicamente(Encabezado, Arreglo, Fields,Cols);
+
+  function createMallaDinicamente(header, arrays, fields, cols={}, maxfield=999, clases=[]) {
+    var $html = '<div class="row">';
+    header.forEach((field, fieldIndex) => {
+      if (typeof field.field != 'undefined') {
+        const campo = field.field;
+        const colClass = cols[fieldIndex]?.col ? `col-${cols[fieldIndex].col}` : 'col';
+        const fieldValue = field.field ?? '';
+        $html += `<div class="${colClass}">${fieldValue}</div>`;
+      }
+    });
+    $html += '</div>';
+    arrays.forEach(arrayItem => {      
+        $html += `<div class="row">`;
+        fields.forEach((field, fieldIndex) => {
+            if (field.field !== 'undefined') {
+                console.log(field.field);
+                console.log(fieldIndex);
+                const campo = field.field;
+                const colClass = cols[fieldIndex]?.col ? `col-${cols[fieldIndex].col}` : 'col';
+                const fieldValue = arrayItem[campo] ?? '';
+                $html += `<div class="${colClass}">${fieldValue}</div>`;
+            }
+        });
+        $html += `</div>`;
+    });
+    $html = $html;
+    return $html;
+  }
   //**************************************************************************************/
   //Cargando la información por default que debe usar el formulario
   //**************************************************************************************/
@@ -455,6 +504,8 @@ document.addEventListener('DOMContentLoaded', function () {
           if (datos.nombre_apoderado != '' && datos.nombre_apoderado != null) {
             //Limpiando mensajes de error
             fCleanErrorMsg();
+            console.log('datos.correo_apoderado');
+            console.log(datos.correo_apoderado);
             document.getElementById('nomapoderado').value = datos.nombre_apoderado;
             document.getElementById('identidadapod').value = datos.ident_apoderado;
             document.getElementById('dirapoderado').value = datos.dir_apoderado;
@@ -553,6 +604,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('emailsoli').value = datos[1].correo_solicitante; 
             document.getElementById('telsoli').value = datos[1].tel_solicitante; 
             document.getElementById('tiposolicitante').value = datos[1].DESC_Solicitante;  
+            document.getElementById('tiposolicitante').setAttribute("data-id",datos[1].ID_Tipo_Solicitante);
             if (datos[1].Departamento != null && datos[1].Departamento != '') {
               document.getElementById('Departamentos').value= datos[1].Departamento;
             }else{
@@ -625,10 +677,20 @@ document.addEventListener('DOMContentLoaded', function () {
     claseDeServicio = datos[1][0]['ID_Clase_Servico'];
     if (claseDeServicio == 'STPP' || claseDeServicio == 'STPC') {
       esCertificado = true;
+      if (claseDeServicio == 'STPC') {
+        esCarga = true;  
+      } else {
+        esCarga = false;  
+      }
       document.getElementById("concesion_perexp").innerHTML = datos[1][0]['N_Permiso_Explotacion'];
       document.getElementById("Permiso_Explotacion").value = datos[1][0]['N_Permiso_Explotacion'];
     } else {
         esCertificado = false;
+        if (claseDeServicio == 'STEC') {
+          esCarga = true;  
+        } else {
+          esCarga = false;  
+        }
         document.getElementById("Permiso_Explotacion").value = '';
     }
     document.getElementById("concesion_tramites").innerHTML = datos[1][0]['Tramites'];
@@ -725,13 +787,9 @@ document.addEventListener('DOMContentLoaded', function () {
       //***********************************************************************************************************************************/
       // INICIO: Caracterización de la Concesion
       //***********************************************************************************************************************************/      
-      console.log(10);
       document.getElementById("ID_Categoria").value = datos[1][0]['ID_Categoria'];
-      console.log(11);
       document.getElementById("ID_Tipo_Servicio").value = datos[1][0]['ID_Tipo_Servico'];
-      console.log(12);
       document.getElementById("ID_Modalidad").value = datos[1][0]['ID_Modalidad'];
-      console.log(13);
       document.getElementById("ID_Clase_Servicio").value = datos[1][0]['ID_Clase_Servico'];      
       //***********************************************************************************************************************************/
       // FINAL: Caracterización de la Concesion
@@ -741,7 +799,6 @@ document.addEventListener('DOMContentLoaded', function () {
       // Marcando tramites obligatrios dependiendo de las condciones de vencimiento de las concesiones y permisos de explotacion
       // y si ya se pago el cambio de placa de la unidad actual, si tuvo cambio de placa
       //***********************************************************************************************************************************/      
-      console.log(0);
       document.getElementById("NuevaFechaVencimientoConcesion").value = datos[1][0]['Vencimientos']['Nueva_Fecha_Expiracion'];
       document.getElementById("NuevaFechaVencimientoPerExp").value = datos[1][0]['Vencimientos']['Nueva_Fecha_Expiracion_Explotacion'];
       document.getElementById("CantidadRenovacionesConcesion").value = datos[1][0]['Vencimientos']['rencon-cantidad'];
@@ -751,21 +808,15 @@ document.addEventListener('DOMContentLoaded', function () {
       document.getElementById("concesion_placa").value = datos[1][0]['Unidad'][0]['ID_Placa'];
       document.getElementById("concesion_serie").value = datos[1][0]['Unidad'][0]['Chasis'];
       document.getElementById("concesion_motor").value = datos[1][0]['Unidad'][0]['Motor'];
-      console.log(1);
       document.getElementById("concesion_tipo_vehiculo").value = datos[1][0]['Unidad'][0]['Tipo'];
-      console.log(2);
       document.getElementById("concesion_modelo_vehiculo").value = datos[1][0]['Unidad'][0]['Modelo'];          
-      console.log(3);
       dataConcesion['marcas'] = datos[1][0]['Marcas'];
-      console.log(4);
       fLlenarSelect('marcas',datos[1][0]['Marcas'],datos[1][0]['Unidad'][0]['ID_Marca'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});            
-      console.log(5);
       dataConcesion['colores'] = datos[1][0]['Colores'];
       fLlenarSelect('colores',datos[1][0]['Colores'],datos[1][0]['Unidad'][0]['ID_Color'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});
       dataConcesion['anios'] = datos[1][0]['Anios'];
       fLlenarSelect('anios',datos[1][0]['Anios'],datos[1][0]['Unidad'][0]['Anio'],false,{text: 'SELECCIONE UN AÑO', value: '-1'});   
       document.getElementById("concesion_tipovehiculo").innerHTML = datos[1][0]['Unidad'][0]['DESC_Tipo_Vehiculo'];
-      console.log(6);
     }
     document.getElementById("concesion_cerant").innerHTML = datos[1][0]['Certificado Anterior'];
     document.getElementById("concesion_numregant").innerHTML = datos[1][0]['Registro_Anterior'];
@@ -1003,13 +1054,25 @@ document.addEventListener('DOMContentLoaded', function () {
     if (esCertificado) {
       var Certificado = document.getElementById("concesion_concesion").innerHTML;
       var Permiso_Explotacion = document.getElementById("concesion_perexp").innerHTML.split('||')[0];
+      var Permiso_Especial = '';
     } else {
       var Permiso_Especial = document.getElementById("concesion_concesion").innerHTML;
     }
     //*********************************************************************************************************************/
     // Si es Certificado Entra Aqui para establecer el CO y PE
     //*********************************************************************************************************************/
-    const ConcesionPreforma= { Certificado: Certificado, Permiso_Explotacion: Permiso_Explotacion, Permiso_Especial: Permiso_Especial,ID_Categoria : document.getElementById("ID_Categoria").value,ID_Tipo_Servico : document.getElementById("ID_Tipo_Servicio").value,ID_Modalidad : document.getElementById("ID_Modalidad").value, ID_Clase_Servicio: document.getElementById("ID_Clase_Servicio").value, esCambioDePlaca: esCambioDePlaca,esCambioDeVehiculo: esCambioDeVehiculo,esCertificado: esCertificado, Secuencia: document.getElementById("Secuencia").value };
+    const ConcesionPreforma= { Certificado: Certificado, 
+                               Permiso_Explotacion: Permiso_Explotacion,
+                               Permiso_Especial: Permiso_Especial,
+                               ID_Categoria : document.getElementById("ID_Categoria").value,
+                               ID_Tipo_Servico : document.getElementById("ID_Tipo_Servicio").value,
+                               ID_Modalidad : document.getElementById("ID_Modalidad").value,
+                               ID_Clase_Servicio: document.getElementById("ID_Clase_Servicio").value,
+                               esCambioDePlaca: esCambioDePlaca,
+                               esCambioDeVehiculo: esCambioDeVehiculo,
+                               esCertificado: esCertificado,
+                               Secuencia: document.getElementById("Secuencia").value,
+                               esCarga: esCarga };
     return ConcesionPreforma;  
   }
   //*********************************************************************************************************************/
@@ -1019,10 +1082,15 @@ document.addEventListener('DOMContentLoaded', function () {
   //** Inicio Function para Establecer el Apoderado de los Tramites                                                           **/
   //*********************************************************************************************************************/
   function setApoderado() {
-    const ApoderadoPreforma = {RTN: document.getElementById("colapoderado").value,Lugar_Entrega: document.getElementById("entregadocs").value,
-                              Telefono: document.getElementById("telapoderado").value,Email: document.getElementById("emailapoderado").value,
-                              Nombre: document.getElementById("nomapoderado").value,Identidad: document.getElementById("identidadapod").value,
-                              Direccion: document.getElementById("dirapoderado").value,Tipo_Presentacion: document.getElementById("tipopresentacion").value};
+    const ApoderadoPreforma = {RTN: document.getElementById("identidadapod").value,
+                              Numero_Colegiacion: document.getElementById("colapoderado").value,
+                              Lugar_Entrega: document.getElementById("entregadocs").value,
+                              Telefono: document.getElementById("telapoderado").value,
+                              Email: document.getElementById("emailapoderado").value,
+                              Nombre: document.getElementById("nomapoderado").value,
+                              Identidad: document.getElementById("identidadapod").value,
+                              Direccion: document.getElementById("dirapoderado").value,
+                              Tipo_Presentacion: document.getElementById("tipopresentacion").value};
      return ApoderadoPreforma;                              
   }
   //*********************************************************************************************************************/
@@ -1032,11 +1100,16 @@ document.addEventListener('DOMContentLoaded', function () {
   //** Inicio Function para Establecer el Solicitante de los Tramites                                                  **/
   //*********************************************************************************************************************/
   function setSolicitante() {
-    const SolicitantePreforma = {RTN: document.getElementById("rtnsoli").value,Tipo_Solicitante: document.getElementById("tiposolicitante").value,
-                                Nombre: document.getElementById("nomsoli").value, Domicilio: document.getElementById("domiciliosoli").value,
-                                Denominacion: document.getElementById("denominacionsoli").value,Departamento: document.getElementById("Departamentos").value,
-                                Municipio: document.getElementById("Municipios").value,Aldea: document.getElementById("Aldeas").value,
-                                Telefono: document.getElementById("telsoli").value,Email: document.getElementById("emailsoli").value};
+    const SolicitantePreforma = {RTN: document.getElementById("rtnsoli").value,
+                                Tipo_Solicitante: document.getElementById("tiposolicitante").getAttribute('data-id'),
+                                Nombre: document.getElementById("nomsoli").value,
+                                Domicilio: document.getElementById("domiciliosoli").value,
+                                Denominacion: document.getElementById("denominacionsoli").value,
+                                Departamento: document.getElementById("Departamentos").value,
+                                Municipio: document.getElementById("Municipios").value,
+                                Aldea: document.getElementById("Aldeas").value,
+                                Telefono: document.getElementById("telsoli").value,
+                                Email: document.getElementById("emailsoli").value};
      return SolicitantePreforma;                              
   }
   //*********************************************************************************************************************/
@@ -1046,24 +1119,25 @@ document.addEventListener('DOMContentLoaded', function () {
   //** Inicio Function para Establecer la Unidad de los Tramites                                                       **/
   //*********************************************************************************************************************/
   function setUnidad() {
-    //*********************************************************************************************************************/
-    // Si es Certificado Entra Aqui para establecer el CO y PE
-    //*********************************************************************************************************************/
-    if (esCertificado) {
-      var Certificado = document.getElementById("concesion_concesion").innerHTML;
-      var Permiso_Explotacion = document.getElementById("concesion_perexp").innerHTML.split('||')[0];
-    } else {
-      var Permiso_Especial = document.getElementById("concesion_concesion").innerHTML;
-    }
-    const UnidadPreforma = {VIN: document.getElementById("concesion_vin").value,Placa: document.getElementById("concesion_placa").value,
-                            Serie: document.getElementById("concesion_serie").value,Motor: document.getElementById("concesion_motor").value,
-                            Marca: document.getElementById("marcas").value,Color: document.getElementById("colores").value,
-                            Anio: document.getElementById("anios").value,Combustible: document.getElementById("combustible").value,
-                            Capacidad: document.getElementById("capacidad").value,Alto: document.getElementById("alto").value,
-                            Largo: document.getElementById("largo").value,Ancho: document.getElementById("ancho").value,
-                            Nombre_Propietario: document.getElementById("concesion_nombre_propietario").innerHTML,
-                            Identidad_Propietario: document.getElementById("concesion_identidad_propietario").innerHTML,
-                            Modelo: document.getElementById("concesion_modelo_vehiculo").value, Tipo: document.getElementById("concesion_tipo_vehiculo").value, ID_Placa_Antes_Replaqueo: document.getElementById("concesion_placaanterior").innerHTML};
+    const UnidadPreforma = {
+      VIN: document.getElementById("concesion_vin").value,
+      Placa: document.getElementById("concesion_placa").value,
+      Serie: document.getElementById("concesion_serie").value,
+      Motor: document.getElementById("concesion_motor").value,
+      Marca: document.getElementById("marcas").value,
+      Color: document.getElementById("colores").value,
+      Anio: document.getElementById("anios").value,
+      Combustible: document.getElementById("combustible").value,
+      Capacidad: document.getElementById("capacidad").value,
+      Alto: document.getElementById("alto").value,
+      Largo: document.getElementById("largo").value,
+      Ancho: document.getElementById("ancho").value,
+      Nombre_Propietario: document.getElementById("concesion_nombre_propietario").innerHTML,
+      RTN_Propietario: document.getElementById("concesion_identidad_propietario").innerHTML,
+      Modelo: document.getElementById("concesion_modelo_vehiculo").value,
+      Tipo: document.getElementById("concesion_tipo_vehiculo").value,
+      ID_Placa_Antes_Replaqueo: document.getElementById("concesion_placaanterior").innerHTML
+     };
      return UnidadPreforma;
   }
   //*********************************************************************************************************************/
@@ -1073,15 +1147,22 @@ document.addEventListener('DOMContentLoaded', function () {
   //** Inicio Function para Establecer la Unidad de los Tramites                                                       **/
   //*********************************************************************************************************************/
   function setUnidad1() {
-    const Unidad1Preforma = {VIN: document.getElementById("concesion1_vin").value,Placa: document.getElementById("concesion1_placa").value,
-                            Serie: document.getElementById("concesion1_serie").value,Motor: document.getElementById("concesion1_motor").value,
-                            Marca: document.getElementById("marcas1").value,Color: document.getElementById("colores1").value,
-                            Anio: document.getElementById("anios1").value,Combustible: document.getElementById("combustible1").value,
-                            Capacidad: document.getElementById("capacidad1").value,Alto: document.getElementById("alto1").value,
-                            Largo: document.getElementById("largo").value,Ancho: document.getElementById("ancho").value,
+    const Unidad1Preforma = {VIN: document.getElementById("concesion1_vin").value,
+                            Placa: document.getElementById("concesion1_placa").value,
+                            Serie: document.getElementById("concesion1_serie").value,
+                            Motor: document.getElementById("concesion1_motor").value,
+                            Marca: document.getElementById("marcas1").value,
+                            Color: document.getElementById("colores1").value,
+                            Anio: document.getElementById("anios1").value,
+                            Combustible: document.getElementById("combustible1").value,
+                            Capacidad: document.getElementById("capacidad1").value,
+                            Alto: document.getElementById("alto1").value,
+                            Largo: document.getElementById("largo1").value,
+                            Ancho: document.getElementById("ancho1").value,
                             Nombre_Propietario: document.getElementById("concesion1_nombre_propietario").innerHTML,
-                            Identidad_Propietario: document.getElementById("concesion1_identidad_propietario").innerHTML,
-                            Modelo: document.getElementById("concesion1_modelo_vehiculo").value, Tipo: document.getElementById("concesion1_tipo_vehiculo").value, 
+                            RTN_Propietario: document.getElementById("concesion1_identidad_propietario").innerHTML,
+                            Modelo: document.getElementById("concesion1_modelo_vehiculo").value,
+                            Tipo: document.getElementById("concesion1_tipo_vehiculo").value, 
                             ID_Placa_Antes_Replaqueo: document.getElementById("concesion1_placaanterior").innerHTML};
      return Unidad1Preforma;
   }
@@ -1807,8 +1888,8 @@ document.addEventListener('DOMContentLoaded', function () {
             if (vehiculo.codigo && vehiculo.codigo == 200) {
               if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
                 isVehiculeBlock = false;
-                document.getElementById("concesion1_nombre_propietario").innerHTML = vehiculo.cargaUtil.propietario.identificacion;
-                document.getElementById("concesion1_identidad_propietario").innerHTML = vehiculo.cargaUtil.propietario.nombre;
+                document.getElementById("concesion1_nombre_propietario").innerHTML = vehiculo.cargaUtil.propietario.nombre;
+                document.getElementById("concesion1_identidad_propietario").innerHTML = vehiculo.cargaUtil.propietario.identificacion;
                 if (vehiculo && vehiculo.cargaUtil && vehiculo.cargaUtil.placaAnterior) {
                   document.getElementById("concesion1_placaanterior").style = 'display:inline;';
                   document.getElementById("concesion1_placaanterior").innerHTML = vehiculo.cargaUtil.placaAnterior;

@@ -13,8 +13,17 @@ if (!isset($_SESSION['url']) && !isset($_SESSION['user_name'])) {
   $appcfg_page_url='';
 }
 
+//******************************************************************/
+// Es Renovacion Automatica
+//******************************************************************/
 if (!isset($_SESSION["Es_Renovacion_Automatica"])) {
   $_SESSION["Es_Renovacion_Automatica"]=true;
+}
+//******************************************************************/
+// Es originado en ventanilla
+//******************************************************************/
+if (!isset($_SESSION["Originado_En_Ventanilla"])) {
+  $_SESSION["Originado_En_Ventanilla"]=true;
 }
 //*configuración del las variables globales del sistema
 include_once('configuracion/configuracion_js.php');
@@ -47,6 +56,7 @@ include_once('configuracion/configuracion_js.php');
     <input type="hidden" id="ID_Clase_Servicio" value="">
     <input type="hidden" id="ID_Modalidad" value="">
     <input type="hidden" id="ID_Tipo_Servicio" value="">
+    <input type="hidden" id="Malla" value="">
     
     <!--<input id="dominio_raiz" name="dominio_raiz" type="hidden" value=""> -->
     <div class="container-fluid bg-white shadow-sm">
@@ -261,7 +271,7 @@ include_once('configuracion/configuracion_js.php');
                   <div class="col-md-2">
                     <div class="form-group">
                       <label>Tipo Solicitante:</label>
-                      <input readonly type="text" class="form-control form-control-sm" id="tiposolicitante">
+                      <input readonly type="text" data-id="" class="form-control form-control-sm" id="tiposolicitante">
                     </div>
                   </div>
 
