@@ -12,5 +12,6 @@
 <script src="https://kit.fontawesome.com/d40661685b.js" ></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/toastify.js"></script>
+<script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/malladinamica.js"></script>
 <script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/index.js"></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>

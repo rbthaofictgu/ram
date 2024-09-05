@@ -20,7 +20,9 @@ var claseDeServicio = "";
 var esCertificado = true;
 var esCambioDePlaca = false;
 var esCambioDeVehiculo = false;
+var seRecuperoVehiculoDesdeIP = false;
 var isVehiculeBlock = false;
+var finalizarSalvado = false;
 var checked = false;
 var concesionIndex = Array();
 var concesionNumber = Array();
@@ -247,8 +249,6 @@ document.addEventListener('DOMContentLoaded', function () {
         $html += `<div class="row">`;
         fields.forEach((field, fieldIndex) => {
             if (field.field !== 'undefined') {
-                console.log(field.field);
-                console.log(fieldIndex);
                 const campo = field.field;
                 const colClass = cols[fieldIndex]?.col ? `col-${cols[fieldIndex].col}` : 'col';
                 const fieldValue = arrayItem[campo] ?? '';
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function fLimpiarPantalla() {
     //*********************************************************************************/
-    // Dependiendo del panel actual se ejecuta una función para validar los campos
+    //* Dependiendo del panel actual se ejecuta una función para validar los campos
     //*********************************************************************************/
     switch (currentstep)
     {
@@ -400,26 +400,116 @@ document.addEventListener('DOMContentLoaded', function () {
         // document.getElementById('telrep').value = '';
         // document.getElementById('emailrep').value = '';        
         break;
-      case 2: 
-        document.getElementById('nomapoderado').value = '';
-        document.getElementById('identidadapod').value = '';
-        document.getElementById('dirapoderado').value = '';
-        document.getElementById('telapoderado').value = '';                
-        document.getElementById('emailapoderado').value = '';               
-        break;
       case 3: 
-        document.getElementById('nomapoderado').value = '';
-        document.getElementById('identidadapod').value = '';
-        document.getElementById('dirapoderado').value = '';
-        document.getElementById('telapoderado').value = '';                
-        document.getElementById('emailapoderado').value = '';               
+        //document.getElementById("idVista").style = "display:block;"  
+        //document.getElementById("idVista").innerHTML = datos[1][0]['Vista'];
+        // Concesion en pantalla 3
+        console.log(1);
+        var concesionlabel = document.getElementById("concesionlabel");
+        if (concesionlabel != null) {
+          concesionlabel.innerHTML = '';
+        }
+        console.log(2);
+        document.getElementById("concesion_concesion").innerHTML = '';
+        console.log(3);
+        document.getElementById("concesion_perexp").innerHTML = '';
+        console.log(4);
+        document.getElementById("concesion_fecexp").innerHTML = '';
+        console.log(5);
+        document.getElementById("concesion_resolucion").innerHTML = '' 
+        console.log(6);
+        document.getElementById("concesion_fecven").innerHTML = '';
+        console.log(7);
+        document.getElementById("concesion_nombreconcesionario").innerHTML = '';
+        console.log(8);
+        document.getElementById("concesion_rtn").innerHTML = '';
+        console.log(9);
+        document.getElementById("concesion_fecexp").innerHTML = '';
+        console.log(10);
+        document.getElementById("concesion_resolucion").innerHTML = '';
+        console.log(11);
+        document.getElementById("concesion_nombre_propietario").innerHTML = '';
+        console.log(12);
+        document.getElementById("concesion_identidad_propietario").innerHTML = '';
+        console.log(12);
+        document.getElementById("concesion_placaanterior").style = '';
+        console.log(13);
+        document.getElementById("concesion_placaanterior").innerHTML = '';
+        console.log(14);
+        document.getElementById("concesion_tipo_vehiculo").value = '';
+        console.log(15);
+        document.getElementById("concesion_modelo_vehiculo").value = '';
+        console.log(16);
+        document.getElementById("concesion_vin").value = '';
+        console.log(17);
+        document.getElementById("concesion_placa").value = '';
+        console.log(18);
+        document.getElementById("concesion_serie").value = '';
+        console.log(19);
+        document.getElementById("concesion_motor").value = '';
+        console.log(20);
+        document.getElementById("marcas").value = '';
+        console.log(21);
+        document.getElementById("colores").value = '';
+        console.log(22);
+        document.getElementById("anios").value = '';
+        console.log(23);
+        document.getElementById("concesion_tipovehiculo").innerHTML = '';
+        console.log(24);
+        document.getElementById("concesion_cerant").innerHTML = '';
+        document.getElementById("concesion_numregant").innerHTML = '';
+        document.getElementById("concesion_numeroregistro").innerHTML = '';
+        document.getElementById("concesion_categoria").innerHTML = '';
+        document.getElementById("combustible").value = '';
+        document.getElementById("capacidad").value = '';
+        document.getElementById("alto").value = '';
+        document.getElementById("largo").value = '';
+        document.getElementById("ancho").value = '';
+        // Concesion en Pantalla 4
+        var concesionlabel = document.getElementById("concesion1label");
+        if (concesionlabel != null) {
+          concesionlabel.innerHTML = '';
+        }
+        document.getElementById("concesion1_concesion").innerHTML = '';
+        document.getElementById("concesion1_perexp").innerHTML = '';
+        document.getElementById("concesion1_fecexp").innerHTML = '';
+        document.getElementById("concesion1_resolucion").innerHTML = '' 
+        document.getElementById("concesion1_fecven").innerHTML = '';
+        document.getElementById("concesion1_nombreconcesionario").innerHTML = '';
+        document.getElementById("concesion1_rtn").innerHTML = '';
+        document.getElementById("concesion1_fecexp").innerHTML = '';
+        document.getElementById("concesion1_resolucion").innerHTML = '';
+        document.getElementById("concesion1_nombre_propietario").innerHTML = '';
+        document.getElementById("concesion1_identidad_propietario").innerHTML = '';
+        if (document.getElementById("concesion_placaanterior").innerHTML != '') {
+          document.getElementById("concesion1_placaanterior").innerHTML = '';
+          document.getElementById("concesion1_placaanterior").style = '';
+        } else {
+          document.getElementById("concesion1_placaanterior").style = '';
+          document.getElementById("concesion1_placaanterior").innerHTML = '';
+        }
+        document.getElementById("concesion1_tipo_vehiculo").value = '';
+        document.getElementById("concesion1_modelo_vehiculo").value = '' 
+        document.getElementById("concesion1_vin").value = '';
+        document.getElementById("concesion1_placa").value = '';
+        document.getElementById("concesion1_serie").value = '';
+        document.getElementById("concesion1_motor").value = '';
+        document.getElementById("marcas1").value = '';
+        document.getElementById("colores1").value = '';
+        document.getElementById("anios1").value = '';
+        document.getElementById("concesion1_tipovehiculo").innerHTML = '';
+        document.getElementById("concesion1_cerant").innerHTML = '';
+        document.getElementById("concesion1_numregant").innerHTML = '';
+        document.getElementById("concesion1_numeroregistro").innerHTML = '';
+        document.getElementById("concesion1_categoria").innerHTML = '';
+        document.getElementById("combustible1").value = '';
+        document.getElementById("capacidad1").value = '';
+        document.getElementById("alto1").value = '';
+        document.getElementById("largo1").value = '';
+        document.getElementById("ancho1").value = '';
+        case 4: 
         break;
-      case 4: 
-        document.getElementById('nomapoderado').value = '';
-        document.getElementById('identidadapod').value = '';
-        document.getElementById('dirapoderado').value = '';
-        document.getElementById('telapoderado').value = '';                
-        document.getElementById('emailapoderado').value = '';               
+      case 5: 
         break;
       default: 
         document.getElementById('nomapoderado').value = '';
@@ -504,8 +594,6 @@ document.addEventListener('DOMContentLoaded', function () {
           if (datos.nombre_apoderado != '' && datos.nombre_apoderado != null) {
             //Limpiando mensajes de error
             fCleanErrorMsg();
-            console.log('datos.correo_apoderado');
-            console.log(datos.correo_apoderado);
             document.getElementById('nomapoderado').value = datos.nombre_apoderado;
             document.getElementById('identidadapod').value = datos.ident_apoderado;
             document.getElementById('dirapoderado').value = datos.dir_apoderado;
@@ -731,7 +819,6 @@ document.addEventListener('DOMContentLoaded', function () {
       // y no se encuentra en nuestros registros el pago de ese cambio de placa
       //***********************************************************************************************************************/
       document.getElementById("estaPagadoElCambiodePlaca").value = datos[1][0]['Unidad'][0]['estaPagadoElCambiodePlaca'];
-      console.log(21);
       if (datos[1][0]['Unidad'][0]['estaPagadoElCambiodePlaca'] == false) {
         document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").checked = true;
         document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = true;
@@ -769,11 +856,8 @@ document.addEventListener('DOMContentLoaded', function () {
       }
       document.getElementById("RequiereRenovacionPerExp").value = datos[1][0]['Vencimientos']['renovacion_permisoexplotacion_vencido'];
       if (datos[1][0]['Vencimientos']['renovacion_permisoexplotacion_vencido'] == true) {
-        console.log(18);
         document.getElementById("IHTTTRA-02_CLATRA-01_R_PE").checked = true;
-        console.log(19);
         document.getElementById("IHTTTRA-02_CLATRA-01_R_PE").disabled = true;
-        console.log(20);
         if (datos[1][0]['Vencimientos']['renper-explotacion-cantidad'] > 0) {
           document.getElementById("concesion_perexp").innerHTML = document.getElementById("concesion_perexp").innerHTML +  ' ||  ' +  datos[1][0]['Vencimientos']['Fecha_Expiracion_Explotacion'] + ' ==> ' + datos[1][0]['Vencimientos']['Nueva_Fecha_Expiracion_Explotacion']  + '   (' + datos[1][0]['Vencimientos']['renper-explotacion-cantidad'] + ')';
         }
@@ -877,6 +961,9 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("ancho1").value = document.getElementById("ancho").value;    
   }  
 
+  //*********************************************************************************************************************/
+  //** Inicio Function para Establecer la Unidad de los Tramites                                                        **/ 
+  //*********************************************************************************************************************/
   function f_FetchCallConcesion(idConcesion,event,idinput) {
     // URL del Punto de Acceso a la API
     const url = $appcfg_Dominio + "Api_Ram.php";
@@ -893,7 +980,7 @@ document.addEventListener('DOMContentLoaded', function () {
     fd.append("action", 'get-concesion');
     //Adjuntando el idApoderado al FormData
     fd.append("RTN_Concesionario", document.getElementById("rtnsoli").value);
-    fd.append("N_Certificado", idConcesion);
+    fd.append("Concesion", idConcesion);
     // Fetch options
     const options = {
       method: 'POST',
@@ -909,7 +996,7 @@ document.addEventListener('DOMContentLoaded', function () {
             // Si el vehiculo fue recuperado desde el IP, favor continuar con el proceso normal y mover al informacion a la pantalla
             //**************************************************************************************************************************/
             if (datos[1][0]['Codigo_IP'] == 200 && datos[1][0]['Unidad'][0]['Bloqueado'] == false) {
-              if (datos[1][0]['Unidad'][0]['Multas'] && datos[1][0]['Unidad'][0]['Multas'][0].length === 0) {
+              if (typeof(datos[1][0]['Unidad'][0]['Multas'][0]) == 'undefined') {
                 //Ocultar Pantalla Modal donde se Ingresa a Concesión
                 $('#modalConcesion').modal('hide');
                 isRecordGetted[currentstep] = idConcesion;
@@ -918,8 +1005,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 //Enviando Toast de Exito en Recuperación la Información de la Concesión
                 //**************************************************************************************************************************/
                 sendToast("INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);
+                if (typeof(datos[1][0]['Unidad'][0]['Preforma'][0]) != 'undefined') {
+                  var html = mallaDinamica({titulo: "PREFORMAS PENDIENTES DE RESOLUCIÓN", name: "PREFORMA"},datos[1][0]['Unidad'][0]['Preforma']);
+                  fSweetAlertEventSelect(event,'INFORMACIÓN', 'LA UNIDAD Y/O EL CERTIFICADO PREFORMAS INGRESADAS PENDIENTES DE RESOLUCIÓN', 'info',html);
+                }
               } else {
-                fSweetAlertEventSelect(event,'MULTAS', 'LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE', 'error');
+                var html = mallaDinamica({titulo: "LISTADO DE MULTAS", name: "MULTAS"},datos[1][0]['Unidad'][0]['Multas']);
+                fSweetAlertEventSelect(event,'VALIDACIONES', 'LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE', 'error',html);
                 event.preventDefault();
                 event.target.classList.add("errortxt");
                 var label = document.getElementById(event.target.id + 'label');
@@ -1042,8 +1134,7 @@ document.addEventListener('DOMContentLoaded', function () {
       });
   }   
   //*********************************************************************************************************************/
-  //** Final Function para Establecer la Unidad de los Tramites                                                        **/
-  //*********************************************************************************************************************/    
+  //** Final Function para Establecer la Unidad de los Tramites                                                        **/ 
   //*********************************************************************************************************************/
   //** Inicio Function para Establecer los Codigos de los Tramites                                                       **/
   //*********************************************************************************************************************/
@@ -1061,7 +1152,11 @@ document.addEventListener('DOMContentLoaded', function () {
     //*********************************************************************************************************************/
     // Si es Certificado Entra Aqui para establecer el CO y PE
     //*********************************************************************************************************************/
-    const ConcesionPreforma= { Certificado: Certificado, 
+    const ConcesionPreforma= { ID_Expediente: document.getElementById("ID_Expediente").value, 
+                               RAM: document.getElementById("RAM").value, 
+                               ID_Solicitud: document.getElementById("ID_Solicitud").value, 
+                               ID_Aviso_Cobro: document.getElementById("ID_AvisoCobro").value, 
+                               Certificado: Certificado, 
                                Permiso_Explotacion: Permiso_Explotacion,
                                Permiso_Especial: Permiso_Especial,
                                ID_Categoria : document.getElementById("ID_Categoria").value,
@@ -1072,7 +1167,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                esCambioDeVehiculo: esCambioDeVehiculo,
                                esCertificado: esCertificado,
                                Secuencia: document.getElementById("Secuencia").value,
-                               esCarga: esCarga };
+                               esCarga: esCarga,
+                               finalizarSalvado: finalizarSalvado };
     return ConcesionPreforma;  
   }
   //*********************************************************************************************************************/
@@ -1082,7 +1178,9 @@ document.addEventListener('DOMContentLoaded', function () {
   //** Inicio Function para Establecer el Apoderado de los Tramites                                                           **/
   //*********************************************************************************************************************/
   function setApoderado() {
-    const ApoderadoPreforma = {RTN: document.getElementById("identidadapod").value,
+    const ApoderadoPreforma = { 
+                              ID_Apoderado: document.getElementById("ID_Apoderado").value,
+                              RTN: document.getElementById("identidadapod").value,
                               Numero_Colegiacion: document.getElementById("colapoderado").value,
                               Lugar_Entrega: document.getElementById("entregadocs").value,
                               Telefono: document.getElementById("telapoderado").value,
@@ -1090,7 +1188,8 @@ document.addEventListener('DOMContentLoaded', function () {
                               Nombre: document.getElementById("nomapoderado").value,
                               Identidad: document.getElementById("identidadapod").value,
                               Direccion: document.getElementById("dirapoderado").value,
-                              Tipo_Presentacion: document.getElementById("tipopresentacion").value};
+                              Tipo_Presentacion: document.getElementById("tipopresentacion").value
+                            };
      return ApoderadoPreforma;                              
   }
   //*********************************************************************************************************************/
@@ -1100,7 +1199,9 @@ document.addEventListener('DOMContentLoaded', function () {
   //** Inicio Function para Establecer el Solicitante de los Tramites                                                  **/
   //*********************************************************************************************************************/
   function setSolicitante() {
-    const SolicitantePreforma = {RTN: document.getElementById("rtnsoli").value,
+    const SolicitantePreforma = {
+                                ID_Solicitante: document.getElementById("ID_Solicitante").value,
+                                RTN: document.getElementById("rtnsoli").value,
                                 Tipo_Solicitante: document.getElementById("tiposolicitante").getAttribute('data-id'),
                                 Nombre: document.getElementById("nomsoli").value,
                                 Domicilio: document.getElementById("domiciliosoli").value,
@@ -1109,7 +1210,8 @@ document.addEventListener('DOMContentLoaded', function () {
                                 Municipio: document.getElementById("Municipios").value,
                                 Aldea: document.getElementById("Aldeas").value,
                                 Telefono: document.getElementById("telsoli").value,
-                                Email: document.getElementById("emailsoli").value};
+                                Email: document.getElementById("emailsoli").value
+                              };
      return SolicitantePreforma;                              
   }
   //*********************************************************************************************************************/
@@ -1120,6 +1222,7 @@ document.addEventListener('DOMContentLoaded', function () {
   //*********************************************************************************************************************/
   function setUnidad() {
     const UnidadPreforma = {
+      ID_Unidad: document.getElementById("ID_Unidad").value,
       VIN: document.getElementById("concesion_vin").value,
       Placa: document.getElementById("concesion_placa").value,
       Serie: document.getElementById("concesion_serie").value,
@@ -1147,7 +1250,9 @@ document.addEventListener('DOMContentLoaded', function () {
   //** Inicio Function para Establecer la Unidad de los Tramites                                                       **/
   //*********************************************************************************************************************/
   function setUnidad1() {
-    const Unidad1Preforma = {VIN: document.getElementById("concesion1_vin").value,
+    const Unidad1Preforma = {
+                            ID_Unidad: document.getElementById("ID_Unidad1").value,
+                            VIN: document.getElementById("concesion1_vin").value,
                             Placa: document.getElementById("concesion1_placa").value,
                             Serie: document.getElementById("concesion1_serie").value,
                             Motor: document.getElementById("concesion1_motor").value,
@@ -1181,8 +1286,19 @@ document.addEventListener('DOMContentLoaded', function () {
     if (chkTramites) {	
       chkTramites.forEach(function (chk) {
         if (chk.checked) {
-            TramitesPreforma.push({Codigo: chk.value, descripcion: document.getElementById("descripcion_"+chk.value).innerHTML, Monto: chk.getAttribute('data-monto'), ID_Categoria : document.getElementById("ID_Categoria").value,ID_Tipo_Servico : document.getElementById("ID_Tipo_Servicio").value,ID_Modalidad : document.getElementById("ID_Modalidad").value,ID_Clase_Servico : document.getElementById("ID_Clase_Servicio").value});
-        }
+          TramitesPreforma.push(
+          {
+              ID_Compuesto: chk.id, 
+              Codigo: chk.value, 
+              descripcion: document.getElementById("descripcion_"+chk.value).innerHTML,
+              ID_Tramite: chk.getAttribute('data-id'),
+              Monto: chk.getAttribute('data-monto'), 
+              ID_Categoria : document.getElementById("ID_Categoria").value,
+              ID_Tipo_Servicio : document.getElementById("ID_Tipo_Servicio").value,
+              ID_Modalidad : document.getElementById("ID_Modalidad").value,
+              ID_Clase_Servico : document.getElementById("ID_Clase_Servicio").value}
+            );
+          }
       });
     }
     return TramitesPreforma;  
@@ -1221,7 +1337,81 @@ document.addEventListener('DOMContentLoaded', function () {
     // Hacer al solicitud fetch con un timeout de 2 minutos
     fetchWithTimeout(url, options, 120000)
       .then(response => response.json())
-      .then(function (datos) { alert('0k');return false;})
+      .then(function (Datos) { 
+        if (typeof Datos.ERROR != 'undefined') {	
+
+          console.log('Multas'+typeof Datos.Multas);
+          console.log('Multas1'+typeof Datos.Multas1);
+          console.log('Placas'+typeof Datos.Placas);
+          console.log('Preforma'+typeof Datos.Preforma);
+
+          if (typeof Datos.Multas != 'undefined') {
+            if (Array.isArray(Datos.Multas) && Datos.Multas.length > 0) {
+               console.log('Datos.Multas'+Datos.Multas);
+            }
+          }
+
+          if (typeof Datos.Multas1 != 'undefined') {
+            if (Array.isArray(Datos.Multas1) && Datos.Multas1.length > 0) {
+               console.log('Datos.Multas1'+Datos.Multas1);
+            }
+          }
+
+          if (typeof Datos.Placas != 'undefined') {
+            if (Array.isArray(Datos.Placas) && Datos.Placas.length > 0) {
+               console.log('Datos.Placas'+Datos.Placas);
+            }
+          }
+
+          if (typeof Datos.Preforma != 'undefined') {
+            if (Array.isArray(Datos.Preforma)) {
+               console.log('Datos.Preforma'+Datos.Preforma);
+            }
+          }
+
+          return true;
+
+        } else {
+          //****************************************************************************************************/
+          // Aqui solo se entra la primera vez que se salga una concesion y se genera el RAM
+          //****************************************************************************************************/
+          if (document.getElementById("RAM-ROTULO").innerHTML == '') {
+            document.getElementById("ID_Bitacora").innerHTML = Datos.Bitacora;
+            document.getElementById("ID_Solicitante").value = Datos.Solicitante.ID_Solicitante;
+            document.getElementById("ID_Apoderado").value = Datos.Apoderado;
+            document.getElementById("RAM").value = Datos.RAM;
+            document.getElementById("RAM-ROTULO").innerHTML = '<strong>'+Datos.RAM+'</strong>';
+            document.getElementById("RAM-ROTULO").style="inline-block;";        
+          }
+          //****************************************************************************************************/
+          // Aqui se entra siempre porque es lo que se esta cambiando las unidades y los tramites
+          //****************************************************************************************************/
+          document.getElementById("ID_Unidad").value = Datos.Unidad;
+          if (typeof Datos.Unidad1 != null && typeof Datos.Unidad1 != 'undefined') {
+            document.getElementById("ID_Unidad1").value = Datos.Unidad1;
+          } else {
+            document.getElementById("ID_Unidad1").value = '';
+          }
+          Datos.Tramites.forEach(function (Tramite) {
+            var chk = document.getElementById(Tramite.ID_Compuesto);
+            if (chk != null) {
+              chk.setAttribute('data-id',Tramite.ID);
+            }
+          });     
+          //****************************************************************************************************/
+          //*Limpiando pantalla e inicializando banderas para preparar el programa para agregar otra concesion */
+          //****************************************************************************************************/
+          fLimpiarPantalla();
+          esCambioDePlaca = false;
+          esCambioDeVehiculo = false;
+          seRecuperoVehiculoDesdeIP = false;
+          isVehiculeBlock = false;
+          checked = false;
+          document.getElementById("concesion").value = '';
+          sendToast("PRE-FORMA SALVADA EXITOSAMENTE",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);
+          return false;
+        } // final del If de si Hay error
+      })
       .catch((error) => {
         fSweetAlertEventSelect('','CONEXÍON', 'ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA', 'warning');
         return true;
@@ -1296,13 +1486,19 @@ document.addEventListener('DOMContentLoaded', function () {
   addConcesion.addEventListener('click', function(event) {
     showModalFromShown = true;
     const response = {error: false};
-    console.log(currentstep);
     if(currentstep != 2) {
         if(currentstep == 3) {
           //**********************************************************************************************************/
           //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
           //**********************************************************************************************************/
-          response.error = salvarConcesion();
+          if (seRecuperoVehiculoDesdeIP == true) {
+            response.error = salvarConcesion();
+            showModalFromShown = true;
+            console.log('AddConcesion response.error: '+response.error);
+          } else {
+            response.error = true;
+            fSweetAlertEventSelect(event,'SALVANDO', 'NO SE HA RECUPERADO LA INFORMACIÓN DEL VEHICULO DESDE EL IP, FAVOR RECUPERAR LA INFORMACIÓN DEL VEHICULO ANTES DE SALVAR LA INFORMACIÓN', 'error');
+          }
         }
       if (response.error == false) {
         stepperForm.to(3);    
@@ -1705,12 +1901,15 @@ document.addEventListener('DOMContentLoaded', function () {
   function fReviewCheck(el) {
     // Separando el valor del input
     const [tipo_tramite,clase_tramite,acronimo_tipo,acronimo_clase] = el.id.split('_');
-
     // Verificadno si es cambio de unidad o cambio de placa
     if (acronimo_clase && (acronimo_clase === 'CU' || acronimo_clase === 'CL')) {
       // Cache the DOM element
       const element = document.getElementById(`concesion_tramite_placa_${acronimo_clase}`);
       if (element) {
+        if (typeof el.getAttribute('data-id') != 'undefined') {
+          alert(el.getAttribute('data-id'));
+          console.log(el);
+        }
         //Validaciones si el elemento viene checked
         if (el.checked) {
           element.style.display = "flex";
@@ -1718,6 +1917,7 @@ document.addEventListener('DOMContentLoaded', function () {
           // Si es cambio de unidad
           if (acronimo_clase === 'CU') {
             esCambioDeVehiculo = true;
+            seRecuperoVehiculoDesdeIP = false;
             if (document.getElementById('estaPagadoElCambiodePlaca').value == false) {
               document.getElementById('row_tramite_M_CL').style.display = "none";
             }
@@ -1739,6 +1939,7 @@ document.addEventListener('DOMContentLoaded', function () {
           // Si es cambio de unidad
           if (acronimo_clase === 'CU') {
             esCambioDeVehiculo = false;
+            seRecuperoVehiculoDesdeIP = false;
             document.getElementById('row_tramite_M_CL').style.display = "flex";
             document.getElementById('row_tramite_M_CM').style.display = "flex";
             document.getElementById('row_tramite_M_CC').style.display = "flex";
@@ -1860,6 +2061,14 @@ document.addEventListener('DOMContentLoaded', function () {
   function getVehiculoDesdeIP(obj) {
 
   if (document.getElementById('concesion_tramite_placa_CL').value != document.getElementById('concesion_tramite_placa_CU').value) {
+      //*********************************************************************************************************************/
+      //* Si es Certificado Entra Aqui para obtener el CO y PE
+      //*********************************************************************************************************************/
+      if (esCertificado) {
+        var Concesion = document.getElementById("concesion_concesion").innerHTML;
+      } else {
+        var Concesion = document.getElementById("concesion_concesion").innerHTML;
+      }
     // URL del Punto de Acceso a la API
       const url = $appcfg_Dominio + "Api_Ram.php";
       //  Fetch options
@@ -1875,6 +2084,7 @@ document.addEventListener('DOMContentLoaded', function () {
       fd.append("action", 'get-vehiculo');
       //Adjuntando el idApoderado al FormData
       fd.append("ID_Placa", obj.value);
+      fd.append("Concesion", Concesion);
       // Fetch options
       const options = {
         method: 'POST',
@@ -1887,29 +2097,43 @@ document.addEventListener('DOMContentLoaded', function () {
           if (!vehiculo.error) {
             if (vehiculo.codigo && vehiculo.codigo == 200) {
               if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
-                isVehiculeBlock = false;
-                document.getElementById("concesion1_nombre_propietario").innerHTML = vehiculo.cargaUtil.propietario.nombre;
-                document.getElementById("concesion1_identidad_propietario").innerHTML = vehiculo.cargaUtil.propietario.identificacion;
-                if (vehiculo && vehiculo.cargaUtil && vehiculo.cargaUtil.placaAnterior) {
-                  document.getElementById("concesion1_placaanterior").style = 'display:inline;';
-                  document.getElementById("concesion1_placaanterior").innerHTML = vehiculo.cargaUtil.placaAnterior;
+                if (typeof vehiculo.cargaUtil.Multas[0] == 'undefined' && typeof vehiculo.cargaUtil.Preformas[0] == 'undefined') {
+                  isVehiculeBlock = false;
+                  document.getElementById("concesion1_nombre_propietario").innerHTML = vehiculo.cargaUtil.propietario.nombre;
+                  document.getElementById("concesion1_identidad_propietario").innerHTML = vehiculo.cargaUtil.propietario.identificacion;
+                  if (vehiculo && vehiculo.cargaUtil && vehiculo.cargaUtil.placaAnterior) {
+                    document.getElementById("concesion1_placaanterior").style = 'display:inline;';
+                    document.getElementById("concesion1_placaanterior").innerHTML = vehiculo.cargaUtil.placaAnterior;
+                  } else {
+                    document.getElementById("concesion1_placaanterior").style = 'display:none;';
+                    document.getElementById("concesion1_placaanterior").innerHTML = '';
+                  }              
+                  //document.getElementById("tipo_vehiculo").value = datos[1][0]['Unidad'][0]['tipo'];
+                  //document.getElementById("modelo_vehiculo").value = datos[1][0]['Unidad'][0]['modelo'];          
+                  document.getElementById("combustible1").value = vehiculo.cargaUtil.combustible;
+                  document.getElementById("concesion1_vin").value = vehiculo.cargaUtil.vin;
+                  document.getElementById("concesion1_placa").value = vehiculo.cargaUtil.placa;
+                  document.getElementById("concesion1_serie").value = vehiculo.cargaUtil.chasis;
+                  document.getElementById("concesion1_motor").value = vehiculo.cargaUtil.motor;
+                  document.getElementById("marcas1").value = vehiculo.cargaUtil.marcacodigo;
+                  document.getElementById("colores1").value = vehiculo.cargaUtil.colorcodigo;
+                  document.getElementById("anios1").value = vehiculo.cargaUtil.axo;
+                  document.getElementById("concesion1_tipo_vehiculo").value = vehiculo.cargaUtil.tipo;
+                  document.getElementById("concesion1_modelo_vehiculo").value = vehiculo.cargaUtil.modelo;   
+                  seRecuperoVehiculoDesdeIP = true;       
+                  sendToast("INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);
                 } else {
-                  document.getElementById("concesion1_placaanterior").style = 'display:none;';
-                  document.getElementById("concesion1_placaanterior").innerHTML = '';
-                }              
-                //document.getElementById("tipo_vehiculo").value = datos[1][0]['Unidad'][0]['tipo'];
-                //document.getElementById("modelo_vehiculo").value = datos[1][0]['Unidad'][0]['modelo'];          
-                document.getElementById("combustible1").value = vehiculo.cargaUtil.combustible;
-                document.getElementById("concesion1_vin").value = vehiculo.cargaUtil.vin;
-                document.getElementById("concesion1_placa").value = vehiculo.cargaUtil.placa;
-                document.getElementById("concesion1_serie").value = vehiculo.cargaUtil.chasis;
-                document.getElementById("concesion1_motor").value = vehiculo.cargaUtil.motor;
-                document.getElementById("marcas1").value = vehiculo.cargaUtil.marcacodigo;
-                document.getElementById("colores1").value = vehiculo.cargaUtil.colorcodigo;
-                document.getElementById("anios1").value = vehiculo.cargaUtil.axo;
-                document.getElementById("concesion1_tipo_vehiculo").value = vehiculo.cargaUtil.tipo;
-                document.getElementById("concesion1_modelo_vehiculo").value = vehiculo.cargaUtil.modelo;          
-                sendToast("INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",$appcfg_milisegundos_toast,'',true,true,"top","right",true,$appcfg_background_toast,function(){},'success',$appcfg_pocision_toast,$appcfg_icono_toast);
+                  var html = '';
+                  console.log(typeof vehiculo.cargaUtil.Multas[0]);
+                  console.log(typeof vehiculo.cargaUtil.Preformas[0]);
+                  if (typeof vehiculo.cargaUtil.Multas[0] != 'undefined') {
+                    html = mallaDinamica({titulo: "LISTADO DE MULTAS", name: "MULTAS"},vehiculo.cargaUtil.Multas);
+                  }
+                  if (typeof vehiculo.cargaUtil.Preformas[0] != 'undefined') {
+                    html = html + mallaDinamica({titulo: "LISTADO DE PREFORMAS PENDIENTES DE RESOLUCIÓN", name: "PREFORMAS"},vehiculo.cargaUtil.Preformas);
+                  }                  
+                  fSweetAlertEventNormal('VALIDACIONES', 'LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE', 'error',html);
+                }
               }  else {
                 if (vehiculo.cargaUtil.estadoVehiculo == 'NO BLOQUEADO') {
                   fSweetAlertEventNormal('BLOQUEADO', 'EL VEHICULO ESTA BLOQUEADO EN EL INSTITUTO DE LA PROPIEDAD', 'error');

@@ -44,6 +44,7 @@ include_once('configuracion/configuracion_js.php');
     <?php } else { ?>
       <input type="hidden" id="Secuencia" value="<?php echo $_SESSION["Secuencia"] ?>">
     <?php } ?>
+
     <input type="hidden" id="Permiso_Explotacion" value="false">
     <input type="hidden" id="estaPagadoElCambiodePlaca" value="false">
     <input type="hidden" id="RequiereRenovacionConcesion" value="false">
@@ -57,8 +58,16 @@ include_once('configuracion/configuracion_js.php');
     <input type="hidden" id="ID_Modalidad" value="">
     <input type="hidden" id="ID_Tipo_Servicio" value="">
     <input type="hidden" id="Malla" value="">
-    
-    <!--<input id="dominio_raiz" name="dominio_raiz" type="hidden" value=""> -->
+    <input type="hidden" id="RAM" value="">
+    <input type="hidden" id="ID_Expediente" value="">
+    <input type="hidden" id="ID_Solicitud" value="">
+    <input type="hidden" id="ID_AvisoCobro" value="">
+    <input type="hidden" id="ID_Solicitante" value="">
+    <input type="hidden" id="ID_Apoderado" value="">
+    <input type="hidden" id="ID_Unidad" value="">
+    <input type="hidden" id="ID_Unidad1" value="">
+    <input type="hidden" id="ID_Bitacora" value="">
+
     <div class="container-fluid bg-white shadow-sm">
         <!-- ******************************************************* -->
         <!-- Inicio de Modal de Ingreso Número Concesion -->
@@ -104,7 +113,8 @@ include_once('configuracion/configuracion_js.php');
         <hr>
       <div class="row">
         <div class="col-md-8">
-          <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA  
+          <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA&nbsp;&nbsp;&nbsp;
+          <button style="display:none;" id="RAM-ROTULO" type="button" class="btn btn-outline-<?php  echo $appcfg_clase;?> btn-sm"></button>
         </div>
         <div class="col-md-4 d-flex justify-content-end">
           <button title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud"  style="display: none;" id="addConcesion" type="button" class="btn btn-success btn-sm">
