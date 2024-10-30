@@ -122,13 +122,9 @@
 					}
 				}
 
-				if ($appcfg_menutype == 'getboostrap' and $jj == $appcfg_linea_navbar) {
+				if ($appcfg_menutype == 'clasic' and $jj == $appcfg_linea_navbar) {
 					$padre_html = $linea_abrir_ul . $padre_html;
-				} else {
-					if ($appcfg_menutype == 'clasic' and $jj == $appcfg_linea_navbar) {
-						$padre_html = $linea_abrir_ul . $padre_html;
-					}	
-				}
+				}	
 				
 				// query para obtener el detalle de cada encabezado de menu
 				$query = "select b.link_target,b.usar_dominio,b.modal,b.icono,b.descripcion,a.id_privilegio,b.nivel_menu,b.pagina,b.pagina_movil from privilegio_x_usuario a, privilegio b where b.estado = 'A' and a.id_privilegio = b.id and a.id_usuario = :id_usuario and b.menu_padre = :menu_padre and b.es_encabezado = 'N' order by b.nivel_menu";
@@ -165,13 +161,9 @@
 					$row_rs_privilegiomenudown = $privilegiomenudown->fetch();
 				}	// Fin del loop del detalle de cada encabezado del menu
 				$html = $html . str_replace('@@_hijos_@@',$hijo_html,$padre_html);;
-				// Si es menú getboostrap cierre el div y el ul de l primera parte del menu
-				if ($appcfg_menutype == 'getboostrap' and $jj == ($appcfg_linea_navbar-1)) {
-					$html = $html . $linea_cerrar_div_ul;
-				} else {
-					if ($appcfg_menutype == 'clasic' and $jj == ($appcfg_linea_navbar-1)) {
-						$html = $html . $linea_cerar_ul_sola;
-					}
+				// Si es menú clasic
+				if ($appcfg_menutype == 'clasic' and $jj == ($appcfg_linea_navbar-1)) {
+					$html = $html . $linea_cerrar_ul_sola;
 				}
 				// Leyendo el siguiente registro de encabezados
 				$Dominio = $DominioBK;
@@ -183,14 +175,6 @@
 			} else {
 				if ($appcfg_menutype == 'clasic' and $jj > ($appcfg_linea_navbar-1)) {
 					echo $html . $linea_cerrar_div_ul_nav;
-				} else {
-					if ($appcfg_menutype == 'getboostrap' and $jj <= ($appcfg_linea_navbar-1)) {
-						echo $html . $linea_cerrar_div_ul . $linea_cerrar_header;
-					} else {
-						if ($appcfg_menutype == 'getboostrap' and $jj > ($appcfg_linea_navbar-1)) {
-							echo $html . $linea_cerar_ul_sola . $linea_cerrar_header;
-						}
-					}
 				} 
 			}
 		}

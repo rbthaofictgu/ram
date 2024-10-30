@@ -1,5 +1,5 @@
 <?php
-//error_reporting(0);
+error_reporting(0);
 header('Content-Type: application/x-javascript; charset=utf-8');
 header('Access-Control-Allow-Origin: *');
 session_start();
@@ -402,21 +402,51 @@ class Api_Ram {
 						AND C.ID_Tipo_Tramite IS NOT NULL 
 						AND C.Acronimo_Clase IN (" . $joined_string . ")						
 					ORDER BY T.ID_Tipo_Tramite";
-		$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
-		$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-9"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
-		$rows = ($this->select($q,array(':ID_Categoria' => $ID_Categoria)));
-		foreach ($rows as $row) {
-			if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
-				$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_Tramite"].'"></div><div id="descripcion_'. $row["ID_Tramite"] .'" class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2"><input onchange="getVehiculoDesdeIP(this);"  style="display:none;text-transform: uppercase;" id="concesion_tramite_placa_' .$row['Acronimo_Clase']. '" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" placeholder="PLACA" class="form-control form-control-sm test-controls" minlength="7" maxlength="7"></div></div>';
-			} else {
-				$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_Tramite"].'"></div><div id="descripcion_'. $row["ID_Tramite"] .'" class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2">&nbsp;</div></div>';
+		$bandera = 1;
+		if ($bandera == 1) {
+			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
+			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-9"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
+			$rows = ($this->select($q,array(':ID_Categoria' => $ID_Categoria)));
+			foreach ($rows as $row) {
+				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_Tramite"].'"></div><div id="descripcion_'. $row["ID_Tramite"] .'" class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2"><input onchange="getVehiculoDesdeIP(this);"  style="display:none;text-transform: uppercase;" id="concesion_tramite_placa_' .$row['Acronimo_Clase']. '" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" placeholder="PLACA" class="form-control form-control-sm test-controls" minlength="7" maxlength="7"></div></div>';
+				} else {
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_Tramite"].'"></div><div id="descripcion_'. $row["ID_Tramite"] .'" class="col-md-9">'.$row["descripcion_larga"].'</div><div class="col-md-2">&nbsp;</div></div>';
+				}
 			}
-		}
+
+		} else {
+			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
+			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-3"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div><div class="col-md-1"></div><div class="col-md-3"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
+			$rows = ($this->select($q,array(':ID_Categoria' => $ID_Categoria)));
+			$process = 0;
+			foreach ($rows as $row) {
+				if ($process==0) {
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '">';
+				} 
+				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
+					$html = $html . '<div id="field1_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '" class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_Tramite"].'"></div><div id="descripcion_'. $row["ID_Tramite"] .'" class="col-md-3">'.$row["descripcion_larga"].'</div><div class="col-md-2"><input onchange="getVehiculoDesdeIP(this);"  style="display:none;text-transform: uppercase;" id="concesion_tramite_placa_' .$row['Acronimo_Clase']. '" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" placeholder="PLACA" class="form-control form-control-sm test-controls" minlength="7" maxlength="7"></div>';
+				} else {
+					$html = $html . '<div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="'.$row["ID_Tramite"].'"></div><div id="descripcion_'. $row["ID_Tramite"] .'" class="col-md-3">'.$row["descripcion_larga"].'</div><div class="col-md-2">&nbsp;</div>';
+				}
+				$process++;
+				if ($process == 2) {
+					$html = $html . '</div>';
+					$process = 0;
+				   }
+			}
+
+			if ($process==1) {
+				$html = $html . '<div class="col-md-1"></div><div class="col-md-3"></div><div class="col-md-2"></div></div>';
+			}
+		}					
+
 		if (!isset($_POST["echo"])) {
 			return $html;
 		} else {
 			echo json_encode($html);
 		}	
+
 	}
 
 	protected function getColorByDesc($DescColor) {
@@ -615,7 +645,7 @@ class Api_Ram {
 	//*****************************************************************************************/
 	//Funcion para recuperar las multas por placa
 	//*****************************************************************************************/
-	protected function getDatosMulta($placa,$placa_anterior) {
+	protected function getDatosMulta($placa,$placa_anterior):mixed {
 		$query = "SELECT * FROM [IHTT_MULTAS].[dbo].[V_Multas_IHTT_DGT] MUL,[IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] Avi
 		left outer join [IHTT_Webservice].[dbo].[TB_ArregloEnc] Enc on Avi.CodigoAvisoCobro  = Enc.ID_Aviso
 		WHERE MUL.ID_Estado='1' AND MUL.Multa = avi.ID_Solicitud and 
@@ -631,10 +661,12 @@ class Api_Ram {
 		Encx.ID_Solicitud  = Enc.Numero_Arreglo and Encx.FechaVencimiento < GETDATE()
 		) > 0);";
 		$parametros = array(":Placa_Actual" => $placa,":Placa_Anterior" => $placa_anterior);
-		$titulos = [0 => 'ID MULTA',1  => 'FECHA MULTA',2=>'PROPIETARIO UNIDAD',3=>'IDENTIFICACIÓN',4=>'CONCESIONARIO',5=>'PLACA',6=>'MONTO',
-		'Multa' => 'ID MULTA','FECHA MULTA'  => 'FECHA MULTA','PROPIETARIO UNIDAD'=>'PROPIETARIO UNIDAD','IDENTIFICACION'=>'IDENTIFICACIÓN','CONCESIONARIO'=>'CONCESIONARIO','PPLACA'=>'PLACA','MONTO'=>'MONTO'];
 		$row = $this->select($query,$parametros);
-		$row[count($row)+1] = $titulos;
+		if (count($row) > 0 ) {
+			$titulos = [0 => 'ID MULTA',1  => 'FECHA MULTA',2=>'PROPIETARIO UNIDAD',3=>'IDENTIFICACIÓN',4=>'CONCESIONARIO',5=>'PLACA',6=>'MONTO',
+			'Multa' => 'ID MULTA','FECHA MULTA'  => 'FECHA MULTA','PROPIETARIO UNIDAD'=>'PROPIETARIO UNIDAD','IDENTIFICACION'=>'IDENTIFICACIÓN','CONCESIONARIO'=>'CONCESIONARIO','PPLACA'=>'PLACA','MONTO'=>'MONTO'];
+			$row[count($row)+1] = $titulos;
+		}
 		return $row;
 	}	
 	/*************************************************************************************/
@@ -1004,7 +1036,7 @@ class Api_Ram {
 	/*  Valida que la placa no este asignada a una concesion que este con tramites        */
 	/*  pendientes en preforma al igual valida que la concesion no este con                                              */
 	/**************************************************************************************/
-	protected function validarEnPreforma($ID_Placa,$ID_Placa_Antes_Replaqueo,$Concesion) {
+	protected function validarEnPreforma($ID_Placa,$ID_Placa_Antes_Replaqueo,$Concesion):mixed {
 		/**************************************************************************************/
 		/*  CAMBIOS HECHOS RBTHAOFIC@GMAIL.COM 2022/11/17                                    */
 		/*  vALIDAR QUE FECHA ACTUAL SEA MENOR O IGUAL A LA FECHA DE VENCIMIENTO             */
@@ -1012,7 +1044,7 @@ class Api_Ram {
 		/*  VALIDAR QUE [N_Certificado] != :N_Certificado y                                  */
 		/*  FECHA ACTUAL SEA MAYOR O IGUAL A LA FECHA DE VENCIMIENTO                         */
 		/************************************************************************************/
-		$query="SELECT S.ID_Formulario_Solicitud,L.N_Certificado,L.Permiso_Explotacion,l.N_Permiso_Especial,
+		$query="SELECT DISTINCT S.ID_Formulario_Solicitud,L.N_Certificado,L.Permiso_Explotacion,l.N_Permiso_Especial,
 				S.Sistema_Fecha,A.Nombre_Apoderado_Legal,ID_Colegiacion 
 				FROM [IHTT_PREFORMA].[dbo].[TB_SOLICITANTE] S, [IHTT_PREFORMA].[dbo].[TB_Apoderado_Legal] A,[IHTT_PREFORMA].[dbo].[TB_SOLICITUD] L, [IHTT_PREFORMA].[dbo].[TB_Vehiculo] V
 				WHERE S.Estado_Formulario in ('IDE-1','IDE-7') AND
@@ -1025,10 +1057,12 @@ class Api_Ram {
 				V.ID_Placa = :ID_Placa or  
 				v.ID_Placa_Antes_Replaqueo = :ID_Placa_Antes_Replaqueo);";
 		$parametros=array(":N_Certificado"=> $Concesion,":N_Permiso_Especial"=> $Concesion,":ID_Placa"=> $ID_Placa,":ID_Placa_Antes_Replaqueo"=> $ID_Placa_Antes_Replaqueo);
-		$titulos = [0 => 'RAM',1  => 'CERTIFICADO OPERAC',2=>'PER EXP',3=>'PER ESPECIAL',4=>'FECHA',5=>'APODERADO',6=>'CAH No.',
-					'ID Formulario Solicitud' => 'ID Formulario Solicitud','Certificado Operación'  => 'Certificado Operación','Permiso de Explotacion'=>'Permiso de Explotacion','Permiso Especial'=>'Permiso Especial','Sistema Fecha'=>'Sistema Fecha','Nombre Apoderado Legal'=>'Nombre Apoderado Legal','CAH No. Carnet'=>'CAH No. Carnet'];
 		$row = $this->select($query,$parametros);
-		$row[count($row)+1] = $titulos;
+		if (count($row) >0 ) {
+			$titulos = [0 => 'RAM',1  => 'CERTIFICADO OPERAC',2=>'PER EXP',3=>'PER ESPECIAL',4=>'FECHA',5=>'APODERADO',6=>'CAH No.',
+			'ID Formulario Solicitud' => 'ID Formulario Solicitud','Certificado Operación'  => 'Certificado Operación','Permiso de Explotacion'=>'Permiso de Explotacion','Permiso Especial'=>'Permiso Especial','Sistema Fecha'=>'Sistema Fecha','Nombre Apoderado Legal'=>'Nombre Apoderado Legal','CAH No. Carnet'=>'CAH No. Carnet'];
+			$row[count($row)+1] = $titulos;
+		}
 		return $row;
 	}
 
@@ -1036,7 +1070,7 @@ class Api_Ram {
 	/*  Valida que la placa no este asignada a una concesion vigente diferente de         */
 	/*  de la que estamos tratando de salvar                                              */
 	/**************************************************************************************/
-	protected function validarPlaca($placa,$placa_anterior,$concesion){
+	protected function validarPlaca($placa,$placa_anterior,$concesion):mixed{
 		/**************************************************************************************/
 		/*  CAMBIOS HECHOS RBTHAOFIC@GMAIL.COM 2022/11/17                                    */
 		/*  vALIDAR QUE FECHA ACTUAL SEA MENOR O IGUAL A LA FECHA DE VENCIMIENTO             */
@@ -1486,9 +1520,16 @@ class Api_Ram {
 			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);					
 			$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'],$_POST["Unidad"]['ID_Placa_Antes_Replaqueo'],isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);			
 		}
+
 		if ($_POST["Concesion"]['RAM'] == '') {
 			$responseValidarUsuario = $this->getUsuarioAsigna();
+			if ($responseValidarUsuario == false){
+				echo 'responseValidarUsuario == false';
+			}
 			$responseValidarCiudad = $this->getCiudad($_SESSION["ID_Usuario"]);
+			if ($responseValidarCiudad == false){
+				echo 'responseValidarCiudad == false';
+			}
 			$RAM = $this->getSiguienteRAM($_POST["Concesion"]['Secuencia']);	
 		} else {
 			$RAM['nuevo_numero'] = $_POST["Concesion"]['RAM'];
@@ -1498,13 +1539,14 @@ class Api_Ram {
 			$responseValidarUsuario = true;
 			$responseValidarCiudad = true;
 		}
+
 		if  ($RAM == false or 
-			(isset($responseValidarUsuario)       or $responseValidarUsuario  == false)    or 
-			(isset($responseValidarCiudad)        or $responseValidarCiudad   == false)    or 
-			((isset($responseValidarPlacas)       and (isset($responseValidarPlacas[1])    and $responseValidarPlacas[1]    > 0))  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false)))   or 
-			((isset($responseValidarMultas)       and (isset($responseValidarMultas[1])     and $responseValidarMultas[1]    > 0)) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false)))   or  
-			((isset($responseValidarMultas1)      and (isset($responseValidarMultas1[1])    and $responseValidarMultas1[1]   > 0)) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false)))   or
-			((isset($responseValidarPreforma)     and (isset($responseValidarPreforma[1])   and $responseValidarPreforma[1]  > 0)) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false))))  {
+			((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or 
+			((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or 
+			((isset($responseValidarPlacas)    and (isset($responseValidarPlacas[1])    and $responseValidarPlacas[1]    > 0))  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or 
+			((isset($responseValidarMultas)    and (isset($responseValidarMultas[1])     and $responseValidarMultas[1]    > 0)) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or  
+			((isset($responseValidarMultas1)   and (isset($responseValidarMultas1[1])    and $responseValidarMultas1[1]   > 0)) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			((isset($responseValidarPreforma)  and (isset($responseValidarPreforma[1])   and $responseValidarPreforma[1]  > 0)) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false))))  {
 			$this->db->rollBack();
 			echo json_encode(['ERROR'  =>  true,
 							'RAM'  =>  $RAM,
@@ -1518,16 +1560,16 @@ class Api_Ram {
 			if ($_POST["Concesion"]['RAM'] == '') {
 				$isOKSolicitante = $this->saveSolicitante($_POST["Concesion"],$_POST["Apoderado"],$_POST["Solicitante"],$responseValidarCiudad,$RAM['nuevo_numero']);
 			} else {
-				$isOKSolicitante['ID_Solicitante'] = $_POST["Solicitante"]['ID_Solicitante'];
+				$isOKSolicitante = $_POST["Solicitante"]['ID_Solicitante'];
 			}
-			if ($isOKSolicitante['ID_Solicitante'] == false) {
+			if ($isOKSolicitante == false) {
 				$this->db->rollBack();
 				echo json_encode(false);	
 			} else {
 				if ($_POST["Concesion"]['RAM'] == '') {
 					$isOKApoderado = $this->saveApoderado($RAM['nuevo_numero'],$_POST["Apoderado"]);
 				} else {
-					$isOKApoderado['ID_Apoderado'] = $_POST["Apoderado"]['ID_Apoderado'];
+					$isOKApoderado = $_POST["Apoderado"]['ID_Apoderado'];
 				}
 				if ($isOKApoderado == false) {
 					$this->db->rollBack();
@@ -1540,13 +1582,13 @@ class Api_Ram {
 					}
 					if ($isOKUnidad == false) {
 						$this->db->rollBack();
-						echo json_encode(false);	
+						echo json_encode(['UNIDAD'  =>  $RAM['nuevo_numero'],'ESTADO'  =>false]);	
 					} else {
 						if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
 							$isOKUnidad1 = $this->saveUnidad($RAM['nuevo_numero'],$_POST["Unidad1"],$_POST["Concesion"],'ENTRA');
 							if ($isOKUnidad1 == false) {
 								$this->db->rollBack();
-								echo json_encode(false);	
+								echo json_encode(['UNIDAD1'  =>  $RAM['nuevo_numero'],'ESTADO'  =>false]);	
 								$ERROR = true;
 							}
 						}
@@ -1554,18 +1596,18 @@ class Api_Ram {
 							$isOKTramites = $this->saveTramites($RAM['nuevo_numero'],$_POST["Tramites"],$_POST["Unidad"],$_POST["Concesion"]);
 							if ($isOKTramites[0] == false) {
 								$this->db->rollBack();
-								echo json_encode(false);	
+								echo json_encode(['TRAMITES'  =>  $RAM['nuevo_numero'],'ESTADO'  =>false]);	
 							} else {
+								$isOKBitacora = true;
 								if ($_POST["Concesion"]['RAM'] == '') {
 									$isOKBitacora = $this->saveBitacora($RAM['nuevo_numero'],'INGRESO',1);
-								} else {
-									$isOKBitacora = $this->saveBitacora($RAM['nuevo_numero'],'MODIFICACION',1);
 								}
 								if ($isOKBitacora == false) {
 									$this->db->rollBack();
-									echo json_encode(false);	
+									echo json_encode(['BITACORA'  =>  $RAM['nuevo_numero'],'ESTADO'  =>false]);	
 								} else {
-									$this->db->rollBack();
+									//$this->db->rollBack();
+									$this->db->commit();
 									echo json_encode(
 										['RAM'  =>  $RAM['nuevo_numero'],
 										'Usuario_Asigna' =>  isset($responseValidarUsuario) ? $responseValidarUsuario : false,
