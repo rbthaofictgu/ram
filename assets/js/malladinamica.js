@@ -9,11 +9,13 @@ function mallaDinamica(
   }
   ) 
   {
+  alert('Malladinamica');
   var $html = '';
   const entriesArray = Object.entries(data);
   const totalData = entriesArray.length - 1;
   for (let index = 0; index < entriesArray.length - 1; index++) {
     if (index == 0) {
+      alert('Malladinamica1');
       $html = `<div class="row">
       <div class="col-11"><h4 class="${clases.title}">${table.titulo}</h4></div>
       <div class="col-1"><span class="badge rounded-pill bg-primary float-end">Total:${totalData} </span></div>
@@ -39,6 +41,7 @@ function mallaDinamica(
     let dataBody = Object.entries(entriesArray[index][1]);
     show = true;
     limite = (dataBody.length / 2);
+    alert('Malladinamica2');
     for (let index = 0; index < limite; index++) {
       if (show == true) {
         const campo = dataBody[index][1];
@@ -49,7 +52,9 @@ function mallaDinamica(
         show == true;
       }
     }
+    alert('Malladinamica4');
     $html += `</div></br>`;
+
   }
   return $html;
 }

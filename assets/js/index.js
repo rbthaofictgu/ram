@@ -571,14 +571,11 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function ProcessFormalitiesUnCheck() {
-    alert('ProcessFormalitiesUnCheck()');
-    console.log(chkTramites);
     if (chkTramites) {
-      console.log('previoforeach');
       chkTramites.forEach(function (chk) {
-        console.log(chk);
+        console.log('ProcessFormalitiesUnCheck chk'+chk);
         if (chk.checked) {
-          console.log('chk adentro');
+          console.log('ProcessFormalitiesUnCheck chk Adentro'+chk);
           chk.setAttribute('disable',false);
           chk.checked = false;
         }
@@ -1139,26 +1136,19 @@ document.addEventListener("DOMContentLoaded", function () {
       datos[1][0]["Numero_Registro"];
     document.getElementById("concesion_categoria").innerHTML =
       datos[1][0]["DESC_Categoria"];
-    //document.getElementById("idVista").style = 'background-image: url("data:image/jpeg;base64,assets/images/copc.jpeg")';
-    //document.getElementById("concesion").style = "display:inline;";
     document.getElementById("btnconcesion").style = "display:inline;";
     document.getElementById("btnmultas").style = "display:inline;";
     document.getElementById("btnconsultas").style = "display:inline;";
     document.getElementById("btnperexp").style = "display:inline;";
     //document.getElementById("concesion_vin").focus();
-    alert('Final Concesion');      
   }
 
   function f_RenderConcesionTramites() {
-    alert('Inicio f_RenderConcesionTramites()');
-    //document.getElementById("idVista").style = "display:block;"
-    //document.getElementById("idVista").innerHTML = datos[1][0]['Vista'];
     var concesionlabel = document.getElementById("concesion1label");
     if (concesionlabel != null) {
       concesionlabel.innerHTML =
         document.getElementById("concesionlabel").innerHTML;
     }
-    alert('f_RenderConcesionTramites() 1');      
     document.getElementById("concesion1_concesion").innerHTML =
       document.getElementById("concesion_concesion").innerHTML;
     document.getElementById("concesion1_perexp").innerHTML =
@@ -1181,7 +1171,6 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("concesion_nombre_propietario").innerHTML;
     document.getElementById("concesion1_identidad_propietario").innerHTML =
       document.getElementById("concesion_identidad_propietario").innerHTML;
-    alert('f_RenderConcesionTramites() 2');      
     if (document.getElementById("concesion_placaanterior").innerHTML != "") {
       document.getElementById("concesion1_placaanterior").innerHTML =
         document.getElementById("concesion_placaanterior").innerHTML;
@@ -1192,7 +1181,6 @@ document.addEventListener("DOMContentLoaded", function () {
         "display:none;";
       document.getElementById("concesion1_placaanterior").innerHTML = "";
     }
-    alert('f_RenderConcesionTramites() 3');      
     document.getElementById("concesion1_tipo_vehiculo").value =
       document.getElementById("concesion_tipo_vehiculo").value;
     document.getElementById("concesion1_modelo_vehiculo").value =
@@ -1205,7 +1193,6 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("concesion_serie").value;
     document.getElementById("concesion1_motor").value =
       document.getElementById("concesion_motor").value;
-    alert('f_RenderConcesionTramites() 4');      
     fLlenarSelect(
       "marcas1",
       dataConcesion["marcas"],
@@ -1227,7 +1214,6 @@ document.addEventListener("DOMContentLoaded", function () {
       false,
       { text: "SELECCIONE UN AÑO", value: "-1" }
     );
-    alert('f_RenderConcesionTramites() 5');      
     document.getElementById("concesion1_tipovehiculo").innerHTML =
       document.getElementById("concesion_tipovehiculo").innerHTML;
     document.getElementById("concesion1_cerant").innerHTML =
@@ -1248,7 +1234,6 @@ document.addEventListener("DOMContentLoaded", function () {
       document.getElementById("largo").value;
     document.getElementById("ancho1").value =
       document.getElementById("ancho").value;
-    alert('Final f_RenderConcesionTramites()');
   }
 
   //*********************************************************************************************************************/
@@ -1340,9 +1325,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("concesion_tramites").style = "display:fixed;";
                 document.getElementById("div-vista-1").style = "display:fixed;";                
                 document.getElementById("concesion_tramites").value = "";
-                console.log('Antes f_RenderConcesion(datos)');
                 f_RenderConcesion(datos);
-                alert('Despues f_RenderConcesion(datos)');
                 //**************************************************************************************************************************/
                 //Enviando Toast de Exito en Recuperación la Información de la Concesión
                 //**************************************************************************************************************************/
@@ -1366,8 +1349,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   typeof datos[1][0]["Unidad"][0]["Preforma"][0] != "undefined"
                 ) {
 
-                  alert('sendToast');
-
                   var html = mallaDinamica(
                     {
                       titulo: "PREFORMAS PENDIENTES DE RESOLUCIÓN",
@@ -1376,7 +1357,6 @@ document.addEventListener("DOMContentLoaded", function () {
                     datos[1][0]["Unidad"][0]["Preforma"]
                   );
 
-                  alert('sendToaast1');
                   fSweetAlertEventSelect(
                     event,
                     "INFORMACIÓN",
@@ -1389,7 +1369,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 //*********************************************************************************/
                 //* Pocisionandose en el checkbox que corresponde según sea la Clase de Servicio  */
                 //*********************************************************************************/
-                alert('clasedeser');
                 if (claseDeServicio == "STPP" || claseDeServicio == "STPC") {
                   var el = document.getElementById("IHTTTRA-02_CLATRA-01_R_PE");
                   if (el != null) {
@@ -1406,7 +1385,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   { titulo: "LISTADO DE MULTAS", name: "MULTAS" },
                   datos[1][0]["Unidad"][0]["Multas"]
                 );
-                alert('fsweetalert');
                 fSweetAlertEventSelect(
                   event,
                   "VALIDACIONES",
@@ -1414,7 +1392,6 @@ document.addEventListener("DOMContentLoaded", function () {
                   "error",
                   html
                 );
-                alert(100);
                 event.preventDefault();
                 event.target.classList.add("errortxt");
                 var label = document.getElementById(event.target.id + "label");
@@ -1423,18 +1400,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     .getElementById(event.target.id + "label")
                     .classList.add("errorlabel");
                 }
-                alert(101);
                 paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
                 isError = true;
-                alert(102);
                 document.getElementById("btnconcesion").style = "display:none;";
-                alert(103);
                 document.getElementById("btnmultas").style = "display:none;";
-                alert(104);
                 document.getElementById("btnconsultas").style = "display:none;";
-                alert(105);
                 document.getElementById("btnperexp").style = "display:none;";
-                alert(106);
               }
             } else {
               if (
