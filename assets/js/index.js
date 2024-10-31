@@ -1140,7 +1140,11 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("btnmultas").style = "display:inline;";
     document.getElementById("btnconsultas").style = "display:inline;";
     document.getElementById("btnperexp").style = "display:inline;";
-    //document.getElementById("concesion_vin").focus();
+    document.getElementById("concesion_vin").focus();
+    //***********************************************************************************************************************************/
+    //* Cargando Información en la Pantalla 2 de Vehiculo Entra (Por si Hay cambio de Unidad)
+    //***********************************************************************************************************************************/
+    f_RenderConcesionTramites();
   }
 
   function f_RenderConcesionTramites() {
@@ -1278,46 +1282,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 //Ocultar Pantalla Modal donde se Ingresa a Concesión
                 $("#modalConcesion").modal("hide");
                 isRecordGetted[currentstep] = idConcesion;
-              //*********************************************************************************************************/
-              //* Inicio: Creando objeto de concesion
-              //*********************************************************************************************************/
-              //**********************************************************************************************************************/
-              //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
-              //**********************************************************************************************************************/
-              currentConcesionIndex = updateCollection(
-                concesionIndex,
-                document.getElementById("concesion_concesion").innerHTML
-              );
-              //**********************************************************************************************************************/
-              //* Si es la primera vez que se recupera la concesion se guardar el objeto con la concesion                            */
-              //**********************************************************************************************************************/
-              if (!concesionNumber[currentConcesionIndex]) {
-                // Recuperando el valor de la Permisos de Explotación
-                var perexpobj = document.getElementById("concesion_perexp");
-                var PerExp = "";
-                if (perexpobj != null) {
-                  PerExp = perexpobj.innerHTML;
-                }
-                concesionNumber[currentConcesionIndex] = {
-                  Concesion: document.getElementById("concesion_concesion").innerHTML,
-                  PerExp: PerExp,
-                  Concesion_Salvada: false,
-                  Cambio_Unidad: false,
-                  Cambio_Placa: false,
-                  Unidad_Recuperada_IP: false,
-                  Requiere_Renovacion_Concesion: false,
-                  Requiere_Renovacion_PerExp: false,
-                  Renovacion_Concesion_Tramitada: false,
-                  Renovacion_PerExp_Tramitada: false,
-                  ID_Expediente: "",
-                  ID_Formulario_Solicitud: "",
-                  CodigoAvisoCobro: 0,
-                  ID_Resolucion: "",
-                };
-              }
-                //**********************************************************************************************************************/
-                //* Si es la primera vez que se recupera la concesion se guardar el objeto con la concesion                            */
-                //**********************************************************************************************************************/
                 //***********************************************************************************/
                 //**Presentando la tabla de tramites                                                */
                 //***********************************************************************************/        
@@ -1757,6 +1721,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     return TramitesPreforma;
   }
+
+  function guardarConcesionSalvada () {
+    //*********************************************************************************************************/
+    //* Inicio: Creando objeto de concesion
+    //*********************************************************************************************************/
+    //**********************************************************************************************************************/
+    //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
+    //**********************************************************************************************************************/
+    currentConcesionIndex = updateCollection(
+      concesionIndex,
+      document.getElementById("concesion_concesion").innerHTML
+    );
+    //**********************************************************************************************************************/
+    //* Si es la primera vez que se recupera la concesion se guardar el objeto con la concesion                            */
+    //**********************************************************************************************************************/
+    // Recuperando el valor de la Permisos de Explotación
+    var perexpobj = document.getElementById("concesion_perexp");
+    var PerExp = "";
+    if (perexpobj != null) {
+      PerExp = perexpobj.innerHTML;
+    }
+    concesionNumber[currentConcesionIndex] = {
+      Concesion: document.getElementById("concesion_concesion").innerHTML,
+      Permiso_Explotacion: PerExp,
+      ID_Expediente: document.getElementById("ID_Expediente").value,
+      ID_Solicitud: document.getElementById("ID_Solicitud").value,
+      ID_Formulario_Solicitud: document.getElementById("RAM").value,
+      CodigoAvisoCobro: document.getElementById("ID_AvisoCobro").value,
+      ID_Resolucion: document.getElementById("ID_Resolucion").value,
+    };
+  }
   //*********************************************************************************************************************/
   //** Final Function para Establecer los Codigos de los Tramites                                                        **/
   //*********************************************************************************************************************/
@@ -1861,12 +1856,19 @@ document.addEventListener("DOMContentLoaded", function () {
           //*Limpiando pantalla e inicializando banderas para preparar el programa para agregar otra concesion */
           //****************************************************************************************************/
           fLimpiarPantalla();
+          //****************************************************************************************************/
           esCambioDePlaca = false;
           esCambioDeVehiculo = false;
           seRecuperoVehiculoDesdeIP = 0;
           isVehiculeBlock = false;
           checked = false;
+          //****************************************************************************************************/
+          //*Llamando funcion para guardar en memoria la concesion salvada                                     */
+          //****************************************************************************************************/
+          guardarConcesionSalvada ();
+          //****************************************************************************************************/
           document.getElementById("concesion").value = "";
+          //****************************************************************************************************/
           sendToast(
             "PRE-FORMA SALVADA EXITOSAMENTE",
             $appcfg_milisegundos_toast,
@@ -1956,17 +1958,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //**********************************************************************************************/
   function setDataPreviewFormalities() {
     if (currentstep == 2) {
-      alert('setDataPreviewFormalities() 1');
-      const concesionDetails = concesionNumber[currentConcesionIndex];
-      alert('setDataPreviewFormalities() 2');
-      // ********************************************************************************************************************/
-      // Si ya se salvo la información de la pantalla 3
-      // ********************************************************************************************************************/
-      if (concesionDetails.Concesion_Salvada == false) {
-        alert('setDataPreviewFormalities() 3');
         f_RenderConcesionTramites();
-        alert('setDataPreviewFormalities() 4');
-      }
     }
   }
 

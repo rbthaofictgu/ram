@@ -61,7 +61,9 @@ include_once('configuracion/configuracion_js.php');
     <input type="hidden" id="RAM" value="">
     <input type="hidden" id="ID_Expediente" value="">
     <input type="hidden" id="ID_Solicitud" value="">
+    <input type="hidden" id="ID_Resolucion" value="">
     <input type="hidden" id="ID_AvisoCobro" value="">
+    <input type="hidden" id="ID_Solicitud" value="">
     <input type="hidden" id="ID_Solicitante" value="">
     <input type="hidden" id="ID_Apoderado" value="">
     <input type="hidden" id="ID_Unidad" value="">
