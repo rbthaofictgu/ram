@@ -30,11 +30,20 @@ var currentConcesionIndex = -1;
 var dataConcesion = Array();
 var esCarga;
 
-function updateCollection(arreglo, elemento) {
-  if (arreglo.indexOf(elemento) === -1) {
-    arreglo.push(elemento);
+function fShowConcesiones(){
+  console.log(concesionNumber);
+  alert('Mostrando Concesiones');
+}
+
+function updateCollection(elemento) {
+  alert('concesionIndex.indexOf(elemento)'+concesionIndex.indexOf(elemento));
+  alert('elemento)'+elemento);
+  if (concesionIndex.indexOf(elemento) === -1) {
+    alert('Adentro concesionIndex.indexOf(elemento)'+concesionIndex.indexOf(elemento));
+    concesionIndex.push(elemento);
   }
-  return arreglo.indexOf(elemento);
+  alert('concesionIndex.indexOf(elemento)'+concesionIndex.indexOf(elemento));
+  return concesionIndex.indexOf(elemento);
 }
 
 var multas3ra = document.getElementById("btnmultas");
@@ -1729,10 +1738,7 @@ document.addEventListener("DOMContentLoaded", function () {
     //**********************************************************************************************************************/
     //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
     //**********************************************************************************************************************/
-    currentConcesionIndex = updateCollection(
-      concesionIndex,
-      document.getElementById("concesion_concesion").innerHTML
-    );
+    currentConcesionIndex = updateCollection(document.getElementById("concesion_concesion").innerHTML);
     //**********************************************************************************************************************/
     //* Si es la primera vez que se recupera la concesion se guardar el objeto con la concesion                            */
     //**********************************************************************************************************************/
@@ -1742,6 +1748,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (perexpobj != null) {
       PerExp = perexpobj.innerHTML;
     }
+    alert('currentConcesionIndex'+currentConcesionIndex);
     concesionNumber[currentConcesionIndex] = {
       Concesion: document.getElementById("concesion_concesion").innerHTML,
       Permiso_Explotacion: PerExp,
@@ -1853,6 +1860,11 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           });
           //****************************************************************************************************/
+          //*Llamando funcion para guardar en memoria la concesion salvada                                     */
+          //****************************************************************************************************/
+          guardarConcesionSalvada ();
+          //****************************************************************************************************/
+          //****************************************************************************************************/
           //*Limpiando pantalla e inicializando banderas para preparar el programa para agregar otra concesion */
           //****************************************************************************************************/
           fLimpiarPantalla();
@@ -1862,11 +1874,6 @@ document.addEventListener("DOMContentLoaded", function () {
           seRecuperoVehiculoDesdeIP = 0;
           isVehiculeBlock = false;
           checked = false;
-          //****************************************************************************************************/
-          //*Llamando funcion para guardar en memoria la concesion salvada                                     */
-          //****************************************************************************************************/
-          guardarConcesionSalvada ();
-          //****************************************************************************************************/
           document.getElementById("concesion").value = "";
           //****************************************************************************************************/
           sendToast(

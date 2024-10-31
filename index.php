@@ -103,6 +103,7 @@ include_once('configuracion/configuracion_js.php');
         <!-- ******************************************************* -->
         <!-- Final de Div De Tramites                               -->
         <!-- ******************************************************* -->
+        <button onclick="fShowConcesiones()" style="display: flex;" id="rightDiv"  type="button" class="btn btn-warning btn-sm"><i class="fas fa-binoculars"></i></button>          
         <!-- ******************************************************* -->
         <!-- Inicio de Div De Tramites                               -->
         <!-- ******************************************************* -->
