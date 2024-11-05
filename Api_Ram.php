@@ -513,6 +513,7 @@ class Api_Ram {
 	protected function file_contents($path) {
 		try {
 			$str = @file_get_contents($path);
+			//print('str '. $path . ' '.$str);die();
 			if ($str === FALSE) {
 				//$txt = date('Y m d h:i:s') . ';  ERROR CATCH 408 LLAMANDO; ' . $path . ";Cannot access to read contents. Favor ingrese el tramite de replaqueo y los datos del vehiculo manualmente, SI APLICA";
 				//logErr($txt,'../logs/logs-ip.txt');

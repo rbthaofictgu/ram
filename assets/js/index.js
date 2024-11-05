@@ -466,10 +466,10 @@ document.addEventListener("DOMContentLoaded", function () {
           "";
         document.getElementById("concesion_placaanterior").style = "";
         document.getElementById("concesion_placaanterior").innerHTML = "";
+        document.getElementById("concesion_placa").value = "";
         document.getElementById("concesion_tipo_vehiculo").value = "";
         document.getElementById("concesion_modelo_vehiculo").value = "";
         document.getElementById("concesion_vin").value = "";
-        document.getElementById("concesion_placa").value = "";
         document.getElementById("concesion_serie").value = "";
         document.getElementById("concesion_motor").value = "";
         document.getElementById("marcas").value = "";
@@ -1283,11 +1283,12 @@ document.addEventListener("DOMContentLoaded", function () {
             //**************************************************************************************************************************/
             // Si el vehiculo fue recuperado desde el IP, favor continuar con el proceso normal y mover al informacion a la pantalla
             //**************************************************************************************************************************/
-            if (
-              datos[1][0]["Codigo_IP"] == 200 &&
-              datos[1][0]["Unidad"][0]["Bloqueado"] == false
+            alert('typeof multas'+typeof(datos[1][0]["Unidad"][0]["Multas"]));
+            console.log('Unidad'+datos[1][0]["Unidad"]);
+            if (typeof(datos[1][0]["Unidad"]) == "undefined" || typeof(datos[1][0]["Unidad"][0]) == "undefined" || typeof(datos[1][0]["Unidad"][0]["Bloqueado"]) == "undefined" || datos[1][0]["Unidad"][0]["Bloqueado"] == false 
             ) {
-              if (typeof datos[1][0]["Unidad"][0]["Multas"][0] == "undefined") {
+              alert('typeof bloqueado'+typeof(datos[1][0]["Unidad"][0]["Bloqueado"]));
+              if (typeof datos[1][0]["Unidad"] == "undefined" || typeof datos[1][0]["Unidad"][0] == "undefined" || typeof datos[1][0]["Unidad"][0]["Multas"] == "undefined" || typeof datos[1][0]["Unidad"][0]["Multas"][0] == "undefined") {
                 //Ocultar Pantalla Modal donde se Ingresa a Concesión
                 $("#modalConcesion").modal("hide");
                 isRecordGetted[currentstep] = idConcesion;
@@ -1302,6 +1303,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 //**************************************************************************************************************************/
                 //Enviando Toast de Exito en Recuperación la Información de la Concesión
                 //**************************************************************************************************************************/
+                alert(90);
                 sendToast(
                   "INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE",
                   $appcfg_milisegundos_toast,
@@ -1317,9 +1319,12 @@ document.addEventListener("DOMContentLoaded", function () {
                   $appcfg_pocision_toast,
                   $appcfg_icono_toast
                 );
-
-                if (
-                  typeof datos[1][0]["Unidad"][0]["Preforma"][0] != "undefined"
+                alert(100);
+                if (typeof datos[1][0] != "undefined" &&
+                    typeof datos[1][0]["Unidad"] != "undefined" &&
+                    typeof datos[1][0]["Unidad"][0] != "undefined" &&
+                    typeof datos[1][0]["Unidad"][0]["Preforma"] != "undefined" &&
+                    typeof datos[1][0]["Unidad"][0]["Preforma"][0] != "undefined"
                 ) {
 
                   var html = mallaDinamica(
@@ -1513,6 +1518,7 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .catch((error) => {
         //fLimpiarPantalla();
+        console.log(error);
         fSweetAlertEventSelect(
           event,
           "CONEXÍON",
@@ -1748,7 +1754,19 @@ document.addEventListener("DOMContentLoaded", function () {
     if (perexpobj != null) {
       PerExp = perexpobj.innerHTML;
     }
-    alert('currentConcesionIndex'+currentConcesionIndex);
+
+    alert('currentConcesionIndex 10 '+currentConcesionIndex);
+    //**********************************************************************************************************************/
+
+    alert('placa'+document.getElementById("concesion_placa").value)
+    alert('placa1'+document.getElementById("concesion1_placa").value);
+
+    if (document.getElementById("concesion_placa").value != document.getElementById("concesion1_placa").value) {
+      var Placa = document.getElementById("concesion_placa").value + '-' + document.getElementById("concesion1_placa").value;
+    } else {
+      var Placa = document.getElementById("concesion_placa").value;
+    }
+
     concesionNumber[currentConcesionIndex] = {
       Concesion: document.getElementById("concesion_concesion").innerHTML,
       Permiso_Explotacion: PerExp,
@@ -1757,7 +1775,11 @@ document.addEventListener("DOMContentLoaded", function () {
       ID_Formulario_Solicitud: document.getElementById("RAM").value,
       CodigoAvisoCobro: document.getElementById("ID_AvisoCobro").value,
       ID_Resolucion: document.getElementById("ID_Resolucion").value,
+      Placa: Placa,
     };
+
+    console.log(concesionNumber[currentConcesionIndex]);
+
   }
   //*********************************************************************************************************************/
   //** Final Function para Establecer los Codigos de los Tramites                                                        **/
@@ -1845,14 +1867,17 @@ document.addEventListener("DOMContentLoaded", function () {
           // Aqui se entra siempre porque es lo que se esta cambiando las unidades y los tramites
           //****************************************************************************************************/
           document.getElementById("ID_Unidad").value = Datos.Unidad;
+          alert(10);
           if (
+            typeof Datos.Unidad1 != "undefined" &&
             typeof Datos.Unidad1 != null &&
-            typeof Datos.Unidad1 != "undefined"
+            typeof Datos.Unidad1 != "false"
           ) {
             document.getElementById("ID_Unidad1").value = Datos.Unidad1;
           } else {
             document.getElementById("ID_Unidad1").value = "";
           }
+          alert(15);
           Datos.Tramites.forEach(function (Tramite) {
             var chk = document.getElementById(Tramite.ID_Compuesto);
             if (chk != null) {
@@ -1862,12 +1887,15 @@ document.addEventListener("DOMContentLoaded", function () {
           //****************************************************************************************************/
           //*Llamando funcion para guardar en memoria la concesion salvada                                     */
           //****************************************************************************************************/
+          alert(30);
           guardarConcesionSalvada ();
+          alert(40);
           //****************************************************************************************************/
           //****************************************************************************************************/
           //*Limpiando pantalla e inicializando banderas para preparar el programa para agregar otra concesion */
           //****************************************************************************************************/
           fLimpiarPantalla();
+          alert(50);
           //****************************************************************************************************/
           esCambioDePlaca = false;
           esCambioDeVehiculo = false;
@@ -1891,6 +1919,7 @@ document.addEventListener("DOMContentLoaded", function () {
             $appcfg_pocision_toast,
             $appcfg_icono_toast
           );
+          alert(60);
           return false;
         } // final del If de si Hay error
       })
@@ -1988,8 +2017,8 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   btnSalvarConcesion.addEventListener("click", function (event) {
+      var response = {error: false};
       if (currentstep == 2) {
-        const response = {error: false};
         //**********************************************************************************************************/
         //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
         //**********************************************************************************************************/
