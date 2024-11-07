@@ -282,6 +282,12 @@ document.addEventListener("DOMContentLoaded", function () {
   function f_DataOmision() {
     var datos;
     var response;
+    // Get the URL parameters from the current page
+    const urlParams = new URLSearchParams(window.location.search);
+    // Get a specific parameter by name
+    const RAM = urlParams.get('RAM'); // Número de RAM
+    console.log('RAM  '+RAM);
+    alert(RAM);
     // URL del Punto de Acceso a la API
     const url = $appcfg_Dominio + "Api_Ram.php";
     //  Fetch options
@@ -295,6 +301,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let fd = new FormData(document.forms.form1);
     //Adjuntando el action al FormData
     fd.append("action", "get-datosporomision");
+    fd.append("RAM", RAM);
     // Fetch options
     const options = {
       method: "POST",
@@ -304,13 +311,8 @@ document.addEventListener("DOMContentLoaded", function () {
     fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (datos) {
+        console.log(datos);
         if (typeof datos[0] != "undefined") {
-          if (datos[1].length > 0) {
-            fLlenarSelect("entregadocs", datos[1], null, false, {
-              text: "SELECCIONE UN LUGAR DE ENTREGA",
-              value: "-1",
-            });
-          }
           if (typeof datos[2] != "undefined") {
             if (datos[2].length > 0) {
               fLlenarSelect("Departamentos", datos[2], -1, false, {
@@ -327,6 +329,54 @@ document.addEventListener("DOMContentLoaded", function () {
               });
             }
           }
+
+          if (typeof datos[3] != "undefined") {
+            //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
+            document.getElementById("nomapoderado").value =  datos[3][0]['Nombre_Apoderado_Legal'];
+            document.getElementById("colapoderado").value =  datos[3][0]['ID_Colegiacion'];
+            document.getElementById("identidadapod").value = datos[3][0]['Ident_Apoderado_Legal'];
+            document.getElementById("dirapoderado").value = datos[3][0]['Direccion_Apoderado_Legal'];
+            document.getElementById("telapoderado").value = datos[3][0]['Telefono_Apoderado_Legal'];
+            document.getElementById("emailapoderado").value = datos[3][0]['Email_Apoderado_Legal'];
+            fLlenarSelect("entregadocs", datos[1], datos[4][0]['Entrega_Ubicacion'], false, {
+              text: "SELECCIONE UN LUGAR DE ENTREGA",
+              value: "-1",
+            });
+            document.getElementById("tipopresentacion").value = datos[4][0]['Presentacion_Documentos'];
+            //* Moviendo campos de base de datos a datos de pantalla Solicitante
+            if (typeof datos[4] != "undefined") {
+              console.log(datos[4][0]);
+              document.getElementById("rtnsoli").value = datos[4][0]['RTN_Solicitante'];
+              document.getElementById("nomsoli").value = datos[4][0]['Nombre_Solicitante'];
+              document.getElementById("denominacionsoli").value = datos[4][0]['Denominacion_Social'];
+              document.getElementById("domiciliosoli").value = datos[4][0]['Domicilo_Solicitante'];
+              document.getElementById("telsoli").value = datos[4][0]['Telefono_Solicitante'];
+              document.getElementById("emailsoli").value = datos[4][0]['Email_Solicitante'];
+              document.getElementById("tiposolicitante").value = datos[4][0]['ID_Tipo_Solicitante'];
+              document.getElementById("Departamentos").value = datos[4][0]['ID_Departamento'];
+              var event = new Event("change", {
+                bubbles: true,
+                cancelable: true,
+              });
+              document.getElementById("Departamentos").dispatchEvent(event);
+              setTimeout(() => {
+                document.getElementById("Municipios").value = datos[4][0]['ID_Municipio'];
+                document.getElementById("Municipios").dispatchEvent(event);
+              }, 2000);              
+              setTimeout(() => {
+                //document.getElementById("Municipios").dispatchEvent(event);
+                document.getElementById("Aldeas").value = datos[4][0]['ID_Aldea'];;
+              }, 4000);              
+            }
+          } else {
+            if (datos[1].length > 0) {
+              fLlenarSelect("entregadocs", datos[1], null, false, {
+                text: "SELECCIONE UN LUGAR DE ENTREGA",
+                value: "-1",
+              });
+            }
+          }
+
         } else {
           if (typeof datos.error != "undefined") {
             fSweetAlertEventNormal(
@@ -344,7 +394,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       })
       .catch((error) => {
-        console.log("error" + error);
+        console.log("error " + error);
         fSweetAlertEventNormal(
           "OPPS",
           "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
@@ -356,6 +406,7 @@ document.addEventListener("DOMContentLoaded", function () {
   //**************************************************************************************/
   // Inicio llamado a la función f_DataOmision que carga los datos por defecto
   //**************************************************************************************/
+  alert(1);
   f_DataOmision();
   //**************************************************************************************/
   // Final llamado a la función f_DataOmision que carga los datos por defecto
@@ -1736,11 +1787,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     return TramitesPreforma;
   }
-
+  //*********************************************************************************************************************/
+  //** Final Function para Establecer los Codigos de los Tramites                                                       **/
+  //*********************************************************************************************************************/
+  //*********************************************************************************************************/
+  //* Inicio: Creando objeto de concesion
+  //*********************************************************************************************************/
   function guardarConcesionSalvada () {
-    //*********************************************************************************************************/
-    //* Inicio: Creando objeto de concesion
-    //*********************************************************************************************************/
     //**********************************************************************************************************************/
     //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
     //**********************************************************************************************************************/
@@ -1754,12 +1807,6 @@ document.addEventListener("DOMContentLoaded", function () {
     if (perexpobj != null) {
       PerExp = perexpobj.innerHTML;
     }
-
-    alert('currentConcesionIndex 10 '+currentConcesionIndex);
-    //**********************************************************************************************************************/
-
-    alert('placa'+document.getElementById("concesion_placa").value)
-    alert('placa1'+document.getElementById("concesion1_placa").value);
 
     if (document.getElementById("concesion_placa").value != document.getElementById("concesion1_placa").value) {
       var Placa = document.getElementById("concesion_placa").value + '-' + document.getElementById("concesion1_placa").value;

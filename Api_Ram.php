@@ -178,11 +178,48 @@ class Api_Ram {
 		}
 	}
 
+	protected function getApoderadoLegalRAM(){
+		$q = "SELECT * FROM [IHTT_Preforma].[dbo].[TB_Apoderado_Legal] where ID_Formulario_Solicitud = :ID_Formulario_Solicitud";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array(':ID_Formulario_Solicitud'=> $_POST["RAM"]));
+		} else {
+			echo json_encode($this->select($q,array(':ID_Formulario_Solicitud'=> $_POST["RAM"])));
+		}
+	}
+
+	protected function getSolicitanteRAM(){
+		$q = "SELECT sol.*,ald.ID_Municipio,mn.ID_Departamento FROM [IHTT_Preforma].[dbo].[TB_Solicitante] sol, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud  and sol.ID_Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array(':ID_Formulario_Solicitud'=> $_POST["RAM"]));
+		} else {
+			echo json_encode($this->select($q,array(':ID_Formulario_Solicitud'=> $_POST["RAM"])));
+		}
+	}
+
+	protected function getTramitesRAM(){
+		$q = "SELECT * FROM [IHTT_Preforma].[dbo].[TB_Solicitud] Sol, [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q,array(':ID_Formulario_Solicitud'=> $_POST["RAM"]));
+		} else {
+			echo json_encode($this->select($q,array(':ID_Formulario_Solicitud'=> $_POST["RAM"])));
+		}
+	}
+
+
+
 	protected function getDatosPorOmision(){
 		$datos[1]= $this->getEntregaUbicacion();
 		$datos[2]= $this->getDepartamentos();
 		if ($datos[1] != false && $datos[2] != false) {
 			$datos[0] = count($datos[1]);
+			//*************************************************************************************/
+			//* Si es un fsl que ya estaba salvada y se va a continuar trabajando
+			//*************************************************************************************/
+			if ($_POST["RAM"] != '') {
+				$datos[3] = $this->getApoderadoLegalRAM();
+				$datos[4] = $this->getSolicitanteRAM();
+				$datos[5] = $this->getTramitesRAM();
+			} 
 			echo json_encode($datos);
 		} else {
 			echo json_encode(array("error" =>1001,"errormsg" =>'ALGO RARO SUCEDIO RECUPERANDO LOS DATOS DE UBICACIONES Y DEPARTAMENTOS, INTENTELO DE NUEVO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
