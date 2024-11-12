@@ -197,7 +197,15 @@ class Api_Ram {
 	}
 
 	protected function getTramitesRAM(){
-		$q = "SELECT * FROM [IHTT_Preforma].[dbo].[TB_Solicitud] Sol, [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud";
+		$q = "SELECT CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(Tra.ID_Tipo_Tramite,'_'),Cla.ID_Clase_Tramite),'_'),Tip.Acronimo_Tramite),'_'),Cla.Acronimo_Clase) AS ID_CHECK,
+md.ID_Clase_Servicio,tip.DESC_Tipo_Tramite,cla.DESC_Clase_Tramite,sol.*,
+(select top 1 b.monto from [IHTT_Webservice].[dbo].[TB_Tarifas] A,[IHTT_Webservice].[dbo].[TB_TarifasHistorico] B where A.CodigoTramite = B.CodigoTramite AND A.CodigoTramite = sol.ID_Tramite ORDER BY B.FechaFin DESC) as Monto,
+(select ID_Placa from [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud and sol.N_Certificado = veh.Certificado_Operacion and veh.Estado in ('NORMAL','SALE')) AS ID_Placa,
+(select ID_Placa from [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud and sol.N_Certificado = veh.Certificado_Operacion and veh.Estado = 'ENTRA') AS ID_Placa1
+FROM [IHTT_Preforma].[dbo].[TB_Solicitud] Sol,[IHTT_DB].[dbo].[TB_Tramite] Tra,[IHTT_DB].[dbo].[TB_Tipo_Tramite] Tip,[IHTT_DB].[dbo].[TB_Clase_Tramite] Cla,[IHTT_DB].[dbo].[TB_Modalidad] md
+where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and Sol.ID_Tramite = Tra.ID_Tramite and Tra.ID_Tipo_Tramite = Tip.ID_Tipo_Tramite and tra.ID_Clase_Tramite = cla.ID_Clase_Tramite and
+sol.ID_Modalidad = md.ID_Modalidad
+order by sol.N_Certificado,sol.N_Permiso_Especial";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q,array(':ID_Formulario_Solicitud'=> $_POST["RAM"]));
 		} else {

@@ -36,13 +36,9 @@ function fShowConcesiones(){
 }
 
 function updateCollection(elemento) {
-  alert('concesionIndex.indexOf(elemento)'+concesionIndex.indexOf(elemento));
-  alert('elemento)'+elemento);
   if (concesionIndex.indexOf(elemento) === -1) {
-    alert('Adentro concesionIndex.indexOf(elemento)'+concesionIndex.indexOf(elemento));
     concesionIndex.push(elemento);
   }
-  alert('concesionIndex.indexOf(elemento)'+concesionIndex.indexOf(elemento));
   return concesionIndex.indexOf(elemento);
 }
 
@@ -330,7 +326,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
           }
 
-          if (typeof datos[3] != "undefined") {
+          if (typeof datos[3] != "undefined" && typeof datos[3][0] != "undefined") {
             //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
             document.getElementById("nomapoderado").value =  datos[3][0]['Nombre_Apoderado_Legal'];
             document.getElementById("colapoderado").value =  datos[3][0]['ID_Colegiacion'];
@@ -367,6 +363,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 //document.getElementById("Municipios").dispatchEvent(event);
                 document.getElementById("Aldeas").value = datos[4][0]['ID_Aldea'];;
               }, 4000);              
+            }
+            //***************************************************************************/
+            //* Armando Objeto de Concesiones Salvadas en Preforma
+            //***************************************************************************/
+            if (typeof datos[5] != "undefined") {
+              console.log(datos);
+              console.log(datos[5]);
+              alert('Antes guardarConcesionSalvadaPreforma(datos[5])')
+              guardarConcesionSalvadaPreforma(datos[5]);
             }
           } else {
             if (datos[1].length > 0) {
@@ -1791,9 +1796,86 @@ document.addEventListener("DOMContentLoaded", function () {
   //** Final Function para Establecer los Codigos de los Tramites                                                       **/
   //*********************************************************************************************************************/
   //*********************************************************************************************************/
+  //* Inicio: Creando objeto de concesion desde Datos de Preformas
+  //*********************************************************************************************************/
+  function guardarConcesionSalvadaPreforma (Tramites) {
+    alert('Tramies Inside Salvada');
+    console.log(Tramites);
+    //*********************************************************************************************************/
+    //* Inicio: Recorriendo arreglo de concesiones y tramites
+    //*********************************************************************************************************/
+    var index = 0;
+    var Concesion = '';
+    var ConcesionAnterior = '';
+    var Placa  = '';
+    var Permiso_Explotacion = '';
+    var ID_Formulario_Solicitud  = '';
+    const TramitesPreforma = [];
+    Tramites.forEach((row) => {
+      if (row['N_Permiso_Especial'] == '') {
+        Concesion = row['N_Certificado'];
+      } else {
+        Concesion = row['N_Permiso_Especial'];
+      }
+      if (ConcesionAnterior != Concesion) {
+        ConcesionAnterior = Concesion;
+        //**********************************************************************************************************************/
+        //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
+        //**********************************************************************************************************************/
+        currentConcesionIndex = updateCollection(Concesion);
+        console.log(row['ID_Placa']);
+        console.log(row['ID_Placa1']);
+
+        if (row['ID_Placa1'] != null) {
+          Placa = row['ID_Placa'] + '->' + row['ID_Placa1'];
+        } else {
+          Placa = row['ID_Placa'];
+        }
+
+        TramitesPreforma.push({
+          ID_Compuesto: '',
+          Codigo: '',
+          descripcion: '',
+          ID_Tramite: '',
+          Monto: '',
+          ID_Categoria: '',
+          ID_Tipo_Servicio: '',
+          ID_Modalidad: '',
+          ID_Clase_Servico:'',
+        });
+
+        Permiso_Explotacion = row['Permiso_Explotacion']
+        ID_Formulario_Solicitud = row['ID_Formulario_Solicitud'];
+
+        console.log(Concesion);
+        console.log(currentConcesionIndex);
+
+        concesionNumber[currentConcesionIndex] = {
+          Concesion: Concesion,
+          Permiso_Explotacion: Permiso_Explotacion,
+          ID_Expediente: '',
+          ID_Solicitud: '',
+          ID_Formulario_Solicitud: ID_Formulario_Solicitud,
+          CodigoAvisoCobro: '',
+          ID_Resolucion: '',
+          Placa: Placa,
+          Tramites: TramitesPreforma,
+        };
+
+      }
+    });
+    //**********************************************************************************************************************/
+    //* Si es la primera vez que se recupera la concesion se guardar el objeto con la concesion                            */
+    //**********************************************************************************************************************/
+    console.log(concesionNumber);
+  }
+  //*********************************************************************************************************/
+  //* Final: Creando objeto de concesion desde Datos de Preformas
+  //*********************************************************************************************************/
+  //*********************************************************************************************************/
   //* Inicio: Creando objeto de concesion
   //*********************************************************************************************************/
-  function guardarConcesionSalvada () {
+  function guardarConcesionSalvada (Tramites) {
     //**********************************************************************************************************************/
     //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
     //**********************************************************************************************************************/
@@ -1823,6 +1905,7 @@ document.addEventListener("DOMContentLoaded", function () {
       CodigoAvisoCobro: document.getElementById("ID_AvisoCobro").value,
       ID_Resolucion: document.getElementById("ID_Resolucion").value,
       Placa: Placa,
+      Tramites: Tramites,
     };
 
     console.log(concesionNumber[currentConcesionIndex]);
@@ -1838,6 +1921,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // URL del Punto de Acceso a la API
     const url = $appcfg_Dominio + "Api_Ram.php";
     let fd = new FormData(document.forms.form1);
+    var Tramites = '';
     // Adjuntando el action al FormData
     fd.append("action", "save-preforma");
     // Adjuntando el Concesion y Caracterización al FormData
@@ -1853,7 +1937,8 @@ document.addEventListener("DOMContentLoaded", function () {
       fd.append("Unidad1", JSON.stringify(setUnidad1()));
     }
     // Adjuntando el Tramites al FormData
-    fd.append("Tramites", JSON.stringify(setTramites()));
+    Tramites = setTramites();
+    fd.append("Tramites", JSON.stringify(Tramites));
     //  Fetch options
     const options = {
       method: "POST",
@@ -1935,7 +2020,7 @@ document.addEventListener("DOMContentLoaded", function () {
           //*Llamando funcion para guardar en memoria la concesion salvada                                     */
           //****************************************************************************************************/
           alert(30);
-          guardarConcesionSalvada ();
+          guardarConcesionSalvada (Tramites);
           alert(40);
           //****************************************************************************************************/
           //****************************************************************************************************/
