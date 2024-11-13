@@ -31,8 +31,9 @@ var dataConcesion = Array();
 var esCarga;
 
 function fShowConcesiones(){
-  console.log(concesionNumber);
-  alert('Mostrando Concesiones');
+  const myModal = new bootstrap.Modal(document.getElementById('exampleModal'));
+  myModal.show();
+  mostrarData(concesionNumber, 'tabla-container',  'CONCESIONES SALVADAS');
 }
 
 function updateCollection(elemento) {
@@ -307,7 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
     fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (datos) {
-        console.log(datos);
+        //console.log(datos);
         if (typeof datos[0] != "undefined") {
           if (typeof datos[2] != "undefined") {
             if (datos[2].length > 0) {
@@ -341,7 +342,6 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("tipopresentacion").value = datos[4][0]['Presentacion_Documentos'];
             //* Moviendo campos de base de datos a datos de pantalla Solicitante
             if (typeof datos[4] != "undefined") {
-              console.log(datos[4][0]);
               document.getElementById("rtnsoli").value = datos[4][0]['RTN_Solicitante'];
               document.getElementById("nomsoli").value = datos[4][0]['Nombre_Solicitante'];
               document.getElementById("denominacionsoli").value = datos[4][0]['Denominacion_Social'];
@@ -368,9 +368,6 @@ document.addEventListener("DOMContentLoaded", function () {
             //* Armando Objeto de Concesiones Salvadas en Preforma
             //***************************************************************************/
             if (typeof datos[5] != "undefined") {
-              console.log(datos);
-              console.log(datos[5]);
-              alert('Antes guardarConcesionSalvadaPreforma(datos[5])')
               guardarConcesionSalvadaPreforma(datos[5]);
             }
           } else {
@@ -1799,57 +1796,67 @@ document.addEventListener("DOMContentLoaded", function () {
   //* Inicio: Creando objeto de concesion desde Datos de Preformas
   //*********************************************************************************************************/
   function guardarConcesionSalvadaPreforma (Tramites) {
-    alert('Tramies Inside Salvada');
-    console.log(Tramites);
-    //*********************************************************************************************************/
-    //* Inicio: Recorriendo arreglo de concesiones y tramites
-    //*********************************************************************************************************/
     var index = 0;
     var Concesion = '';
     var ConcesionAnterior = '';
     var Placa  = '';
     var Permiso_Explotacion = '';
     var ID_Formulario_Solicitud  = '';
-    const TramitesPreforma = [];
+    var TramitesPreforma = Array();
+    var index = 1;
+    //*********************************************************************************************************/
+    //* Inicio: Recorriendo arreglo de concesiones y tramites
+    //*********************************************************************************************************/
     Tramites.forEach((row) => {
-      if (row['N_Permiso_Especial'] == '') {
-        Concesion = row['N_Certificado'];
-      } else {
-        Concesion = row['N_Permiso_Especial'];
+      //*********************************************************************************************************/
+      //* La primera vez que entra crea llena la variable Concesion
+      //*********************************************************************************************************/
+      if (index == 1) {
+        if (row['N_Permiso_Especial'] == '') {
+          Concesion = row['N_Certificado'];
+        } else {
+          Concesion = row['N_Permiso_Especial'];
+        }
       }
-      if (ConcesionAnterior != Concesion) {
-        ConcesionAnterior = Concesion;
-        //**********************************************************************************************************************/
-        //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
-        //**********************************************************************************************************************/
-        currentConcesionIndex = updateCollection(Concesion);
-        console.log(row['ID_Placa']);
-        console.log(row['ID_Placa1']);
-
+      if (Concesion == row['N_Permiso_Especial'] || Concesion == row['N_Certificado']) {
         if (row['ID_Placa1'] != null) {
           Placa = row['ID_Placa'] + '->' + row['ID_Placa1'];
         } else {
           Placa = row['ID_Placa'];
         }
-
-        TramitesPreforma.push({
-          ID_Compuesto: '',
-          Codigo: '',
-          descripcion: '',
-          ID_Tramite: '',
-          Monto: '',
-          ID_Categoria: '',
-          ID_Tipo_Servicio: '',
-          ID_Modalidad: '',
-          ID_Clase_Servico:'',
-        });
-
         Permiso_Explotacion = row['Permiso_Explotacion']
         ID_Formulario_Solicitud = row['ID_Formulario_Solicitud'];
-
-        console.log(Concesion);
-        console.log(currentConcesionIndex);
-
+        TramitesPreforma.push({
+          ID_Compuesto: row['ID_CHECK'],
+          Codigo: row['ID_Tramite'],
+          descripcion: row['DESC_Tipo_Tramite'] + ' ' + row['DESC_Clase_Tramite'],
+          ID_Tramite: row['ID_Tramite'],
+          Monto: row['Monto'],
+          ID_Categoria: row['ID_Tipo_Categoria'],
+          ID_Tipo_Servicio: row['ID_TIpo_Servicio'],
+          ID_Modalidad: row['ID_Modalidad'],
+          ID_Clase_Servico: row['ID_Clase_Servicio'],
+        });
+        if (Tramites.length == index){
+          currentConcesionIndex = updateCollection(Concesion);
+          concesionNumber[currentConcesionIndex] = {
+            Concesion: Concesion,
+            Permiso_Explotacion: Permiso_Explotacion,
+            ID_Expediente: '',
+            ID_Solicitud: '',
+            ID_Formulario_Solicitud: ID_Formulario_Solicitud,
+            CodigoAvisoCobro: '',
+            ID_Resolucion: '',
+            Placa: Placa,
+            Tramites: TramitesPreforma,
+          };
+        }
+      } else {
+        //alert('22222  Inside row[N_Permiso_Especial]'+row['N_Permiso_Especial'] + ' N_Certificaqdo  '+row['N_Certificado']+' Concesion '+Concesion)
+        //**********************************************************************************************************************/
+        //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
+        //**********************************************************************************************************************/
+        currentConcesionIndex = updateCollection(Concesion);
         concesionNumber[currentConcesionIndex] = {
           Concesion: Concesion,
           Permiso_Explotacion: Permiso_Explotacion,
@@ -1861,8 +1868,35 @@ document.addEventListener("DOMContentLoaded", function () {
           Placa: Placa,
           Tramites: TramitesPreforma,
         };
-
+        if (row['N_Permiso_Especial'] == '') {
+          Concesion = row['N_Certificado'];
+        } else {
+          Concesion = row['N_Permiso_Especial'];
+        }
+        //**********************************************************************************************************************/
+        //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
+        //**********************************************************************************************************************/
+        if (row['ID_Placa1'] != null) {
+          Placa = row['ID_Placa'] + '->' + row['ID_Placa1'];
+        } else {
+          Placa = row['ID_Placa'];
+        }
+        Permiso_Explotacion = row['Permiso_Explotacion']
+        ID_Formulario_Solicitud = row['ID_Formulario_Solicitud'];
+        TramitesPreforma = [];
+        TramitesPreforma.push({
+          ID_Compuesto: row['ID_CHECK'],
+          Codigo: row['ID_Tramite'],
+          descripcion: row['DESC_Tipo_Tramite'] + ' ' + row['DESC_Clase_Tramite'],
+          ID_Tramite: row['ID_Tramite'],
+          Monto: row['Monto'],
+          ID_Categoria: row['ID_Tipo_Categoria'],
+          ID_Tipo_Servicio: row['ID_TIpo_Servicio'],
+          ID_Modalidad: row['ID_Modalidad'],
+          ID_Clase_Servico: row['ID_Clase_Servicio'],
+        });
       }
+      index++;
     });
     //**********************************************************************************************************************/
     //* Si es la primera vez que se recupera la concesion se guardar el objeto con la concesion                            */

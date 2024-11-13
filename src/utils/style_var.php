@@ -1,0 +1,54 @@
+<style>
+:root {
+--main_color_bg_body: <?php echo $_SESSION["color_bg_body"];?>;
+--main_color_bg_navbar: <?php echo $_SESSION["color_bg_navbar"];?>;
+--main_color_bg_navbar_dwd: <?php echo $_SESSION["color_bg_navbar_dwd"];?>;
+--main_color_bg_rotulo: <?php echo $_SESSION["color_bg_rotulo"];?>;
+--main_color_bg_linea_botones: <?php echo $_SESSION["color_bg_linea_botones"];?>;
+--main_color_bg_detalle: <?php echo $_SESSION["color_bg_detalle"];?>;
+--main_color_bg_boton_primary: <?php echo $_SESSION["color_bg_boton_primary"];?>;
+--main_color_bg_hover_botom_primary: <?php echo $_SESSION["color_bg_hover_botom_primary"];?>;
+--main_color_bg_boton_secondary: <?php echo $_SESSION["color_bg_boton_secondary"];?>;
+--main_color_bg_hover_botom_secondary: <?php echo $_SESSION["color_bg_hover_botom_secondary"];?>;
+--main_color_texto_body: <?php echo $_SESSION["color_texto_body"];?>;
+--main_color_texto_navbar: <?php echo $_SESSION["color_texto_navbar"];?>;
+--main_color_texto_rotulo: <?php echo $_SESSION["color_texto_rotulo"];?>;
+--main_color_texto_botones: <?php echo $_SESSION["color_texto_botones"];?>;
+--main_color_texto_detalle: <?php echo $_SESSION["color_texto_detalle"];?>;
+--main_color_text_boton_primary: <?php echo $_SESSION["color_text_boton_primary"];?>;
+--main_color_boder_boton_primary: <?php echo $_SESSION["color_boder_boton_primary"];?>;
+--main_color_sombra_boton_primary: <?php echo $_SESSION["color_sombra_boton_primary"];?>;
+--main_color_hover_text_boton_primary: <?php echo $_SESSION["color_hover_text_boton_primary"];?>;
+--main_color_hover_border_boton_primary: <?php echo $_SESSION["color_hover_border_boton_primary"];?>;
+--main_color_hover_sombra_boton_primary: <?php echo $_SESSION["color_hover_sombra_boton_primary"];?>;
+--main_color_text_boton_secondary: <?php echo $_SESSION["color_text_boton_secondary"];?>;
+--main_color_boder_boton_secondary: <?php echo $_SESSION["color_boder_boton_secondary"];?>;
+--main_color_border_boton_secondary: <?php echo $_SESSION["color_sombra_boton_secondary"];?>;
+--main_color_hover_text_boton_secondary: <?php echo $_SESSION["color_hover_text_boton_secondary"];?>;
+--main_color_hover_border_boton_secondary: <?php echo $_SESSION["color_hover_border_boton_secondary"];?>;
+--main_color_hover_sombra_boton_secondary: <?php echo $_SESSION
+["color_hover_sombra_boton_secondary"];?>;
+--main_color_link: <?php echo $_SESSION["color_link"];?>;
+--main_color_link_visited: <?php echo $_SESSION["color_link_visited"];?>;
+--main_color_link_hover: <?php echo $_SESSION["color_link_hover"];?>;
+--main_color_link_active: <?php echo $_SESSION["color_link_active"];?>;
+--main_color_navbar_link: <?php echo $_SESSION["color_navbar_link"];?>;
+--main_color_navbar_link_visited: <?php echo $_SESSION["color_navbar_link_visited"];?>;
+--main_color_navbar_link_hover: <?php echo $_SESSION["color_navbar_link_hover"];?>;
+--main_color_navbar_link_active: <?php echo $_SESSION["color_navbar_link_active"];?>;
+--main_color_navbar_dwd_link: <?php echo $_SESSION["color_navbar_dwd_link"];?>;
+--main_color_navbar_dwd_link_visited: <?php echo $_SESSION["color_navbar_dwd_link_visited"];?>;
+--main_color_navbar_dwd_link_hover: <?php echo $_SESSION["color_navbar_dwd_link_hover"];?>;
+--main_color_navbar_dwd_link_active: <?php echo $_SESSION["color_navbar_dwd_link_active"];?>;
+--main_color_footer_link: <?php echo $_SESSION["color_footer_link"];?>;
+--main_color_footer_link_visited: <?php echo $_SESSION["color_footer_link_visited"];?>;
+--main_color_footer_link_hover: <?php echo $_SESSION["color_footer_link_hover"];?>;
+--main_color_footer_link_active: "<?php echo $_SESSION["color_footer_link_active"];?>";
+--main_navbar_font: <?php echo $_SESSION["navbar_font"];?>;
+--main_body_font: <?php echo $_SESSION["body_font"];?>;
+--main-logo-bussines: <?php echo $logo;?>;
+--main-logo-pie-bussines: <?php echo $appcfg_logo_pie;?>;
+--main-logo-bg-page: <?php echo $appcfg_background;?>;
+--main-logo-letras: <?php echo $logo_letras;?>;	
+} /* Logo aplicación */
+</style>

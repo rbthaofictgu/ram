@@ -71,24 +71,52 @@ include_once('configuracion/configuracion_js.php');
     <input type="hidden" id="ID_Bitacora" value="">
 
     <div class="container-fluid bg-white shadow-sm">
+
+        <!-- ******************************************************* -->
+        <!-- Inicio de Modal de Concesiones Salvadas -->
+        <!-- ******************************************************* -->
+        <div class="modal fade modal-xl" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-scrollable">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h4  class="modal-title fs-5" id="exampleModalLabel"></h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="tabla-container" class="container-fluid">
+                        <div id="idRowInput" class="row">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
+                </div>
+                </div>
+            </div>
+        </div>    
+        <!-- ******************************************************* -->
+        <!-- Final de Modal de Concesiones Salvadas -->
+        <!-- ******************************************************* -->
         <!-- ******************************************************* -->
         <!-- Inicio de Modal de Ingreso Número Concesion -->
         <!-- ******************************************************* -->
         <div class="modal fade bd-example-modal-lg" id="modalConcesion" tabindex="-1" role="dialog" aria-labelledby="modalConcesionTitle" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-              <div class="modal-header" style="background-image: url('assets/images/logos/banner-xiomara.jpg');background-repeat: no-repeat;	background-size: cover;">
-                <h5 class="modal-title" id="exampleModalLongTitle">INGRESE UNA CONCESIÓN</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                  <span aria-hidden="true"><i class="fas fa-window-close fa-2x gobierno1"></i></span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <input placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm test-controls" minlength="10" maxlength="25" title="Digite el CO, PES o PER EXP">
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-dismiss="modal">Cerrar</button>
-              </div>
+                <div class="modal-header">
+                 <div class="modal-title" id="modalConcesionLongTitle"><strong>INGRESE UNA CONCESIÓN</strong></div>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true"><i class="fas fa-window-close fa-2x gobierno1"></i></span>
+                 </button>
+                </div>
+                <div class="modal-body">
+                    <input placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20" pattern="^[A-Z0-9\-]{10,20}$" id="concesion" class="form-control form-control-sm test-controls" minlength="10" maxlength="25" title="Digite el CO, PES o PER EXP">
+                </div>
+                <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                </div>
             </div>
           </div>
         </div>
@@ -1804,6 +1832,8 @@ include_once('configuracion/configuracion_js.php');
     include_once('pie.php');
     include_once('../sattb/modal_pie.php');    
     ?>
+    <script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/index.js"></script>    
+    <script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/objeto.js"></script>    
     <script>
       <?php 
       include_once('../sattb/assets/js/openModalLogin.js');
