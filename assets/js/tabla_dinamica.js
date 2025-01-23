@@ -36,7 +36,8 @@ function vista_data(estado = '', descripcion = '') {
          return response.json();
       })
       .then(data => {
-         // console.log(data);
+
+         
          //*mandando a tabala-container el elemento antes capturando en loadingIndicador.
          document.getElementById("tabla-container").innerHTML = loadingIndicator;
          //*si existe mendaje de error en blanco o del la consulta
@@ -73,7 +74,7 @@ function vista_data(estado = '', descripcion = '') {
 }
 //*funcion encargada de llenar el select de busqueda que envia el campo de busqueda en la tabla.
 function llenadoSelect(data) {
-   // console.log(data.select, 'llenadoselect');
+   // console.log(data.dataSelect, 'llenadoselect');
    //*instanciando el slect
    const selectElement = document.getElementById('id_filtro_select');
    //*obteniendo los datso con los que se llenara el select.
@@ -85,7 +86,8 @@ function llenadoSelect(data) {
    //* Objeto con los valores(value) para mostrar en las opciones
    const detalle = {
       "SOLICITUD": "SOLICITUD",
-      "RTN_SOL": "RTN_SOLICITUD",
+      "NOMBRE_SOLICITUD": "NOMBRE_SOLICITUD",
+      "RTN_SOLICITUD": "RTN_SOLICITUD",
       "PLACA": "PLACA"
    };
    //*recorriendo la data 
@@ -107,7 +109,7 @@ function llenadoSelect(data) {
       } else {
          //? warn=>en JavaScript se utiliza para mostrar un mensaje de advertencia en la consola del navegador.
          //*si hay algun error lo envaimos
-         console.warn(`El valor '${dato}' no tiene una descripción en 'detalle'.`);
+         // console.warn(`El valor '${dato}' no tiene una descripción en 'detalle'.`);
       }
    });
 }
@@ -115,8 +117,8 @@ function llenadoSelect(data) {
 //*funcion que crea la tabla dinamica
 function TablaDinamica(data, descripcion) {
 
-//?nota:Object.values(obj): Esta parte del código obtiene un array con todos los valores del objeto obj.
-//? Por ejemplo, si tienes un objeto como { a: [], b: [], c: [] }, Object.values(obj) devolvería [[ ], [ ], [ ]].
+   //?nota:Object.values(obj): Esta parte del código obtiene un array con todos los valores del objeto obj.
+   //? Por ejemplo, si tienes un objeto como { a: [], b: [], c: [] }, Object.values(obj) devolvería [[ ], [ ], [ ]].
    function verificarArraysVacios(obj) {
       //?nota:.every(): Este método se usa para verificar si todos los elementos de un array cumplen una condición. Si algún elemento no cumple la condición, devuelve false; si todos la cumplen, devuelve true.
       return Object.values(obj).every(array => Array.isArray(array) && array.length === 0);
@@ -124,10 +126,10 @@ function TablaDinamica(data, descripcion) {
    //*nos indica si esta vacio o no 
    const sonTodosVacios = verificarArraysVacios(data);
 
-// * si esta vacio enviamos un mensaje y si no enviamos los datos.
+   // * si esta vacio enviamos un mensaje y si no enviamos los datos.
    if (sonTodosVacios == true) {
       let contenedor = document.getElementById('tabla-container');
-      contenedor.innerHTML =`<div class="container-sm"><div class="alert alert-info text-center" role="alert">
+      contenedor.innerHTML = `<div class="container-sm"><div class="alert alert-info text-center" role="alert">
       <strong><i class="fa-solid fa-triangle-exclamation"></i>NO HAY DATOS CON ESTE ESTADO O PARAMETROS ENVIADOS</strong>
       </div></div>`
    } else {
@@ -201,7 +203,7 @@ function filtrado(data, tableContainer) {
    contenedorFiltro.id = "idContenedorFiltro";
    //*creando la clases
    contenedorFiltro.className = "row";
-   
+
    //*creando el contenedor del select
    const selectContainer = document.createElement('div');
    //*creando la propiedad del id del select
@@ -281,7 +283,7 @@ function renderTableRows(data, tbody) {
       //*creando las filas del cuerpo
       const row = document.createElement('tr');
       //*creando columna del cuerpo y asignandole el indice de cada fila
-      row.appendChild(document.createElement('td')).textContent =  (currentPage - 1) * rowsPerPage + index + 1;
+      row.appendChild(document.createElement('td')).textContent = (currentPage - 1) * rowsPerPage + index + 1;
       //  console.log(fila, 'fila');
       //*recorriendo los datos
       fila.forEach((valor, colIndex) => {
@@ -318,8 +320,8 @@ function filterTable(data, field, value) {
    }
 
    const filteredData = data.datos.filter(row => { //*recorriendo datos
-    //?nota: indexOf devuelve la posicion del elemento si no esta envia -1
-      const index = data.encabezados.indexOf(field); 
+      //?nota: indexOf devuelve la posicion del elemento si no esta envia -1
+      const index = data.encabezados.indexOf(field);
       return index !== -1 && row[index].toString().toLowerCase().includes(value.toLowerCase());
    });
 
@@ -334,7 +336,7 @@ function createPagination(totalRows) {
    //*creando el elemento que contiene la paginacion
    const paginationContainer = document.createElement('nav');
    //*asignando los atributos
-   paginationContainer.setAttribute('aria-label', 'Page navigation example' );
+   paginationContainer.setAttribute('aria-label', 'Page navigation example');
    //*creando el elemneto ul de la paginación
    const pagination = document.createElement('ul');
    //*asignando las clases
@@ -359,7 +361,7 @@ function createPagination(totalRows) {
       //*previniendo el refresh
       e.preventDefault();
       //*condion para saber si hay una pagina anterior
-      if (currentPage > 1){ 
+      if (currentPage > 1) {
          currentPage--;
          //*llama nuevamente a la funcion vista_data.
          vista_data();
@@ -370,12 +372,12 @@ function createPagination(totalRows) {
    //*y asignamos el contenedor al contenedor de la
    pagination.appendChild(prevItem);
 
-//*calculando un rango de paginas donde comenzara
+   //*calculando un rango de paginas donde comenzara
    const startPage = Math.max(1, currentPage - 2);
    //*donde finalizara la paginación
    const endPage = Math.min(totalPages, startPage + 4);
 
-//*recorriendo segun numeor de pagians
+   //*recorriendo segun numeor de pagians
    for (let page = startPage; page <= endPage; page++) {
       //*creando elemeto li de la paginación
       const pageItem = document.createElement('li');
@@ -438,6 +440,6 @@ window.onload = function () {
    //* Llama a la función vista_data con los parámetros deseados
    const estadoInicial = 'IDE-7'; //* Puedes establecer el estado que quieras
    const descripcionInicial = 'VENTANILLA'; //* También puedes cambiar esto
-   vista_data(estadoInicial,descripcionInicial);
+   vista_data(estadoInicial, descripcionInicial);
 };
 
