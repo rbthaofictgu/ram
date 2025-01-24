@@ -3170,7 +3170,7 @@ function fCleanSelectErrorMsg() {
     if (Unidad.ID_Placa_Antes_Replaqueo != Unidad.Placa) {
       addElementToAutoComplete(document.getElementById("concesion_concesion").innerHTML,Unidad.ID_Placa_Antes_Replaqueo   + ' => ' + document.getElementById("concesion_concesion").innerHTML)    
     }
-    if (Unidad1 != '' && Unidad1.Placa != 'undefined') {
+    if (Unidad1 != null && Unidad1 != '' && Unidad1.Placa != 'undefined') {
       //***********************************************************************/
       //* Agregando placa actual asociada a concesion */
       //***********************************************************************/
@@ -3299,6 +3299,8 @@ function fCleanSelectErrorMsg() {
     var Unidad1 = null;
     // Adjuntando el action al FormData
     fd.append("action", "save-preforma");
+    // Modalidad de entrada de la data (I=INSERT, U-UPDATE)
+    fd.append("modalidadDeEntrada", modalidadDeEntrada);
     // Adjuntando el Concesion y Caracterización al FormData
     fd.append("Concesion", JSON.stringify(setConcesion()));
     // Adjuntando el Apoderado al FormData
@@ -3388,39 +3390,50 @@ function fCleanSelectErrorMsg() {
 
         } else {
           //****************************************************************************************************/
-          // Aqui solo se entra la primera vez que se salga una concesion y se genera el RAM
+          //* INICIO: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
           //****************************************************************************************************/
-          if (document.getElementById("RAM-ROTULO").innerHTML == "") {
-            document.getElementById("ID_Bitacora").innerHTML = Datos.Bitacora;
-            document.getElementById("ID_Solicitante").value =
-              Datos.Solicitante.ID_Solicitante;
-            document.getElementById("ID_Apoderado").value = Datos.Apoderado;
-            document.getElementById("RAM").value = Datos.RAM;
-            document.getElementById("RAM-ROTULO").innerHTML =
-              "<strong>" + Datos.RAM + "</strong>";
-            document.getElementById("RAM-ROTULO").style = "inline-block;";
+          if (modalidadDeEntrada == 'I') {
+            //****************************************************************************************************/
+            //* Aqui solo se entra la primera vez que se salga una concesion y se genera el RAM
+            //****************************************************************************************************/
+            if (document.getElementById("RAM-ROTULO").innerHTML == "") {
+              document.getElementById("ID_Bitacora").innerHTML = Datos.Bitacora;
+              document.getElementById("ID_Solicitante").value =
+                Datos.Solicitante.ID_Solicitante;
+              document.getElementById("ID_Apoderado").value = Datos.Apoderado;
+              document.getElementById("RAM").value = Datos.RAM;
+              document.getElementById("RAM-ROTULO").innerHTML =
+                "<strong>" + Datos.RAM + "</strong>";
+              document.getElementById("RAM-ROTULO").style = "inline-block;";
+            }
+            //****************************************************************************************************/
+            // Aqui se entra siempre porque es lo que se esta cambiando las unidades y los tramites
+            //****************************************************************************************************/
+            document.getElementById("ID_Unidad").value = Datos.Unidad;
+            if (
+              typeof Datos.Unidad1 != "undefined" &&
+              typeof Datos.Unidad1 != null &&
+              typeof Datos.Unidad1 != "false"
+            ) {
+              document.getElementById("ID_Unidad1").value = Datos.Unidad1;
+            } else {
+              document.getElementById("ID_Unidad1").value = "";
+            }
+            Datos.Tramites.forEach(function (Tramite) {
+              var chk = document.getElementById(Tramite.ID_Compuesto);
+              if (chk != null) {
+                chk.setAttribute("data-id", Tramite.ID);
+              }
+            });
           }
-          //Ocultando el boton que permite ver las dos unidades cuando hay cambio de unidad
+          //****************************************************************************************************/
+          //*Ocultando el boton que permite ver las dos unidades cuando hay cambio de unidad
+          //****************************************************************************************************/
           document.getElementById("btnCambiarUnidad").style.display = "none";
           //****************************************************************************************************/
-          // Aqui se entra siempre porque es lo que se esta cambiando las unidades y los tramites
+          //* FINAL: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
           //****************************************************************************************************/
-          document.getElementById("ID_Unidad").value = Datos.Unidad;
-          if (
-            typeof Datos.Unidad1 != "undefined" &&
-            typeof Datos.Unidad1 != null &&
-            typeof Datos.Unidad1 != "false"
-          ) {
-            document.getElementById("ID_Unidad1").value = Datos.Unidad1;
-          } else {
-            document.getElementById("ID_Unidad1").value = "";
-          }
-          Datos.Tramites.forEach(function (Tramite) {
-            var chk = document.getElementById(Tramite.ID_Compuesto);
-            if (chk != null) {
-              chk.setAttribute("data-id", Tramite.ID);
-            }
-          });
+
           //****************************************************************************************************/
           //*Llamando funcion para guardar en memoria la concesion salvada                                     */
           //****************************************************************************************************/
@@ -4230,7 +4243,7 @@ function fReviewCheck(el) {
           //*Salvando Tramite
           //************************************************************************/
           let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb == '' && document.getElementById("concesion_concesion").innerHTML !='') {
+          if (iddb == '' && modalidadDeEntrada == 'U') {
             addTramite (el);
           }
         } else {
@@ -4259,7 +4272,7 @@ function fReviewCheck(el) {
           //*Salvando Tramite
           //************************************************************************/
           let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb == '' && document.getElementById("concesion_concesion").innerHTML !='') {
+          if (iddb == '' && modalidadDeEntrada == 'U') {
             addTramite (el);
           }
 
@@ -4339,7 +4352,7 @@ function fReviewCheck(el) {
         //*Salvando Tramite
         //************************************************************************/
         let iddb = getAttribute(el,'data-iddb',false);
-        if (iddb == '' && document.getElementById("concesion_concesion").innerHTML !='') {
+        if (iddb == '' && modalidadDeEntrada == 'U') {
           addTramite (el);
         }
       } else {
@@ -4390,7 +4403,7 @@ function fReviewCheck(el) {
           //*Salvando Tramite
           //************************************************************************/
           let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb == '' && document.getElementById("concesion_concesion").innerHTML !='') {
+          if (iddb == '' && modalidadDeEntrada == 'U') {
             addTramite (el);
           }
         } else {
@@ -4453,7 +4466,7 @@ function fReviewCheck(el) {
             //*Salvando Tramite
             //************************************************************************/
             let iddb = getAttribute(el,'data-iddb',false);
-            if (iddb == '' && document.getElementById("concesion_concesion").innerHTML !='') {
+            if (iddb == '' && modalidadDeEntrada == 'U') {
               addTramite (el);
             }
           } else {

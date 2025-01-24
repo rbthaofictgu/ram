@@ -1,4 +1,8 @@
-<!-- //? PAGINA DE CONFIGURACION GENERAL DEL SISTEMA. -->
+<?php 
+//************************************************************************/
+//*<!-- //? PAGINA DE CONFIGURACION GENERAL DEL SISTEMA. --> 
+//************************************************************************/
+?>
 <?php header('Content-Type: text/html; charset=utf-8');?>
 
 <?php
