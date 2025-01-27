@@ -33,11 +33,71 @@ var esCarga;
 var modalidadDeEntrada = 'I';
 var chkTramites;
 
+//*********************************************************************************************************/
+//* INICIO: Agregando un tramite a Concesion Number
+//*********************************************************************************************************/  
+function addConcesionNumber (ID,ID_CHECK,Monto,Descripcion,ID_Tramite) {
+  for (let i=(concesionNumber.length-1);i>=0;i--) {
+
+    if (concesionNumber[i].Concesion == document.getElementById("concesion_concesion").innerHTML)  {  
+
+      let Cantidad_Vencimientos = 1;
+      let Fecha_Expiracion = '';
+      let Fecha_Expiracion_Nueva = '';
+      
+      if (ID_CHECK === 'IHTTTRA-02_CLATRA-01_R_PE') {
+        Cantidad_Vencimientos = document.getElementById("CantidadRenovacionesPerExp").value;
+        Fecha_Expiracion_Nueva = document.getElementById("NuevaFechaVencimientoPerExp").value;
+        Fecha_Expiracion = document.getElementById("NuevaFechaVencimientoPerExp").value;
+      } else {
+        if (ID_CHECK === 'IHTTTRA-02_CLATRA-02_R_CO' || ID_CHECK === 'IHTTTRA-02_CLATRA-02_R_PS') {
+          Cantidad_Vencimientos = document.getElementById("CantidadRenovacionesConcesion").value;
+          Fecha_Expiracion_Nueva = document.getElementById("NuevaFechaVencimientoConcesion").value;
+          Fecha_Expiracion = document.getElementById("FechaVencimientoConcesion").value;
+        }      
+      }
+
+      concesionNumber[i].Tramites.push({
+        ID: ID,
+        ID_Compuesto: ID_CHECK,
+        Codigo: ID_Tramite,
+        descripcion: Descripcion,
+        ID_Tramite: ID_Tramite,
+        Monto: parseFloat(Monto).toFixed(2),
+        ID_Categoria: document.getElementById("ID_Categoria").value,
+        ID_Tipo_Servicio: document.getElementById("ID_Tipo_Servicio").value,
+        ID_Modalidad: document.getElementById("ID_Modalidad").value,
+        ID_Clase_Servico: document.getElementById("ID_Clase_Servicio").value,
+        Cantidad_Vencimientos: Cantidad_Vencimientos,
+        Fecha_Expiracion: Fecha_Expiracion,
+        Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
+      });
+    }
+  }
+}
+//*********************************************************************************************************/
+//* FINAL: Agregando un tramite a Concesion Number
+//*********************************************************************************************************/  
+
+//*********************************************************************************************************/
+//* Inicio: Actualizando arreglo de Tramites dentro de concesionNumber
+//*********************************************************************************************************/  
+function updateConcesionNumber (idTramite) {
+  for (let i=(concesionNumber.length-1);i>=0;i--) {
+    if (concesionNumber[i].Concesion == document.getElementById("concesion_concesion").innerHTML)  {  
+      concesionNumber[i].Tramites = concesionNumber[i].Tramites.filter(tramite => tramite.ID !== idTramite);
+    }
+  }
+}
+//*********************************************************************************************************/
+//* Final: Actualizando arreglo de Tramites dentro de concesionNumber
+//*********************************************************************************************************/  
+
 //**********************************************************************************************************/
 //* INICIO: Funcion para Obtener el Attribute de un elemento
 //**********************************************************************************************************/
 function getAttribute(Element,Attribute,DeleteAttribute=false){
-  let iddb = '';
+  let Attr = '';
   //**********************************************************************************************************/
   //* Validando si el elemento tiene el Attribute a obtener
   //**********************************************************************************************************/
@@ -45,7 +105,7 @@ function getAttribute(Element,Attribute,DeleteAttribute=false){
     //**********************************************************************************************************/
     //* Obteniendo el Attribute de un elemento
     //**********************************************************************************************************/
-    iddb = Element.getAttribute(Attribute);
+    Attr = Element.getAttribute(Attribute);
     if (DeleteAttribute==true) {
       //**********************************************************************************************************/
       //* Borrando el Attribute de un elemento
@@ -53,7 +113,7 @@ function getAttribute(Element,Attribute,DeleteAttribute=false){
       Element.removeAttribute(Attribute);
     }
   } 
-  return iddb;
+  return Attr;
 }
 //**********************************************************************************************************/
 //* FINAL: Funcion para Obtener el Attribute de un elemento
@@ -104,6 +164,13 @@ function clearCollections(Elementos) {
   Elementos.forEach(function(Elemento) {
     Index = concesionIndex.indexOf(Elemento);
     if (Index != -1) {
+      //********************************************************************************/
+      //* INICIO: Llamando Funcion para Borrar elementos al arreglo de autocomplete
+      //********************************************************************************/      
+      deleteElementFromAutoComplete(concesionIndex[Index]);
+      //********************************************************************************/
+      //* FINAL: Llamando Funcion para Borrar elementos al arreglo de autocomplete
+      //********************************************************************************/      
       concesionIndex[Index] = false;
       concesionNumber[Index]  = false;
       seBorraronConcesiones = true;
@@ -127,7 +194,7 @@ function addElementToAutoComplete(value,text) {
 //********************************************************************************/
 function deleteElementFromAutoComplete(Concesion) {   
   //*item !== Concesion
-  concesionForAutoComplete = concesionForAutoComplete.filter(item => console.log(item));
+  concesionForAutoComplete = concesionForAutoComplete.filter(Concesion => Concesion.value !== Concesion);
 }
 
 
@@ -333,7 +400,16 @@ function fCleanSelectErrorMsg() {
           );
           return true;
         } else {
-          //****************************************************************************************************/
+          //*******************************************************************************************************/
+          //*INICIO: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
+          //*******************************************************************************************************/
+          updateConcesionNumber (idTramite)
+          //*******************************************************************************************************/
+          //*FINAL: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
+          //*******************************************************************************************************/
+          //*******************************************************************************************************/
+          //*INICIO: ENVIO DE MENSAJE DE BORRADO DEL TRAMITE EXITOSO
+          //*******************************************************************************************************/
           sendToast(
             "TRAMITE PRE-FORMA ELIMINADO EXITOSAMENTE",
             $appcfg_milisegundos_toast,
@@ -400,14 +476,7 @@ function fCleanSelectErrorMsg() {
   var Encabezado = Array();
   var Fields = Array();
   var Cols = Array();
-  Arreglo.push({ NOMBRE: "RONALD", APELLIDO: "BARRIENTOS" });
-  Encabezado.push({ field: "NOMBRE SOLICITANTE" });
-  Encabezado.push({ field: "APELLIDO SOLICITANTE" });
-  Fields.push({ field: "NOMBRE" });
-  Fields.push({ field: "APELLIDO" });
-  Cols.push({ col: 6 });
-  Cols.push({ col: 6 });
-
+  
   //document.getElementById('Malla').value = createMallaDinicamente(Encabezado, Arreglo, Fields,Cols);
 
   function createMallaDinicamente(
@@ -721,6 +790,8 @@ function fCleanSelectErrorMsg() {
         document.getElementById("RequiereRenovacionPerExp").value = false;
         document.getElementById("NuevaFechaVencimientoConcesion").value = "";
         document.getElementById("NuevaFechaVencimientoPerExp").value  ="";
+        document.getElementById("FechaVencimientoConcesion").value = "";
+        document.getElementById("FechaVencimientoPerExp").value  ="";
         document.getElementById("CantidadRenovacionesConcesion").value = 0;
         document.getElementById("CantidadRenovacionesPerExp").value = 0;
         //***********************************************************************************************************************************/
@@ -858,14 +929,9 @@ function fCleanSelectErrorMsg() {
   }
 
   function ProcessFormalitiesUnCheck() {
-    console.log('chkTramites');
-    console.log(chkTramites);
     if (chkTramites) {
-      console.log('Inside If');
       chkTramites.forEach(function (chk) {
-        console.log('Inside fOreach chkTramites');
         if (chk.checked) {
-          console.log('Inside Checked Disabled');
           chk.setAttribute('disable',false);
           chk.checked = false;
         }
@@ -875,12 +941,8 @@ function fCleanSelectErrorMsg() {
 
   function countFormalities() {
     var contador = 0;
-    console.log(121)
-    console.log(chkTramites);
     if (chkTramites) {
-      console.log(122)
       chkTramites.forEach(function (chk) {
-        console.log(123)
         if (chk.checked) {
           contador++;
         }
@@ -1234,8 +1296,6 @@ function fCleanSelectErrorMsg() {
       datos[1][0]["Tramites"];
 
     chkTramites = document.querySelectorAll('input[name="tramites[]"]');      
-    console.log(chkTramites);
-
     document.getElementById("concesion_concesion").innerHTML =
       datos[1][0]["N_Certificado"];
     document.getElementById("concesion_fecven").innerHTML =
@@ -1397,8 +1457,12 @@ function fCleanSelectErrorMsg() {
       //***********************************************************************************************************************************/
       document.getElementById("NuevaFechaVencimientoConcesion").value =
         datos[1][0]["Vencimientos"]["Nueva_Fecha_Expiracion"];
+        document.getElementById("FechaVencimientoConcesion").value =
+        datos[1][0]["Vencimientos"]["Fecha_Expiracion"];
       document.getElementById("NuevaFechaVencimientoPerExp").value =
         datos[1][0]["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
+        document.getElementById("FechaVencimientoPerExp").value =
+        datos[1][0]["Vencimientos"]["Fecha_Expiracion_Explotacion"];        
       document.getElementById("CantidadRenovacionesConcesion").value =
         datos[1][0]["Vencimientos"]["rencon-cantidad"];
       document.getElementById("CantidadRenovacionesPerExp").value =
@@ -1934,7 +1998,6 @@ function fCleanSelectErrorMsg() {
     fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (datos) {
-        console.log(datos);
         if (typeof datos != "undefined" && typeof datos[0] != "undefined") {
           if (datos[0] > 0) {
             //**************************************************************************************************************************/
@@ -2136,7 +2199,6 @@ function fCleanSelectErrorMsg() {
       datos[1][0]["Tramites"];
 
     chkTramites = document.querySelectorAll('input[name="tramites[]"]');      
-    console.log(chkTramites);
   
     document.getElementById("concesion_concesion").innerHTML =
       datos[1][0]["N_Certificado"];
@@ -2805,7 +2867,25 @@ function fCleanSelectErrorMsg() {
     const chkTramites = document.querySelectorAll('input[name="tramites[]"]');
     if (chkTramites) {
       chkTramites.forEach(function (chk) {
+
         if (chk.checked) {
+
+          let Cantidad_Vencimientos = 1;
+          let Fecha_Expiracion = '';
+          let Fecha_Expiracion_Nueva = '';
+
+          if (chk.id === 'IHTTTRA-02_CLATRA-01_R_PE') {
+            Cantidad_Vencimientos = document.getElementById("CantidadRenovacionesPerExp").value;
+            Fecha_Expiracion_Nueva = document.getElementById("NuevaFechaVencimientoPerExp").value
+            Fecha_Expiracion = document.getElementById("NuevaFechaVencimientoPerExp").value
+          } else {
+            if (chk.id === 'IHTTTRA-02_CLATRA-02_R_CO' || chk.id === 'IHTTTRA-02_CLATRA-02_R_PS') {
+              Cantidad_Vencimientos = document.getElementById("CantidadRenovacionesConcesion").value;
+              Fecha_Expiracion_Nueva = document.getElementById("NuevaFechaVencimientoConcesion").value
+              Fecha_Expiracion = document.getElementById("FechaVencimientoConcesion").value
+            }      
+          }
+
           TramitesPreforma.push({
             ID_Compuesto: chk.id,
             Codigo: chk.value,
@@ -2816,9 +2896,12 @@ function fCleanSelectErrorMsg() {
             ID_Categoria: document.getElementById("ID_Categoria").value,
             ID_Tipo_Servicio: document.getElementById("ID_Tipo_Servicio").value,
             ID_Modalidad: document.getElementById("ID_Modalidad").value,
-            ID_Clase_Servico:
-              document.getElementById("ID_Clase_Servicio").value,
+            ID_Clase_Servico: document.getElementById("ID_Clase_Servicio").value,
+            Cantidad_Vencimientos: Cantidad_Vencimientos,
+            Fecha_Expiracion: Fecha_Expiracion,
+            Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
           });
+
         }
       });
     }
@@ -2837,7 +2920,6 @@ function fCleanSelectErrorMsg() {
     var Permiso_Explotacion_Encriptado;
     var esCarga;
     var esCertificado;
-    var ConcesionAnterior = '';
     var Placa  = '';
     var Permiso_Explotacion = '';
     var ID_Formulario_Solicitud  = '';
@@ -2864,13 +2946,33 @@ function fCleanSelectErrorMsg() {
         }
       }
       if (Concesion == row['N_Permiso_Especial'] || Concesion == row['N_Certificado']) {
+        
         esCarga = Boolean(row['esCarga']);
         esCertificado = Boolean(row['esCertificado']);
+
         if (row['ID_Placa1'] != null) {
           Placa = row['ID_Placa'] + '->' + row['ID_Placa1'];
         } else {
           Placa = row['ID_Placa'];
         }
+
+        var Cantidad_Vencimientos = 1
+        var Fecha_Expiracion_Nueva = '';
+        var Fecha_Expiracion = '';
+        if (row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-01_R_PE' && row["Vencimientos"] != false) {
+          Fecha_Expiracion = row['Fecha_Expiracion_Explotacion'];
+          Cantidad_Vencimientos = row["Vencimientos"]["renper-explotacion-cantidad"];
+          //Cantidad_Vencimientos = row["Vencimientos"][0]["renper-explotacion-cantidad"];
+          Fecha_Expiracion_Nueva = row["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
+          //Fecha_Expiracion_Nueva = row["Vencimientos"][((row["Vencimientos"].length)-1)]["Nueva_Fecha_Expiracion_Explotacion"];
+        } else {
+          if ((row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-02_R_CO' || row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-02_R_PS') && (row["Vencimientos"] != false)) {
+            Fecha_Expiracion = row['Fecha_Expiracion'];
+            Cantidad_Vencimientos =  row["Vencimientos"]["rencon-cantidad"];
+            Fecha_Expiracion_Nueva = row["Vencimientos"]["Nueva_Fecha_Expiracion"];
+          }      
+        }
+
         ID_Formulario_Solicitud = row['ID_Formulario_Solicitud'];
         TramitesPreforma.push({
           ID: row['ID'],
@@ -2883,6 +2985,9 @@ function fCleanSelectErrorMsg() {
           ID_Tipo_Servicio: row['ID_TIpo_Servicio'],
           ID_Modalidad: row['ID_Modalidad'],
           ID_Clase_Servico: row['ID_Clase_Servicio'],
+          Cantidad_Vencimientos: Cantidad_Vencimientos,
+          Fecha_Expiracion: Fecha_Expiracion,
+          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
         });
         //*************************************************************/
         //* Si trae Unidad 1
@@ -3024,6 +3129,22 @@ function fCleanSelectErrorMsg() {
         } else {
           Placa = row['ID_Placa'];
         }
+
+        let Cantidad_Vencimientos = 1
+        let Fecha_Expiracion_Nueva = '';
+        let Fecha_Expiracion = '';
+        if (row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-01_R_PE' && row["Vencimientos"] != false) {
+          Fecha_Expiracion = row['Fecha_Expiracion_Explotacion'];
+          Cantidad_Vencimientos = row["Vencimientos"]["renper-explotacion-cantidad"];
+          Fecha_Expiracion_Nueva = row["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
+        } else {
+          if ((row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-02_R_CO' || row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-02_R_PS') && (row["Vencimientos"] != false)) {
+            Fecha_Expiracion = row['Fecha_Expiracion'];
+            Cantidad_Vencimientos =  row["Vencimientos"]["rencon-cantidad"];
+            Fecha_Expiracion_Nueva = row["Vencimientos"]["Nueva_Fecha_Expiracion"];
+          }      
+        }
+        
         ID_Formulario_Solicitud = row['ID_Formulario_Solicitud'];
         TramitesPreforma = [];
         TramitesPreforma.push({
@@ -3037,6 +3158,9 @@ function fCleanSelectErrorMsg() {
           ID_Tipo_Servicio: row['ID_TIpo_Servicio'],
           ID_Modalidad: row['ID_Modalidad'],
           ID_Clase_Servico: row['ID_Clase_Servicio'],
+          Cantidad_Vencimientos: Cantidad_Vencimientos,
+          Fecha_Expiracion: Fecha_Expiracion,
+          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
         });
         //*************************************************************/
         //* Si trae Unidad 1
@@ -4052,7 +4176,6 @@ function callFunctionBorrarTramite (Concesion,ID,Linea,el) {
     fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (Datos) {
-        console.log(Datos);
         if (typeof Datos.error != "undefined") {
           fSweetAlertEventNormal(
             Datos.errorhead,
@@ -4062,6 +4185,7 @@ function callFunctionBorrarTramite (Concesion,ID,Linea,el) {
         } else {
           if (typeof Datos != false) {
             setAttribute(el,'data-iddb',Datos[0]['ID']);
+            addConcesionNumber (Datos[0]['ID'],el.id,getAttribute(el,'data-monto'),document.getElementById('descripcion_'+el.value).innerHTML ,el.value)
             sendToast(
               "TRAMITE EN PREFORMA INSERTADO SATISFACTORIAMENTE",
               $appcfg_milisegundos_toast,

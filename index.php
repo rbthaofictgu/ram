@@ -54,6 +54,8 @@ include_once('configuracion/configuracion_js.php');
   <input type="hidden" id="RequiereRenovacionPerExp" value="false">
   <input type="hidden" id="NuevaFechaVencimientoConcesion" value="null">
   <input type="hidden" id="NuevaFechaVencimientoPerExp" value="null">
+  <input type="hidden" id="FechaVencimientoConcesion" value="null">
+  <input type="hidden" id="FechaVencimientoPerExp" value="null">
   <input type="hidden" id="CantidadRenovacionesConcesion" value="0">
   <input type="hidden" id="CantidadRenovacionesPerExp" value="null">
   <input type="hidden" id="ID_Estado_RAM" value="">

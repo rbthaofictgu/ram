@@ -1178,13 +1178,13 @@
          }
       });
    
-      f_FetchDeletConcesiones(concesiones)
+      f_FetchDeleteConcesiones(concesiones)
       //console.log(filas, concesiones);
    }
    //******************************************************************************/
    //*funcion encargada de verificar la decision del usuario y mostar las alertas.
    //******************************************************************************/
-   function f_FetchDeletConcesiones(idConcesiones) {
+   function f_FetchDeleteConcesiones(idConcesiones) {
       // console.log(idConcesiones, 'consession');
       let tipoAccion = false;
       if (idConcesiones.length != 0) {

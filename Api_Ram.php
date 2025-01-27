@@ -349,15 +349,37 @@ class Api_Ram
 			WHEN CO.[Clase Servicio] = 'STPP' THEN 1
 			WHEN CO.[Clase Servicio] = 'STEP' THEN 0
 			ELSE 0
-		END as esCertificado
+		END as esCertificado,
+		CO.N_Certificado,
+		CO.[Fecha Vencimiento Certificado] as Fecha_Expiracion,
+		CO.N_Permiso_Explotacion,
+		CO.[Fecha Vencimiento Permiso] as Fecha_Expiracion_Explotacion
 		FROM [IHTT_Preforma].[dbo].[TB_Solicitud] Sol,[IHTT_DB].[dbo].[TB_Tramite] Tra,[IHTT_DB].[dbo].[TB_Tipo_Tramite] Tip,[IHTT_DB].[dbo].[TB_Clase_Tramite] Cla,[IHTT_DB].[dbo].[TB_Modalidad] md, [IHTT_SGCERP].[dbo].[v_Listado_General] CO
 		where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and Sol.ID_Tramite = Tra.ID_Tramite and Tra.ID_Tipo_Tramite = Tip.ID_Tipo_Tramite and tra.ID_Clase_Tramite = cla.ID_Clase_Tramite and
 		sol.ID_Modalidad = md.ID_Modalidad and (Sol.N_Certificado = CO.N_Certificado or Sol.N_Permiso_Especial = CO.N_Certificado)
-		order by sol.N_Certificado,sol.N_Permiso_Especial";
+		order by sol.Permiso_Explotacion,sol.N_Certificado,sol.N_Permiso_Especial";
+		$rows = $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
+		$max = count($rows);
+		for ($i=0; $i<$max; $i++) {
+			$Permiso_Explotacion_Encriptado = '';
+			while($Permiso_Explotacion_Encriptado != $rows[$i]["Permiso_Explotacion_Encriptado"]){        
+				$Permiso_Explotacion_Encriptado = $rows[$i]["Permiso_Explotacion_Encriptado"];
+				$CertificadoEncriptado = '';
+				while($CertificadoEncriptado != $rows[$i]["CertificadoEncriptado"]){        
+					$CertificadoEncriptado = $rows[$i]["CertificadoEncriptado"];
+					if ($rows[$i]["ID_CHECK"] === 'IHTTTRA-02_CLATRA-01_R_PE' || $rows[$i]["ID_CHECK"] === 'IHTTTRA-02_CLATRA-02_R_CO' || $rows[$i]["ID_CHECK"] === 'IHTTTRA-02_CLATRA-02_R_PS') {
+						$rows[$i]["Vencimientos"] = $this->procesarFechaDeVencimiento($rows[$i], $rows[$i]["ID_Clase_Servicio"])[1]; 
+					} else {
+						$rows[$i]["Vencimientos"] = false;
+					}     
+				}
+			} 
+		}
+		
 		if (!isset($_POST["echo"])) {
-			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
+			return $rows;
 		} else {
-			echo json_encode($this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"])));
+			echo json_encode($rows);
 		}
 	}
 
@@ -2562,85 +2584,6 @@ class Api_Ram
 
 		// Ejecutar la actualización (esto usa la función insert, que también puede manejar updates)
 		return $this->update($query, $parametros);
-	}
-
-	protected function updateTramites($RAM, $Tramites)
-	{
-		if (isset($_POST["echo"])) {
-			$this->db->beginTransaction();
-		}
-		$contadorUpdates = 0; 
-		$isOk = array();
-		$isOk[0] = false;
-		$contador = count($_POST["Tramites"]);
-
-		
-		$query = "UPDATE [IHTT_PREFORMA].[dbo].[TB_Solicitud]
-    SET 
-        ID_Modalidad = :ID_Modalidad,
-        ID_TIpo_Servicio = :ID_TIpo_Servicio,
-        N_Certificado = :N_Certificado,
-        Permiso_Explotacion = :Permiso_Explotacion,
-        Sistema_Fecha = SYSDATETIME(),
-        Sistema_IP = :Sistema_IP,
-        ID_Tipo_Categoria = :ID_Tipo_Categoria,
-        N_Permiso_Especial = :N_Permiso_Especial,
-        Tipo_Servicio = :Tipo_Servicio,
-        Es_Renovacion_Automatica = :Es_Renovacion_Automatica,
-        Originado_En_Ventanilla = :Originado_En_Ventanilla,
-        Sistema_Usuario = :Sistema_Usuario
-    WHERE 
-        ID_Formulario_Solicitud = :ID_Formulario_Solicitud AND 
-        ID_Tramite = :ID_Tramite";  
-
-		for ($i = 0; $i < $contador; $i++) {
-			$parametros = array(
-				":ID_Formulario_Solicitud" => $RAM,
-				":ID_Tramite" => $Tramites[$i]['Codigo'],
-				":ID_Modalidad" => $Tramites[$i]['ID_Modalidad'],
-				":ID_TIpo_Servicio" => $Tramites[$i]['ID_Tipo_Servicio'],
-				":N_Certificado" => $_POST['Concesion']['Certificado'],
-				":Permiso_Explotacion" => $_POST['Concesion']['Permiso_Explotacion'],
-				":Sistema_IP" => $this->getIp(),
-				":ID_Tipo_Categoria" => $Tramites[$i]['ID_Categoria'],
-				":N_Permiso_Especial" => $_POST['Concesion']['Permiso_Especial'],
-				":Tipo_Servicio" => $Tramites[$i]['ID_Tipo_Servicio'],
-				":Es_Renovacion_Automatica" => $_SESSION["Es_Renovacion_Automatica"],
-				":Originado_En_Ventanilla" => $_SESSION["Originado_En_Ventanilla"],
-				":Sistema_Usuario" => $_SESSION["user_name"]
-			);
-
-		
-			$isOk[$i] = ['ID' => $this->update($query, $parametros), 'ID_Compuesto' => $Tramites[$i]['ID_Compuesto']];
-
-			
-			if ($isOk[$i]['ID'] == false) {
-				$this->db->rollback();
-				unset($isOk);
-				$isOk = array();
-				$isOk[0] = false;
-				break;
-			} else {
-				$contadorUpdates++;
-			}
-		}
-
-		if (!isset($_POST["echo"])) {
-			if ($isOk[0] != false) {
-				return $isOk;
-			} else {
-				echo json_encode(array("error" => 7001, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE ACTUALIZAR EL TRAMITE EN PREFORMA'));
-			}
-		} else {
-			if ($isOk[0] != false) {
-				if ($contadorUpdates > 0) {
-					$this->db->commit();
-				}
-				echo json_encode($isOk);
-			} else {
-				echo json_encode(array("error" => 7001, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE ACTUALIZAR EL TRAMITE EN PREFORMA'));
-			}
-		}
 	}
 
 	//*******************************************************************************************************************/
