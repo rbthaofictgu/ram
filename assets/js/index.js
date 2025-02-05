@@ -33,6 +33,10 @@ var esCarga;
 var modalidadDeEntrada = 'I';
 var chkTramites;
 
+function showHideTramite(el){
+  document.getElementById(el.id+'T').classList.toggle('showtramites');
+}
+
 //*********************************************************************************************************/
 //* INICIO: Agregando un tramite a Concesion Number
 //*********************************************************************************************************/  
@@ -64,13 +68,14 @@ function addConcesionNumber (ID,ID_CHECK,Monto,Descripcion,ID_Tramite) {
         descripcion: Descripcion,
         ID_Tramite: ID_Tramite,
         Monto: parseFloat(Monto).toFixed(2),
+        Total_A_Pagar: parseFloat(parseFloat(Monto).toFixed(2) * Cantidad_Vencimientos).toFixed(2),
+        Cantidad_Vencimientos: Cantidad_Vencimientos,
+        Fecha_Expiracion: Fecha_Expiracion,
+        Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
         ID_Categoria: document.getElementById("ID_Categoria").value,
         ID_Tipo_Servicio: document.getElementById("ID_Tipo_Servicio").value,
         ID_Modalidad: document.getElementById("ID_Modalidad").value,
         ID_Clase_Servico: document.getElementById("ID_Clase_Servicio").value,
-        Cantidad_Vencimientos: Cantidad_Vencimientos,
-        Fecha_Expiracion: Fecha_Expiracion,
-        Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
       });
     }
   }
@@ -516,6 +521,21 @@ function fCleanSelectErrorMsg() {
     $html = $html;
     return $html;
   }
+
+  function fMarcarRequicitos () {
+    document.getElementById("flexSwitchCheckPermisoExplotacion").checked = true;
+    document.getElementById("flexSwitchCheckCertificadoOperacion").checked = true;
+    document.getElementById("flexSwitchCheckCarnetColegiacion").checked = true;
+    document.getElementById("flexSwitchCheckAcreditarRepresentacion").checked = true;
+    document.getElementById("flexSwitchCheckEscritoSolicitud").checked = true;
+    document.getElementById("flexSwitchCheckDNI").checked = true;
+    document.getElementById("flexSwitchCheckRTN").checked = true;
+    document.getElementById("flexSwitchCheckInspeccionFisico").checked = true;    
+    document.getElementById("flexSwitchCheckBoletaRevision").checked = true;
+    document.getElementById("flexSwitchCheckContratoArrendamiento").checked = true;    
+    document.getElementById("flexSwitchCheckAutenticidadCarta").checked = true;
+    document.getElementById("flexSwitchCheckAutenticidadDocumentos").checked = true;        
+  }
   //**************************************************************************************/
   //* Cargando la información por default que debe usar el formulario
   //**************************************************************************************/
@@ -634,6 +654,20 @@ function fCleanSelectErrorMsg() {
             if (typeof datos[5] != "undefined") {
               guardarConcesionSalvadaPreforma(datos[5],datos[7]);
             }
+            //***************************************************************************/
+            //* Estableciento el Link del Expediente Cargado para Trabajarlo
+            //***************************************************************************/
+            if (typeof datos[8] != "undefined" && datos[8] != false) {
+              document.getElementById("fileUploaded").style.display = 'block';
+              document.getElementById("fileUploadedLink").setAttribute("href", $appcfg_Dominio + datos[8]);;
+            } else {
+              document.getElementById("fileUploaded").style.display = 'none';
+            }
+            //***************************************************************************/
+            //* Marcar requicitos
+            //***************************************************************************/
+            console.log('REQUICITOS');
+            fMarcarRequicitos ();
           } else {
             if (datos[1].length > 0) {
               fLlenarSelect("entregadocs", datos[1], null, false, {
@@ -963,7 +997,7 @@ function fCleanSelectErrorMsg() {
         if (currentstep == 3) {
           showModalFromShown = false;
           fGetInputs();
-          if (ProcessFormalities() == true) {
+          if (modalidadDeEntrada == 'I' && ProcessFormalities() == true) {
             fSweetAlertEventNormal(
               "ERROR",
               "HAY TRAMITES REGISTRADOS, DEBE SALVAR LA INFORMACIÓN DE LA PANTALLA O DESMARCAR LOS TRAMITES",
@@ -2893,13 +2927,14 @@ function fCleanSelectErrorMsg() {
               .innerHTML,
             ID_Tramite: chk.getAttribute("data-id"),
             Monto: chk.getAttribute("data-monto"),
+            Total_A_Pagar: parseFloat(parseFloat(chk.getAttribute("data-monto")).toFixed(2) * Cantidad_Vencimientos).toFixed(2),
+            Cantidad_Vencimientos: Cantidad_Vencimientos,
+            Fecha_Expiracion: Fecha_Expiracion,
+            Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
             ID_Categoria: document.getElementById("ID_Categoria").value,
             ID_Tipo_Servicio: document.getElementById("ID_Tipo_Servicio").value,
             ID_Modalidad: document.getElementById("ID_Modalidad").value,
             ID_Clase_Servico: document.getElementById("ID_Clase_Servicio").value,
-            Cantidad_Vencimientos: Cantidad_Vencimientos,
-            Fecha_Expiracion: Fecha_Expiracion,
-            Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
           });
 
         }
@@ -2962,9 +2997,7 @@ function fCleanSelectErrorMsg() {
         if (row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-01_R_PE' && row["Vencimientos"] != false) {
           Fecha_Expiracion = row['Fecha_Expiracion_Explotacion'];
           Cantidad_Vencimientos = row["Vencimientos"]["renper-explotacion-cantidad"];
-          //Cantidad_Vencimientos = row["Vencimientos"][0]["renper-explotacion-cantidad"];
           Fecha_Expiracion_Nueva = row["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
-          //Fecha_Expiracion_Nueva = row["Vencimientos"][((row["Vencimientos"].length)-1)]["Nueva_Fecha_Expiracion_Explotacion"];
         } else {
           if ((row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-02_R_CO' || row['ID_CHECK'] == 'IHTTTRA-02_CLATRA-02_R_PS') && (row["Vencimientos"] != false)) {
             Fecha_Expiracion = row['Fecha_Expiracion'];
@@ -2981,13 +3014,14 @@ function fCleanSelectErrorMsg() {
           descripcion: row['DESC_Tipo_Tramite'] + ' ' + row['DESC_Clase_Tramite'],
           ID_Tramite: row['ID_Tramite'],
           Monto: row['Monto'],
+          Total_A_Pagar: parseFloat(parseFloat(row['Monto']).toFixed(2) * Cantidad_Vencimientos).toFixed(2),
+          Cantidad_Vencimientos: Cantidad_Vencimientos,
+          Fecha_Expiracion: Fecha_Expiracion,
+          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
           ID_Categoria: row['ID_Tipo_Categoria'],
           ID_Tipo_Servicio: row['ID_TIpo_Servicio'],
           ID_Modalidad: row['ID_Modalidad'],
           ID_Clase_Servico: row['ID_Clase_Servicio'],
-          Cantidad_Vencimientos: Cantidad_Vencimientos,
-          Fecha_Expiracion: Fecha_Expiracion,
-          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
         });
         //*************************************************************/
         //* Si trae Unidad 1
@@ -3154,13 +3188,14 @@ function fCleanSelectErrorMsg() {
           descripcion: row['DESC_Tipo_Tramite'] + ' ' + row['DESC_Clase_Tramite'],
           ID_Tramite: row['ID_Tramite'],
           Monto: row['Monto'],
+          Total_A_Pagar: parseFloat(parseFloat(row['Monto']).toFixed(2) * Cantidad_Vencimientos).toFixed(2),
+          Cantidad_Vencimientos: Cantidad_Vencimientos,
+          Fecha_Expiracion: Fecha_Expiracion,
+          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
           ID_Categoria: row['ID_Tipo_Categoria'],
           ID_Tipo_Servicio: row['ID_TIpo_Servicio'],
           ID_Modalidad: row['ID_Modalidad'],
           ID_Clase_Servico: row['ID_Clase_Servicio'],
-          Cantidad_Vencimientos: Cantidad_Vencimientos,
-          Fecha_Expiracion: Fecha_Expiracion,
-          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
         });
         //*************************************************************/
         //* Si trae Unidad 1
@@ -3422,7 +3457,15 @@ function fCleanSelectErrorMsg() {
     var Unidad = null;
     var Unidad1 = null;
     // Adjuntando el action al FormData
-    fd.append("action", "save-preforma");
+    if (document.getElementById("ID_Expediente").value == ''){
+      fd.append("action", "save-preforma");
+    } else {
+      fd.append("action", "save-expediente");
+      // Enviar el número de Expediente
+      fd.append("ID_Expediente",  document.getElementById("ID_Expediente").value);
+      // Enviar el número de Solicitud
+      fd.append("ID_Solicitud",  document.getElementById("ID_Solicitud").value);    
+    }
     // Modalidad de entrada de la data (I=INSERT, U-UPDATE)
     fd.append("modalidadDeEntrada", modalidadDeEntrada);
     // Adjuntando el Concesion y Caracterización al FormData
@@ -3534,6 +3577,7 @@ function fCleanSelectErrorMsg() {
             // Aqui se entra siempre porque es lo que se esta cambiando las unidades y los tramites
             //****************************************************************************************************/
             document.getElementById("ID_Unidad").value = Datos.Unidad;
+            alert(1);
             if (
               typeof Datos.Unidad1 != "undefined" &&
               typeof Datos.Unidad1 != null &&
@@ -3543,6 +3587,7 @@ function fCleanSelectErrorMsg() {
             } else {
               document.getElementById("ID_Unidad1").value = "";
             }
+            alert(2);
             Datos.Tramites.forEach(function (Tramite) {
               var chk = document.getElementById(Tramite.ID_Compuesto);
               if (chk != null) {
@@ -3550,29 +3595,34 @@ function fCleanSelectErrorMsg() {
               }
             });
           }
+          alert(3);
           //****************************************************************************************************/
           //*Ocultando el boton que permite ver las dos unidades cuando hay cambio de unidad
           //****************************************************************************************************/
           document.getElementById("btnCambiarUnidad").style.display = "none";
+          alert(4);
           //****************************************************************************************************/
           //* FINAL: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
           //****************************************************************************************************/
-
+          alert(5);
           //****************************************************************************************************/
           //*Llamando funcion para guardar en memoria la concesion salvada                                     */
           //****************************************************************************************************/
           guardarConcesionSalvada (Tramites,Unidad,Unidad1);
+          alert(6);
           //****************************************************************************************************/
           //****************************************************************************************************/
           //*Limpiando pantalla e inicializando banderas para preparar el programa para agregar otra concesion */
           //****************************************************************************************************/
           fLimpiarPantalla();
+          alert(7);
           //****************************************************************************************************/
           esCambioDePlaca = false;
           esCambioDeVehiculo = false;
           seRecuperoVehiculoDesdeIP = 0;
           isVehiculeBlock = false;
           checked = false;
+          alert(8);
           document.getElementById("concesion").value = "";
           //****************************************************************************************************/
           sendToast(
@@ -3757,8 +3807,13 @@ function fCleanSelectErrorMsg() {
         document.getElementById("concesion").value = "";
         break;
       case 3:
-        document.getElementById("btnSalvarConcesion").style = "display:fixed;";
         document.getElementById("concesion_tramites").style = "display:none;";
+        document.getElementById("btnAddConcesion").style = "display:none;";
+        if (modalidadDeEntrada == 'I') {
+          document.getElementById("btnSalvarConcesion").style = "display:fixed;";
+        } else {
+          document.getElementById("btnSalvarConcesion").style = "display:none;";
+        }
         break;
     }
   });
@@ -4158,6 +4213,10 @@ function callFunctionBorrarTramite (Concesion,ID,Linea,el) {
     var Unidad1 = null;
     // Adjuntando el action al FormData
     fd.append("action", "add-tramite-preforma");
+    // Enviar el número de Expediente
+    fd.append("ID_Expediente",  document.getElementById("ID_Expediente").value);
+    // Enviar el número de Solicitud
+    fd.append("ID_Solicitud",  document.getElementById("ID_Solicitud").value);    
     // Funcion debe hacer echo no retornar
     fd.append("echo", true);
     // Número de RAM

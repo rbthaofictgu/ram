@@ -1,45 +1,48 @@
-<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div><div class="row"><div class="col-md-1"></div><div class="col-md-9"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div><div class="row border border-info" id="row_tramite_R_PE"><div class="col-md-1"><input   data-iddb=""  data-monto="1000.0000000" class="form-check-input" onclick="fReviewCheck(this)"  id=IHTTTRA-02_CLATRA-01_R_PE type="checkbox" name="tramites[]" value="IHTT-331"></div><div id="descripcion_IHTT-331" class="col-md-9">RENOVACIÓN PERMISO DE EXPLOTACIÓN</div><div class="col-md-2">&nbsp;</div></div><div class="row border border-info" id="row_tramite_R_CO"><div class="col-md-1"><input   data-iddb=""  data-monto="1000.0000000" class="form-check-input" onclick="fReviewCheck(this)"  id=IHTTTRA-02_CLATRA-02_R_CO type="checkbox" name="tramites[]" value="IHTT-363"></div><div id="descripcion_IHTT-363" class="col-md-9">RENOVACIÓN CERTIFICADO DE OPERACIÓN</div><div class="col-md-2">&nbsp;</div></div><div class="row border border-info" id="row_tramite_M_CU">
-  <div class="col-md-1">
-    <input  data-iddb="" data-monto="1000.0000000" 
-       class="form-check-input" 
-       onclick="fReviewCheck(this)" 
-       id="IHTTTRA-03_CLATRA-08_M_CU" 
-       type="checkbox" 
-       name="tramites[]" 
-       value="IHTT-427">
-  </div>
-  <div id="descripcion_IHTT-427" class="col-md-9">MODIFICACIÓN CAMBIO DE UNIDAD</div>
-  <div class="col-md-2">
-    <input onchange="getVehiculoDesdeIP(this, 'CU');" 
-       style="display:none; text-transform: uppercase;" 
-       id="concesion_tramite_placa_CU" 
-       title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
-       pattern="^[A-Z]{3}\d{4}$" 
-       placeholder="PLACA" 
-       class="form-control form-control-sm test-controls" 
-       minlength="7" 
-       maxlength="7">
-  </div>
-  </div><div class="row border border-info" id="row_tramite_M_CL">
-  <div class="col-md-1">
-    <input checked data-iddb="88559" data-monto="200.0000000" 
-       class="form-check-input" 
-       onclick="fReviewCheck(this)" 
-       id="IHTTTRA-03_CLATRA-15_M_CL" 
-       type="checkbox" 
-       name="tramites[]" 
-       value="IHTT-523">
-  </div>
-  <div id="descripcion_IHTT-523" class="col-md-9">MODIFICACIÓN CAMBIO DE PLACA</div>
-  <div class="col-md-2">
-    <input onchange="getVehiculoDesdeIP(this, 'CL');" 
-       style="display:none; text-transform: uppercase;" 
-       id="concesion_tramite_placa_CL" 
-       title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
-       pattern="^[A-Z]{3}\d{4}$" 
-       placeholder="PLACA" 
-       class="form-control form-control-sm test-controls" 
-       minlength="7" 
-       maxlength="7">
-  </div>
-  </div><div class="row border border-info" id="row_tramite_M_CC"><div class="col-md-1"><input   data-iddb=""  data-monto="200.0000000" class="form-check-input" onclick="fReviewCheck(this)"  id=IHTTTRA-03_CLATRA-18_M_CC type="checkbox" name="tramites[]" value="IHTT-587"></div><div id="descripcion_IHTT-587" class="col-md-9">MODIFICACIÓN CAMBIO DE COLOR</div><div class="col-md-2">&nbsp;</div></div><div class="row border border-info" id="row_tramite_X_CO"><div class="col-md-1"><input   data-iddb=""  data-monto="500.0000000" class="form-check-input" onclick="fReviewCheck(this)"  id=IHTTTRA-08_CLATRA-02_X_CO type="checkbox" name="tramites[]" value="IHTT-1378"></div><div id="descripcion_IHTT-1378" class="col-md-9">REPOSICIÓN CERTIFICADO DE OPERACIÓN</div><div class="col-md-2">&nbsp;</div></div><div class="row border border-info" id="row_tramite_X_PE"><div class="col-md-1"><input   data-iddb=""  data-monto="500.0000000" class="form-check-input" onclick="fReviewCheck(this)"  id=IHTTTRA-08_CLATRA-01_X_PE type="checkbox" name="tramites[]" value="IHTT-1410"></div><div id="descripcion_IHTT-1410" class="col-md-9">REPOSICIÓN PERMISO DE EXPLOTACIÓN</div><div class="col-md-2">&nbsp;</div></div>
+<table class="table table-hover  mb-5"><thead class="headTable table-primary">
+  <tr><th style="width: 10%;"><div class="form-check">
+  <input class="form-check-input" type="checkbox" onclick="seleccionarTodos();" value="" id="check_trash_all"> 
+  <label class="form-check-label" for="flexCheckDefault">
+     &nbsp;&nbsp;#
+  </label>
+  </div></th><th style="width: 30%;">Concesion</th><th style="width: 30%;">Permiso_Explotacion</th><th style="width: 15%;">Placa</th><th style="width: 15%;">Acción</th></tr></thead><tbody class="table-group-divider" id="idTbody"><tr id="idRow0"><td><div class="form-check">
+  <input class="form-check-input check_trash" type="checkbox" value="0/CO-CGR-1623-19" id="id_trash_idRow0"> 
+  <label class="form-check-label" for="flexCheckDefault">
+     &nbsp;&nbsp; 1
+  </label>
+  </div></td><td style="cursor: pointer;">CO-CGR-1623-19</td><td style="cursor: pointer;">PE-CNE-3408-19</td><td style="cursor: none;"><span id="id_0" style="margin-right: 8px; cursor: pointer;" class="borderPlaca">TRC8490</span></td><td class="end" style="cursor: pointer;"> <i id="est_const" class="fa-duotone fa-solid fa-pen" aria-hidden="true"></i> </td></tr><tr id="idRow1"><td><div class="form-check">
+  <input class="form-check-input check_trash" type="checkbox" value="1/CO-CGR-1743-20" id="id_trash_idRow1"> 
+  <label class="form-check-label" for="flexCheckDefault">
+     &nbsp;&nbsp; 2
+  </label>
+  </div></td><td style="cursor: pointer;">CO-CGR-1743-20</td><td style="cursor: pointer;">PE-CNE-3408-19</td><td style="cursor: none;"><span id="id_0" style="margin-right: 8px; cursor: pointer;" class="borderPlaca">TRC6180</span></td><td class="end" style="cursor: pointer;"> <i id="est_const" class="fa-duotone fa-solid fa-pen" aria-hidden="true"></i> </td></tr><tr id="idRow2"><td><div class="form-check">
+  <input class="form-check-input check_trash" type="checkbox" value="2/CO-CNE-6237-19" id="id_trash_idRow2"> 
+  <label class="form-check-label" for="flexCheckDefault">
+     &nbsp;&nbsp; 3
+  </label>
+  </div></td><td style="cursor: pointer;">CO-CNE-6237-19</td><td style="cursor: pointer;">PE-CNE-3408-19</td><td style="cursor: none;"><span id="id_0" style="margin-right: 8px; cursor: pointer;" class="borderPlacaSale">TCJ1084</span><span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> </span><span id="id_1" style="margin-right: 8px; cursor: pointer;" class="borderPlacaEntra">TCJ1085</span><span id="id_2" style="margin-right: 8px; cursor: pointer;"><i id="est_const" class="fa-solid fa-file-import" aria-hidden="true"></i></span></td><td class="end" style="cursor: pointer;"> <i id="est_const" class="fa-duotone fa-solid fa-pen" aria-hidden="true"></i> </td></tr>
+  <tr id="idRow3">
+    <td>
+      <div class="form-check">
+        <input class="form-check-input check_trash" type="checkbox" value="3/CO-CNE-6239-19" id="id_trash_idRow3"> 
+        <label class="form-check-label" for="flexCheckDefault">
+          &nbsp;&nbsp; 4
+        </label>
+      </div>
+    </td>
+    <td style="cursor: pointer;">CO-CNE-6239-19</td><td style="cursor: pointer;">PE-CNE-3408-19</td><td style="cursor: none;"><span id="id_0" style="margin-right: 8px; cursor: pointer;" class="borderPlacaSale">TCB4072</span><span><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> </span><span id="id_1" style="margin-right: 8px; cursor: pointer;" class="borderPlacaEntra">TCB4073</span><span id="id_2" style="margin-right: 8px; cursor: pointer;"><i id="est_const" class="fa-solid fa-file-import" aria-hidden="true"></i></span></td><td class="end" style="cursor: pointer;"> <i id="est_const" class="fa-duotone fa-solid fa-pen" aria-hidden="true"></i> </td></tr>
+  <tr>
+    <td colspan="5">
+    <table>
+  <tbody><tr id="idRow4" data-visible="true"><td><div class="form-check">
+  <input class="form-check-input check_trash" type="checkbox" value="4/CO-CNE-8560-20" id="id_trash_idRow4"> 
+  <label class="form-check-label" for="flexCheckDefault">
+     &nbsp;&nbsp; 5
+  </label>
+  </div></td>
+  <td style="cursor: pointer;">CO-CNE-8560-20</td><td style="cursor: pointer;">PE-CNE-3408-19</td><td style="cursor: none;"><span id="id_0" style="margin-right: 8px; cursor: pointer;" class="borderPlaca">TCJ1066</span></td><td class="end" style="cursor: pointer;"> <i id="est_const" class="fa-duotone fa-solid fa-pen" aria-hidden="true"></i> </td></tr><tr id="idTramite4.0" data-id-row="idRow4" class="filas-tramite" style="display: block;"><td class="table-secondary" style="cursor: pointer;"><i class="fa-solid fa-trash deleteTramite" aria-hidden="true"></i>  5.1</td><td class="text-nowrap table-secondary">88562</td><td class="text-nowrap table-secondary" colspan="3">MODIFICACIÓN CAMBIO DE MOTOR</td><td class="text-nowrap table-secondary">IHTT-714</td><td class="text-nowrap table-secondary">200.00</td><td class="text-nowrap table-secondary">200.00</td><td class="text-nowrap table-secondary">1</td><td class="text-nowrap table-secondary"></td><td class="text-nowrap table-secondary"></td><td class="text-nowrap table-secondary text-end">200.00</td></tr><tr id="idTramite4.1" data-id-row="idRow4" class="filas-tramite" style="display: block;"><td class="table-secondary" style="cursor: pointer;"><i class="fa-solid fa-trash deleteTramite" aria-hidden="true"></i>  5.2</td><td class="text-nowrap table-secondary">88563</td><td class="text-nowrap table-secondary" colspan="3">MODIFICACIÓN CAMBIO DE COLOR</td><td class="text-nowrap table-secondary">IHTT-746</td><td class="text-nowrap table-secondary">200.00</td><td class="text-nowrap table-secondary">200.00</td><td class="text-nowrap table-secondary">1</td><td class="text-nowrap table-secondary"></td><td class="text-nowrap table-secondary"></td><td class="text-nowrap table-secondary text-end">200.00</td></tr><tr id="idTramite4.2" data-id-row="idRow4" class="filas-tramite" style="display: block;"><td class="table-secondary" style="cursor: pointer;"><i class="fa-solid fa-trash deleteTramite" aria-hidden="true"></i>  5.3</td><td class="text-nowrap table-secondary">88646</td><td class="text-nowrap table-secondary" colspan="3">MODIFICACIÓN CAMBIO DE CHASIS</td><td class="text-nowrap table-secondary">IHTT-778</td><td class="text-nowrap table-secondary">200.00</td><td class="text-nowrap table-secondary">200.00</td><td class="text-nowrap table-secondary">1</td><td class="text-nowrap table-secondary"></td><td class="text-nowrap table-secondary"></td><td class="text-nowrap table-secondary text-end">200.00</td></tr><tr id="idTramite4.5" data-id-row="idRow4" class="filas-tramite" style="display: block;"><td class="text-nowrap fw-bold text-end  ms-5 text-table" colspan="11">TOTAL    </td><td class="text-nowrap  fw-bold text-end text-table">Lps.  600.00</td>
+  </tr>
+  </tbody></table>
+  </td>
+  </tr>
+
+</tbody></table>

@@ -1514,6 +1514,10 @@ include_once('configuracion/configuracion_js.php');
                 <input type="hidden" id="ArchivoTemporal" value="0">
               </div>
             </div>
+            <br\>
+            <div class="form-group col-md-12">
+              <h3 id="fileUploaded" style="display: none;" class="gobierno1"><a id="fileUploadedLink" href="" target="_blank"><i class="fas fa-file-pdf fa-2x"></i> VER ARCHIVO DE EXPEDIENTE</a></h3>
+            </div>            
           </div>
           <!-------             -->
           <!------- FINAL VISTA -->
