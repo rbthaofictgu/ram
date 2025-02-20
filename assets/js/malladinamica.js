@@ -9,10 +9,15 @@ function mallaDinamica(
   }
   ) 
   {
+
+  console.log('table'+table); 
+  console.log('data'+data); 
+    
   var $html = '';
   const entriesArray = Object.entries(data);
   const totalData = entriesArray.length - 1;
   for (let index = 0; index < entriesArray.length - 1; index++) {
+    console.log('index ' . index);
     if (index == 0) {
       $html = `<div class="row">
       <div class="col-11"><h4 class="${clases.title}">${table.titulo}</h4></div>
@@ -22,6 +27,7 @@ function mallaDinamica(
       let dataHead = Object.entries(entriesArray[entriesArray.length - 1][1]);
       var show = true;
       var limite = (dataHead.length / 2);
+      console.log('dataHead'+dataHead);
       for (let index = 0; index < limite; index++) {
         if (show == true) {
           const campo = dataHead[index][1];
@@ -37,17 +43,14 @@ function mallaDinamica(
 
     $html += `<div class="row ${clases.bodyRow}">`;
     let dataBody = Object.entries(entriesArray[index][1]);
+    console.log('dataBody '+ dataBody);
     show = true;
     limite = (dataBody.length / 2);
+    console.log('limite '+ limite);
     for (let index = 0; index < limite; index++) {
-      if (show == true) {
         const campo = dataBody[index][1];
         const colClass = cols[index]?.col ? `col-${cols[index].col}` : 'col';
         $html += `<div id="${table.name + '_' + campo}" class="${colClass}">${campo}</div>`;
-        show == false
-      } else {
-        show == true;
-      }
     }
     $html += `</div></br>`;
   }

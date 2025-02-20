@@ -212,33 +212,26 @@ function deleteElementFromAutoComplete(Concesion) {
 }
 
 
-// var multas3ra = document.getElementById("btnmultas");
-// if (multas3ra != null) {
-//   multas3ra.addEventListener("click", function (event) {
-//     showConcesion();
-//   });
-// }
+var multas3ra = document.getElementById("btnmultas");
+if (multas3ra != null) {
+  multas3ra.addEventListener("click", function (event) {
+    showConcesion();
+  });
+}
 
-// var consultas3ra = document.getElementById("btnconsultas");
-// if (consultas3ra != null) {
-//   consultas3ra.addEventListener("click", function (event) {
-//     showConcesion();
-//   });
-// }
+var consultas3ra = document.getElementById("btnconsultas");
+if (consultas3ra != null) {
+  consultas3ra.addEventListener("click", function (event) {
+    showConcesion();
+  });
+}
 
-// var perexp3ra = document.getElementById("btnperexp");
-// if (perexp3ra != null) {
-//   perexp3ra.addEventListener("click", function (event) {
-//     showConcesion();
-//   });
-// }
-
-// var concesion3ra = document.getElementById("btnconcesion");
-// if (concesion3ra != null) {
-//   concesion3ra.addEventListener("click", function (event) {
-//     showConcesion();
-//   });
-// }
+var perexp3ra = document.getElementById("btnperexp");
+if (perexp3ra != null) {
+  perexp3ra.addEventListener("click", function (event) {
+    showConcesion();
+  });
+}
 
 //************************************************************/
 //* Moviendose al siguiente input
@@ -1531,7 +1524,7 @@ function fCleanSelectErrorMsg() {
     setaddEventListener();
 
     chkTramites = document.querySelectorAll('input[name="tramites[]"]');      
-
+    
     document.getElementById("concesion_concesion").innerHTML =
       datos[1][0]["N_Certificado"];
 
@@ -1759,10 +1752,10 @@ function fCleanSelectErrorMsg() {
       datos[1][0]["Numero_Registro"];
     document.getElementById("concesion_categoria").innerHTML =
       datos[1][0]["DESC_Categoria"];
-    // document.getElementById("btnconcesion").style = "display:inline;";
-    // document.getElementById("btnmultas").style = "display:inline;";
-    // document.getElementById("btnconsultas").style = "display:inline;";
-    // document.getElementById("btnperexp").style = "display:inline;";
+    document.getElementById("btnconcesion").style = "display:inline;";
+    document.getElementById("btnmultas").style = "display:inline;";
+    document.getElementById("btnconsultas").style = "display:inline;";
+    document.getElementById("btnperexp").style = "display:inline;";
     document.getElementById("concesion_vin").focus();
     //***********************************************************************************************************************************/
     //* Cargando Información en la Pantalla 2 de Vehiculo Entra (Por si Hay cambio de Unidad)
@@ -1910,13 +1903,12 @@ function fCleanSelectErrorMsg() {
     fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (datos) {
-        console.log(datos,'datos en get-concesion');
         if (typeof datos[0] != "undefined") {
           if (datos[0] > 0) {
-            //******************************************/
+            //**************************************************************************************************************************/
             //* Si el vehiculo fue recuperado desde el IP, favor continuar con el proceso normal y mover al informacion a la pantalla
-            //******************************************/
-            if (datos[1]?.error !== undefined) {
+            //**************************************************************************************************************************/
+            if (typeof datos[1].error != "undefined") {
               fLimpiarPantalla();
               fSweetAlertEventSelect(
                 event,
@@ -1924,34 +1916,17 @@ function fCleanSelectErrorMsg() {
                 datos[1].error + "- " + datos[1].errormsg,
                 "error"
               );
-              isError = true;
             } else {
-              if (datos[1]?.[0]?.["Bloqueado"] !== undefined && datos[1]?.[0]?.["Unidad"]?.[0]?.["Bloqueado"] === true) {
-                fLimpiarPantalla();
-                fSweetAlertEventSelect(
-                  event,
-                  "BLOQUEADA",
-                  "LA UNIDAD ESTA BLOQUEADA EN EL IP, NO SE PUEDE REGISTRAR ESTA UNIDAD",
-                  "error"
-                );
-                isError = true;
-              } else {
-                if (datos[1]?.[0]?.["Codigo_IP"] !== undefined && datos[1]?.[0]?.["Unidad"]?.[0]?.["Codigo_IP"] === 200) {
-                  fLimpiarPantalla();
-                  fSweetAlertEventSelect(
-                    event,
-                    "CONEXIÓN IP",
-                    "LA CONEXIÓN AL IP, ESTA PRESENTANDO PROBLEMAS, FAVOR INTENTELO EN UN MOMENTO Y SI EL ERROR PERSISTE CONTACTE AL ADMON DEL SISTEMA",
-                    "error"
-                  );
-                  isError = true;
-                } else {
+              if (typeof(datos[1][0]) == "undefined" || typeof(datos[1][0]["Unidad"]) == "undefined" || typeof(datos[1][0]["Unidad"][0]) == "undefined" || typeof(datos[1][0]["Unidad"][0]["Bloqueado"]) == "undefined" || datos[1][0]["Unidad"][0]["Bloqueado"] == false 
+              ) {
+                if (typeof datos[1][0]["Unidad"] == "undefined" || typeof datos[1][0]["Unidad"][0] == "undefined" || 
+                    typeof datos[1][0]["Unidad"][0]["Multas"] == "undefined" || typeof datos[1][0]["Unidad"][0]["Multas"][0] == "undefined") {
                   //Ocultar Pantalla Modal donde se Ingresa a Concesión
                   $("#modalConcesion").modal("hide");
                   isRecordGetted[currentstep] = idConcesion;
-                  //*****************************/
+                  //***********************************************************************************/
                   //**Presentando la tabla de tramites                                                */
-                  //*****************************/   
+                  //***********************************************************************************/   
                   document.getElementById("btnCambiarUnidad").style.display = "none";     
                   document.getElementById("btnSalvarConcesion").style = "display:fixed;";
                   document.getElementById("concesion_tramites").style = "display:fixed;";
@@ -1959,9 +1934,9 @@ function fCleanSelectErrorMsg() {
                   document.getElementById("concesion_tramites").value = "";
                   f_RenderConcesion(datos);
                   seRecuperoVehiculoDesdeIP = 0;
-                  //******************************************/
+                  //**************************************************************************************************************************/
                   //*Enviando Toast de Exito en Recuperación la Información de la Concesión
-                  //******************************************/
+                  //**************************************************************************************************************************/
                   sendToast(
                     "INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE",
                     $appcfg_milisegundos_toast,
@@ -1977,108 +1952,219 @@ function fCleanSelectErrorMsg() {
                     $appcfg_pocision_toast,
                     $appcfg_icono_toast
                   );
-                  //******************************************/
+                  //**************************************************************************************************************************/
                   //* Inicio: Modalidad de Entrada I = INSERT
-                  //******************************************/
+                  //**************************************************************************************************************************/
                   modalidadDeEntrada = 'I';
+                  //**************************************************************************************************************************/
+                  //* Final: Modalidad de Entrada I = INSERT
+                  //**************************************************************************************************************************/
+                  if (typeof datos[1][0] != "undefined" &&
+                      typeof datos[1][0]["Unidad"] != "undefined" &&
+                      typeof datos[1][0]["Unidad"][0] != "undefined" &&
+                      typeof datos[1][0]["Unidad"][0]["Preforma"] != "undefined" &&
+                      typeof datos[1][0]["Unidad"][0]["Preforma"][0] != "undefined"
+                  ) {
+
+                    var html = mallaDinamica(
+                      {
+                        titulo: "PREFORMAS PENDIENTES DE RESOLUCIÓN",
+                        name: "PREFORMA",
+                      },
+                      datos[1][0]["Unidad"][0]["Preforma"]
+                    );
+
+                    fSweetAlertEventSelect(
+                      event,
+                      "INFORMACIÓN",
+                      "LA UNIDAD Y/O EL CERTIFICADO PREFORMAS INGRESADAS PENDIENTES DE RESOLUCIÓN",
+                      "info",
+                      html
+                    );
+                  }
                   //*********************************************************************************/
                   //* Pocisionandose en la parte superior de la pantalla                            */
                   //*********************************************************************************/
                   window.scrollTo(0, 0);
-                  //************************************/
-                  //* Pocisionandose en el VIN         */
-                  //************************************/
-                  var el = document.getElementById("vin");
-                  if (el != null) {
-                    el.focus();
+                  //*********************************************************************************/
+                  //* Pocisionandose en el checkbox que corresponde según sea la Clase de Servicio  */
+                  //*********************************************************************************/
+                  if (claseDeServicio == "STPP" || claseDeServicio == "STPC") {
+                    var el = document.getElementById("IHTTTRA-02_CLATRA-01_R_PE");
+                    if (el != null) {
+                      el.focus();
+                    }
+                  } else {
+                    var el = document.getElementById("IHTTTRA-02_CLATRA-03_R_PS");
+                    if (el != null) {
+                      el.focus();
+                    }
                   }
-
-                  const unidad = datos[1]?.[0]?.["Unidad"]?.[0];
-
-                  if (unidad?.["Multas"]) {
-                      html = mallaDinamica(
-                          { titulo: "CERTIFICADO Y/O UNIDAD(NORMAL O SALE) TIENEN MULTAS PENDIENTES DE PAGO", name: "MULTAS" },
-                          unidad["Multas"]
-                      );
-                  }
-
-                  if (unidad?.["Multas1"]) {
-                    html = mallaDinamica(
-                        { titulo: "CERTIFICADO Y/O UNIDAD(ENTRA)  TIENEN MULTAS PENDIENTES DE PAGO", name: "MULTAS" },
-                        unidad["Multas1"]
-                    );
-                }
-                
-                  if (unidad?.["Preforma"]) {
-                      html += mallaDinamica(
-                          { titulo: "PREFORMAS PENDIENTES DE RESOLUCIÓN", name: "MULTAS" },
-                          unidad["Multas"]
-                      );
-                  }
-                  
-                  if (unidad?.["Placas"]) {
-                      html += mallaDinamica(
-                          { titulo: "CERTIFICADO Y/O UNIDADES TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA" },
-                          unidad["Placas"]
-                      );
-                  }
-                  
-                  fSweetAlertEventNormal(
-                      "INFORMACIÓN",
-                      "CERTIFICADO Y/O UNIDAD TIENEN MULTAS PENDIENTES DE PAGO",
-                      "info",
-                      html
+                } else {
+                  var html = mallaDinamica(
+                    { titulo: "LISTADO DE MULTAS", name: "MULTAS" },
+                    datos[1][0]["Unidad"][0]["Multas"]
                   );
-                  
+                  event.preventDefault();
+                  event.target.classList.add("errortxt");
+                  var label = document.getElementById(event.target.id + "label");
+                  if (label != null) {
+                    document
+                      .getElementById(event.target.id + "label")
+                      .classList.add("errorlabel");
+                  }
+                  console.log('Multas');
+                  isError = true;
+                  document.getElementById("btnconcesion").style = "display:none;";
+                  document.getElementById("btnmultas").style = "display:none;";
+                  document.getElementById("btnconsultas").style = "display:none;";
+                  document.getElementById("btnperexp").style = "display:none;";
                 }
-              }
+              } else {
+                if (
+                  datos[1][0]["Codigo_IP"] == 200 &&
+                  datos[1][0]["Unidad"][0]["Bloqueado"] == true
+                ) {
+                  fLimpiarPantalla();
+                  fSweetAlertEventSelect(
+                    event,
+                    "BLOQUEADA",
+                    "LA UNIDAD ESTA BLOQUEADA EN EL IP, NO SE PUEDE REGISTRAR ESTA UNIDAD",
+                    "error"
+                  );
+                  event.preventDefault();
+                  event.target.classList.add("errortxt");
+                  var label = document.getElementById(event.target.id + "label");
+                  if (label != null) {
+                    document
+                      .getElementById(event.target.id + "label")
+                      .classList.add("errorlabel");
+                  }
+                  isError = true;
+                  document.getElementById("btnconcesion").style = "display:none;";
+                  document.getElementById("btnmultas").style = "display:none;";
+                  document.getElementById("btnconsultas").style = "display:none;";
+                  document.getElementById("btnperexp").style = "display:none;";
+                } else {
+                  if (datos[1][0]["Codigo_IP"] != 200) {
+                    fLimpiarPantalla();
+                    fSweetAlertEventSelect(
+                      event,
+                      "CONEXIÓN IP",
+                      "LA CONEXIÓN AL IP, ESTA PRESENTANDO PROBLEMAS, FAVOR INTENTELO EN UN MOMENTO Y SI EL ERROR PERSISTE CONTACTE AL ADMON DEL SISTEMA",
+                      "error"
+                    );
+                    event.preventDefault();
+                    event.target.classList.add("errortxt");
+                    var label = document.getElementById(
+                      event.target.id + "label"
+                    );
+                    if (label != null) {
+                      document
+                        .getElementById(event.target.id + "label")
+                        .classList.add("errorlabel");
+                    }
+                    isError = true;
+                    document.getElementById("btnconcesion").style =
+                      "display:none;";
+                    document.getElementById("btnmultas").style = "display:none;";
+                    document.getElementById("btnconsultas").style =
+                      "display:none;";
+                    document.getElementById("btnperexp").style = "display:none;";
+                  }
+                }
+              } 
             }
           } else {
-            if (datos[1]?.error !== undefined) {
+            if (typeof datos.error != "undefined") {
               fLimpiarPantalla();
               fSweetAlertEventSelect(
                 event,
-                datos[1].errorhead,
-                datos[1].error + "- " + datos[1].errormsg,
+                datos.errorhead,
+                datos.error + "- " + datos.errormsg,
                 "error"
               );
+            } else {
+              fLimpiarPantalla();
+              fSweetAlertEventSelect(
+                event,
+                "INFORMACIÓN",
+                "LA CONCESIÓN ASOCIADA AL SOLICITANTE ACTUAL NO ENCONTRADO, FAVOR VERIFIQUE EL NÚMERO E INTENTELO NUEVAMENTE",
+                "warning"
+              );
+              event.preventDefault();
+              event.target.classList.add("errortxt");
+              var label = document.getElementById(event.target.id + "label");
+              if (label != null) {
+                document
+                  .getElementById(event.target.id + "label")
+                  .classList.add("errorlabel");
+              }
               isError = true;
-            }          
-          }            
-        } else {
-          fSweetAlertEventSelect(
-            event,
-            "OOPS",
-            "TENEMOS INCONVENIENTES PARA PROCESAR SU PETICIÓN, INTENTENLO EN UN RATO, SI EL PROBLEMA PERSISTE CONTACTE A INFOTECNOLOGIA",
-            "error"
-          );
-          isError = true;
-        }
-        //*********************************************************************************************/
-        //* error: Si hubo error realiza el prevent default y marca con error el id de donde vino     */
-        //*********************************************************************************************/
-        if (isError == true) {
-          event.preventDefault();
-          event.target.classList.add("errortxt");
-          var label = document.getElementById(event.target.id + "label");
-          if (label != null) {
-            document.getElementById(event.target.id + "label").classList.add("errorlabel");
+              //document.getElementById("idVista").style = "display:none;";
+              document.getElementById("btnconcesion").style = "display:none;";
+              document.getElementById("btnmultas").style = "display:none;";
+              document.getElementById("btnconsultas").style = "display:none;";
+              document.getElementById("btnperexp").style = "display:none;";
+            }
           }
-          // document.getElementById("btnconcesion").style = "display:none;";
-          // document.getElementById("btnmultas").style = "display:none;";
-          // document.getElementById("btnconsultas").style = "display:none;";
-          // document.getElementById("btnperexp").style = "display:none;";
+        } else {
+          if (typeof datos.error != "undefined") {
+            fLimpiarPantalla();
+            fSweetAlertEventSelect(
+              event,
+              datos.errorhead,
+              datos.error + "- " + datos.errormsg,
+              "error"
+            );
+            event.preventDefault();
+            event.target.classList.add("errortxt");
+            var label = document.getElementById(event.target.id + "label");
+            if (label != null) {
+              document
+                .getElementById(event.target.id + "label")
+                .classList.add("errorlabel");
+            }
+            isError = true;
+            //document.getElementById("idVista").style = "display:none;";
+            document.getElementById("btnconcesion").style = "display:none;";
+            document.getElementById("btnmultas").style = "display:none;";
+            document.getElementById("btnconsultas").style = "display:none;";
+            document.getElementById("btnperexp").style = "display:none;";
+          } else {
+            fLimpiarPantalla();
+            fSweetAlertEventSelect(
+              event,
+              "INFORMACIÓN",
+              "ERROR DESCONOCIDO, INTENTELO DE NUEVO EN UN MOMENTO, SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
+              "error"
+            );
+            event.preventDefault();
+            //event.target.select();
+            event.target.classList.add("errortxt");
+            var label = document.getElementById(event.target.id + "label");
+            if (label != null) {
+              document
+                .getElementById(event.target.id + "label")
+                .classList.add("errorlabel");
+            }
+            isError = true;
+            //document.getElementById("idVista").style = "display:none;";
+            document.getElementById("btnconcesion").style = "display:none;";
+            document.getElementById("btnmultas").style = "display:none;";
+            document.getElementById("btnconsultas").style = "display:none;";
+            document.getElementById("btnperexp").style = "display:none;";
+          }
         }
-
-        //*******************************/
+        //*****************************************************************************************/
         //* INICIO: Despliega la información del stepper content y oculta el gif de procesando    */
-        //*******************************/
+        //*****************************************************************************************/
         document.getElementById("id_stepper_gif").style = 'display:none';
         document.getElementById("id_img_stepper_gif").style = 'display:none';
         document.getElementById("id_stepper_content").style = 'display:block';
-        //*******************************/
+        //*****************************************************************************************/
         //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
-        //*******************************/
+        //*****************************************************************************************/
       })
       .catch((error) => {
         //*****************************************************************************************/
@@ -2108,10 +2194,10 @@ function fCleanSelectErrorMsg() {
         }
         isError = true;
         //document.getElementById("idVista").style = "display:none;";
-        // document.getElementById("btnconcesion").style = "display:none;";
-        // document.getElementById("btnmultas").style = "display:none;";
-        // document.getElementById("btnconsultas").style = "display:none;";
-        // document.getElementById("btnperexp").style = "display:none;";
+        document.getElementById("btnconcesion").style = "display:none;";
+        document.getElementById("btnmultas").style = "display:none;";
+        document.getElementById("btnconsultas").style = "display:none;";
+        document.getElementById("btnperexp").style = "display:none;";
       });
   }
   //**************************************************************************************/
@@ -2248,10 +2334,10 @@ function fCleanSelectErrorMsg() {
                 );
                 isError = true;
                 document.getElementById("btnSalvarConcesion").style.display = 'flex';
-                // document.getElementById("btnconcesion").style = "display:none;";
-                // document.getElementById("btnmultas").style = "display:none;";
-                // document.getElementById("btnconsultas").style = "display:none;";
-                // document.getElementById("btnperexp").style = "display:none;";
+                document.getElementById("btnconcesion").style = "display:none;";
+                document.getElementById("btnmultas").style = "display:none;";
+                document.getElementById("btnconsultas").style = "display:none;";
+                document.getElementById("btnperexp").style = "display:none;";
               }
             }
           }
@@ -2637,10 +2723,10 @@ function fCleanSelectErrorMsg() {
       datos[1][0]["Numero_Registro"];
     document.getElementById("concesion_categoria").innerHTML =
       datos[1][0]["DESC_Categoria"];
-    // document.getElementById("btnconcesion").style = "display:inline;";
-    // document.getElementById("btnmultas").style = "display:inline;";
-    // document.getElementById("btnconsultas").style = "display:inline;";
-    // document.getElementById("btnperexp").style = "display:inline;";
+    document.getElementById("btnconcesion").style = "display:inline;";
+    document.getElementById("btnmultas").style = "display:inline;";
+    document.getElementById("btnconsultas").style = "display:inline;";
+    document.getElementById("btnperexp").style = "display:inline;";
     document.getElementById("concesion_vin").focus();
 
     //***********************************************************************************************************************************/
@@ -3626,7 +3712,7 @@ function fCleanSelectErrorMsg() {
     fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (Datos) {
-        console.log(Datos,'Datos en salvarConcesion');
+        console.log(Datos,'Datos');
         if (typeof Datos.ERROR != "undefined") {
 
           if (typeof Datos.Multas != "undefined") {
@@ -3667,7 +3753,7 @@ function fCleanSelectErrorMsg() {
             if (typeof Datos.Placas === "object" && !Array.isArray(Datos.Placas) && Object.keys(Datos.Placas).length > 0) {
                 html = html + mallaDinamica(
                 {
-                  titulo: "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
+                  titulo: "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS DE BUNKER PARA IMPRESIÓN Y/O ENTREGA",
                   name: "PREFORMA",
                 },
                 Datos.Placas
@@ -3685,18 +3771,15 @@ function fCleanSelectErrorMsg() {
                 },
                 Datos.Preforma
               );
+              fSweetAlertEventNormal(
+                "INFORMACIÓN",
+                "LA UNIDAD Y/O EL CERTIFICADO PREFORMAS INGRESADAS PENDIENTES DE RESOLUCIÓN",
+                "info",
+                html
+              );
             }
           }
-
-          fSweetAlertEventNormal(
-            "INFORMACIÓN",
-            "LA UNIDAD Y/O EL CERTIFICADO PREFORMAS INGRESADAS PENDIENTES DE RESOLUCIÓN",
-            "info",
-            html
-          );
-
           return true;
-
         } else {
           //****************************************************************************************************/
           //* INICIO: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
@@ -3844,6 +3927,13 @@ function fCleanSelectErrorMsg() {
     input.focus();
     input.select();
     f_FetchCallConcesion(input.value, event, input.id);
+  }
+
+  var concesion3ra = document.getElementById("btnconcesion");
+  if (concesion3ra != null) {
+    concesion3ra.addEventListener("click", function (event) {
+      showConcesion();
+    });
   }
 
   //********************************************************************************************/
@@ -5003,7 +5093,6 @@ function getVehiculoDesdeIP(Obj) {
       .then((response) => response.json())
       .then(function (vehiculo) {
         ejecutar = true;
-        console.log(vehiculo,'vehiculo en getVehiculoDesdeIP()')
         if (!vehiculo.error) {
           if (vehiculo.codigo && vehiculo.codigo == 200) {
             if (vehiculo.cargaUtil.estadoVehiculo == "NO BLOQUEADO") {
@@ -5029,7 +5118,6 @@ function getVehiculoDesdeIP(Obj) {
                   $appcfg_icono_toast
                 );
               } else {
-
                 var html = "";
                 if (typeof vehiculo.cargaUtil.Multas[0] != "undefined") {
                   html = mallaDinamica(
@@ -5037,7 +5125,6 @@ function getVehiculoDesdeIP(Obj) {
                     vehiculo.cargaUtil.Multas
                   );
                 }
-
                 if (typeof vehiculo.cargaUtil.Preformas[0] != "undefined") {
                   html =
                     html +
@@ -5049,29 +5136,15 @@ function getVehiculoDesdeIP(Obj) {
                       vehiculo.cargaUtil.Preformas
                     );
                 }
-
-                if (typeof vehiculo.cargaUtil.Placas[0] != "undefined") {
-                  html =
-                    html +
-                    mallaDinamica(
-                      {
-                        titulo: "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
-                        name: "PREFORMAS",
-                      },
-                      vehiculo.cargaUtil.Placas
-                    );
-                }                
-
                 fSweetAlertEventNormal(
                   "VALIDACIONES",
                   "LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE",
                   "error",
                   html
                 );
-
               }
             } else {
-              if (vehiculo.cargaUtil.estadoVehiculo == "BLOQUEADO") {
+              if (vehiculo.cargaUtil.estadoVehiculo == "NO BLOQUEADO") {
                 fSweetAlertEventNormal(
                   "BLOQUEADO",
                   "EL VEHICULO ESTA BLOQUEADO EN EL INSTITUTO DE LA PROPIEDAD",

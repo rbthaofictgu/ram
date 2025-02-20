@@ -189,7 +189,6 @@ include_once('configuracion/configuracion_js.php');
 
       <div class="col-2">
         <h6 id="idEstado" style="font-size: 1.25rem;" class="gobierno3 fw-bolder fst-italic px-1" style="font-style: italic;font-weight: 800;">
-          EN VENTANILLA
         </h6>
       </div>
 
@@ -272,7 +271,7 @@ include_once('configuracion/configuracion_js.php');
             <div class="col-md-3">
               <div class="form-group">
                 <label id="entregadocslabel">Entrega de sus Documentos:</label>
-                <select data-valor="0" id="entregadocs" class="form-control form-control-sm test-select" style="width: 100%;">
+                <select data-valor="0" name="entregadocs" id="entregadocs" class="form-control form-control-sm test-select"  style="width: 100%;">
                 </select>
               </div>
             </div>
@@ -320,9 +319,9 @@ include_once('configuracion/configuracion_js.php');
             <div class="col-md-3">
               <div class="form-group">
                 <label id="dirapoderadolabel" class="col-form-label" for="dirapoderado">Direcci&oacute;n del Apoderado Legal:</label>
-                <input pattern="^[a-zA-Z0-9\s,.\-]{10,200}$" title="La dirección del apoderado legal no puede ser menor de 10 caraceteres ni mayor a 200" type="text" class="form-control form-control-sm test-controls" id="dirapoderado">
+                <input pattern="^[a-zA-Z0-9\s,.\-áéíóúÁÉÍÓÚüÜñÑ]{10,300}$" title="La dirección del apoderado legal no puede ser menor de 10 caraceteres ni mayor a 300" type="text" class="form-control form-control-sm test-controls" id="dirapoderado">
                 <div id="dirapoderadolabelerror" style="visibility:hidden" class="errorlabel">
-                  No puede ser menor de 10 caraceteres ni mayor a 200.
+                  No puede ser menor de 10 caraceteres ni mayor a 300 o tiene caracteres invalidos (a-z,A-Z,0-9,.,).
                 </div>
               </div>
             </div>
@@ -331,7 +330,7 @@ include_once('configuracion/configuracion_js.php');
             <div class="col-md-3">
               <div class="form-group">
                 <label>Presentación Documentos:</label>
-                <select id="tipopresentacion" class="form-control form-control-sm" style="width: 100%;" readonly>
+                <select id="tipopresentacion" class="form-control form-control-sm"  tabindex="-1" aria-hidden="true" style="width: 100%;" readonly>
                   <option value="CON">CONCESIONARIO</option>
                   <option selected value="APO" selected>APODERADO LEGAL</option>
                 </select>
@@ -803,7 +802,7 @@ include_once('configuracion/configuracion_js.php');
 
                       <div class="col-md-3 bordered-row">
                         <div class="form-group">
-                          <input style="text-transform: uppercase;" title="El combustible puede ser DIESEL, GASOLINA y GAS LICUADO" pattern="^[a-zA-Z]{6,11}$"
+                          <input data-value="" style="text-transform: uppercase;" title="El combustible puede ser DIESEL, GASOLINA, GAS LICUADO y NO APLICA" pattern="^[a-zA-Z]{6,11}$"
                             class="form-control form-control-sm form-control-unbordered test-controls"
                             id="combustible" minlength="6" maxlength="10">
                         </div>

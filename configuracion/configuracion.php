@@ -43,9 +43,9 @@ if(isset($_SESSION["usuario"])){
 //************************************************************************************/
 //* Ambiente (Dev=Desarrollo PROD=Producción)
 //************************************************************************************/	
- $Environment  = 'DEV';
-//$Environment = 'PROD';
-if ($Environment == 'DEV') { //* Ambiente de desarrollo
+$_SESSION['Environment']  = 'DEV';
+//$_SESSION['Environment'] = 'PROD';
+if ($_SESSION['Environment'] == 'DEV') { //* Ambiente de desarrollo
 	$appcfg_Dominio_Raiz = "https://satt2.transporte.gob.hn";
 	$appcfg_Dominio = "https://satt2.transporte.gob.hn:285/ram/";
 	$appcfg_Dominio_Corto = "https://satt2.transporte.gob.hn:285/";
@@ -212,4 +212,8 @@ $toast = '<div aria-live="polite" aria-atomic="true" style="position: relative; 
     <div class="toast-body">@@msg@@</div>
   </div>
 </div>';
+$appcfg_smtp_port = 465; 
+$appcfg_smtp_server = "122.8.183.193"; 
+$appcfg_smtp_user = "notificacionessecretariageneral@transporte.gob.hn"; 
+$appcfg_smtp_password = "Ihtt2024"; 
 ?>

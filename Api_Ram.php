@@ -22,19 +22,48 @@ ini_set('max_execution_time', '1000');
 ini_set('max_input_time', '1000');
 ini_set('memory_limit', '256M');
 date_default_timezone_set("America/Tegucigalpa");
+/**************************************************************************************************/
+// Autoload de las librerias
+/*************************************************************************************************/	
+require_once('../../vendor/autoload.php');
+//*configuración del las variables globales del sistema
+include_once('configuracion/configuracion.php');
 require_once("../config/conexion.php");
 require_once("../logs/logs.php");
+// Funcion de Envio de Correos Electronicos
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+require '../phpmailer/src/Exception.php';
+require '../phpmailer/src/PHPMailer.php';
+require '../phpmailer/src/SMTP.php';
+// Libreria generadora de codigos QR
+require_once("../qr/qrlib.php");
 
-class Api_Ram
+ class Api_Ram
 {
 
 	protected $db;
+	protected $dominio;
+	protected $dominio_corto;
+	protected $dominio_raiz;
+	protected $server_smtp;
+	protected $server_smtp_port;
+	protected $server_smtp_user;
+	protected $server_smtp_password;
 	protected $ip;
 	protected $host;
 
-	public function __construct($db)
+	public function __construct($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password)
 	{
-		$this->setDB($db);
+		$this->setDB(        $db,
+		         $appcfg_Dominio,
+		   $appcfg_Dominio_Corto,
+		    $appcfg_Dominio_Raiz,
+			 $appcfg_smtp_server,
+			   $appcfg_smtp_port,
+			   $appcfg_smtp_user,
+		   $appcfg_smtp_password);
+
 		$this->setIp();
 		$this->setHost();
 		if (isset($_POST["action"])) {
@@ -71,16 +100,27 @@ class Api_Ram
 			} else if ($_POST["action"] == "save-escaneo") {
 				$this->saveEscaneo($_POST["RAM"]);
 			} else if ($_POST["action"] == "update-estado-preforma") {
-				$this->updateEstadoPreforma();				
+				$_POST['idEstado'] = json_decode($_POST['idEstado']);
+				$_POST["RAM"] = json_decode($_POST["RAM"]);
+				$this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);	
+			} else if ($_POST["action"] == "cerrar-preforma") {
+				$this->cerrarPreforma();					
 			} else {
 				echo json_encode(array("error" => 1001, "errorhead" => 'OPPS', "errormsg" => 'NO SE ENCONTRO NINGUNA FUNCION EN EL API PARA LA ACCIÓN REQUERIDA'));
 			}
 		}
 	}
 
-	protected function setDB($db)
-	{
+	
+	protected function setDB($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password): void	{
 		$this->db = $db;
+		$this->dominio = $appcfg_Dominio;
+		$this->dominio_corto = $appcfg_Dominio_Corto;
+		$this->dominio_raiz = $appcfg_Dominio_Raiz;
+		$this->server_smtp = $appcfg_smtp_server;
+		$this->server_smtp_port = $appcfg_smtp_port;
+		$this->server_smtp_user = $appcfg_smtp_user;
+		$this->server_smtp_password = $appcfg_smtp_password;		
 	}
 
 	protected function getDB($db)
@@ -99,7 +139,7 @@ class Api_Ram
 		}
 	}
 
-	protected function getIp()
+	protected function getIp():string
 	{
 		return $this->ip;
 	}
@@ -217,6 +257,24 @@ class Api_Ram
 		}
 	}
 
+	protected function cerrarPreforma() {
+		$this->db->beginTransaction();
+		$respuesta = $this->PDFAvisodeCobroVentanillaApi($_POST["RAM"]);
+		if (isset($respuesta['error']) and $respuesta['error'] == false) {
+			$respuesta = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
+			if (!isset($respuesta->error)) {
+				$this->db->commit();
+				//echo json_encode(array("SOL"=>$api->Idforms_MD5,"SOL2"=>$api->Idforms,'status'=> 1, 'Nombre_Usuario'=> $api->Nombre_Usuario,'Cod_Usuario'=> $api->Cod_Usuario,'numero_aviso'=>$aviso['numero_aviso'],'msg'=>$aviso['msg'],'url_aviso'=>$aviso['url_aviso'],'ID_Usuario'=>$_SESSION["ID_Usuario"],'user_name'=>$_SESSION["user_name"]));
+				echo json_encode($respuesta);
+			} else {
+				$this->db->rollBack();
+				echo json_encode($respuesta);
+			}
+		} else {
+			$this->db->rollBack();
+			echo json_encode($respuesta);
+		}
+	}
 	//***********************************************************************************************************************/
 	//*Inicio                                                                                                               */
 	//*rbthaofic@gmail.com 2024/12/05 Borrar Concesiones Preforma */
@@ -224,17 +282,18 @@ class Api_Ram
 	protected function deleteConcesionesPreforma()
 	{
 		$_POST["idConcesiones"] = json_decode($_POST["idConcesiones"], true);
+		$_POST["RAM"] = json_decode($_POST["RAM"], true);
 		$return = true;
 		$this->db->beginTransaction();
 		foreach ($_POST["idConcesiones"] as $Concesion) {
-			$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] where N_Certificado = :N_Certificado or N_Permiso_Especial = :N_Permiso_Especial or Permiso_Explotacion = :Permiso_Explotacion";
-			$p = array(":N_Certificado" => $Concesion, ":N_Permiso_Especial" => $Concesion, ":Permiso_Explotacion" => $Concesion);
+			$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] where ID_Formulario_Solicitud = :ID_Formulario_Solicitud and (N_Certificado = :N_Certificado or N_Permiso_Especial = :N_Permiso_Especial or Permiso_Explotacion = :Permiso_Explotacion)";
+			$p = array(":ID_Formulario_Solicitud" => $_POST["RAM"], ":N_Certificado" => $Concesion, ":N_Permiso_Especial" => $Concesion, ":Permiso_Explotacion" => $Concesion);
 			$return = $this->delete($query, $p);
 			if ($return == false) {
 				break;
 			}
-			$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] where Certificado_Operacion = :Certificado_Operacion or Permiso_Especial = :Permiso_Especial or Permiso_Explotacion = :Permiso_Explotacion";
-			$p = array(":Certificado_Operacion" => $Concesion, ":Permiso_Especial" => $Concesion, ":Permiso_Explotacion" => $Concesion);
+			$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] where ID_Formulario_Solicitud = :ID_Formulario_Solicitud and (Certificado_Operacion = :Certificado_Operacion or Permiso_Especial = :Permiso_Especial or Permiso_Explotacion = :Permiso_Explotacion)";
+			$p = array(":ID_Formulario_Solicitud" => $_POST["RAM"], ":Certificado_Operacion" => $Concesion, ":Permiso_Especial" => $Concesion, ":Permiso_Explotacion" => $Concesion);
 			$return = $this->delete($query, $p);
 			if ($return == false) {
 				break;
@@ -244,6 +303,7 @@ class Api_Ram
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
+			//$this->db->rollBack();
 			$this->db->commit();
 			echo json_encode(['Borrado'  =>  True]);
 		}
@@ -276,6 +336,14 @@ class Api_Ram
 	protected function deleteTramitePreforma()
 	{
 		$_POST["idTramite"] = json_decode($_POST["idTramite"], true);
+
+		if (isset($_POST["ID_Unidad"])) {
+			$_POST["ID_Unidad"] = json_decode($_POST["ID_Unidad"], true);
+		}
+		if (isset($_POST["ID_Unidad1"])) {
+			$_POST["ID_Unidad1"] = json_decode($_POST["ID_Unidad1"], true);
+		}
+
 		$this->db->beginTransaction();
 		$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] where ID = :ID";
 		$p = array(":ID" => $_POST["idTramite"]);
@@ -284,13 +352,34 @@ class Api_Ram
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'ERROR AL INTENTAR ELIMINAR TRAMITE EN PREFORMA, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			//$this->db->rollBack();
-			$this->db->commit();
-			echo json_encode(['Borrado'  =>  True]);
+			if (isset($_POST["ID_Unidad1"])) {
+				$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] where ID = :ID";
+				$p = array(":ID" => intval($_POST["ID_Unidad1"]));
+				$return = $this->delete($query, $p);
+				if ($return == false) {
+					$this->db->rollBack();
+					echo json_encode(array("error" => 2001, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
+				} else {			
+					$query = "UPDATE [IHTT_PREFORMA].[dbo].[TB_Vehiculo] SET ESTADO = 'NORMAL' where ID = :ID";
+					$p = array(":ID" => intval($_POST["ID_Unidad"]));
+					
+					$return = $this->update($query, $p);
+					if ($return == false) {
+						$this->db->rollBack();
+						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR LA UNIDAD NORMAL'));
+					} else {								
+						//$this->db->commit();
+						$this->db->rollBack();
+						echo json_encode(['Borrado'  =>  True,'Adentro'  =>  True, 'ID_Unidad1' => intval($_POST["ID_Unidad1"]), 'ID_Unidad' => intval($_POST["ID_Unidad"])]);
+					}
+				}
+			} else {
+				//$this->db->commit();
+				$this->db->rollBack();
+				echo json_encode(['Borrado'  =>  True,'ID_Unidad1'  =>  'NO SET()', 'ID_TRAMITE' => $_POST["idTramite"]]);
+			}
 		}
 	}
-
-
 	//*************************************************************************************/
 	//* FUNCION PARA RECUPERAR EL APODERADO LEGAL DEL PORTAL DE APODERADOS 
 	//*************************************************************************************/
@@ -322,10 +411,12 @@ class Api_Ram
 
 	protected function getSolicitanteRAM()
 	{
-		$q = "SELECT sol.*,ald.ID_Municipio,mn.ID_Departamento,es.DESC_Estado 
-		FROM [IHTT_Preforma].[dbo].[TB_Solicitante] sol, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,[IHTT_Preforma].[dbo].[TB_Estados] es 
-		where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud  and sol.ID_Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio and
-		sol.Estado_Formulario = es.ID_Estado";
+		$q = "SELECT es.DESC_Estado,sol.*,ald.ID_Municipio,mn.ID_Departamento 
+		FROM [IHTT_Preforma].[dbo].[TB_Solicitante] sol, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,[IHTT_Preforma].[dbo].[TB_Estados] es,
+		[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu
+		where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and sol.ID_Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio and
+		(sol.Estado_Formulario = es.ID_Estado or sol.Estado_Formulario = es.DESC_Estado) and eu.usuario = sol.Usuario_Creacion and
+		sol.Estado_Formulario = eu.ID_Estado";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
 		} else {
@@ -338,9 +429,9 @@ class Api_Ram
 		$q = "SELECT CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(Tra.ID_Tipo_Tramite,'_'),Cla.ID_Clase_Tramite),'_'),Tip.Acronimo_Tramite),'_'),Cla.Acronimo_Clase) AS ID_CHECK,
 		md.ID_Clase_Servicio,tip.DESC_Tipo_Tramite,cla.DESC_Clase_Tramite,sol.*,
 		(select top 1 b.monto from [IHTT_Webservice].[dbo].[TB_Tarifas] A,[IHTT_Webservice].[dbo].[TB_TarifasHistorico] B where A.CodigoTramite = B.CodigoTramite AND A.CodigoTramite = sol.ID_Tramite ORDER BY B.FechaFin DESC) as Monto,
-		(select top 1 ID_Placa from [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud and sol.N_Certificado = veh.Certificado_Operacion and veh.Estado in ('NORMAL','SALE')) AS ID_Placa,
-		(select top 1 ID_Placa from [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud and sol.N_Certificado = veh.Certificado_Operacion and veh.Estado = 'ENTRA') AS ID_Placa1,
-		CO.PermisoEspecialEncriptado,CO.CertificadoEncriptado,CO.Permiso_Explotacion_Encriptado,CO.[Clase Servicio],
+		(select top 1 ID_Placa from [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud and (sol.N_Certificado != '' and sol.N_Certificado = veh.Certificado_Operacion or sol.N_Permiso_Especial = veh.Permiso_Especial) and veh.Estado in ('NORMAL','SALE')) AS ID_Placa,
+		(select top 1 ID_Placa from [IHTT_Preforma].[dbo].[TB_Vehiculo] veh where sol.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud and (sol.N_Certificado != '' and sol.N_Certificado = veh.Certificado_Operacion or sol.N_Permiso_Especial = veh.Permiso_Especial) and veh.Estado = 'ENTRA') AS ID_Placa1,
+		CO.PermisoEspecialEncriptado,CO.PermisoEspecialEncriptado,CO.CertificadoEncriptado,CO.Permiso_Explotacion_Encriptado,CO.[Clase Servicio],
 		CASE 
 			WHEN CO.[Clase Servicio] = 'STPC' THEN 1
 			WHEN CO.[Clase Servicio] = 'STPP' THEN 0
@@ -398,49 +489,82 @@ class Api_Ram
 
 	protected function getUnidades()
 	{
-		$q = "SELECT 
-				RTRIM(veh.[Certificado_Operacion]) AS Certificado_Operacion,
-				veh.[ID_Formulario_Solicitud],
-				veh.[ID],
-				veh.[RTN_Propietario],
-				veh.[Nombre_Propietario],
-				veh.[ID_Placa],
-				veh.[ID_Marca],
-				mar.Desc_Marca,
-				veh.[Anio],
-				veh.[Modelo],
-				veh.[Tipo_Vehiculo],
-				veh.[ID_Color],
-				col.Desc_Color,
-				veh.[Motor],
-				veh.[Chasis],
-				veh.[Estado],
-				veh.[Sistema_Fecha],
-				veh.[Permiso_Explotacion],
-				veh.[VIN],
-				veh.[Combustible],
-				veh.[Alto],
-				veh.[Ancho],
-				veh.[Largo],
-				veh.[Capacidad_Carga],
-				veh.[Peso_Unidad],
-				veh.[ID_Placa_Antes_Replaqueo],
-				ISNULL(
-					(SELECT TOP 1 c.ID_Memo 
-					FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
-					WHERE c.Chasis_Entra = veh.Chasis 
-					AND c.Placa_Entra = veh.ID_Placa 
-					AND c.ID_Estado = 'IDE-1' 
-					AND veh.Estado = 'ENTRA'),
-					'false'
-				) AS ID_Memo
+		$q = "SELECT 	
+		case 
+			when veh.[Permiso_Explotacion] != '' then RTRIM(veh.[Certificado_Operacion])
+			else RTRIM(veh.[Permiso_Especial])
+		end	AS Certificado_Operacion,				
+		vl.[Clase Servicio],
+		case 
+			when vl.[Clase Servicio] = 'STEC' then 
+			(SELECT DESC_Tipo_Vehiculo FROM 
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] vv,
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] pp,
+			[IHTT_SGCERP].[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] tt 
+			where vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga and vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga and pp.Estado = 'ACTIVA' and vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+			when vl.[Clase Servicio] = 'STPC' then 
+			(SELECT DESC_Tipo_Vehiculo FROM 
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] vv,
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] pp,
+			[IHTT_SGCERP].[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] tt 
+			where vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga and vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga and pp.Estado = 'ACTIVA' and vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+			else 
+			(SELECT DESC_Tipo_Vehiculo_Transporte_Pas FROM 
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] vv,
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp,
+			[IHTT_SGCERP].[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt 
+			where vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte and vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas and pp.Estado = 'ACTIVA' and vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
+			end	AS DESC_Tipo_Vehiculo,				
+			veh.[ID_Formulario_Solicitud],
+		veh.[ID],
+		veh.[RTN_Propietario],
+		veh.[Nombre_Propietario],
+		veh.[ID_Placa],
+		veh.[ID_Marca],
+		mar.Desc_Marca,
+		veh.[Anio],
+		veh.[Modelo],
+		veh.[Tipo_Vehiculo],
+		veh.[ID_Color],
+		col.Desc_Color,
+		veh.[Motor],
+		veh.[Chasis],
+		veh.[Estado],
+		veh.[Sistema_Fecha],
+		veh.[Permiso_Explotacion],
+		veh.[VIN],
+		veh.[Combustible],
+		veh.[Alto],
+		veh.[Ancho],
+		veh.[Largo],
+		veh.[Capacidad_Carga],
+		veh.[Peso_Unidad],
+		veh.[ID_Placa_Antes_Replaqueo],
+		ISNULL(
+			(SELECT TOP 1 c.ID_Memo 
+			FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
+			WHERE c.Chasis_Entra = veh.Chasis 
+			AND c.Placa_Entra = veh.ID_Placa 
+			AND c.ID_Estado = 'IDE-1' 
+			AND veh.Estado = 'ENTRA'),
+			'false'
+		) AS ID_Memo
 			FROM 
 				[IHTT_PREFORMA].[dbo].[TB_Vehiculo] veh
 			JOIN 
 				[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
 			JOIN 
 				[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
-			where veh.ID_Formulario_Solicitud = :ID_Formulario_Solicitud";
+			JOIN
+				[IHTT_SGCERP].[dbo].[v_Listado_General] vl on vl.N_Certificado = 
+				(select top 1
+				case 
+				when soli.[Permiso_Explotacion] != '' then RTRIM(soli.[N_Certificado])
+				else RTRIM(soli.[N_Permiso_Especial])
+				end 
+				from [IHTT_PREFORMA].[dbo].[TB_Solicitud] soli where soli.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud)	
+			WHERE veh.ID_Formulario_Solicitud = :ID_Formulario_Solicitud order by veh.Certificado_Operacion,veh.Permiso_Especial,veh.Estado DESC";
+
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]), PDO::FETCH_GROUP);
 		} else {
@@ -452,7 +576,7 @@ class Api_Ram
 	{
 		$datos[1] = $this->getEntregaUbicacion();
 		$datos[2] = $this->getDepartamentos();
-		if ($datos[1] != false && $datos[2] != false) {
+		if ($datos[1] != false && $datos[2] != false) {			
 			$datos[0] = count($datos[1]);
 			//*************************************************************************************/
 			//* Si es un fsl que ya estaba salvada y se va a continuar trabajando
@@ -461,7 +585,7 @@ class Api_Ram
 				$datos[3] = $this->getApoderadoLegalRAM();
 				$datos[4] = $this->getSolicitanteRAM();
 				$datos[5] = $this->getTramitesRAM();
-				$datos[6] = $this->getDocumentos();
+				$datos[6] = $this->getDocumentos();				
 				$datos[7] = $this->getUnidades();
 				$datos[8] = $this->testFileExists();
 			}
@@ -603,34 +727,81 @@ class Api_Ram
 
 	protected function getUnidadPreforma($RAM, $idConcesion)
 	{
-		$q = "SELECT [ID]
-      ,[ID_Formulario_Solicitud]
-      ,[RTN_Propietario]
-      ,[Nombre_Propietario]
-      ,[ID_Placa]
-      ,[ID_Marca]
-      ,[Anio]
-      ,[Modelo]
-      ,[Tipo_Vehiculo]
-      ,[ID_Color]
-      ,[Motor]
-      ,[Chasis]
-      ,[Estado]
-      ,[Sistema_Fecha]
-      ,[Permiso_Explotacion]
-      ,[Certificado_Operacion]
-      ,[Permiso_Especial]
-      ,[VIN]
-      ,[Combustible]
-      ,[Alto]
-      ,[Ancho]
-      ,[Largo]
-      ,[Capacidad_Carga]
-      ,[Peso_Unidad]
-      ,[ID_Placa_Antes_Replaqueo]
-      ,[Sistema_Usuario]
-		FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] veh
-		where [ID_Formulario_Solicitud] = :ID_Formulario_Solicitud and ([Certificado_Operacion] = :Certificado_Operacion or [Permiso_Especial] = :Permiso_Especial) ORDER BY [Estado] DESC;";
+		$q = "SELECT 	
+		case 
+			when veh.[Permiso_Explotacion] != '' then RTRIM(veh.[Certificado_Operacion])
+			else RTRIM(veh.[Permiso_Especial])
+		end	AS Certificado_Operacion,				
+		vl.[Clase Servicio],
+		case 
+			when vl.[Clase Servicio] = 'STEC' then 
+			(SELECT DESC_Tipo_Vehiculo FROM 
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] vv,
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] pp,
+			[IHTT_SGCERP].[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] tt 
+			where vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga and vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga and pp.Estado = 'ACTIVA' and vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+			when vl.[Clase Servicio] = 'STPC' then 
+			(SELECT DESC_Tipo_Vehiculo FROM 
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga] vv,
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Carga_x_Placa] pp,
+			[IHTT_SGCERP].[DBO].[TB_Tipo_Vehiculo_Transporte_Carga] tt 
+			where vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga and vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga and pp.Estado = 'ACTIVA' and vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+			else 
+			(SELECT DESC_Tipo_Vehiculo_Transporte_Pas FROM 
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero] vv,
+			[IHTT_SGCERP].[DBO].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp,
+			[IHTT_SGCERP].[DBO].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt 
+			where vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte and vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas and pp.Estado = 'ACTIVA' and vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
+			end	AS DESC_Tipo_Vehiculo,				
+			veh.[ID_Formulario_Solicitud],
+		veh.[ID],
+		veh.[RTN_Propietario],
+		veh.[Nombre_Propietario],
+		veh.[ID_Placa],
+		veh.[ID_Marca],
+		mar.Desc_Marca,
+		veh.[Anio],
+		veh.[Modelo],
+		veh.[Tipo_Vehiculo],
+		veh.[ID_Color],
+		col.Desc_Color,
+		veh.[Motor],
+		veh.[Chasis],
+		veh.[Estado],
+		veh.[Sistema_Fecha],
+		veh.[Permiso_Explotacion],
+		veh.[VIN],
+		veh.[Combustible],
+		veh.[Alto],
+		veh.[Ancho],
+		veh.[Largo],
+		veh.[Capacidad_Carga],
+		veh.[Peso_Unidad],
+		veh.[ID_Placa_Antes_Replaqueo],
+		ISNULL(
+			(SELECT TOP 1 c.ID_Memo 
+			FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
+			WHERE c.Chasis_Entra = veh.Chasis 
+			AND c.Placa_Entra = veh.ID_Placa 
+			AND c.ID_Estado = 'IDE-1' 
+			AND veh.Estado = 'ENTRA'),
+			'false'
+		) AS ID_Memo
+			FROM 
+				[IHTT_PREFORMA].[dbo].[TB_Vehiculo] veh
+			JOIN 
+				[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
+			JOIN 
+				[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
+			JOIN
+				[IHTT_SGCERP].[dbo].[v_Listado_General] vl on vl.N_Certificado = 
+				(select top 1
+				case 
+				when soli.[Permiso_Explotacion] != '' then RTRIM(soli.[N_Certificado])
+				else RTRIM(soli.[N_Permiso_Especial])
+				end 
+				from [IHTT_PREFORMA].[dbo].[TB_Solicitud] soli where soli.ID_Formulario_Solicitud = veh.ID_Formulario_Solicitud)	
+			where [ID_Formulario_Solicitud] = :ID_Formulario_Solicitud and ([Certificado_Operacion] = :Certificado_Operacion or [Permiso_Especial] = :Permiso_Especial) ORDER BY veh.[Estado] DESC";
 				if (!isset($_POST["echo"])) {
 			return $this->select($q, array(":ID_Formulario_Solicitud" => $RAM, ":Certificado_Operacion" => $idConcesion, ":Permiso_Especial" => $idConcesion));
 		} else {
@@ -792,8 +963,7 @@ class Api_Ram
 					</div>
 					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div>
 					<div class="col-md-2">
-					  <input onchange="getVehiculoDesdeIP(this, \'' . $row['Acronimo_Clase'] . '\');" 
-							 style="display:none; text-transform: uppercase;" 
+					  <input style="display:none; text-transform: uppercase;" 
 							 id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 							 title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
 							 pattern="^[A-Z]{3}\d{4}$" 
@@ -924,8 +1094,7 @@ class Api_Ram
 			AND T.Es_Renovacion_Automatica = 1 
 			AND C.ID_Tipo_Tramite IS NOT NULL 
 			AND C.Acronimo_Clase IN (" . $joined_string . ")
-		ORDER BY 
-    T.ID_Tipo_Tramite;";
+		ORDER BY T.ID_Tipo_Tramite, TR.ID_Clase_Tramite;";
 		$bandera = 1;
 		if ($bandera == 1) {
 			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
@@ -933,6 +1102,7 @@ class Api_Ram
 			$rows = ($this->select($q, array(':ID_Formulario_Solicitud' => $RAM, ':N_Certificado' => $idConcesion, ':N_Permiso_Especial' => $idConcesion, ':ID_Categoria' => $ID_Categoria)));
 			foreach ($rows as $row) {
 				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
+					$display = 'display:' .($row['Checked'] == 'checked') ? 'flex;' : 'none;';
 					$html = $html . '<div class="row border border-info" id="row_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '">
 					<div class="col-md-1">
 					  <input ' . $row['Checked'] . ' data-iddb="' . $row['ID'] . '" data-monto="' . $row['Monto'] . '" 
@@ -946,7 +1116,7 @@ class Api_Ram
 					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div>
 					<div class="col-md-2">
 					  <input onchange="getVehiculoDesdeIP(this, \'' . $row['Acronimo_Clase'] . '\');" 
-							 style="display:none; text-transform: uppercase;" 
+							 style="' . $display . ' text-transform: uppercase;" 
 							 id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 							 title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
 							 pattern="^[A-Z]{3}\d{4}$" 
@@ -1035,7 +1205,7 @@ class Api_Ram
 				$respuesta[0]['errorcode'] = $res[1];
 				$respuesta[0]['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ';
 				$txt = date('Y m d h:i:s') . '	' . 'getColor.php Error ' . $query_rs_color  . ' res[0]' . $res[0] . ' res[1]' . $res[1] . ' res[2]' . $res[2] . ' res[3]' . $res[3];
-				logErr($txt, 'logs/logs.txt');
+				logErr($txt, '../logs/logs.txt');
 			} else {
 				$respuesta[1]['data'] = $color->fetch();
 			}
@@ -1044,7 +1214,7 @@ class Api_Ram
 			$respuesta[0]['errorcode'] = -1;
 			$respuesta[0]['error'] = true;
 			$txt = date('Y m d h:i:s') . '	' . 'getColor.php catch ' . $query_rs_color . ' ERROR ' . $th->getMessage();
-			logErr($txt, 'logs/logs.txt');
+			logErr($txt, '../logs/logs.txt');
 		}
 		return $respuesta;
 	}
@@ -1065,7 +1235,7 @@ class Api_Ram
 				$respuesta[0]['errorcode'] = $res[1];
 				$respuesta[0]['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ';
 				$txt = date('Y m d h:i:s') . '	' . 'getMarca.php Error ' . $query_rs_Marca  . ' res[0]' . $res[0] . ' res[1]' . $res[1] . ' res[2]' . $res[2] . ' res[3]' . $res[3];
-				logErr($txt, 'logs/logs.txt');
+				logErr($txt, '../logs/logs.txt');
 			} else {
 				$respuesta[1]['data'] = $marca->fetch();
 			}
@@ -1074,7 +1244,7 @@ class Api_Ram
 			$respuesta[0]['errorcode'] = -1;
 			$respuesta[0]['error'] = true;
 			$txt = date('Y m d h:i:s') . '	' . 'getMarca.php catch ' . $query_rs_Marca . ' ERROR ' . $th->getMessage();
-			logErr($txt, 'logs/logs.txt');
+			logErr($txt, '../logs/logs.txt');
 		}
 		return $respuesta;
 	}
@@ -1135,7 +1305,8 @@ class Api_Ram
 			//**********************************************************************************************************************/
 			if ($_POST["action"] == "get-vehiculo") {
 				$vehiculo->cargaUtil->Multas = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior);
-				$vehiculo->cargaUtil->Preformas = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
+				$vehiculo->cargaUtil->Preformas = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"], $_POST["RAM"]);
+				$vehiculo->cargaUtil->Placas = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 			}
 		}
 		return $vehiculo;
@@ -1219,7 +1390,8 @@ class Api_Ram
 	//*****************************************************************************************/
 	protected function getDatosMulta($placa, $placa_anterior): mixed
 	{
-		$query = "SELECT * FROM [IHTT_MULTAS].[dbo].[V_Multas_IHTT_DGT] MUL,[IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] Avi
+		$query = "SELECT MUL.Multa,Avi.CodigoAvisoCobro,MUL.Fecha,MUL.Propietario,MUL.Identidad_RTN,MUL.Certificado,MUL.Placa,convert(numeric(10,2), MUL.Total) as Total 
+		FROM [IHTT_MULTAS].[dbo].[V_Multas_IHTT_DGT] MUL,[IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] Avi
 		left outer join [IHTT_Webservice].[dbo].[TB_ArregloEnc] Enc on Avi.CodigoAvisoCobro  = Enc.ID_Aviso
 		WHERE MUL.ID_Estado='1' AND MUL.Multa = avi.ID_Solicitud and 
 		(MUL.Placa= :Placa_Actual or MUL.Placa= :Placa_Anterior) and
@@ -1235,21 +1407,23 @@ class Api_Ram
 		) > 0);";
 		$parametros = array(":Placa_Actual" => $placa, ":Placa_Anterior" => $placa_anterior);
 		$row = $this->select($query, $parametros);
-		if (count($row) > 0) {
+		if ($row != null) {
 			$titulos = [
 				0 => 'ID MULTA',
-				1  => 'FECHA MULTA',
-				2 => 'PROPIETARIO UNIDAD',
-				3 => 'IDENTIFICACIÓN',
-				4 => 'CONCESIONARIO',
-				5 => 'PLACA',
-				6 => 'MONTO',
+				1 => 'AVISO COBRO',
+				2  => 'FECHA MULTA',
+				3 => 'PROPIETARIO UNIDAD',
+				4 => 'IDENTIFICACIÓN',
+				5 => 'CONCESION',
+				6 => 'PLACA',
+				7 => 'MONTO',
 				'Multa' => 'ID MULTA',
+				'AVISO COBRO' => 'AVISO COBRO',
 				'FECHA MULTA'  => 'FECHA MULTA',
 				'PROPIETARIO UNIDAD' => 'PROPIETARIO UNIDAD',
 				'IDENTIFICACION' => 'IDENTIFICACIÓN',
 				'CONCESIONARIO' => 'CONCESIONARIO',
-				'PPLACA' => 'PLACA',
+				'PLACA' => 'PLACA',
 				'MONTO' => 'MONTO'
 			];
 			$row[count($row) + 1] = $titulos;
@@ -1262,12 +1436,12 @@ class Api_Ram
 	protected function getConcesion()
 	{
 
-		$query = "select * from IHTT_SGCERP.dbo.v_Listado_General WHERE N_Certificado = :N_Certificado and RTN_Concesionario = :RTN_Concesionario";
-		$p = array(":N_Certificado" => $_POST["Concesion"], ":RTN_Concesionario" => $_POST["RTN_Concesionario"]);
+		$query = "select * from IHTT_SGCERP.dbo.v_Listado_General WHERE N_Certificado = :N_Certificado";
+		$p = array(":N_Certificado" => $_POST["Concesion"]);
 		$data = $this->select($query, $p);
 		$datos[0] = count($data);
 
-		if ($datos[0] > 0) {
+		if ($datos[0] > 0 and $data[0]['RTN_Concesionario'] == $_POST["RTN_Concesionario"]) {
 			$data[0]["Marcas"] = $this->getMarca();
 			$data[0]["Anios"] = $this->getAnios();
 			$data[0]["Colores"] = $this->getColor();
@@ -1313,7 +1487,8 @@ class Api_Ram
 						// Recuperando las multas del vehiculo
 						//**********************************************************************************************************************/
 						$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior);
-						$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
+						$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],$_POST['RAM']);
+						$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 						$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
 						$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
 						$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
@@ -1392,7 +1567,8 @@ class Api_Ram
 							// Recuperando las multas del vehiculo
 							//**********************************************************************************************************************/
 							$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior);
-							$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
+							$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],$_POST['RAM']);
+							$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 							$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
 							$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
 							$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
@@ -1463,7 +1639,8 @@ class Api_Ram
 								// Recuperando las multas del vehiculo
 								//**********************************************************************************************************************/
 								$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior);
-								$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
+								$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],$_POST['RAM']);
+								$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 								$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
 								$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
 								$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
@@ -1525,7 +1702,8 @@ class Api_Ram
 									// Recuperando las multas del vehiculo
 									//**********************************************************************************************************************/
 									$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior);
-									$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
+									$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],$_POST['RAM']);
+									$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 									$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
 									$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
 									$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
@@ -1556,9 +1734,16 @@ class Api_Ram
 					}
 				}
 			}
-			$datos[1] = $data;
+		} else {
+			if ($datos[0] > 0) {
+				$data = (array("error" => 40001, "errorhead" => 'ASIGNADA A OTRO', "errormsg" => "SE EN ENCONTRO LA CONCESIÓN NO. " . $_POST["Concesion"] . " PERO ESTA ASIGNADA A OTRO CONCESIONARIO CON NÚMERO DE RTN: " . $_POST["RTN_Concesionario"]));
+			} else {
+				$data = (array("error" => 40002, "errorhead" => 'CONCESION NO ENCONTRADA', "errormsg" => "NO EN ENCONTRO LA CONCESIÓN NO. " . $_POST["Concesion"]));
+			}
 		}
+		$datos[1] = $data;
 		echo json_encode($datos);
+
 	}
 
 	//*************************************************************************************/
@@ -1567,7 +1752,7 @@ class Api_Ram
 	protected function getConcesionPreforma()
 	{
 
-		$query = "select * from IHTT_SGCERP.dbo.v_Listado_General WHERE N_Certificado = :N_Certificado";
+		$query = "select * from IHTT_SGCERP.dbo.v_Listado_General WHERE N_Certificado = :N_Certificado order by Sistema_Fecha";
 		$p = array(":N_Certificado" => $_POST["idConcesion"]);
 		$data = $this->select($query, $p);
 		$datos[0] = count($data);
@@ -1774,6 +1959,50 @@ class Api_Ram
 	}
 
 	//*******************************************************************************************************************/
+	//* Funcion para Crear Carpeta de RAM en Documentos
+	//*******************************************************************************************************************/
+	protected function crearCarpeta($RAM)
+	{
+		$mover = true;
+		try {
+			$directory = "Documentos/" . $RAM;
+			if (!is_dir($directory)) {
+				if (!mkdir($directory, 0777, true)) {
+					$response['msgLog'] = "Fallo la creación del directorio: $directory";
+					$response['msg'] = 'Algo inesperado sucedio creando el directorio';
+					$response['error'] = true;
+					$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . "Fallo la creación del directorio: $directory";
+					logErr($txt, '../logs/logs.txt');
+					$mover = false;
+					if (!isset($_POST["echo"])) {
+						return json_encode(array("error" => 11000, "errorhead" => "CREACIÓN DE DIRECTORIO", "errormsg" => 'NO SE PUEDE CREAR EL DIRECTORIO: ' . $directory));
+					} else {
+						echo json_encode(array("error" => 11000, "errorhead" => "CREACIÓN DE DIRECTORIO", "errormsg" => 'NO SE PUEDE CREAR EL DIRECTORIO: ' . $directory));
+					}
+				} else {
+					if (!isset($_POST["echo"])) {
+						return true;
+					} else {
+						echo true;
+					}
+				}
+			}
+		} catch (Exception $e) {
+			// Handle the exception
+			$response['msgLog'] = 'Caught Exception: ' .  $e->getMessage() . "\n";
+			$response['msg'] = 'Algo inesperado sucedio creando el directorio';
+			$response['error'] = false;
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . $e->getMessage() . "\n";
+			logErr($txt, '../logs/logs.txt');
+			if (!isset($_POST["echo"])) {
+				return json_encode(array("error" => 11001, "errorhead" => "CATCH MOVIMIENTO ARCHIVO CREACION DE DIRECTORIO", "errormsg" => 'ERROR DESCONOCIDO AL TRATAR DE CREAR DIRECTORIO: ' . $directory));
+			} else {
+				echo json_encode(array("error" => 11001, "errorhead" => "CATCH MOVIMIENTO ARCHIVO CREACION DE DIRECTORIO", "errormsg" => 'ERROR DESCONOCIDO AL TRATAR DE CREAR DIRECTORIO: ' . $directory));
+			}
+		}
+	}
+
+	//*******************************************************************************************************************/
 	//* Funcion para salvar la archivo escaneado que se adjunta al expediente cuando se ingresa en SPS
 	//*******************************************************************************************************************/
 	protected function saveEscaneo($RAM)
@@ -1786,7 +2015,7 @@ class Api_Ram
 					$response['msgLog'] = "Fallo la creación del directorio: $directory";
 					$response['msg'] = 'Algo inesperado sucedio creando el directorio';
 					$response['error'] = true;
-					$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . "Fallo la creación del directorio: $dirE";
+					$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . "Fallo la creación del directorio: $directory";
 					logErr($txt, '../logs/logs.txt');
 					$mover = false;
 					echo json_encode(array("error" => 2000, "errorhead" => "CREACIÓN DE DIRECTORIO", "errormsg" => 'NO SE PUEDE CREAR EL DIRECTORIO: ' . $directory));
@@ -1836,9 +2065,9 @@ class Api_Ram
 
 	//**************************************************************************************/
 	//*  Valida que la placa no este asignada a una concesion que este con tramites        */
-	//*  pendientes en preforma al igual valida que la concesion no este con                                              */
+	//*  pendientes en preforma al igual valida que la concesion no este con               */
 	//**************************************************************************************/
-	protected function validarEnPreforma($ID_Placa, $ID_Placa_Antes_Replaqueo, $Concesion,$RAM=''): mixed
+	protected function validarEnPreforma($ID_Placa, $ID_Placa_Antes_Replaqueo, $Concesion, $RAM=''): mixed
 	{
 		//**************************************************************************************/
 		//*  CAMBIOS HECHOS RBTHAOFIC@GMAIL.COM 2022/11/17                                    */
@@ -1847,37 +2076,87 @@ class Api_Ram
 		//*  VALIDAR QUE [N_Certificado] != :N_Certificado y                                  */
 		//*  FECHA ACTUAL SEA MAYOR O IGUAL A LA FECHA DE VENCIMIENTO                         */
 		//************************************************************************************/
-		$query = "SELECT DISTINCT S.ID_Formulario_Solicitud,L.N_Certificado,L.Permiso_Explotacion,l.N_Permiso_Especial,
+		$query = "SELECT DISTINCT S.ID_Formulario_Solicitud,S.RTN_Solicitante,S.Nombre_Solicitante, L.N_Certificado,L.Permiso_Explotacion,l.N_Permiso_Especial,V.ID_Placa, v.ID_Placa_Antes_Replaqueo,
 				S.Sistema_Fecha,A.Nombre_Apoderado_Legal,ID_Colegiacion 
 				FROM [IHTT_PREFORMA].[dbo].[TB_SOLICITANTE] S, [IHTT_PREFORMA].[dbo].[TB_Apoderado_Legal] A,[IHTT_PREFORMA].[dbo].[TB_SOLICITUD] L, [IHTT_PREFORMA].[dbo].[TB_Vehiculo] V
-				WHERE S.ID_Formulario_Solicitud != :RAM AND
+				WHERE 
+				(
+				(
+				S.ID_Formulario_Solicitud != :RAM AND
+				S.Estado_Formulario in ('IDE-1','IDE-7') AND
+				S.ID_Formulario_Solicitud = A.ID_Formulario_Solicitud AND 
+				S.ID_Formulario_Solicitud = L.ID_Formulario_Solicitud AND 
+				(
+				L.ID_Formulario_Solicitud = V.ID_Formulario_Solicitud AND 
+				(
+					(L.N_Certificado = V.Certificado_Operacion and L.N_Certificado != '') OR 
+					(L.N_Permiso_Especial = V.Permiso_Especial and L.N_Permiso_Especial != '')
+				) 
+				) AND 
+					V.Estado IN ('NORMAL','ENTRA')
+				) AND
+				(
+
+					(
+						(L.N_Certificado = :N_Certificado and L.N_Certificado != '')  OR 
+						(L.N_Permiso_Especial = :N_Permiso_Especial and L.N_Permiso_Especial != '')
+					) 
+					or 
+					(V.ID_Placa = :ID_Placa or isnull(v.ID_Placa_Antes_Replaqueo,'') = :ID_Placa_Antes_Replaqueo)
+				)
+				)
+				or
+				(
+				S.ID_Formulario_Solicitud = :RAM1 AND
 				S.Estado_Formulario in ('IDE-1','IDE-7') AND
 				S.ID_Formulario_Solicitud = A.ID_Formulario_Solicitud AND 
 				S.ID_Formulario_Solicitud = L.ID_Formulario_Solicitud AND 
 				L.ID_Formulario_Solicitud = V.ID_Formulario_Solicitud AND 
+				(V.ID_Placa = :ID_Placa1 or isnull(v.ID_Placa_Antes_Replaqueo,'XXXXXXX') = :ID_Placa_Antes_Replaqueo1) and
+				((L.N_Certificado = V.Certificado_Operacion and L.N_Certificado != '') OR (L.N_Permiso_Especial = V.Permiso_Especial and L.N_Permiso_Especial != '')) AND 
 				V.Estado IN ('NORMAL','ENTRA') AND
-				((L.N_Certificado = :N_Certificado and L.N_Certificado != '')  OR 
-				(L.N_Permiso_Especial = :N_Permiso_Especial and L.N_Permiso_Especial != '')  OR 
-				V.ID_Placa = :ID_Placa or  
-				v.ID_Placa_Antes_Replaqueo = :ID_Placa_Antes_Replaqueo);";
-		$parametros = array(":N_Certificado" => $Concesion, ":N_Permiso_Especial" => $Concesion, ":ID_Placa" => $ID_Placa, ":ID_Placa_Antes_Replaqueo" => $ID_Placa_Antes_Replaqueo,":RAM" => $RAM);
+				((L.N_Certificado != '' and L.N_Certificado != :N_Certificado1)  OR (L.N_Permiso_Especial != '' and L.N_Permiso_Especial != :N_Permiso_Especial1)))
+				order by S.ID_Formulario_Solicitud,v.ID_Placa";
+				$parametros = array(":RAM" => $RAM,
+									":N_Certificado" => $Concesion,
+									":N_Permiso_Especial" => $Concesion,
+									":ID_Placa" => $ID_Placa,
+									":ID_Placa_Antes_Replaqueo" => $ID_Placa_Antes_Replaqueo,
+							 		":RAM1" => $RAM,
+									":ID_Placa1" => $ID_Placa,
+									":ID_Placa_Antes_Replaqueo1" => $ID_Placa_Antes_Replaqueo,
+									":N_Certificado1" => $Concesion,
+									":N_Permiso_Especial1" => $Concesion);
 		$row = $this->select($query, $parametros);
-		if (count($row) > 0) {
+		//print_r($row); echo '<br/>';
+		//echo $ID_Placa;  echo '<br/>';
+		//echo $ID_Placa_Antes_Replaqueo;  echo '<br/>';
+		//echo $Concesion;  echo '<br/>';
+		//echo $RAM;  echo '<br/>';
+		if ($row != false) {
 			$titulos = [
 				0 => 'RAM',
-				1  => 'CERTIFICADO OPERAC',
-				2 => 'PER EXP',
-				3 => 'PER ESPECIAL',
-				4 => 'FECHA',
-				5 => 'APODERADO',
-				6 => 'CAH No.',
-				'ID Formulario Solicitud' => 'ID Formulario Solicitud',
-				'Certificado Operación'  => 'Certificado Operación',
-				'Permiso de Explotacion' => 'Permiso de Explotacion',
-				'Permiso Especial' => 'Permiso Especial',
-				'Sistema Fecha' => 'Sistema Fecha',
-				'Nombre Apoderado Legal' => 'Nombre Apoderado Legal',
-				'CAH No. Carnet' => 'CAH No. Carnet'
+				1 => 'RTN SOLI',
+				2 => 'NOMBRE SOLI',
+				3  => 'CERTIFICADO OPERAC',
+				4 => 'PER EXP',
+				5 => 'PER ESPECIAL',
+				6 => 'PLACA ACT',
+				7 => 'PLACA ANT',
+				8 => 'FECHA SOL',
+				9 => 'APODERADO',
+				10 => 'CAH No.',
+				'RAM' => 'RAM',
+				'RTN SOLI' => 'RTN SOLI',
+				'NOMBRE SOLI' => 'NOMBRE SOLI',
+				'CERTIFICADO OPERAC'  => 'CERTIFICADO OPERAC',
+				'PER EXP' => 'PER EXP',
+				'PER ESPECIAL' => 'PER ESPECIAL',
+				'PLACA ACT' => 'PLACA ACT',
+				'PLACA ANT' => 'PLACA ANT',
+				'FECHA SOL' => 'FECHA SOL',
+				'APODERADO' => 'APODERADO',
+				'CAH No.' => 'CAH No.',
 			];
 			$row[count($row) + 1] = $titulos;
 		}
@@ -1886,22 +2165,34 @@ class Api_Ram
 
 	//**************************************************************************************/
 	//*  Valida que la placa no este asignada a una concesion vigente diferente de         */
-	//*  de la que estamos tratando de salvar                                              */
+	//*  de la que estamos tratando de salvar o que la concesion vigente  no tenga un     */
+	//*  concesion lista para impresion                                                    */
 	//**************************************************************************************/
 	protected function validarPlaca($placa, $placa_anterior, $concesion): mixed
 	{
-		/**************************************************************************************/
-		/*  CAMBIOS HECHOS RBTHAOFIC@GMAIL.COM 2022/11/17                                    */
-		/*  vALIDAR QUE FECHA ACTUAL SEA MENOR O IGUAL A LA FECHA DE VENCIMIENTO             */
-		/*  CAMBIOS HECHOS RBTHAOFIC@GMAIL.COM 2023/12/14                                    */
-		/*  VALIDAR QUE [N_Certificado] != :N_Certificado y                                  */
-		/*  FECHA ACTUAL SEA MAYOR O IGUAL A LA FECHA DE VENCIMIENTO                         */
-		/************************************************************************************/
-		$query = "SELECT * FROM [IHTT_SGCERP].[dbo].[v_Validacion_Placas] 
-		WHERE [N_Certificado] != :Concesion and  
-		Fecha_Expiracion >= CONVERT(CHAR(8), GETDATE(), 112)  AND ID_Estado IN ('ES-02','ES-04') AND (ID_Placa = :Placa or ID_Placa = :Placa_Anterior)";
-		$parametros = array(":Concesion" => $concesion, ":Placa" => $placa, ":Placa_Anterior" => $placa_anterior);
-		return $this->select($query, $parametros);
+		$query = "SELECT N_certificado as Concesion,N_Permiso_Explotacion,ID_Expediente,RTN_Concesionario,NombreSolicitante,ID_Placa FROM [IHTT_SGCERP].[dbo].[v_Validacion_Placas] 
+		WHERE ([N_Certificado] = :Concesion and ID_Estado IN ('ES-02','ES-04')  and Fecha_Expiracion >= CONVERT(CHAR(8), GETDATE(), 112)) or
+		([N_Certificado] != :Concesion1 and Fecha_Expiracion >= CONVERT(CHAR(8), GETDATE(), 112) AND ID_Estado IN ('ES-02','ES-04') AND (ID_Placa = :Placa or ID_Placa = :Placa_Anterior))";
+		$parametros = array(":Concesion" => $concesion,":Concesion1" => $concesion, ":Placa" => $placa, ":Placa_Anterior" => $placa_anterior);
+		$row = $this->select($query, $parametros);
+		if ($row != false) {
+			$titulos = [
+				0 => 'CONCESION',
+				1 => 'PER EXPLOTACIÓN',
+				2 => 'ID EXPEDIENTE',
+				3 => 'RTN CONCESIONARIO',
+				4 => 'NOMBRE CONCESIONARIO',
+				'PLACA' => 'PLACA',
+				'CONCESION' => 'CONCESION',
+				'PER EXPLOTACIÓN' => 'PER EXPLOTACIÓN',
+				'ID EXPEDIENTE' => 'ID EXPEDIENTE',
+				'RTN CONCESIONARIO' => 'RTN CONCESIONARIO',
+				'NOMBRE CONCESIONARIO' => 'NOMBRE CONCESIONARIO'
+			];
+			$row[count($row) + 1] = $titulos;
+		}
+		return $row;
+
 	}
 
 	//*******************************************************************************************************************/
@@ -1923,29 +2214,29 @@ class Api_Ram
 	//*******************************************************************************************************************/
 	//* Actualizando el registro de secuencia
 	//*******************************************************************************************************************/
-	protected function updateEstadoPreforma()
+	protected function updateEstadoPreforma($RAM,$idEstado)
 	{
-		$_POST["echo"] = json_decode($_POST["echo"]);
-		$_POST['idEstado'] = json_decode($_POST['idEstado']);
-		$_POST["RAM"] = json_decode($_POST["RAM"]);
 		if (isset($_POST["echo"])) {
+			$_POST["echo"] = json_decode($_POST["echo"]);
 			$this->db->beginTransaction();
 		}
+
+
 		$query = "UPDATE [IHTT_PREFORMA].[DBO].[TB_SOLICITANTE] SET Estado_Formulario = :Estado_Formulario WHERE ID_FORMULARIO_SOLICITUD = :ID_FORMULARIO_SOLICITUD";
-		$p = array(":Estado_Formulario" => $_POST['idEstado'], ":ID_FORMULARIO_SOLICITUD" => $_POST["RAM"]);
+		$p = array(":Estado_Formulario" => $idEstado, ":ID_FORMULARIO_SOLICITUD" => $RAM);
 		$estadoOk = $this->update($query, $p);
 		if ($estadoOk == true) {
-			if ($_POST['idEstado'] == 'IDE-3') {
+			if ($idEstado == 'IDE-3') {
 				$evento = 'CANCELADO';
 				$etapa = 4;
 			} else {
-				if ($_POST['idEstado'] == 'IDE-4') {
+				if ($idEstado == 'IDE-4') {
 					$evento = 'INADMITIDO';
 					$etapa = 5;
 				} else {
-					if ($_POST['idEstado'] == 'IDE-4') {
-						$evento = 'TRABAJO';
-						$etapa = 2;
+					if ($idEstado == 'IDE-1') {
+						$evento = 'INICIO';
+						$etapa = 1;
 					}
 				}	
 			}
@@ -1958,10 +2249,18 @@ class Api_Ram
 					echo json_encode($saveBitacoraOk);
 				}
 			} else {
-				echo json_encode(array("error" => 9002, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE SALVAR LA BITACORA DE LA PREFORMA'));
+				if (!isset($_POST["echo"])) {
+					return json_encode(array("error" => 9002, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE SALVAR LA BITACORA DE LA PREFORMA'));
+				} else {
+					echo json_encode(array("error" => 9002, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE SALVAR LA BITACORA DE LA PREFORMA'));
+				}
 			}
 		} else {
-			echo json_encode(array("error" => 9001, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE CAMBIAR EL ESTADO DE LA PREFORMA'));
+			if (!isset($_POST["echo"])) {
+				return json_encode(array("error" => 9001, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE CAMBIAR EL ESTADO DE LA PREFORMA'));
+			} else {
+				echo json_encode(array("error" => 9001, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE CAMBIAR EL ESTADO DE LA PREFORMA'));
+			}
 		}
 	}
 
@@ -1997,12 +2296,30 @@ class Api_Ram
 			$prefijo = str_replace("date('Y')", date('Y'), trim($record['prefijo']));
 			$prefijo = str_replace("date('m')", date('m'), trim($prefijo));
 			$prefijo = str_replace("date('d')", date('d'), trim($prefijo));
+			$prefijo = str_replace('date("Y")', date('Y'), trim($record['prefijo']));
+			$prefijo = str_replace('date("m")', date('m'), trim($prefijo));
+			$prefijo = str_replace('date("d")', date('d'), trim($prefijo));
+			$prefijo = str_replace('date(Y)', date('Y'), trim($record['prefijo']));
+			$prefijo = str_replace('date(m)', date('m'), trim($prefijo));
+			$prefijo = str_replace('date(d)', date('d'), trim($prefijo));
+			$prefijo = str_replace("date('Ymd')", date('Ymd'), trim($record['prefijo']));	
+			$prefijo = str_replace('date("Ymd")', date('Ymd'), trim($prefijo));
+			$prefijo = str_replace("date(Ymd)", date('Ymd'), trim($prefijo));			
 			//*******************************************************************************************************************/
 			//* Armando el sufijo con el año , mes y/o dia si es el caso
 			//*******************************************************************************************************************/			
 			$sufijo = str_replace("date('Y')", date('Y'), trim($record['sufijo']));
 			$sufijo = str_replace("date('m')", date('m'), trim($sufijo));
 			$sufijo = str_replace("date('d')", date('d'), trim($sufijo));
+			$sufijo = str_replace('date("Y")', date('Y'), trim($record['sufijo']));
+			$sufijo = str_replace('date("m")', date('m'), trim($sufijo));
+			$sufijo = str_replace('date("d")', date('d'), trim($sufijo));
+			$sufijo = str_replace('date(Y)', date('Y'), trim($record['sufijo']));
+			$sufijo = str_replace('date(m)', date('m'), trim($sufijo));
+			$sufijo = str_replace('date(d)', date('d'), trim($sufijo));
+			$sufijo = str_replace("date('Ymd')", date('Ymd'), trim($record['sufijo']));			
+			$sufijo = str_replace('date("Ymd")', date('Ymd'), trim($record['sufijo']));
+			$sufijo = str_replace("date(Ymd)", date('Ymd'), trim($record['sufijo']));
 			//*******************************************************************************************************************/			
 			//* Llamando funcion de Update el siguiente número en la secuencia
 			//*******************************************************************************************************************/			
@@ -2033,10 +2350,10 @@ class Api_Ram
 		$record = $this->select($query, $p);
 		if (is_array($record) == true) {
 			if ($record[0]['usaRangos'] == 1) {
-				$query = "select * from [IHTT_RENOVACIONES_AUTOMATICAS].[DBO].[TB_Secuencias_Rango] WITH (UPDLOCK) WHERE ID = :ID_Secuencia and fecha_final >= CAST(:fecha_final as DATE)";
+				$query = "select * from [IHTT_RENOVACIONES_AUTOMATICAS].[DBO].[TB_Secuencias_Rango] WITH (UPDLOCK) WHERE secuencia_id = :ID_Secuencia and fecha_final >= CAST(:fecha_final as DATE)";
 				$p = array(":ID_Secuencia" => $ID_Secuencia, ":fecha_final" => DATE('Y/m/d'));
 				$recordRango = $this->select($query, $p);
-				if (is_array($record) == true) {
+				if (is_array($record) == true and isset($recordRango[0]) and isset($recordRango[0]['id'])) {
 					return $this->getSiguienteNumeroRAM($record[0], $recordRango[0]);
 				} else {
 					$response['ok'] = false;
@@ -2191,6 +2508,17 @@ class Api_Ram
 
 	protected function saveUnidad($RAM, $Unidad, $Concesion, $Estado)
 	{
+
+		IF (isset($_POST['Concesion']['Permiso_Especial']) AND $_POST['Concesion']['Permiso_Especial'] == "") {
+			$PERMISO_ESPECIAL = "";
+			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
+			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
+		} ELSE {
+			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
+			$PERMISO_EXPLOTACION = "";
+			$CERTIFICADO_OPERACION = "";
+		}
+
 		$query = "INSERT INTO [IHTT_PREFORMA].[dbo].[TB_Vehiculo] (
 		ID_Formulario_Solicitud,
 		RTN_Propietario,
@@ -2264,9 +2592,9 @@ class Api_Ram
 			":Largo" => $Unidad['Largo'],
 			":Capacidad_Carga" => $Unidad['Capacidad'],
 			":Peso_Unidad" => 0,
-			":Permiso_Explotacion" => strtoupper($Concesion['Permiso_Explotacion']),
-			":Certificado_Operacion" => strtoupper($Concesion['Certificado']),
-			":Permiso_Especial" => strtoupper($Concesion['Permiso_Especial']),
+			":Permiso_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
+			":Certificado_Operacion" => strtoupper($CERTIFICADO_OPERACION),
+			":Permiso_Especial" => strtoupper(string: $PERMISO_ESPECIAL),
 			":Estado" => $Estado,
 			":ID_Placa_Antes_Replaqueo" => strtoupper($Unidad['ID_Placa_Antes_Replaqueo']),
 			":Sistema_Usuario" => $_SESSION["user_name"]
@@ -2279,6 +2607,17 @@ class Api_Ram
 		if (isset($_POST["echo"])) {
 			$this->db->beginTransaction();
 		}
+
+		IF (isset($_POST['Concesion']['Permiso_Especial']) AND $_POST['Concesion']['Permiso_Especial'] == "") {
+			$PERMISO_ESPECIAL = "";
+			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
+			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
+		} ELSE {
+			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
+			$PERMISO_EXPLOTACION = "";
+			$CERTIFICADO_OPERACION = "";
+		}
+
 		$contadorInserts = 0;
 		$isOk = array();
 		$isOk[0] = false;
@@ -2319,18 +2658,17 @@ class Api_Ram
 				":ID_Tramite" => $Tramites[$i]['Codigo'],
 				":ID_Modalidad" => $Tramites[$i]['ID_Modalidad'],
 				":ID_TIpo_Servicio" => $Tramites[$i]['ID_Tipo_Servicio'],
-				":N_Certificado" => $_POST['Concesion']['Certificado'],
-				":Permiso_Explotacion" => $_POST['Concesion']['Permiso_Explotacion'],
+				":N_Certificado" => strtoupper($CERTIFICADO_OPERACION),
+				":Permiso_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
 				":Sistema_IP" => $this->getIp(),
 				":ID_Tipo_Categoria" => $Tramites[$i]['ID_Categoria'],
-				":N_Permiso_Especial" => $_POST['Concesion']['Permiso_Especial'],
+				":N_Permiso_Especial" => strtoupper($PERMISO_ESPECIAL),
 				":Tipo_Servicio" => $Tramites[$i]['ID_Tipo_Servicio'],
 				":Es_Renovacion_Automatica" => $_SESSION["Es_Renovacion_Automatica"],
 				":Originado_En_Ventanilla" => $_SESSION["Originado_En_Ventanilla"],
 				":Sistema_Usuario" => $_SESSION["user_name"]
 			);
 			$isOk[$i] = ['ID' => $this->insert($query, $parametros), 'ID_Compuesto' => $Tramites[$i]['ID_Compuesto']];
-			
 			if ($isOk[$i]['ID'] == false) {
 				$this->db->rollback();
 				unset($isOk);
@@ -2584,6 +2922,17 @@ class Api_Ram
 
 	protected function updateUnidad($RAM, $Unidad, $Concesion, $Estado)
 	{
+
+		IF (isset($_POST['Concesion']['Permiso_Especial']) AND $_POST['Concesion']['Permiso_Especial'] == "") {
+			$PERMISO_ESPECIAL = "";
+			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
+			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
+		} ELSE {
+			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
+			$PERMISO_EXPLOTACION = "";
+			$CERTIFICADO_OPERACION = "";
+		}
+
 		// Consulta SQL para actualizar el vehículo
 		$query = "UPDATE [IHTT_PREFORMA].[dbo].[TB_Vehiculo]
 		SET 
@@ -2632,9 +2981,9 @@ class Api_Ram
 			":Ancho" => $Unidad['Ancho'],
 			":Largo" => $Unidad['Largo'],
 			":Capacidad_Carga" => $Unidad['Capacidad'],
-			":Permiso_Explotacion" => strtoupper($Concesion['Permiso_Explotacion']),
-			":Certificado_Operacion" => strtoupper($Concesion['Certificado']),
-			":Permiso_Especial" => strtoupper($Concesion['Permiso_Especial']),
+			":Permiso_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
+			":Certificado_Operacion" => strtoupper($CERTIFICADO_OPERACION),
+			":Permiso_Especial" => strtoupper($PERMISO_ESPECIAL),
 			":Estado" => $Estado,
 			":ID_Placa_Antes_Replaqueo" => strtoupper($Unidad['ID_Placa_Antes_Replaqueo']),
 			":Sistema_Usuario" => $_SESSION["user_name"]
@@ -2670,12 +3019,29 @@ class Api_Ram
 			$_POST["Unidad1"] = json_decode($_POST["Unidad1"], true);
 			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
 			$responseValidarMultas1 = $this->getDatosMulta($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo']);
-			$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
-			$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			if ($_POST["Concesion"]['esCertificado'] == True) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);
+			}
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			}
 		} else {
 			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
-			$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
-			$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);
+			}			
+
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'],  $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			}
 		}
 		if ($_POST["Concesion"]['RAM'] == '') {
 			$responseValidarUsuario = $this->getUsuarioAsigna();
@@ -2699,10 +3065,10 @@ class Api_Ram
 			$RAM == false or
 			((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or
 			((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or
-			((isset($responseValidarPlacas)    and (isset($responseValidarPlacas[1])    and $responseValidarPlacas[1]    > 0))  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
-			((isset($responseValidarMultas)    and (isset($responseValidarMultas[1])     and $responseValidarMultas[1]    > 0)) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
-			((isset($responseValidarMultas1)   and (isset($responseValidarMultas1[1])    and $responseValidarMultas1[1]   > 0)) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
-			((isset($responseValidarPreforma)  and (isset($responseValidarPreforma[1])   and $responseValidarPreforma[1]  > 0)) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+			((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
+			((isset($responseValidarMultas)    and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+			((isset($responseValidarMultas1)   and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			((isset($responseValidarPreforma)  and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
 		) {
 			$this->db->rollBack();
 			echo json_encode([
@@ -2734,6 +3100,7 @@ class Api_Ram
 					$this->db->rollBack();
 					echo json_encode('apoderado');
 				} else {
+					$isOKUnidad = $_POST["Unidad"]['ID_Unidad'];
 					if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
 						$isOKUnidad = $this->updateUnidad($RAM['nuevo_numero'], $_POST["Unidad"], $_POST["Concesion"], 'SALE');
 					} else {
@@ -2744,13 +3111,18 @@ class Api_Ram
 						echo json_encode(['UNIDAD'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
 					} else {
 						if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
-							$isOKUnidad1 = $this->updateUnidad($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
+							if ($_POST["Unidad1"]['ID_Unidad'] !== '' && $_POST["Unidad1"]['ID_Unidad'] !== null) {
+								$isOKUnidad1 = $this->updateUnidad($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
+							} else {
+								$isOKUnidad1 = $this->saveUnidad($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
+							}
 							if ($isOKUnidad1 == false) {
 								$this->db->rollBack();
 								echo json_encode(['UNIDAD1'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
 								$ERROR = true;
 							} else {
 								$this->db->commit();
+								//$this->db->rollBack();
 								echo json_encode(
 									[
 										'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
@@ -2762,6 +3134,7 @@ class Api_Ram
 							}
 						} else {
 							$this->db->commit();
+							//$this->db->rollBack();
 							echo json_encode(
 								[
 									'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
@@ -2802,12 +3175,31 @@ class Api_Ram
 			$_POST["Unidad1"] = json_decode($_POST["Unidad1"], true);
 			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
 			$responseValidarMultas1 = $this->getDatosMulta($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo']);
-			$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
-			$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);
+			}
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			}
 		} else {
+
 			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
-			$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
-			$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], isset($_POST["Concesion"]['esCertificado']) ? $_POST["Concesion"]['Certificado'] : $_POST["Concesion"]['Permiso_Especial']);
+
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);				
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);				
+			}		
+
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);					
+			}						
 		}
 		if ($_POST["Concesion"]['RAM'] == '') {
 			$responseValidarUsuario = $this->getUsuarioAsigna();
@@ -2831,10 +3223,10 @@ class Api_Ram
 			$RAM == false or
 			((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or
 			((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or
-			((isset($responseValidarPlacas)    and (isset($responseValidarPlacas[1])    and $responseValidarPlacas[1]    > 0))  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
-			((isset($responseValidarMultas)    and (isset($responseValidarMultas[1])     and $responseValidarMultas[1]    > 0)) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
-			((isset($responseValidarMultas1)   and (isset($responseValidarMultas1[1])    and $responseValidarMultas1[1]   > 0)) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
-			((isset($responseValidarPreforma)  and (isset($responseValidarPreforma[1])   and $responseValidarPreforma[1]  > 0)) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+			((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
+			((isset($responseValidarMultas)    and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+			((isset($responseValidarMultas1)   and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			((isset($responseValidarPreforma)  and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
 		) {
 			$this->db->rollBack();
 			echo json_encode([
@@ -2897,20 +3289,28 @@ class Api_Ram
 									$this->db->rollBack();
 									echo json_encode(['BITACORA'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
 								} else {
-									$this->db->commit();
-									echo json_encode(
-										[
-											'RAM'  =>  $RAM['nuevo_numero'],
-											'Usuario_Asigna' =>  isset($responseValidarUsuario) ? $responseValidarUsuario : false,
-											'Ciudad'         =>  isset($responseValidarCiudad)  ? $responseValidarCiudad : false,
-											'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
-											'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
-											'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
-											'Unidad1'        =>  isset($isOKUnidad1) ? $isOKUnidad1 : false,
-											'Tramites'       =>  $isOKTramites,
-											'Bitacora'       =>  isset($isOKBitacora) ? $isOKBitacora : false
-										]
-									);
+									$isOKCrearCarpeta = true;
+									if ($_POST["Concesion"]['RAM'] == '') {
+										$isOKCrearCarpeta = $this->crearCarpeta($RAM['nuevo_numero']);
+									}
+									if ($isOKCrearCarpeta != true) {
+										echo json_encode($isOKCrearCarpeta);
+									} else {
+										$this->db->commit();
+										echo json_encode(
+											[
+												'RAM'  =>  $RAM['nuevo_numero'],
+												'Usuario_Asigna' =>  isset($responseValidarUsuario) ? $responseValidarUsuario : false,
+												'Ciudad'         =>  isset($responseValidarCiudad)  ? $responseValidarCiudad : false,
+												'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
+												'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
+												'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
+												'Unidad1'        =>  isset($isOKUnidad1) ? $isOKUnidad1 : false,
+												'Bitacora'       =>  isset($isOKBitacora) ? $isOKBitacora : false,
+												'Tramites'       =>  isset($isOKTramites) ? $isOKTramites : false,
+											]
+										);
+									}
 								}
 							}
 						}
@@ -2920,7 +3320,7 @@ class Api_Ram
 		}
 	}
 
-	protected function getTemplate ($dbsol,$rs_id_rs_template):mixed {
+	protected function getTemplate ($rs_id_rs_template):mixed {
 		$query_rs_template = "SELECT [id]
 		  ,[template_tipo_id]
 		  ,[descripcion]
@@ -2933,30 +3333,30 @@ class Api_Ram
 		  ,[titulo]
 	  FROM [IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_template] WHERE id =:Id";
 	  try {
-		// Recueprando la informaci[on del template
-		$template = $dbsol->prepare($query_rs_template);
+		// Recueprando la informacion del template
+		$template = $this->db->prepare($query_rs_template);
 		$template->execute(Array(':Id' => $rs_id_rs_template));
 		$res =$template->errorInfo();
 		if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
 		  $respuesta[0]['error'] = true;
 		  $respuesta[0]['msg'] = "Mensaje de Error getTemplate: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
 		  $txt = date('Y m d h:i:s') . '	' .'getTemplate.php error Linea 22: ' . $query_rs_template . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
-		  logErr($txt,'logs/logs.txt');
-		  return '';
+		  logErr($txt, '../logs/logs.txt');
+		  return $respuesta;
 		} else {
 		  $row_rs_template = $template->fetch();
 		  return $row_rs_template['template'];
 		}    
 		} catch (\Throwable $th) {
 			$txt = date('Y m d h:i:s') . '	' .'getTemplate.php catch '. $query_rs_template . ' ERROR ' . $th->getMessage();
-			logErr($txt,'logs/logs.txt');
-		return '';
+			logErr($txt, '../logs/logs.txt');
+			$respuesta[0]['error'] = true;
+			$respuesta[0]['msg'] = $txt;
+			return $respuesta;
 		}	    
 	}
 
 	protected function enviarNotificacion($Data):array {
-		//$Env='PROD';
-		$Env='DEV';
 		$error['error'] = false;
 		$error['msg'] = "";
 		$Body = $Data[0]['Template'];
@@ -2964,29 +3364,32 @@ class Api_Ram
 		$Body = str_replace('@@avisodecobro@@',$Data[0]['Numero_Aviso'],$Body);
 		$Body = str_replace('@@monto@@',$Data[0]['MontoLetras'] . ' (L. ' .  number_format($Data[0]['Monto_Total'],2) . ')' ,$Body);
 		$Body = str_replace('@@_expediente_@@',$Data[0]['ID_Solicitud'] . '/' . $Data[0]['ID_Expediente'],$Body);
-		$Body = str_replace('@@tramites@@',$Data[0]['Tramite'],$Body);
-		$Body = str_replace('@@resolucion@@',$Data[0]['ID_Resolucion'],$Body);
+		$Body = str_replace('@@tramites@@',substr($Data[0]['Tramitex'],0,(strlen($Data[0]['Tramitex'])-2)),$Body);
+		//$Body = str_replace('@@resolucion@@',$Data[0]['ID_Resolucion'],$Body);
 		// Inicio
-		$mail = new PHPMailer(true);
 		try {
+			$mail = new PHPMailer(true);
 			$mail = new PHPMailer;
 			//$mail->SMTPDebug = SMTP::DEBUG_SERVER;                         // Mostrar salida (Desactivar en producción)
-			$mail->isSMTP();                                      
-			$mail->Host = 'correo.transporte.gob.hn';  
+			//$mail->SMTPDebug = 2; // Set to 3 or 4 for more details
+			//$mail->Debugoutput = 'html';
+			$mail->SMTPOptions =  array('ssl' => array('verify_peer' => false, 'verify_peer_name' => false, 'allow_self_sifned' => true  ) );
+			$mail->isSMTP();      
+			$mail->Host = $this->server_smtp;  
 			$mail->SMTPAuth = true;                               
-			//$mail->Username = 'info@transporte.gob.hn';                
-			//$mail->Password = '3y0Kg3Ra';            
-			$mail->Username = 'info@transporte.gob.hn';
-			$mail->Password = '3y0Kg3Ra';
+			$mail->Username = $this->server_smtp_user;
+			$mail->Password = $this->server_smtp_password;
 			$mail->SMTPSecure = 'ssl';                           
-			$mail->Port = 465;                              
-			$mail->setFrom('info@transporte.gob.hn', 'IHTT INFO');
-			$mail->addAddress(trim($Data[0]['Email_Apoderado']), trim($Data[0]['NombreApoderadoLega'])); 
-			$mail->addCC(trim($Data[0]['Email']), trim($Data[0]['NombreSolicitante'])); 
-			if ($Env=='DEV') {
-				$mail->addBCC('rbthaofic@gmail.com');
-				$mail->addBCC('evifud@gmail.com');
-				$mail->addBCC('oscaricalix@gmail.com');
+			$mail->Port = $this->server_smtp_port;
+			$mail->setFrom($this->server_smtp_user, 'IHTT NOTIFICACIÓN');
+			if ($_SESSION['Environment'] =='DEV') {
+				$mail->addAddress('rbthaofic@gmail.com');
+				$mail->addAddress('oscaricalix@gmail.com');
+				$mail->addAddress('copy@transporte.gob.hn'); 
+			} else {
+				$mail->addAddress(trim($Data[0]['Email_Apoderado']), trim($Data[0]['NombreApoderadoLega'])); 
+				$mail->addCC(trim($Data[0]['Email']), trim($Data[0]['NombreSolicitante'])); 
+				$mail->addCC('copy@transporte.gob.hn'); 
 			}	
 			$mail->isHTML(true); 
 			$mail->CharSet = 'UTF-8';
@@ -2994,10 +3397,11 @@ class Api_Ram
 			$mail->Body    = $Body;
 			$mail->AltBody = $Body;
 			
-			/*
+
 			if ($Data[0]['Aviso_Ruta'] != '') {
 				$mail->addAttachment($Data[0]['Aviso_Ruta']);        //Add 
 			}
+			/*
 			if ($Data[0]['Auto_Ruta'] != '') {
 				$mail->addAttachment($Data[0]['Auto_Ruta']);         //Add 
 			}
@@ -3012,9 +3416,11 @@ class Api_Ram
 			// Incio de generando Logs de Envio Fallido de email
 			//******************************************************//
 			if (isset($mail->ErrorInfo) && $mail->ErrorInfo != '') {
-				$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Enviado-> Envio Fallido: $mail->ErrorInfo:' . '	' . trim($Data[0]['Email_Apoderado']) . $Data[0]['NombreApoderadoLega'] . $mail->ErrorInfo;
+				$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Enviado-> Envio Fallido de Notificación de Aviso de Cobro: $mail->ErrorInfo:' . '	' . trim($Data[0]['Email_Apoderado']) . $Data[0]['NombreApoderadoLega'] . $mail->ErrorInfo;
 				logErr($txt,'../logs/logs.txt');
+				$error['error'] = true;
 			}
+
 			return $error;
 		} catch (Exception $e) {
 			$error['error'] = true;
@@ -3022,21 +3428,21 @@ class Api_Ram
 			//*******************************************************//
 			// Incio de generando Logs de Envio Fallido de email
 			//******************************************************//
-			$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Fallido-> Envio Fallido: Exception $mail->ErrorInfo' . '	' . $mail->ErrorInfo;
+			$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Exception Fallido-> Envio Fallido de Notificación de Aviso de Cobro: Exception $mail->ErrorInfo' . '	' . $mail->ErrorInfo;
 			logErr($txt,'../logs/logs.txt');
-			$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Fallido-> Envio Fallido: Excepcion: $e' . '	' . $e;
+			$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Exception Fallido-> Envio Fallido de Notificación de Aviso de Cobro: Excepcion: $e' . '	' . $e;
 			logErr($txt,'../logs/logs.txt');
 			return $error;
 		}
 	}	
-	protected function getSiguienteId($dbsol,$tabla,$max) {
+	protected function getSiguienteId($tabla,$max) {
 		$respuesta[0]['msg'] = "";
 		$respuesta[0]['error'] = false;	
 		$respuesta[0]['siguiente_id']=-1;
 		$respuesta[0]['errorcode'] = '';
 			$query_rs_siguiente = "SELECT " . $max . " FROM " . $tabla;
-			// Recueprando la informaci[on del Siguiente
-			$Siguiente = $dbsol->prepare($query_rs_siguiente);
+			// Recueprando la informacion del Siguiente
+			$Siguiente = $this->db->prepare($query_rs_siguiente);
 		try {
 			$Siguiente->execute();
 			$res = $Siguiente->errorInfo();
@@ -3045,7 +3451,7 @@ class Api_Ram
 				$respuesta[0]['errorcode'] = $res[1];
 				$respuesta[0]['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
 				$txt = date('Y m d h:i:s') . '	' .'getSiguienteID.php error Linea 20: ' . $query_rs_siguiente . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;;
-				logErr($txt,'logs/logs.txt');
+				logErr($txt, '../logs/logs.txt');
 			}else{
 				$row_rs_Siguiente = $Siguiente->fetch();
 				$respuesta[0]['siguiente_id'] = $row_rs_Siguiente['siguiente_id'];
@@ -3055,21 +3461,20 @@ class Api_Ram
 			$respuesta[0]['errorcode'] = 0;
 			$respuesta[0]['msg'] = "Mensaje de Error: " . $th->getMessage();
 			$txt = date('Y m d h:i:s') . '	' .'getSiguienteID.php Catch Linea 27: ' .  $th->getMessage() . ' QUERY'  . $query_rs_siguiente;
-			logErr($txt,'logs/logs.txt');
+			logErr($txt, '../logs/logs.txt');
 		}	
 		return $respuesta;
 	}
 
-	protected function saveAvisoCobro ($dbsol,$Data) {
+	protected function saveAvisoCobro ($Data) {
 		date_default_timezone_set('America/Guatemala');
 		$respuesta[0]['error'] = false;
 		$respuesta[0]['msg'] = "";
 		$respuesta_enc[0]['CodigoAvisoCobro'] = '';
 		foreach ($Data as $EncTramite){
-			$respuesta_enc = getSiguienteId($dbsol,'[IHTT_Webservice].[dbo].[TB_AvisoCobroEnc]',' (max(CodigoAvisoCobro)+1) as siguiente_id ');
+			$respuesta_enc = $this->getSiguienteId('[IHTT_Webservice].[dbo].[TB_AvisoCobroEnc]',' (max(CodigoAvisoCobro)+1) as siguiente_id ');
 			if ($respuesta_enc[0]['error'] == false) {
 				try {
-					$dbsol->beginTransaction();
 					$query_rs_TB_AvisoCobroEnc = "INSERT INTO [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] 
 					([CodigoAvisoCobro]
 				   ,[FechaEmision]
@@ -3118,8 +3523,8 @@ class Api_Ram
 				   ,:Resolucion
 				   ,:ID_EstadoCobranza
 				   ,'0801');";
-					// Recueprando la informaci[on del Resolucion
-					$AvisoEnc = $dbsol->prepare($query_rs_TB_AvisoCobroEnc);
+					// Recueprando la informacion del Resolucion
+					$AvisoEnc = $this->db->prepare($query_rs_TB_AvisoCobroEnc);
 					$AvisoEnc->execute(Array(
 						':CodigoAvisoCobro' => $respuesta_enc[0]['siguiente_id'],
 						':RTNConcesionario' => $EncTramite['RTN_Solicitante'],
@@ -3170,8 +3575,8 @@ class Api_Ram
 								,:Certificado_Operacion
 								,:Numero_Placa
 								,:Expediente_Det);";
-								// Recueprando la informaci[on del Resolucion
-								$AvisoDet = $dbsol->prepare($query_rs_TB_AvisoCobroDet);
+								// Recueprando la informacion del Resolucion
+								$AvisoDet = $this->db->prepare($query_rs_TB_AvisoCobroDet);
 								$AvisoDet->execute(Array(
 									':CodigoAvisoCobro' => $respuesta_enc[0]['siguiente_id'],
 									':CodigoTipoTramite' => $DetTramite['ID_tramite'],
@@ -3187,7 +3592,7 @@ class Api_Ram
 									$respuesta[0]['error'] = true;
 									$respuesta[0]['msg'] = "Mensaje de Error AvisoDet: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
 									$txt = date('Y m d h:i:s') . '	' .'saveAvisoCobro.php error Detalle: ' . $query_rs_TB_AvisoCobroDet . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
-									logErr($txt,'logs/logs.txt');
+									logErr($txt, '../logs/logs.txt');
 									break;
 								}else {
 									$respuesta[0]['CodigoAvisoCobro']=$respuesta_enc[0]['siguiente_id'];
@@ -3196,7 +3601,7 @@ class Api_Ram
 								$respuesta[0]['error'] = true;
 								$respuesta[0]['msg'] = "Mensaje de Error en Try Catch EvisoDet: " . $th->getMessage();
 								$txt = date('Y m d h:i:s') . '	' .'saveAvisoCobro.php Catch Aviso Det: ' .  $th->getMessage() . ' QUERY'  . $query_rs_TB_AvisoCobroDet;
-								logErr($txt,'logs/logs.txt');
+								logErr($txt, '../logs/logs.txt');
 								break;
 							}
 					  }
@@ -3205,21 +3610,15 @@ class Api_Ram
 					$respuesta[0]['error'] = true;
 					$respuesta[0]['msg'] =  "Mensaje de Error en Try Catch EvisoENC: " . $th->getMessage();
 					$txt = date('Y m d h:i:s') . '	' .'saveAvisoCobro.php: AvisoEnca ' .  $th->getMessage() . ' QUERY'  . $query_rs_TB_AvisoCobroDet;
-					logErr($txt,'logs/logs.txt');
+					logErr($txt, '../logs/logs.txt');
 					break;
 				}
 			} else {
 				$respuesta[0]['error'] = true;
 				$respuesta[0]['msg'] = 'getSiguienteId ' . $respuesta_enc[0]['msg'];
-				$txt = date('Y m d h:i:s') . '	' .'saveAvisoCobro.php else getsiguieneid';
-				logErr($txt,'logs/logs.txt');
+				$txt = date('Y m d h:i:s') . '	' .'saveAvisoCobro.php else getSiguienteID';
+				logErr($txt, '../logs/logs.txt');
 			}
-		}
-	
-		if ($respuesta[0]['error'] == false) {
-			$dbsol->commit();
-		} else {
-			$dbsol->rollBack();
 		}
 		return $respuesta;
 	}
@@ -3283,113 +3682,113 @@ class Api_Ram
 	
 	 
 	
-	function decena($numdero):string{
+	function decena($numero):string{
 	
 	 
 	
-			if ($numdero >= 90 && $numdero <= 99)
+			if ($numero >= 90 && $numero <= 99)
 	
 			{
 	
 				$numd = "NOVENTA ";
 	
-				if ($numdero > 90)
+				if ($numero > 90)
 	
-					$numd = $numd."Y ".(unidad($numdero - 90));
+					$numd = $numd."Y ".($this->unidad($numero - 90));
 	
 			}
 	
-			else if ($numdero >= 80 && $numdero <= 89)
+			else if ($numero >= 80 && $numero <= 89)
 	
 			{
 	
 				$numd = "OCHENTA ";
 	
-				if ($numdero > 80)
+				if ($numero > 80)
 	
-					$numd = $numd."Y ".(unidad($numdero - 80));
+					$numd = $numd."Y ".($this->unidad($numero - 80));
 	
 			}
 	
-			else if ($numdero >= 70 && $numdero <= 79)
+			else if ($numero >= 70 && $numero <= 79)
 	
 			{
 	
 				$numd = "SETENTA ";
 	
-				if ($numdero > 70)
+				if ($numero > 70)
 	
-					$numd = $numd."Y ".(unidad($numdero - 70));
+					$numd = $numd."Y ".($this->unidad($numero - 70));
 	
 			}
 	
-			else if ($numdero >= 60 && $numdero <= 69)
+			else if ($numero >= 60 && $numero <= 69)
 	
 			{
 	
 				$numd = "SESENTA ";
 	
-				if ($numdero > 60)
+				if ($numero > 60)
 	
-					$numd = $numd."Y ".(unidad($numdero - 60));
+					$numd = $numd."Y ".($this->unidad($numero - 60));
 	
 			}
 	
-			else if ($numdero >= 50 && $numdero <= 59)
+			else if ($numero >= 50 && $numero <= 59)
 	
 			{
 	
 				$numd = "CINCUENTA ";
 	
-				if ($numdero > 50)
+				if ($numero > 50)
 	
-					$numd = $numd."Y ".(unidad($numdero - 50));
+					$numd = $numd."Y ".($this->unidad($numero - 50));
 	
 			}
 	
-			else if ($numdero >= 40 && $numdero <= 49)
+			else if ($numero >= 40 && $numero <= 49)
 	
 			{
 	
 				$numd = "CUARENTA ";
 	
-				if ($numdero > 40)
+				if ($numero > 40)
 	
-					$numd = $numd."Y ".(unidad($numdero - 40));
+					$numd = $numd."Y ".($this->unidad($numero - 40));
 	
 			}
 	
-			else if ($numdero >= 30 && $numdero <= 39)
+			else if ($numero >= 30 && $numero <= 39)
 	
 			{
 	
 				$numd = "TREINTA ";
 	
-				if ($numdero > 30)
+				if ($numero > 30)
 	
-					$numd = $numd."Y ".(unidad($numdero - 30));
+					$numd = $numd."Y ".($this->unidad($numero - 30));
 	
 			}
 	
-			else if ($numdero >= 20 && $numdero <= 29)
+			else if ($numero >= 20 && $numero <= 29)
 	
 			{
 	
-				if ($numdero == 20)
+				if ($numero == 20)
 	
 					$numd = "VEINTE ";
 	
 				else
 	
-					$numd = "VEINTI".(unidad($numdero - 20));
+					$numd = "VEINTI".($this->unidad($numero - 20));
 	
 			}
 	
-			else if ($numdero >= 10 && $numdero <= 19)
+			else if ($numero >= 10 && $numero <= 19)
 	
 			{
 	
-				switch ($numdero){
+				switch ($numero){
 	
 				case 10:
 	
@@ -3497,7 +3896,7 @@ class Api_Ram
 	
 			else
 	
-				$numd = unidad($numdero);
+				$numd = $this->unidad($numero);
 	
 		return $numd;
 	
@@ -3519,7 +3918,7 @@ class Api_Ram
 
 				if ($numc > 900)
 
-					$numce = $numce.(decena($numc - 900));
+					$numce = $numce.($this->decena($numc - 900));
 
 			}
 
@@ -3531,7 +3930,7 @@ class Api_Ram
 
 				if ($numc > 800)
 
-					$numce = $numce.(decena($numc - 800));
+					$numce = $numce.($this->decena($numc - 800));
 
 			}
 
@@ -3543,7 +3942,7 @@ class Api_Ram
 
 				if ($numc > 700)
 
-					$numce = $numce.(decena($numc - 700));
+					$numce = $numce.($this->decena($numc - 700));
 
 			}
 
@@ -3555,7 +3954,7 @@ class Api_Ram
 
 				if ($numc > 600)
 
-					$numce = $numce.(decena($numc - 600));
+					$numce = $numce.($this->decena($numc - 600));
 
 			}
 
@@ -3567,7 +3966,7 @@ class Api_Ram
 
 				if ($numc > 500)
 
-					$numce = $numce.(decena($numc - 500));
+					$numce = $numce.($this->decena($numc - 500));
 
 			}
 
@@ -3579,7 +3978,7 @@ class Api_Ram
 
 				if ($numc > 400)
 
-					$numce = $numce.(decena($numc - 400));
+					$numce = $numce.($this->decena($numc - 400));
 
 			}
 
@@ -3591,7 +3990,7 @@ class Api_Ram
 
 				if ($numc > 300)
 
-					$numce = $numce.(decena($numc - 300));
+					$numce = $numce.($this->decena($numc - 300));
 
 			}
 
@@ -3603,7 +4002,7 @@ class Api_Ram
 
 				if ($numc > 200)
 
-					$numce = $numce.(decena($numc - 200));
+					$numce = $numce.($this->decena($numc - 200));
 
 			}
 
@@ -3617,7 +4016,7 @@ class Api_Ram
 
 				else
 
-					$numce = "CIENTO ".(decena($numc - 100));
+					$numce = "CIENTO ".($this->decena($numc - 100));
 
 			}
 
@@ -3625,9 +4024,8 @@ class Api_Ram
 
 		else
 
-			$numce = decena($numc);
+			$numce = $this->decena($numc);
 
-	
 
 		return $numce;
 	
@@ -3639,21 +4037,19 @@ class Api_Ram
 
 		if ($nummero >= 1000 && $nummero < 2000){
 
-			$numm = "MIL ".(centena($nummero%1000));
+			$numm = "MIL ".($this->centena($nummero%1000));
 
 		}
 
 		if ($nummero >= 2000 && $nummero <10000){
 
-			$numm = unidad(Floor($nummero/1000))." MIL ".(centena($nummero%1000));
+			$numm = $this->unidad(Floor($nummero/1000))." MIL ".($this->centena($nummero%1000));
 
 		}
 
-		if ($nummero < 1000)
-
-			$numm = centena($nummero);
-
-	
+		if ($nummero < 1000) {
+			$numm = $this->centena($nummero);
+		}
 
 		return $numm;
 
@@ -3661,7 +4057,7 @@ class Api_Ram
 
 	 
 	
-	protected function decmiles($numdmero){
+	protected function decmiles($numdmero):string{
 
 		if ($numdmero == 10000)
 
@@ -3669,21 +4065,19 @@ class Api_Ram
 
 		if ($numdmero > 10000 && $numdmero <20000){
 
-			$numde = decena(Floor($numdmero/1000))."MIL ".(centena($numdmero%1000));
+			$numde = $this->decena(Floor($numdmero/1000))."MIL ".($this->centena($numdmero%1000));
 
 		}
 
 		if ($numdmero >= 20000 && $numdmero <100000){
 
-			$numde = decena(Floor($numdmero/1000))." MIL ".(miles($numdmero%1000));
+			$numde = $this->decena(Floor($numdmero/1000))." MIL ".($this->miles($numdmero%1000));
 
 		}
 
-		if ($numdmero < 10000)
-
-			$numde = miles($numdmero);
-
-	
+		if ($numdmero < 10000) {
+			$numde = $this->miles($numdmero);
+		}
 
 		return $numde;
 
@@ -3691,7 +4085,7 @@ class Api_Ram
 
 	 
 	
-	protected function cienmiles($numcmero){
+	protected function cienmiles($numcmero):string{
 
 		if ($numcmero == 100000)
 
@@ -3699,13 +4093,13 @@ class Api_Ram
 
 		if ($numcmero >= 100000 && $numcmero <1000000){
 
-			$num_letracm = centena(Floor($numcmero/1000))." MIL ".(centena($numcmero%1000));
+			$num_letracm = $this->centena(Floor($numcmero/1000))." MIL ".($this->centena($numcmero%1000));
 
 		}
 
-		if ($numcmero < 100000)
-
-			$num_letracm = decmiles($numcmero);
+		if ($numcmero < 100000) {
+			$num_letracm = $this->decmiles($numcmero);
+		}
 
 		return $num_letracm;
 
@@ -3713,23 +4107,23 @@ class Api_Ram
 
 	 
 	
-	protected function millon($nummiero){
+	protected function millon($nummiero):string {
 
 		if ($nummiero >= 1000000 && $nummiero <2000000){
 
-			$num_letramm = "UN MILLON ".(cienmiles($nummiero%1000000));
+			$num_letramm = "UN MILLON ".($this->cienmiles($nummiero%1000000));
 
 		}
 
 		if ($nummiero >= 2000000 && $nummiero <10000000){
 
-			$num_letramm = unidad(Floor($nummiero/1000000))." MILLONES ".(cienmiles($nummiero%1000000));
+			$num_letramm = $this->unidad(Floor($nummiero/1000000))." MILLONES ".($this->cienmiles($nummiero%1000000));
 
 		}
 
-		if ($nummiero < 1000000)
-
-			$num_letramm = cienmiles($nummiero);
+		if ($nummiero < 1000000) {
+			$num_letramm = $this->cienmiles($nummiero);
+		}
 
 	
 
@@ -3739,7 +4133,7 @@ class Api_Ram
 
 	 
 	
-	protected function decmillon($numerodm){
+	protected function decmillon($numerodm):string{
 
 		if ($numerodm == 10000000)
 
@@ -3747,21 +4141,19 @@ class Api_Ram
 
 		if ($numerodm > 10000000 && $numerodm <20000000){
 
-			$num_letradmm = decena(Floor($numerodm/1000000))."MILLONES ".(cienmiles($numerodm%1000000));
+			$num_letradmm = $this->decena(Floor($numerodm/1000000))."MILLONES ".($this->cienmiles($numerodm%1000000));
 
 		}
 
 		if ($numerodm >= 20000000 && $numerodm <100000000){
 
-			$num_letradmm = decena(Floor($numerodm/1000000))." MILLONES ".(millon($numerodm%1000000));
+			$num_letradmm = $this->decena(Floor($numerodm/1000000))." MILLONES ".($this->millon($numerodm%1000000));
 
 		}
 
-		if ($numerodm < 10000000)
-
-			$num_letradmm = millon($numerodm);
-
-	
+		if ($numerodm < 10000000) {
+			$num_letradmm = $this->millon($numerodm);
+		}	
 
 		return $num_letradmm;
 
@@ -3769,7 +4161,7 @@ class Api_Ram
 	
 	 
 	
-	protected function cienmillon($numcmeros){
+	protected function cienmillon($numcmeros):string {
 
 		if ($numcmeros == 100000000)
 
@@ -3777,13 +4169,13 @@ class Api_Ram
 
 		if ($numcmeros >= 100000000 && $numcmeros <1000000000){
 
-			$num_letracms = centena(Floor($numcmeros/1000000))." MILLONES ".(millon($numcmeros%1000000));
+			$num_letracms = $this->centena(Floor($numcmeros/1000000))." MILLONES ".($this->millon($numcmeros%1000000));
 
 		}
 
-		if ($numcmeros < 100000000)
-
-			$num_letracms = decmillon($numcmeros);
+		if ($numcmeros < 100000000) {
+			$num_letracms = $this->decmillon($numcmeros);
+		}
 
 		return $num_letracms;
 
@@ -3791,25 +4183,18 @@ class Api_Ram
 
 	
 
-	protected function milmillon($nummierod){
+	protected function milmillon($nummierod):string{
 
 		if ($nummierod >= 1000000000 && $nummierod <2000000000){
-
-			$num_letrammd = "MIL ".(cienmillon($nummierod%1000000000));
-
+			$num_letrammd = "MIL ".($this->cienmillon($nummierod%1000000000));
 		}
-
 		if ($nummierod >= 2000000000 && $nummierod <10000000000){
-
-			$num_letrammd = unidad(Floor($nummierod/1000000000))." MIL ".(cienmillon($nummierod%1000000000));
-
+			$num_letrammd = $this->unidad(Floor($nummierod/1000000000))." MIL ".($this->cienmillon($nummierod%1000000000));
 		}
 
-		if ($nummierod < 1000000000)
-
-			$num_letrammd = cienmillon($nummierod);
-
-	
+		if ($nummierod < 1000000000) {
+			$num_letrammd = $this->cienmillon($nummierod);
+		}
 
 		return $num_letrammd;
 
@@ -3822,11 +4207,11 @@ class Api_Ram
 		$num = number_format($num,2,'.','');
 		$cents = substr($num,strlen($num)-2,strlen($num)-1);
 		$num = (int)$num;
-		$numf = milmillon($num);
+		$numf = $this->milmillon($num);
 		return trim($numf) ." LEMPIRAS CON ".$cents."/100 CENTAVOS";
 	}
 	 
-	protected function getTarifa($dbsol,$ID_Tramite):mixed {
+	protected function getTarifa($ID_Tramite):mixed {
 		$row_rs_Tarifa['error'] = false;	
 		$row_rs_Tarifa['siguiente_Tarifa']=-1;
 		$respuesta[0]['errorcode'] = '';
@@ -3837,7 +4222,7 @@ class Api_Ram
 									WHERE A.CodigoTramite = B.CodigoTramite AND A.CodigoTramite = :CodigoTramite
 									ORDER BY B.FechaFin DESC";
 			// Recueprando la informaci[on del Tarifa
-			$Tarifa = $dbsol->prepare($query_rs_Tarifa);
+			$Tarifa = $this->db->prepare($query_rs_Tarifa);
 			$Tarifa->execute(Array(':CodigoTramite' => $ID_Tramite));
 			$row_rs_Tarifa = $Tarifa->fetch();
 			$res = $Tarifa->errorInfo();
@@ -3846,18 +4231,18 @@ class Api_Ram
 				$respuesta[0]['errorcode'] = $res[1];
 				$row_rs_Tarifa['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
 				$txt = date('Y m d h:i:s') . '	' .'getTarifa.php Error '. $query_rs_Tarifa  . ' res[0]' . $res[0] . ' res[1]' .$res[1] . ' res[2]' .$res[2]. ' res[3]' .$res[3];
-				logErr($txt,'logs/logs.txt');
+				logErr($txt, '../logs/logs.txt');
 			}
 		} catch (\Throwable $th) {
 			$row_rs_Tarifa['error'] = true;
 			$respuesta[0]['errorcode'] = 0;
 			$row_rs_Tarifa['msg'] = "Mensaje de Error: " . $th->getMessage();
 			$txt = date('Y m d h:i:s') . '	' .'getTarifa.php catch '. $query_rs_Tarifa . ' ERROR ' . $th->getMessage();
-			logErr($txt,'logs/logs.txt');
+			logErr($txt, '../logs/logs.txt');
 		}	
 		return $row_rs_Tarifa;
 	}
-	protected function getVehiculosPreforma($dbsol,$ID_Formulario_Solicitud):mixed {
+	protected function getVehiculosPreforma($ID_Formulario_Solicitud,$Concesion):mixed {
 		$row_rs_Usuario['error'] = false;	
 		$row_rs_Usuario['siguiente_Usuario']=-1;
 		$respuesta[0]['errorcode'] = '';
@@ -3871,11 +4256,12 @@ class Api_Ram
 			V.Estado in ('ENTRA','NORMAL','SALE') AND
 			V.ID_Color = CL.ID_Color AND
 			V.ID_Marca = MR.ID_Marca AND
-			M.ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+			M.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and
+			(V.Certificado_Operacion = :Certificado_Operacion or Permiso_Especial = :Permiso_Especial)
 			Order by V.Estado";
 			// Recueprando la informaci[on del Usuario
-			$stmt = $dbsol->prepare($query_rs_stmt);
-			$stmt->execute(Array(':ID_Formulario_Solicitud' => $ID_Formulario_Solicitud));
+			$stmt = $this->db->prepare($query_rs_stmt);
+			$stmt->execute(Array(':ID_Formulario_Solicitud' => $ID_Formulario_Solicitud,':Certificado_Operacion' => $Concesion,':Permiso_Especial' => $Concesion));
 			$row_rs_stmt = $stmt->fetchall();
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
@@ -3883,24 +4269,24 @@ class Api_Ram
 				$respuesta['errorcode'] = $res[1];
 				$row_rs_Usuario['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
 				$txt = date('Y m d h:i:s') . '	' .'getvehiculosPreforma.php error: ' . $query_rs_stmt . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
-				logErr($txt,'logs/logs.txt');
+				logErr($txt, '../logs/logs.txt');
 			}
 		} catch (\Throwable $th) {
 			$respuesta[0]['error'] = true;
 			$respuesta[0]['msg'] = $th->getMessage();
 			$txt = date('Y m d h:i:s') . '	' .'getVehiculosPreforma.php catch '. $query_rs_stmt . ' ERROR ' . $th->getMessage();
 			$row_rs_stmt='';
-			logErr($txt,'logs/logs.txt');
+			logErr($txt, '../logs/logs.txt');
 		}	
 		return $row_rs_stmt;
 	}
 
-	protected function getSolicitudADCEV ($dbsol,$rs_id_rs_solicitud,$rs_id_rs_template): mixed {
+	protected function getSolicitudADCEV ($rs_id_rs_solicitud,$rs_id_rs_template): mixed {
 		$respuesta[0]['msg'] = "";
 		$respuesta[0]['error'] = false;	
 		$respuesta[0]['errorcode'] = '';
 		try {
-			$query_rs_expediente = "SELECT  M.Email_Solicitante,g.N_Permiso_Especial,cs.ID_Clase_Servico,S.ID_Modalidad,
+			$query_rs_expediente = "SELECT  M.ID_Formulario_Solicitud_Encrypted,M.Email_Solicitante,g.N_Permiso_Especial,cs.ID_Clase_Servico,S.ID_Modalidad,
 			G.ID_Modalidad,G.ID_Tipo_Categoria,Q.Email_Apoderado_Legal,G.ID_Formulario_Solicitud as Preforma,M.RTN_Solicitante,
 			D.ID_Tramite,G.Permiso_Explotacion,G.N_Certificado as Certificado_Operacion,
 			(select ISNULL(concat(concat(Y.Nombres,' '),Y.Apellidos),'') from [IHTT_RRHH].[dbo].[TB_Empleados] Y where Y.ID_Empleado = L.id_comisionado) as firma_comisionado,
@@ -3929,13 +4315,13 @@ class Api_Ram
 			G.ID_Tramite = D.ID_Tramite and  
 			D.ID_Tipo_Tramite = F.ID_Tipo_Tramite AND 
 			D.ID_Clase_Tramite = N.ID_Clase_Tramite and
-			G.ID_Modalidad = S.DESC_Modalidad and 
+			(G.ID_Modalidad = S.DESC_Modalidad or G.ID_Modalidad = S.ID_Modalidad)  and
 			S.ID_Clase_Servicio != 'FTT03' and
 			S.ID_Clase_Servicio = CS.ID_Clase_Servico and
 			M.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and k.id = :ID_Template
 			order by D.ID_Clase_Tramite";
 			// Recuperando la información del expediente
-			$expediente = $dbsol->prepare($query_rs_expediente);
+			$expediente = $this->db->prepare($query_rs_expediente);
 			$expediente->execute(Array(':ID_Formulario_Solicitud' => $rs_id_rs_solicitud,':ID_Template' => $rs_id_rs_template));
 			$res = $expediente->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
@@ -3943,7 +4329,7 @@ class Api_Ram
 				$respuesta[0]['errorcode'] = $res[1];
 				$respuesta[0]['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
 				$txt = date('Y m d h:i:s') . '	' .'getSolicitudADCEV.php Error '. $query_rs_expediente  . ' res[0]' . $res[0] . ' res[1]' .$res[1] . ' res[2]' .$res[2]. ' res[3]' .$res[3];
-				logErr($txt,'logs/logs.txt');
+				logErr($txt, '../logs/logs.txt');
 			} else {
 				return $expediente->fetchAll();
 			}
@@ -3952,7 +4338,7 @@ class Api_Ram
 			$respuesta[0]['errorcode'] = 0;
 			$respuesta[0]['error'] = true;
 			$txt = date('Y m d h:i:s') . '	' .'getSolicitudADCEV.php catch '. $query_rs_expediente . ' ERROR ' . $th->getMessage();
-			logErr($txt,'logs/logs.txt');
+			logErr($txt, '../logs/logs.txt');
 		}	
 		return $respuesta;
 	}
@@ -4055,13 +4441,6 @@ class Api_Ram
 	//* INICIO: Mover Datos del Registro al Arreglo Data
 	//******************************************************************************/
 	protected function moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador):mixed {
-		if (!empty($_SERVER['REMOTE_ADDR'])) {
-			$ip = $_SERVER['REMOTE_ADDR'];
-		} elseif (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-			$ip = $_SERVER['HTTP_CLIENT_IP'];
-		} else {
-			$ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-		}
 		//***********************************************************************************************
 		//*Inicio
 		//***********************************************************************************************
@@ -4072,7 +4451,8 @@ class Api_Ram
 			$Data[0]['Modulo'] = 15;
 			$Data[0]['Usuario'] = 'avisosra';
 			$Data[0]['Clave'] = 'IhTt@2o23%';
-			$Data[0]['IPUsuario'] = $ip;
+			$Data[0]['ID_Formulario_Solicitud_Encrypted'] = $row_rs_expediente['ID_Formulario_Solicitud_Encrypted'];
+			$Data[0]['IPUsuario'] = $this->getIp();
 			$Data[0]['Preforma'] = $row_rs_expediente['Preforma'];
 			$Data[0]['Email'] = $row_rs_expediente['Email_Solicitante'];
 			$Data[0]['Email_Apoderado'] = $row_rs_expediente['Email_Apoderado_Legal'];
@@ -4146,6 +4526,7 @@ class Api_Ram
 				}
 			}
 		}
+		$Data[0]['Tramitex'] = (isset($Data[0]['Tramitex'])? $Data[0]['Tramitex']: '<br/>') . $Data[0]['Tramites'][$contador]['DescripcionDetalle']  . '<br/>';
 		return $Data;
 		//***********************************************************************************************
 		//* final: Datos por cada tramite
@@ -4153,12 +4534,267 @@ class Api_Ram
 	}
 	//******************************************************************************/
 	//* FINAL: Mover Datos del Registro al Arreglo Data
-	//******************************************************************************/
+//******************************************************************************/
+
+
+	function pdfAvisodeCobro ($Data,$cfg_institucion= 'INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE') {
+		//****************************************************************************//
+		//Definiendo encabezado de aviso de cobro //
+		//****************************************************************************//
+		$enc_avi_cob = '<table style="border:4px solid #58d1e2;" height="100%" width="100%">
+		<tr><td colspan="2">&nbsp;</td></tr>
+		@@__MSGVIGENCIA__@@
+		<tr>
+			<td align="left" width="60%"><img height="30%" width="70%" alt="encabezado" src="assets/images/encabezado-pagina1.png"></td>
+			<td align="left" width="40%">
+				<table style="border:2px solid #58d1e2;" "100%" height="100%" width="100%">
+				<tr><td align="left" colspan="2"><strong>RENOVACIONES AUTOMATICAS</strong></td></tr>
+				<tr><td align="left" style="border:2px solid #58d1e2;"><strong>AVISO DE COBRO:</strong></td><td align="right" style="border:2px solid #58d1e2;"><strong>@@__ACO__@@</strong></td></tr>
+				<tr><td align="left" style="border:2px solid #58d1e2;"><strong>FECHA EMISIÓN</strong>:</td><td align="right" style="border:2px solid #58d1e2;"><strong>@@__FEM__@@</strong></td></tr>
+				<tr><td align="left" style="border:2px solid #58d1e2;"><strong>FECHA VENCIMIENTO:</strong></td><td align="right" style="border:2px solid #58d1e2;"></td></tr>
+				<tr><td align="left" colspan="2"><strong>DETALLE AVISO DE COBRO</strong></td></tr>
+				</table>
+			</td>
+		</tr>
+		</table>';
+		$fecha_emision = date("Y/m/d");
+		$enc_avi_cob = str_replace('@@__FEM__@@',$fecha_emision,$enc_avi_cob);
+		$enc_avi_cob = str_replace('@@__ACO__@@',$Data[0]['Numero_Aviso'],$enc_avi_cob);
+		$enc_avi_cob = str_replace('@@__MSGVIGENCIA__@@','<tr style="border:3px solid #E80646;"><td style="border:3px solid #E80646;" colspan="2"><p style="text-align: justify; font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", "serif"; font-size: 18; color:#E80646"><strong>'.$Data[0]['MSGVIGENCIA'].'</strong></p></td></tr>',$enc_avi_cob);
+		//****************************************************************************//
+		//Recuperando template de aviso de cobro //
+		//****************************************************************************//
+		$template = $this->getTemplate(5);
+				// Institucion
+		$template = str_replace('@@institucion@@',$cfg_institucion,$template);
+		$template = str_replace('@@__RTN__@@',$Data[0]['RTN_Solicitante'],$template);
+		$template = str_replace('@@__NOMCON__@@',$Data[0]['NombreSolicitante'],$template);
+		$template = str_replace('@@__OBSERVACIONES__@@',$Data[0]['Observacion'],$template);
+		$template = str_replace('@@__TOTAL__@@','L ' . number_format($Data[0]['Monto_Total'],2),$template);
+		$template = str_replace('@@__CERTIFICADO__@@',$Data[0]['Certificado_Operacion'],$template);
+		$template = str_replace('@@__PERMISO__@@',$Data[0]['Permiso_Explotacion'],$template);	
+		$template = str_replace('@@__PLACA__@@',$Data[0]['ID_Placa'],$template);
+		$template = str_replace('@@__EXPEDIENTE__@@',$Data[0]['ID_Expediente'],$template);	
+			
+		$template = str_replace('@@__CERTPERM__@@','|Solicitud-> ' . $Data[0]['ID_Solicitud'] . ' |Permiso-> ' . $Data[0]['Permiso_Explotacion'],$template);
+		$row = '';
+		$contador = 1;
+		foreach ($Data[0]['Tramites'] as $DetTramite){
+			$row = $row . '<tr><td width="5%" style="font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", "serif"; font-size: 10" align="left">'. $contador . '</td><td width="25%" style="font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", "serif"; font-size: 10" align="left">' . $DetTramite['ID_tramite']. '</td><td width="50%" style="font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", "serif"; font-size: 10" align="left">' .  $DetTramite['DescripcionDetalle'] . '</td><td width="20%" style="font-family: Cambria, "Hoefler Text", "Liberation Serif", Times, "Times New Roman", "serif"; font-size: 10" align="right">L ' . number_format($DetTramite['Monto'],2) . '</td></tr>';	
+			$contador++;
+		}
+		$template = str_replace('@@__ROWTRAMITES___@@',$row,$template);	
+		// Generando llave privada
+		$llave_publica = hash('SHA512','/I(h$T@t%&)' . $Data[0]['Numero_Aviso']. date("Y/m/d h:i:sa"),false);
+		// GENERAMOS EL CODIGO QR de la Validacion Firma
+		$URL = $this->dominio_raiz .":150/api_rep.php?action=get-facturaPdf&nu=".$Data[0]['Numero_Aviso']."&usu=".$Data[0]['usuario'];
+		QRcode::png($URL,"../qr/temp/".$Data[0]['Numero_Aviso'].".png",QR_ECLEVEL_M,5,4);
+		//$pdf->Image("qr/temp/".$validacion_firma.".png",'90','214','25','25','PNG');
+		$template = str_replace('../../qr/temp/CQR.PNG',$this->dominio_raiz. ":285/qr/temp/".$Data[0]['Numero_Aviso'].".png",$template);
+		//$mpdf = new Mpdf(['mode' => 'utf-8', 'format' => 'A4-L']);
+		try {
+			$mpdf = new \Mpdf\Mpdf(['mode' => 'utf-8', 'format' => [215.9, 355.6],'tempDir' => sys_get_temp_dir()]);
+			$mpdf->pdf_version = '1.7';
+			$mpdf->SetTitle('Aviso de Cobro');
+			$mpdf->SetAuthor('Instituto Hondureño de Transporte Terrestre');
+			$mpdf->SetCreator('SATT');
+			$mpdf->SetSubject('Documentos Legales IHTT');
+			$mpdf->PDFXauto = true;
+			$mpdf->SetWatermarkText("IHTT");
+			$mpdf->showWatermarkText = true;
+			$mpdf->watermark_font = 'DejaVuSansCondensed';
+			$mpdf->watermarkTextAlpha = 0.10;
+			$mpdf->margin_header = 0;
+			$mpdf->SetMargins(0, 0, 75);
+			$mpdf->SetAutoPageBreak(true, 30);
+			$mpdf->SetHTMLHeader($enc_avi_cob,'O', true);
+			$style="text-align:center;vertical-align: middle;";  
+			$mpdf->SetHTMLFooter('<table width="100%"; height="60px"><tr><td width="20%" align="left">Página(s): {PAGENO} de {nbpg}</td>
+			<td width="20%" align="center">' . date("Y/m/d h:i:sa") . '</td><td width="20%" style="'. $style .'"><img src="assets/images/xsc.jpg" alt="Xiomara Si Cumple" width="75px" height="75px"></td><td width="20%" align="center">Aviso: '.$Data[0]['Numero_Aviso'] . ' -RA-<td width="20%" align="right">'. $Data[0]['usuario'] .'</td></tr></table>');
+			$mpdf->WriteHTML($template);
+			$ruta='Documentos/' . $Data[0]['Preforma'] .'/' . 'AvisodeCobro_' . $Data[0]['Preforma'] . '.pdf';
+			$mpdf->Output($ruta, \Mpdf\Output\Destination::FILE);
+			return true;
+		} catch (\Mpdf\MpdfException $e) {
+			echo "mPDF Error: " . $e->getMessage();
+		} catch (\Exception $e) {
+			echo "General Error: " . $e->getMessage();
+		}
+	}	
+	//***********************************************************************************************
+	//* FINAL: FUNCION FINAL QUE GENERA EL ARCHIVO PDF
+	//***********************************************************************************************
 
 	//***********************************************************************************************
-	//* Inicio: Generar Aviso de Cobro
+	//* FINAL: RECUPERACION CERTIFCIADO ACTUAL
 	//***********************************************************************************************
-	protected function PDFAvisodeCobroVentanillaApi($dbsol,$rs_id_rs_solicitud,$rs_id_rs_template=5):array {
+	protected function getCertificadoActual ($rs_id_rs_concesion,$id_clase_servico):array {
+		//***********************************************************************/
+		//Si el proceso es de Certificado de Operación de Carga
+		//***********************************************************************/
+		if ($id_clase_servico == 'STPC') {
+			$query_rs_concesion = "SELECT Con.N_Certificado  as Concesion,Con.ID_Vehiculo_Carga as ID_Vehiculo,vehp.[ID_Placa],
+			Veh.ID_Marca,veh.Anio,veh.ID_Tipo_Vehiculo_Carga as ID_Tipo_Vehiculo,tv.DESC_Tipo_Vehiculo,Veh.ID_Color,Veh.Motor,Veh.Chasis,Veh.VIN,
+			Veh.Alto,Veh.Ancho,Veh.Largo,Veh.Combustible,con.Fecha_Expiracion,Expl.Fecha_Vencimiento as Fecha_Expiracion_Explotacion,Expl.N_Permiso_Explotacion_Encrypted as Permiso_Explotacion_Encrypted,
+			con.N_Certificado_Encrypted as Concesion_Encrypted,Expl.N_Permiso_Explotacion as Permiso_Explotacion
+			FROM [IHTT_SGCERP].[dbo].[TB_Permiso_Explotacion_Carga] Expl,
+			[IHTT_SGCERP].[dbo].[TB_Certificado_Carga] Con,
+			[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] Veh,
+			[IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tv,
+			[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] vehp
+			where Expl.N_Permiso_Explotacion = Con.N_Permiso_Explotacion and
+			Con.ID_Vehiculo_Carga = Veh.ID_Vehiculo_Carga and  veh.ID_Tipo_Vehiculo_Carga = tv.ID_Tipo_Vehiculo_Carga and
+			Con.ID_Vehiculo_Carga = vehp.ID_Vehiculo_Carga and vehp.Estado = 'ACTIVA' AND N_Certificado = :Concesion;";
+		} else {
+			if ($id_clase_servico == 'STEC') {
+				//***********************************************************************/
+				//Si el proceso es de Permiso Especial de Carga
+				//***********************************************************************/
+				$query_rs_concesion = "SELECT Con.N_Permiso_Especial_Carga as Concesion,Con.ID_Vehiculo_Carga as ID_Vehiculo,vehp.[ID_Placa],
+				Veh.ID_Marca,veh.Anio,veh.ID_Tipo_Vehiculo_Carga as ID_Tipo_Vehiculo,tv.[DESC_Tipo_Vehiculo],Veh.ID_Color,Veh.Motor,Veh.Chasis,Veh.VIN,
+				Veh.Alto,Veh.Ancho,Veh.Largo,Veh.Combustible,con.Fecha_Expiracion,Con.N_Permiso_Especial_Carga_Encrypted as Concesion_Encrypted
+				FROM 
+				[IHTT_SGCERP].[dbo].[TB_Permiso_Especial_Carga] Con,
+				[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] Veh,
+				[IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tv,
+				[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] vehp
+				where Con.ID_Vehiculo_Carga = Veh.ID_Vehiculo_Carga and  veh.ID_Tipo_Vehiculo_Carga = tv.ID_Tipo_Vehiculo_Carga and 
+				Con.ID_Vehiculo_Carga = vehp.ID_Vehiculo_Carga and vehp.Estado = 'ACTIVA' AND N_Permiso_Especial_Carga = :Concesion;";
+			} else {
+				if ($id_clase_servico == 'STPP') {
+					$query_rs_concesion = "SELECT Con.N_Certificado  as Concesion,Con.ID_Vehiculo_Transporte as ID_Vehiculo,vehp.[ID_Placa],
+					Veh.ID_Marca,veh.Anio,veh.ID_Tipo_Vehiculo_Transporte_Pas as ID_Tipo_Vehiculo,tv.DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,
+					Veh.ID_Color,Veh.Motor,Veh.Chasis,Veh.VIN,Veh.Combustible,con.Fecha_Expiracion,
+					Expl.Fecha_Vencimiento as Fecha_Expiracion_Explotacion,Expl.N_Permiso_Explotacion_Encrypted as Permiso_Explotacion_Encrypted,
+					Con.N_Certificado_Encrypted as Concesion_Encrypted,Expl.N_Permiso_Explotacion as Permiso_Explotacion
+					FROM 
+					[IHTT_SGCERP].[dbo].[TB_Permiso_Explotacion_Pas] Expl,
+					[IHTT_SGCERP].[dbo].[TB_Certificado_Pasajeros] Con,
+					[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] Veh,
+					[IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tv,
+					[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] vehp
+					where Expl.N_Permiso_Explotacion = Con.N_Permiso_Explotacion and
+					Con.ID_Vehiculo_Transporte = Veh.ID_Vehiculo_Transporte and veh.ID_Tipo_Vehiculo_Transporte_Pas = tv.ID_Tipo_Vehiculo_Transporte_Pas and
+					Con.ID_Vehiculo_Transporte = vehp.ID_Vehiculo_Transporte and vehp.Estado = 'ACTIVA' AND N_Certificado = :Concesion;";
+				} else {
+					//***********************************************************************/
+					//Si el proceso es de Permiso Especial de Pasajeros
+					//***********************************************************************/
+					$query_rs_concesion = "SELECT Con.N_Permiso_Especial_Pas  as Concesion,Con.ID_Vehiculo_Transporte as ID_Vehiculo,vehp.[ID_Placa],
+					Veh.ID_Marca,veh.Anio,veh.ID_Tipo_Vehiculo_Transporte_Pas as ID_Tipo_Vehiculo,tv.DESC_Tipo_Vehiculo_Transporte_Pas as DESC_Tipo_Vehiculo,
+					Veh.ID_Color,Veh.Motor,Veh.Chasis,Veh.VIN,Veh.Combustible,con.Fecha_Expiracion,Con.N_Permiso_Especial_Pas_Encrypted as Concesion_Encrypted
+					FROM 
+					[IHTT_SGCERP].[dbo].[TB_Permiso_Especial_Pas] Con,
+					[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] Veh,
+					[IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tv,
+					[IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] vehp
+					where Con.ID_Vehiculo_Transporte = Veh.ID_Vehiculo_Transporte and veh.ID_Tipo_Vehiculo_Transporte_Pas = tv.ID_Tipo_Vehiculo_Transporte_Pas and
+					Con.ID_Vehiculo_Transporte = vehp.ID_Vehiculo_Transporte and vehp.Estado = 'ACTIVA' AND N_Permiso_Especial_Pas = :Concesion;";
+				}
+			}
+		}
+	
+		$respuesta[0]['msg'] = "";
+		$respuesta[0]['error'] = false;	
+		$respuesta[0]['errorcode'] = '';
+		try {
+			// Recueprando la información del expediente
+			$concesion = $this->db->prepare($query_rs_concesion);
+			$res = $concesion->execute(Array(':Concesion' => $rs_id_rs_concesion));
+			$res = $concesion->errorInfo();
+			if (isset($res) and isset($res[3]) and intval(trim($res[3])) <> 0) {
+				$respuesta[0]['error'] = true;
+				$respuesta[0]['errorcode'] = $res[1];
+				$respuesta[0]['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ' ;
+				$txt = date('Y m d h:i:s') . '	' .'getCertificadoActual.php Error '. $query_rs_concesion  . ' res[0]' . $res[0] . ' res[1]' .$res[1] . ' res[2]' .$res[2]. ' res[3]' .$res[3];
+				logErr($txt, '../logs/logs.txt');
+				return $respuesta;
+			} else {
+				$respuesta[0]['query'] = $query_rs_concesion . ' concesion: ' . $rs_id_rs_concesion;
+				$respuesta[0]['clase_servicio'] = $id_clase_servico;            
+				$record = $concesion->fetch();
+				//****************************************************************************//	
+				// Si se tramite el tramite de renocación del certificado se calcula la nueva 
+				// fecha de vencimiento
+				//****************************************************************************//	
+				$renovacion_certificado_vencido = false;
+				$renovacion_permiso_especial_vencido = false;
+				$permisoexplotacion_vencido = false;
+				if (isset($record["Fecha_Expiracion"])) {
+					$Nueva_Fecha_Expiracion = date('Y-m-d',strtotime($record["Fecha_Expiracion"]));
+					$hoyplus60 = date('Y-m-d', strtotime('+60 days'));
+					$contadorconcesion=1;
+					while ($Nueva_Fecha_Expiracion <= $hoyplus60) {
+						$record['rencon'][$contadorconcesion]['periodo'] = ' del ' . $Nueva_Fecha_Expiracion;
+						if ($id_clase_servico == 'STPC' or $id_clase_servico == 'STPP') {
+							$Nueva_Fecha_Expiracion = date("Y-m-d",strtotime($Nueva_Fecha_Expiracion."+ 3 years"));
+							$renovacion_certificado_vencido = true;
+						} else {
+							$Nueva_Fecha_Expiracion = date("Y-m-d",strtotime($Nueva_Fecha_Expiracion."+ 1 year"));
+							$renovacion_permiso_especial_vencido = true;
+						}
+						$record['rencon'][$contadorconcesion]['periodo'] = $record['rencon'][$contadorconcesion]['periodo'] . ' al ' . $Nueva_Fecha_Expiracion;
+						$contadorconcesion++;
+					}
+					$record['rencon-cantidad'] = $contadorconcesion;
+					$record['Nueva_Fecha_Expiracion'] = $Nueva_Fecha_Expiracion;
+					//****************************************************************************//	
+					// Si se tramite el tramite de renocacion del certificado se calcula la nueva 
+					// fecha de vencimiento
+					//****************************************************************************//	
+					if (isset($record["Fecha_Expiracion_Explotacion"])) {
+						$Nueva_Fecha_Expiracion = date('Y-m-d',strtotime($record["Fecha_Expiracion_Explotacion"]));
+						$hoyplus60 = date('Y-m-d', strtotime('+60 days'));
+						$contadorpermisoexplotacion=1;
+						while ($Nueva_Fecha_Expiracion <= $hoyplus60) {
+							$record['renperexp'][$contadorpermisoexplotacion]['periodo'] = ' del ' . $Nueva_Fecha_Expiracion;
+							$Nueva_Fecha_Expiracion = date("Y-m-d",strtotime($Nueva_Fecha_Expiracion."+ 12 years"));
+							$record['renperexp'][$contadorpermisoexplotacion]['periodo'] = $record['renperexp'][$contadorpermisoexplotacion]['periodo'] . ' al ' . $Nueva_Fecha_Expiracion;
+							$permisoexplotacion_vencido = true;                
+							$contadorpermisoexplotacion++;
+						}
+						$record['renper-explotacion-cantidad'] = $contadorpermisoexplotacion;
+						$record['Nueva_Fecha_Expiracion_Explotacion'] = $Nueva_Fecha_Expiracion;
+					} else {
+						$record['Nueva_Fecha_Expiracion_Explotacion'] = '';
+						$record["Fecha_Expiracion_Explotacion"] = '';
+						$record['renper-explotacion-cantidad'] = 0;
+					}
+	
+					$record['permisoexplotacion_vencido'] = $permisoexplotacion_vencido;
+					$record['renovacion_permiso_especial_vencido'] = $renovacion_permiso_especial_vencido;
+					$record['renovacion_certificado_vencido'] = $renovacion_certificado_vencido;
+				} else {
+					$record['Nueva_Fecha_Expiracion_Explotacion'] = '';
+					$record["Fecha_Expiracion_Explotacion"] = '';
+					$record['Nueva_Fecha_Expiracion'] = '';
+					$record["Fecha_Expiracion"] = '';
+					$record['permisoexplotacion_vencido'] = $permisoexplotacion_vencido;
+					$record['renovacion_permiso_especial_vencido'] = $renovacion_permiso_especial_vencido;
+					$record['renovacion_certificado_vencido'] = $renovacion_certificado_vencido;
+				}
+	
+				$respuesta[1] = $record;
+				return $respuesta;
+			}
+		} catch (\Throwable $th) {
+			$respuesta[0]['msg'] = 'getCertificadoVehiculo catch ' . $th->getMessage();
+			$respuesta[0]['errorcode'] = 0;
+			$respuesta[0]['error'] = true;
+			$txt = date('Y m d h:i:s') . '	' .'getCertificadoActual.php catch '. $query_rs_concesion . ' ERROR ' . $th->getMessage();
+			logErr($txt, '../logs/logs.txt');
+			return $respuesta;
+		}	
+	}
+	//***********************************************************************************************
+	//* FINAL: RECUPERACION CERTIFCIADO ACTUAL
+	//***********************************************************************************************
+
+
+	//***********************************************************************************************
+	//* Inicio: FUNCION INICIAL DE GENERACION DE PDF
+	//***********************************************************************************************
+	protected function PDFAvisodeCobroVentanillaApi($rs_id_rs_solicitud,$rs_id_rs_template=5):array {
 		$esCobroPeriodosAtrasados = true;
 		$cfg_institucion = 'INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE';
 		/**************************************************************************************************/
@@ -4174,48 +4810,46 @@ class Api_Ram
 		$msg = '';
 		$Numero_Aviso=0;
 		// Funcion que recupera los datos para insertar en el template
-		$row_rs_todos_los_registros =  getSolicitudADCEV($dbsol,$rs_id_rs_solicitud,$rs_id_rs_template);
-		$vehiculos = getVehiculosPreforma($dbsol,$rs_id_rs_solicitud);
-		if (isset($vehiculos[0])) {
-			$vehiculoentra = "MARCA: " . $vehiculos[0]['DESC_Marca'] . ", MODELO: " . $vehiculos[0]['Modelo'] . ", COLOR: " . $vehiculos[0]['DESC_Color']. ", MOTOR: " . $vehiculos[0]['Motor']. ", CHASIS: " . $vehiculos[0]['Chasis'] . "Y NÚMERO DE PLACA : " . $vehiculos[0]['ID_Placa'];
-			if (isset($vehiculos[1])) {
-				$vehiculosale = "MARCA: " . $vehiculos[1]['DESC_Marca'] . ", MODELO: " . $vehiculos[1]['Modelo'] . ", COLOR: " . $vehiculos[1]['DESC_Color']. ", MOTOR: " . $vehiculos[1]['Motor']. ", CHASIS: " . $vehiculos[1]['Chasis'] . "Y NÚMERO DE PLACA " . $vehiculos[1]['ID_Placa'];
-			}                    
-		}        
+		$row_rs_todos_los_registros =  $this->getSolicitudADCEV($rs_id_rs_solicitud,$rs_id_rs_template);
 		$monto_total = 0;
 		$contador=0;
 		$Data=Array();
 		$total_registros = count($row_rs_todos_los_registros);
 		//echo '$total_registros' . $total_registros . '<br>';die();
+		$ConcesionValue = '';
 		foreach ($row_rs_todos_los_registros as $row_rs_expediente){
 			// Si se recuperaron datos del expediente procesar
 			if ($row_rs_expediente['ID_Tramite'] != '') {
 				$preforma = $row_rs_expediente['Preforma'];
+				if ($ConcesionValue != ($row_rs_expediente['Certificado_Operacion'] != '')? $row_rs_expediente['Certificado_Operacion'] : $row_rs_expediente['N_Permiso_Especial']) {
+					$vehiculos = $this->getVehiculosPreforma($rs_id_rs_solicitud,($row_rs_expediente['Certificado_Operacion'] != '')? $row_rs_expediente['Certificado_Operacion'] : $row_rs_expediente['N_Permiso_Especial']);
+					if (isset($vehiculos[0])) {
+						$vehiculoentra = "MARCA: " . $vehiculos[0]['DESC_Marca'] . ", MODELO: " . $vehiculos[0]['Modelo'] . ", COLOR: " . $vehiculos[0]['DESC_Color']. ", MOTOR: " . $vehiculos[0]['Motor']. ", CHASIS: " . $vehiculos[0]['Chasis'] . "Y NÚMERO DE PLACA : " . $vehiculos[0]['ID_Placa'];
+						if (isset($vehiculos[1])) {
+							$vehiculosale = "MARCA: " . $vehiculos[1]['DESC_Marca'] . ", MODELO: " . $vehiculos[1]['Modelo'] . ", COLOR: " . $vehiculos[1]['DESC_Color']. ", MOTOR: " . $vehiculos[1]['Motor']. ", CHASIS: " . $vehiculos[1]['Chasis'] . "Y NÚMERO DE PLACA " . $vehiculos[1]['ID_Placa'];
+						}                    
+					}        
+					$ConcesionValue = ($row_rs_expediente['Certificado_Operacion'] != '')? $row_rs_expediente['Certificado_Operacion'] : $row_rs_expediente['N_Permiso_Especial'];
+				}
 				// Recuperando la tarifa del tramite
-				$row_rs_Tarifa = getTarifa($dbsol,$row_rs_expediente['ID_Tramite']);
+				$row_rs_Tarifa = $this->getTarifa($row_rs_expediente['ID_Tramite']);
 				// Si encontro la tarifa del tramite prosiga
 				If (isset($row_rs_Tarifa['Monto'])) {			
 					$row_rs_expediente['Solicitud'] = $rs_id_rs_solicitud;
-					If ($row_rs_expediente['N_Permiso_Especial'] != '') {
-						$concesionx = getCertificadoActual ($dbsol,$row_rs_expediente['N_Permiso_Especial'],$row_rs_expediente['ID_Clase_Servicio']);
-						$concesion = $concesionx[1];
-						if (isset($concesion['rencon']) && isset($concesion['rencon'][1]) && isset($concesion['rencon'][1]['periodo'])){
-							$row_rs_expediente['Periodo'] = $concesion['rencon'][1]['periodo'];
-						}
-					} else {
-						$concesionx = getCertificadoActual ($dbsol,$row_rs_expediente['Certificado_Operacion'],$row_rs_expediente['ID_Clase_Servicio']);
-						$concesion = $concesionx[1];
-						if (isset($concesion['rencon']) && isset($concesion['rencon'][1]) && isset($concesion['rencon'][1]['periodo'])){
-							$row_rs_expediente['Periodo'] = $concesion['rencon'][1]['periodo'];
-						}
+					$concesionx = $this->getCertificadoActual (($row_rs_expediente['Certificado_Operacion'] != '')? $row_rs_expediente['Certificado_Operacion'] : $row_rs_expediente['N_Permiso_Especial'],$row_rs_expediente['ID_Clase_Servicio']);
+					$concesion = $concesionx[1];
+					if (isset($concesion['rencon']) && isset($concesion['rencon'][1]) && isset($concesion['rencon'][1]['periodo'])){
+						$row_rs_expediente['Periodo'] = $concesion['rencon'][1]['periodo'];
+					}
+					If ($row_rs_expediente['N_Permiso_Especial'] == '') {
 						if (isset($concesion['renperexp']) && isset($concesion['renperexp'][1]) && isset($concesion['renperexp'][1]['periodo'])){
 							$row_rs_expediente['Periodo-Explotacion'] = $concesion['renperexp'][1]['periodo'];
 						}
-					}    
+					}
 					//***********************************************************************************/
 					//Moviendo data para armar arreglo de datos para generar aviso de cobro
 					//***********************************************************************************/
-					$Data = moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador);  
+					$Data = $this->moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador);  
 					//*********************************************************************************************************/
 					// Si esta habilitado el cobro de periodos atrasados y el tipo de tramite es Renovaciones (IHTTTRA-02)
 					//*********************************************************************************************************/
@@ -4234,7 +4868,7 @@ class Api_Ram
 								//***********************************************************************************/
 								//Moviendo data para armar arreglo de datos para generar aviso de cobro
 								//***********************************************************************************/
-								$Data = moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador);
+								$Data = $this->moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador);
 							}
 						} else {
 						//**********************************************************************************************************************************************/
@@ -4245,13 +4879,10 @@ class Api_Ram
 								for ($i=2; $i<$concesion['renper-explotacion-cantidad']; $i++) {
 									$contador++;
 									//***********************************************************************************/
-									//Recuperando el rotulo del periodo a renovar de la concesion
+									//*Recuperando el rotulo del periodo a renovar de la concesion
 									//***********************************************************************************/
 									$row_rs_expediente['Periodo-Explotacion'] = $concesion['renperexp'][$i]['periodo'];
-									//***********************************************************************************/
-									//Moviendo data para armar arreglo de datos para generar aviso de cobro
-									//***********************************************************************************/
-									$Data = moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador);
+									$Data = $this->moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador);
 								}
 							}
 						}
@@ -4287,11 +4918,11 @@ class Api_Ram
 		if ($Error_Proceso == false) {
 			// Si todo va bien, insertar aviso de cobro
 			if (isset($Data)){
-				$Data[0]['MontoLetras'] = convertirMontoaLetras($Data[0]['Monto_Total']);
+				$Data[0]['MontoLetras'] = $this->convertirMontoaLetras($Data[0]['Monto_Total']);
 				//***********************************************************************************/
 				//Salvar el aviso de cobro
 				//***********************************************************************************/
-				$respuesta_aviso = saveAvisoCobro($dbsol,$Data);
+				$respuesta_aviso = $this->saveAvisoCobro($Data);
 			} 
 			//***********************************************************************************/
 			//Sino hubo errar al Salvar el aviso de cobro
@@ -4300,7 +4931,7 @@ class Api_Ram
 				//***********************************************************************************/
 				//Recuperando template de notifiacion //
 				//***********************************************************************************/
-				$Data[0]['Template'] = 	getTemplate($dbsol,4);
+				$Data[0]['Template'] = 	$this->getTemplate(4);
 				//***********************************************************************************/
 				// Agregando el numero de aviso de cobro recuperado al retornar saveAvisoCobro
 				//***********************************************************************************/
@@ -4319,23 +4950,23 @@ class Api_Ram
 				//***********************************************************************************/
 				// Ya no se generara el documento de aviso de cobro, se generara en tiempo real
 				// RTBM 2024-04-22  RBTHAOFIC@GMAIL.COM
-				pdfAvisodeCobro($dbsol,$Data);
+				$this->pdfAvisodeCobro($Data);
 				// Enviando Notitifación por correo electronico al apoderado legal
-				$Data[0]['Titulo_Correo'] = 'AVISO DE COBRO No.- ' . $Data[0]['Numero_Aviso'];			
+				$Data[0]['Titulo_Correo'] = 'AVISO DE COBRO No.- ' . $Data[0]['Numero_Aviso'];	
 				// Deshabilitada la notificación por correo electronico deshabilitada
-				//$respuesta = enviarNotificacion($Data);
+				$respuesta = $this->enviarNotificacion($Data);
 				$response['numero_aviso'] = $Data[0]['Numero_Aviso'];
 				$response['msg'] = 'IMPRIMIR AVISO DE COBRO NO:'. $Data[0]['Numero_Aviso'];
 				$response['url_aviso'] = $url_aviso_calificada;
 			} else {
-				$response['error'] = true;
+				$response['ERROR'] = true;
 				$response['msg'] = 'saveAvisoCobro ' . $respuesta_aviso[0]['msg'];
 				$response['numero_aviso'] = '';
 				$response['url_aviso'] = '';
 			}
 			return $response;
 		} else {
-			$response['error'] = true;
+			$response['ERROR'] = true;
 			$response['msg'] = $respuesta[0]['msg'];
 			$response['numero_aviso'] = '';
 			$response['url_aviso'] = '';
@@ -4345,11 +4976,17 @@ class Api_Ram
 	//***********************************************************************************************
 	//* Final: Generar Aviso de Cobro
 	//***********************************************************************************************
-
 }
 
 if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
 	echo json_encode(array("error" => 1000, "errorhead" => "INICIO DE SESSIÓN", "errormsg" => 'NO HAY UNA SESSION INICIADA, FAVOR INICIE SESION Y VUELVA A INTENTARLO'));
 } else {
-	$api = new Api_Ram($db);
+	$api = new Api_Ram($db,
+			$appcfg_Dominio,
+		$appcfg_Dominio_Corto,
+		$appcfg_Dominio_Raiz,
+		$appcfg_smtp_server,
+		$appcfg_smtp_port,
+		$appcfg_smtp_user,
+		$appcfg_smtp_password);
 }

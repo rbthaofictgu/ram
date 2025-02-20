@@ -13,6 +13,10 @@
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.3/dist/sweetalert2.min.css" rel="stylesheet">
 <link href="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"> 
+<!-- jQuery (Required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link href="https://cdn.jsdelivr.net/npm/bs-stepper/dist/css/bs-stepper.min.css" rel="stylesheet"> 
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
 <link href="<?php echo $appcfg_Dominio;?>assets/css/styles.css" rel="stylesheet">
+<link rel="stylesheet" href="<?php echo $appcfg_Dominio;?>assets/css/select2.min.css">
+<link rel="stylesheet" href="<?php echo $appcfg_Dominio;?>assets/js/select2.min.js">

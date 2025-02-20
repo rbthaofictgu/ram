@@ -4,7 +4,7 @@
 // Última Fecha Modificación:                                           **/
 //************************************************************************/
 function sendToast(text,duration=3000,destination='',newWindow=true,close=true,gravity="top",position="left",stopOnFocus=true,
-    style={background: "linear-gradient(to right, #88cfe0, #f5e0db)",},onClick=function(){},clase='success',offset={ x: 50,  y: 10  },avatar='https://satt2.transporte.gob.hn:285/ram/assets/images/check.png') {
+    style={background: "linear-gradient(to right, #88cfe0, #f5e0db)",},onClick=function(){},clase='success',offset={ x: 50,  y: 10  },avatar= $appcfg_Dominio +'/assets/images/check.png') {
     console.log(3);
     if (typeof offset == Boolean && offset==false) {
         Toastify({
@@ -36,5 +36,4 @@ function sendToast(text,duration=3000,destination='',newWindow=true,close=true,g
             onClick: onClick // Callback after click
         }).showToast();
     }
-    console.log(4);
 }

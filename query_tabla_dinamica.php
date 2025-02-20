@@ -48,9 +48,12 @@ where c.Codigo_Ciudad=soli.Codigo_Ciudad) AS CIUDAD,
 soli.Estado_Formulario AS ESTADO, 
 soli.Sistema_Fecha AS FECHA, 
 -- soli.Etapa_Preforma AS ETAPA, 
-soli.Es_Renovacion_Automatica AS RA
+soli.Es_Renovacion_Automatica AS RA,
+AC.CodigoAvisoCobro,
+AC.AvisoCobroEstado
 FROM [IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] es,
 [IHTT_PREFORMA].[dbo].[TB_Solicitante] AS soli
+left outer join [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] AC on AC.ID_Solicitud = soli.ID_Formulario_Solicitud
 JOIN [IHTT_PREFORMA].[dbo].[TB_Apoderado_Legal] AS a 
     ON soli.ID_Formulario_Solicitud = a.ID_Formulario_Solicitud
 JOIN [IHTT_PREFORMA].[dbo].[TB_Solicitud] AS sol 
