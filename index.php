@@ -1344,22 +1344,10 @@ include_once('configuracion/configuracion_js.php');
 
 
           <div class="row">
-            <div class="col-md-2">
+            <div class="col justify-content-center">
               <button id="btnprevious2" type="button" class="btn btn-success btn-sm btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
             </div>
-            <div class="col-md-2">
-              <button style="display: none;" id="btnconcesion" type="button" class="btn btn-light btn-sm"><i class="fa-solid fa-rotate-right"></i> Recargar</button>
-            </div>
-            <div class="col-md-2">
-              <button style="display: none;" id="btnmultas" type="button" class="btn btn-secondary btn-sm"><i class="fas fa-coins btn-custom"></i> Multas</button>
-            </div>
-            <div class="col-md-2">
-              <button style="display: none;" id="btnconsultas" type="button" class="btn btn-warning btn-sm"><i class="fas fa-binoculars"></i> Consultas</button>
-            </div>
-            <div class="col-md-2">
-              <button style="display: none;" id="btnperexp" type="button" class="btn btn-danger btn-sm"><i class="fa-solid fa-file"></i> Per Exp</button>
-            </div>
-            <div class="col-md-2 justify-content-right">
+            <div class="col justify-content-center">
               <button id="btnnext2" type="button" class="btn btn-primary btn-sm btn-sm btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
             </div>
           </div>

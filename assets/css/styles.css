@@ -2315,3 +2315,20 @@ a {
     visibility: visible !important;
     opacity: 1 !important;
 }
+.full-width {
+    width: 100% !important;  /* Make it take full width */
+    max-width: 1000px; /* Optional: Limit width */
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+}
+.thirth-width {
+    width: 100% !important;  /* Make it take full width */
+    max-width: 600px; /* Optional: Limit width */
+    margin: auto;
+    text-align: center;
+    justify-content: center;
+}
+.tramiteschk{
+	justify-content: center;
+}

@@ -90,18 +90,14 @@ function addConcesionNumber (ID,ID_CHECK,Monto,Descripcion,ID_Tramite) {
 //* Inicio: Actualizando arreglo de Tramites dentro de concesionNumber
 //*********************************************************************************************************/  
 function updateConcesionNumber (idTramite,idCheckBox) {
-  console.log(concesionNumber,'concesionNumber en updateConcesionNumber inicio');
   for (let i=(concesionNumber.length-1);i>=0;i--) {
     if (concesionNumber[i].Concesion == document.getElementById("concesion_concesion").innerHTML)  {  
       concesionNumber[i].Tramites = concesionNumber[i].Tramites.filter(tramite => tramite.ID !== idTramite);
-      console.log(idCheckBox.split("_")[3],'idCheckBox');
       if (idCheckBox.split("_")[3] == 'CU') {
         concesionNumber[i].Unidad1 = null;
-        console.log(concesionNumber,'concesionNumber en updateConcesionNumber adentro');
       }
     }
   }
-  console.log(concesionNumber,'concesionNumber en updateConcesionNumber final');
 }
 //*********************************************************************************************************/
 //* Final: Actualizando arreglo de Tramites dentro de concesionNumber
@@ -392,129 +388,130 @@ function fCleanSelectErrorMsg() {
   //***********************************************************************************************/
   //* INICIO: ELIMINAR TRAMITES */
   //***********************************************************************************************/
-  function fEliminarTramite(idConcesion,idTramite,idRow,idRowConcesion,Monto,idCheckBox,ID_Unidad,ID_Unidad1){
-    // URL del Punto de Acceso a la API
-    const url = $appcfg_Dominio + "Api_Ram.php";
-    let fd = new FormData(document.forms.form1);
-    var Tramites = '';
-    // Adjuntando el action al FormData
-    if (document.getElementById("ID_Expediente").value == ''){
-      fd.append("action", "delete-tramite-preforma");
-    } else {
-      fd.append("action", "delete-tramite-expediente");
-      // Enviar el número de Expediente
-      fd.append("ID_Expediente",  document.getElementById("ID_Expediente").value);
-      // Enviar el número de Solicitud
-      fd.append("ID_Solicitud",  document.getElementById("ID_Solicitud").value);    
-    }        
-    //* ID DEL TRAMITE
-    fd.append("idTramite", JSON.stringify(idTramite));
-    if (idCheckBox.split("_")[3] == 'CU') {
-      fd.append("ID_CHECK", JSON.stringify(idCheckBox));
-      fd.append("ID_Unidad", JSON.stringify(ID_Unidad));
-      fd.append("ID_Unidad1", JSON.stringify(ID_Unidad1));
-    }
-    const options = {
-      method: "POST",
-      body: fd,
-    };
-    // Hacer al solicitud fetch con un timeout de 2 minutos
-    fetchWithTimeout(url, options, 120000)
-      .then((response) => response.json())
-      .then(function (Datos) {
-        if (typeof Datos.ERROR != "undefined") {
-          sendToast(
-            "ERROR ELIMINANDO TRAMITE EN PREFORMA, INTENTELO NUEVAMENTE SI EL ERROR PERSISTE FAVOR CONTACTAR AL ADMINISTRADOR DEL SISTEMA",
-            $appcfg_milisegundos_toast,
-            "",
-            true,
-            true,
-            "top",
-            "right",
-            true,
-            $appcfg_background_toast,
-            function () {},
-            "error",
-            $appcfg_pocision_toast,
-            $appcfg_icono_toast
-          );
-          return true;
-        } else {
-          //*******************************************************************************************************/
-          //*INICIO: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
-          //*******************************************************************************************************/
-          updateConcesionNumber (idTramite,idCheckBox)
-          //*******************************************************************************************************/
-          //*FINAL: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
-          //*******************************************************************************************************/
-          //*******************************************************************************************************/
-          //*INICIO: RESTANDO DEL TOTAL POR CONCESION Y TOTAL GENERAL EL MONTO DEL TRAMITE ELMINADO
-          //*******************************************************************************************************/
-          if (Monto != false) {
-            let total_concesion = document.getElementById("Total"+idRowConcesion);
-            if (total_concesion) {
-              Monto = parseFloat(Monto).toFixed(2);
-              let Total_Tramites_concesion = parseFloat(total_concesion.innerHTML).toFixed(2);
-              total_concesion.innerHTML = (parseFloat(Total_Tramites_concesion - Monto).toFixed(2)).toString();
-              let Total_A_Pagar = parseFloat(document.getElementById("Total_A_Pagar").innerHTML).toFixed(2);
-              document.getElementById("Total_A_Pagar").innerHTML = (parseFloat(Total_A_Pagar - Monto).toFixed(2)).toString();
-            }
-          }
-          //*********************************************************************************************************************************/
-          //* Rebajando 1 a la cantidad de tramites por concesion;
-          //*********************************************************************************************************************************/
-          TOTAL_TRAMITES_X_CONCESION[updateCollection(idConcesion)] = TOTAL_TRAMITES_X_CONCESION[updateCollection(idConcesion)] -1;          
-          //*********************************************************************************************************************************/
-          //*******************************************************************************************************/
-          //*INICIO: ENVIO DE MENSAJE DE BORRADO DEL TRAMITE EXITOSO
-          //*******************************************************************************************************/
-          sendToast(
-            "TRAMITE PRE-FORMA ELIMINADO EXITOSAMENTE",
-            $appcfg_milisegundos_toast,
-            "",
-            true,
-            true,
-            "top",
-            "right",
-            true,
-            $appcfg_background_toast,
-            function () {},
-            "success",
-            $appcfg_pocision_toast,
-            $appcfg_icono_toast
-          );
-          if (idRow != null && Monto != false) {
-            const row = document.getElementById(idRow);
-            if (row) {
-              row.remove();
-            } else {
-              console.log("Linea # " + idRow +" No Encontrada!");
-              alert("Linea # " + idRow +" No Encontrada!");
-            }
-          }
-          //************************************************************************************************/
-          //* BLANQUEANDO EL ID_Unidad1 CUANDO SE BORRA LA TRANSACCIÓN DE CAMBIO DE UNIDAD UNICAMENTE     */
-          //************************************************************************************************/
-          if (idCheckBox.split("_")[3] == 'CU') {
-            document.getElementById("ID_Unidad1").value == '';
-            document.getElementById("btnCambiarUnidad").style.display = "none";
-            document.getElementById("idVistaSTPC1").style = "display:fixed;";                
-            document.getElementById("idVistaSTPC2").style = "display:none;";                
-          }
-          //************************************************************************************************/
-          return false;
-        } // final del If de si Hay error
-      })
-      .catch((error) => {
-        console.log('catch error eliminando tramite en preforma' + error);
-        fSweetAlertEventSelect(
+  async function fEliminarTramite(idConcesion,idTramite,idRow,idRowConcesion,Monto,idCheckBox,ID_Unidad,ID_Unidad1){
+
+    try {
+      // URL del Punto de Acceso a la API
+      const url = $appcfg_Dominio + "Api_Ram.php";
+      let fd = new FormData(document.forms.form1);
+      var Tramites = '';
+      // Adjuntando el action al FormData
+      if (document.getElementById("ID_Expediente").value == ''){
+        fd.append("action", "delete-tramite-preforma");
+      } else {
+        fd.append("action", "delete-tramite-expediente");
+        // Enviar el número de Expediente
+        fd.append("ID_Expediente",  document.getElementById("ID_Expediente").value);
+        // Enviar el número de Solicitud
+        fd.append("ID_Solicitud",  document.getElementById("ID_Solicitud").value);    
+      }        
+      //* ID DEL TRAMITE
+      fd.append("idTramite", JSON.stringify(idTramite));
+      if (idCheckBox.split("_")[3] == 'CU') {
+        fd.append("ID_CHECK", JSON.stringify(idCheckBox));
+        fd.append("ID_Unidad", JSON.stringify(ID_Unidad));
+        fd.append("ID_Unidad1", JSON.stringify(ID_Unidad1));
+      }
+      const options = {
+        method: "POST",
+        body: fd,
+      };
+
+      const response = await fetchWithTimeout(url, options, 120000);
+      const Datos = await response.json();
+
+      if (typeof Datos.ERROR != "undefined") {
+        sendToast(
+          "INCONVENIENTES ELIMINANDO TRAMITE EN PREFORMA, INTENTELO NUEVAMENTE SI EL ERROR PERSISTE FAVOR CONTACTAR AL ADMINISTRADOR DEL SISTEMA",
+          $appcfg_milisegundos_toast,
           "",
-          "ELIMINAR TRAMITE EN PREFORMA",
-          "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-          "warning"
+          true,
+          true,
+          "top",
+          "right",
+          true,
+          $appcfg_background_toast,
+          function () {},
+          "error",
+          $appcfg_pocision_toast,
+          $appcfg_icono_toast
         );
+        return false;
+      } else {
+        //*******************************************************************************************************/
+        //*INICIO: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
+        //*******************************************************************************************************/
+        updateConcesionNumber (idTramite,idCheckBox)
+        //*******************************************************************************************************/
+        //*FINAL: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
+        //*******************************************************************************************************/
+        //*******************************************************************************************************/
+        //*INICIO: RESTANDO DEL TOTAL POR CONCESION Y TOTAL GENERAL EL MONTO DEL TRAMITE ELMINADO
+        //*******************************************************************************************************/
+        if (Monto != false) {
+          let total_concesion = document.getElementById("Total"+idRowConcesion);
+          if (total_concesion) {
+            Monto = parseFloat(Monto).toFixed(2);
+            let Total_Tramites_concesion = parseFloat(total_concesion.innerHTML).toFixed(2);
+            total_concesion.innerHTML = (parseFloat(Total_Tramites_concesion - Monto).toFixed(2)).toString();
+            let Total_A_Pagar = parseFloat(document.getElementById("Total_A_Pagar").innerHTML).toFixed(2);
+            document.getElementById("Total_A_Pagar").innerHTML = (parseFloat(Total_A_Pagar - Monto).toFixed(2)).toString();
+          }
+        }
+        //*********************************************************************************************************************************/
+        //* Rebajando 1 a la cantidad de tramites por concesion;
+        //*********************************************************************************************************************************/
+        TOTAL_TRAMITES_X_CONCESION[updateCollection(idConcesion)] = TOTAL_TRAMITES_X_CONCESION[updateCollection(idConcesion)] -1;          
+        //*********************************************************************************************************************************/
+        //*******************************************************************************************************/
+        //*INICIO: ENVIO DE MENSAJE DE BORRADO DEL TRAMITE EXITOSO
+        //*******************************************************************************************************/
+        sendToast(
+          "TRAMITE PRE-FORMA ELIMINADO EXITOSAMENTE",
+          $appcfg_milisegundos_toast,
+          "",
+          true,
+          true,
+          "top",
+          "right",
+          true,
+          $appcfg_background_toast,
+          function () {},
+          "success",
+          $appcfg_pocision_toast,
+          $appcfg_icono_toast
+        );
+        if (idRow != null && Monto != false) {
+          const row = document.getElementById(idRow);
+          if (row) {
+            row.remove();
+          } else {
+            console.log("Linea # " + idRow +" No Encontrada!");
+            alert("Linea # " + idRow +" No Encontrada!");
+          }
+        }
+        //************************************************************************************************/
+        //* BLANQUEANDO EL ID_Unidad1 CUANDO SE BORRA LA TRANSACCIÓN DE CAMBIO DE UNIDAD UNICAMENTE     */
+        //************************************************************************************************/
+        if (idCheckBox.split("_")[3] == 'CU') {
+          document.getElementById("ID_Unidad1").value == '';
+          document.getElementById("btnCambiarUnidad").style.display = "none";
+          document.getElementById("idVistaSTPC1").style = "display:fixed;";                
+          document.getElementById("idVistaSTPC2").style = "display:none;";                
+        }
+        //************************************************************************************************/
         return true;
-      });
+      } // final del If de si Hay error
+    } catch (error) {
+      console.log('catch error eliminando tramite en preforma fEliminarTramite' + error);
+      fSweetAlertEventSelect(
+        "",
+        "ELIMINAR TRAMITE EN PREFORMA",
+        "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
+        "warning"
+      );
+      return false;
+    }    
   }
 
   btnCambiarUnidad.addEventListener("click", function (event) {
@@ -911,6 +908,8 @@ function fCleanSelectErrorMsg() {
     linear: true,
     animation: true,
   });
+  
+  
   var btnNextList = [].slice.call(document.querySelectorAll(".btn-next-form"));
   var btnNextListprevious = [].slice.call(
     document.querySelectorAll(".btn-previous-form")
@@ -940,7 +939,6 @@ function fCleanSelectErrorMsg() {
     isDirty[i] = false;
     isRecordGetted[i] = "";
   }
-
   btnNextList.forEach(function (btn) {
     btn.addEventListener("click", function () {
       if (currentstep == 4) {
@@ -1994,42 +1992,48 @@ function fCleanSelectErrorMsg() {
                   }
 
                   const unidad = datos[1]?.[0]?.["Unidad"]?.[0];
+                  var html = '';
 
-                  if (unidad?.["Multas"]) {
+                  //*console.log(unidad,'unidad previo html');
+
+                  if (unidad?.["Multas"]?.[0]) {
                       html = mallaDinamica(
                           { titulo: "CERTIFICADO Y/O UNIDAD(NORMAL O SALE) TIENEN MULTAS PENDIENTES DE PAGO", name: "MULTAS" },
                           unidad["Multas"]
                       );
                   }
 
-                  if (unidad?.["Multas1"]) {
-                    html = mallaDinamica(
+                  if (unidad?.["Multas1"]?.[0]) {
+                    html = html + mallaDinamica(
                         { titulo: "CERTIFICADO Y/O UNIDAD(ENTRA)  TIENEN MULTAS PENDIENTES DE PAGO", name: "MULTAS" },
                         unidad["Multas1"]
                     );
                 }
                 
-                  if (unidad?.["Preforma"]) {
-                      html += mallaDinamica(
-                          { titulo: "PREFORMAS PENDIENTES DE RESOLUCIÓN", name: "MULTAS" },
-                          unidad["Multas"]
+                  if (unidad?.["Preforma"]?.[0]) {
+                     console.log(unidad["Preforma"]);
+                      html = html + mallaDinamica(
+                          { titulo: "PREFORMAS PENDIENTES DE RESOLUCIÓN", name: "PREFORMA" },
+                          unidad["Preforma"]
                       );
                   }
                   
-                  if (unidad?.["Placas"]) {
-                      html += mallaDinamica(
-                          { titulo: "CERTIFICADO Y/O UNIDADES TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA" },
+                  if (unidad?.["Placas"]?.[0]) {
+                      html = html + mallaDinamica(
+                          { titulo: "CERTIFICADO Y/O UNIDADES TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA" , name: "DOCUMENTOS/EXPEDIENTES" },
                           unidad["Placas"]
                       );
                   }
                   
-                  fSweetAlertEventNormal(
-                      "INFORMACIÓN",
-                      "CERTIFICADO Y/O UNIDAD TIENEN MULTAS PENDIENTES DE PAGO",
-                      "info",
-                      html
-                  );
-                  
+                  if (html != '') {
+                    fSweetAlertEventNormal(
+                        "INFORMACIÓN",
+                        "FAVOR REVISAR INFORMACIÓN",
+                        "warning",
+                        html
+                    );
+                  }
+
                 }
               }
             }
@@ -2202,7 +2206,8 @@ function fCleanSelectErrorMsg() {
                     typeof datos[1][0]["Unidad"][0]["Preforma"][0] != "undefined"
                 ) {
 
-                  var html = mallaDinamica(
+                  var html =  '';
+                  html = mallaDinamica(
                     {
                       titulo: "PREFORMAS PENDIENTES DE RESOLUCIÓN",
                       name: "PREFORMA",
@@ -2210,12 +2215,14 @@ function fCleanSelectErrorMsg() {
                     datos[1][0]["Unidad"][0]["Preforma"]
                   );
 
-                  fSweetAlertSelect(
-                    "INFORMACIÓN",
-                    "LA UNIDAD Y/O EL CERTIFICADO PREFORMAS INGRESADAS PENDIENTES DE RESOLUCIÓN",
-                    "info",
-                    html
-                  );
+                  if (html != '') {
+                    fSweetAlertSelect(
+                      "INFORMACIÓN",
+                      "FAVOR REVISAR CUIDADOSAMENTE LA INFORMACIÓN",
+                      "warning",
+                      html
+                    );
+                  }
                 }
                 //*********************************************************************************/
                 //* Pocisionandose en el checkbox que corresponde según sea la Clase de Servicio  */
@@ -2356,9 +2363,10 @@ function fCleanSelectErrorMsg() {
     document.getElementById("concesion_tramites").innerHTML =
       datos[1][0]["Tramites"];
     
+    //*************************************************************************************************************/  
+    //* Llamar funcion que habilita los Listener de las Placas en el caso de cambio de placa y/o cambio de unidad
+    //*************************************************************************************************************/  
     setaddEventListener();
-    
-    chkTramites = document.querySelectorAll('input[name="tramites[]"]');      
   
     document.getElementById("concesion_concesion").innerHTML =
       datos[1][0]["N_Certificado"];
@@ -2405,50 +2413,28 @@ function fCleanSelectErrorMsg() {
       //***********************************************************************************************************************************/
       document.getElementById("RequiereRenovacionConcesion").value = false;
       document.getElementById("RequiereRenovacionPerExp").value = false;
-      var el = document.getElementById("IHTTTRA-02_CLATRA-02_R_CO");
-      if (el != null) {
-        document.getElementById("IHTTTRA-02_CLATRA-02_R_CO").checked = false;
-        document.getElementById("IHTTTRA-02_CLATRA-02_R_CO").disabled = true;
-        document.getElementById("IHTTTRA-02_CLATRA-01_R_PE").checked = false;
-        document.getElementById("IHTTTRA-02_CLATRA-01_R_PE").disabled = true;
-        document.getElementById("row_tramite_X_CO").style.display = "flex";
-        document.getElementById("row_tramite_X_PE").style.display = "flex";
-      } else {
-        document.getElementById("IHTTTRA-02_CLATRA-03_R_PS").checked = false;
-        document.getElementById("IHTTTRA-02_CLATRA-03_R_PS").disabled = true;
-        document.getElementById("row_tramite_X_PS").style.display = "flex";
-      }
       //***********************************************************************************************************************/
       //* INICIO: Se pago el cambio de placa de la unidad actual, esto se hace cuando se detecta que la undiad cambio de placa
       //* y no se encuentra en nuestros registros el pago de ese cambio de placa
       //***********************************************************************************************************************/
-      document.getElementById("estaPagadoElCambiodePlaca").value =
-        datos[1][0]["Unidad"][0]["estaPagadoElCambiodePlaca"];
-      if (datos[1][0]["Unidad"][0]["estaPagadoElCambiodePlaca"] == false) {
-        document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").checked = true;
-        document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = true;
-        document.getElementById("concesion_tramite_placa_CL").style =
-          "display:flex;text-transform: uppercase;";
-        document.getElementById("concesion_tramite_placa_CL").value =
-          datos[1][0]["Unidad"][0]["ID_Placa"];
-        document
-          .getElementById("concesion_tramite_placa_CL")
-          .setAttribute("readonly", true);
+      document.getElementById("estaPagadoElCambiodePlaca").value = datos[1][0]["Unidad"][0]["estaPagadoElCambiodePlaca"];
+      if (document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").checked == true) {
+
+        if (document.getElementById("estaPagadoElCambiodePlaca").value == false) {
+          document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = true;
+          document.getElementById("concesion_tramite_placa_CL").removeAttribute("readonly");
+        }
+
+        document.getElementById("concesion_tramite_placa_CL").style = "display:flex;text-transform: uppercase;";
+        document.getElementById("concesion_tramite_placa_CL").value =  datos[1][0]["Unidad"][0]["ID_Placa"];
+        document.getElementById("concesion_tramite_placa_CL").setAttribute("readonly", true);
         esCambioDePlaca = true;
       } else {
         esCambioDePlaca = false;
-        document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").checked = false;
         document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = false;
-        document.getElementById("concesion_tramite_placa_CL").style =
-          "display:none;text-transform: uppercase;";
-        document
-          .getElementById("concesion_tramite_placa_CL")
-          .removeAttribute("readonly");
+        document.getElementById("concesion_tramite_placa_CL").style = "display:none;text-transform: uppercase;";
+        document.getElementById("concesion_tramite_placa_CL").removeAttribute("readonly");
       }
-      //***********************************************************************************************************************/
-      //* FINAL: Se pago el cambio de placa de la unidad actual, esto se hace cuando se detecta que la undiad cambio de placa
-      //* y no se encuentra en nuestros registros el pago de ese cambio de placa
-      //***********************************************************************************************************************/
 
       //***********************************************************************************************************************/
       //* INICIO: Si el certificado no esta vigente y requiere renovacion 
@@ -2470,10 +2456,6 @@ function fCleanSelectErrorMsg() {
             ")";
         }
         //***********************************************************************************************************************/
-        //*Inicio Ocultar Linea de Reimpresión de Certificado
-        //***********************************************************************************************************************/
-        document.getElementById("row_tramite_X_CO").style.display = "none";
-        //***********************************************************************************************************************/
         //*Final Ocultar Linea de Reimpresión de Certificado
         //***********************************************************************************************************************/
       } else {
@@ -2484,20 +2466,10 @@ function fCleanSelectErrorMsg() {
         //***********************************************************************************************************************/
         //* INICIO: Si el permiso especial no esta vigencia y requiere renovacion 
         //***********************************************************************************************************************/
-        if (
-          datos[1][0]["Vencimientos"]["renovacion_permiso_especial_vencido"] ==
-          true
-        ) {
+        if (datos[1][0]["Vencimientos"]["renovacion_permiso_especial_vencido"] == true ) {
           document.getElementById("RequiereRenovacionConcesion").value = true;
           document.getElementById("IHTTTRA-02_CLATRA-03_R_PS").checked = true;
           document.getElementById("IHTTTRA-02_CLATRA-03_R_PS").disabled = true;
-          //***********************************************************************************************************************/
-          //*Inicio Ocultar Linea de Reimpresión de Permiso Especial
-          //***********************************************************************************************************************/
-          document.getElementById("row_tramite_X_PS").style.display = "none";
-          //***********************************************************************************************************************/
-          //*Final  Ocultar Linea de Reimpresión de Permiso Especial
-          //***********************************************************************************************************************/
         }
       }
       //***********************************************************************************************************************/
@@ -2507,12 +2479,8 @@ function fCleanSelectErrorMsg() {
       //***********************************************************************************************************************/
       //* INICIO: Si el permiso EXPLOTACION no esta vigente y requiere renovacion 
       //***********************************************************************************************************************/
-      document.getElementById("RequiereRenovacionPerExp").value =
-        datos[1][0]["Vencimientos"]["renovacion_permisoexplotacion_vencido"];
-      if (
-        datos[1][0]["Vencimientos"]["renovacion_permisoexplotacion_vencido"] ==
-        true
-      ) {
+      document.getElementById("RequiereRenovacionPerExp").value = datos[1][0]["Vencimientos"]["renovacion_permisoexplotacion_vencido"];
+      if (  datos[1][0]["Vencimientos"]["renovacion_permisoexplotacion_vencido"] == true  ) {
         document.getElementById("IHTTTRA-02_CLATRA-01_R_PE").checked = true;
         document.getElementById("IHTTTRA-02_CLATRA-01_R_PE").disabled = true;
         if (datos[1][0]["Vencimientos"]["renper-explotacion-cantidad"] > 0) {
@@ -2526,9 +2494,6 @@ function fCleanSelectErrorMsg() {
             datos[1][0]["Vencimientos"]["renper-explotacion-cantidad"] +
             ")";
         }
-        //Inicio
-        document.getElementById("row_tramite_X_PE").style.display = "none";
-        //Final
       }
       //***********************************************************************************************************************/
       //* FINAL: Si el permiso EXPLOTACION no esta vigente y requiere renovacion 
@@ -2620,9 +2585,6 @@ function fCleanSelectErrorMsg() {
         { text: "SELECCIONE UN AÑO", value: "-1" }
       );
   
-      
-            
-
       document.getElementById("concesion_tipovehiculo").innerHTML =
         datos[1][0]["Unidad"][0]["DESC_Tipo_Vehiculo"];
       //***********************************************************************************************************************************/
@@ -2669,10 +2631,10 @@ function fCleanSelectErrorMsg() {
     ) {
       f_RenderConcesionTramitesPreforma(datos);
     }
-    
   }
 
     function f_RenderConcesionTramitesPreforma(datos) {
+      
     var concesionlabel = document.getElementById("concesion1label");
     if (concesionlabel != null) {
       concesionlabel.innerHTML =
@@ -3154,10 +3116,7 @@ function fCleanSelectErrorMsg() {
         //*************************************************************/
         //* Si trae Unidad 1
         //*************************************************************/
-        Unidad1 = '';
-        if (typeof Unidades[Concesion] != 'undefined' && typeof Unidades[Concesion][1] != 'undefined' && typeof Unidades[Concesion][1] != null) {
-          Unidad1 = Unidades[Concesion][1];
-        }
+        Unidad1 = Unidades[Concesion]?.[1] ?? "";
         if (Tramites.length == index){
           currentConcesionIndex = updateCollection(Concesion);
           concesionNumber[currentConcesionIndex] = {
@@ -3173,7 +3132,7 @@ function fCleanSelectErrorMsg() {
             CodigoAvisoCobro: '',
             ID_Resolucion: '',
             Placa: Placa,
-            Unidad: Unidades[Concesion][0],
+            Unidad: Unidades[Concesion]?.[0] ?? "",
             Unidad1: Unidad1,
             Tramites: TramitesPreforma,
           }
@@ -3190,12 +3149,16 @@ function fCleanSelectErrorMsg() {
           //***********************************************************************/
           //* Agregando placa actual asociada a concesion */
           //***********************************************************************/
-          addElementToAutoComplete(Concesion,Unidades[Concesion][0].ID_Placa + ' => ' + Concesion)    
+          if (Unidades[Concesion]?.[0]?.ID_Placa != null) {
+            addElementToAutoComplete(Concesion, Unidades[Concesion][0].ID_Placa + ' => ' + Concesion);
+          }
           //***********************************************************************/
           //* Agregando placa Anterior Asociada a concesion */
           //***********************************************************************/
-          if (Unidades[Concesion][0].ID_Placa_Antes_Replaqueo != Unidades[Concesion][0].ID_Placa) {
-            addElementToAutoComplete(Concesion,Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + ' => ' + Concesion)    
+          if (Unidades[Concesion]?.[0]?.ID_Placa_Antes_Replaqueo != null && 
+            Unidades[Concesion]?.[0]?.ID_Placa != null &&
+            Unidades[Concesion][0].ID_Placa_Antes_Replaqueo !== Unidades[Concesion][0].ID_Placa) {
+            addElementToAutoComplete(Concesion, Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
           }
           if (Unidad1 != '' && Unidad1.ID_Placa != 'undefined') {
             //***********************************************************************/
@@ -3205,8 +3168,10 @@ function fCleanSelectErrorMsg() {
             //***********************************************************************/
             //* Agregando placa Anterior Asociada a concesion */
             //***********************************************************************/
-            if (Unidad1.ID_Placa_Antes_Replaqueo != Unidad1.ID_Placa && Unidad1.ID_Placa_Antes_Replaqueo != 'undefined') {
-              addElementToAutoComplete(Concesion,Unidad1.ID_Placa_Antes_Replaqueo + ' => ' + Concesion)    
+            if (Unidad1?.ID_Placa_Antes_Replaqueo != null &&
+              Unidad1?.ID_Placa != null &&
+              Unidad1.ID_Placa_Antes_Replaqueo !== Unidad1.ID_Placa) {
+              addElementToAutoComplete(Concesion, Unidad1.ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
             }
             //***********************************************************************/      
           }
@@ -3215,10 +3180,7 @@ function fCleanSelectErrorMsg() {
         //*************************************************************/
         //* Si trae Unidad 1
         //*************************************************************/
-        Unidad1 = '';
-        if (typeof Unidades[Concesion] != 'undefined' && typeof Unidades[Concesion][1] != 'undefined'  && typeof Unidades[Concesion][1] != null) {
-          Unidad1 = Unidades[Concesion][1];
-        }
+        Unidad1 = Unidades[Concesion]?.[1] ?? "";
         //**********************************************************************************************************************/
         //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
         //**********************************************************************************************************************/
@@ -3236,7 +3198,7 @@ function fCleanSelectErrorMsg() {
           CodigoAvisoCobro: '',
           ID_Resolucion: '',
           Placa: Placa,
-          Unidad: Unidades[Concesion][0],
+          Unidad: Unidades[Concesion]?.[0] ?? "",
           Unidad1: Unidad1,
           Tramites: TramitesPreforma,
         };
@@ -3253,12 +3215,16 @@ function fCleanSelectErrorMsg() {
         //***********************************************************************/
         //* Agregando placa actual asociada a concesion */
         //***********************************************************************/
-        addElementToAutoComplete(Concesion,Unidades[Concesion][0].ID_Placa + ' => ' + Concesion);   
+        if (Unidades[Concesion]?.[0]?.ID_Placa != null) {
+          addElementToAutoComplete(Concesion, Unidades[Concesion][0].ID_Placa + ' => ' + Concesion);
+        }
         //***********************************************************************/
         //* Agregando placa Anterior Asociada a concesion */
         //***********************************************************************/
-        if (Unidades[Concesion][0].ID_Placa_Antes_Replaqueo != Unidades[Concesion][0].ID_Placa) {
-          addElementToAutoComplete(Concesion,Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
+        if (Unidades[Concesion]?.[0]?.ID_Placa_Antes_Replaqueo != null && 
+          Unidades[Concesion]?.[0]?.ID_Placa != null &&
+          Unidades[Concesion][0].ID_Placa_Antes_Replaqueo !== Unidades[Concesion][0].ID_Placa) {
+          addElementToAutoComplete(Concesion, Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
         }
         if (Unidad1 != '' && Unidad1.ID_Placa != 'undefined') {
           //***********************************************************************/
@@ -3268,8 +3234,11 @@ function fCleanSelectErrorMsg() {
           //***********************************************************************/
           //* Agregando placa Anterior Asociada a concesion */
           //***********************************************************************/
-          if (Unidad1.ID_Placa_Antes_Replaqueo != Unidad1.ID_Placa && Unidad1.ID_Placa_Antes_Replaqueo != 'undefined') {
-            addElementToAutoComplete(Concesion,Unidad1.ID_Placa_Antes_Replaqueo + ' => ' + Concesion); 
+          if (Unidad1?.ID_Placa_Antes_Replaqueo != null &&
+            Unidad1?.ID_Placa != null &&
+            Unidad1.ID_Placa_Antes_Replaqueo !== Unidad1.ID_Placa) {
+        
+            addElementToAutoComplete(Concesion, Unidad1.ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
           }
           //***********************************************************************/      
         }
@@ -3331,11 +3300,7 @@ function fCleanSelectErrorMsg() {
         //*************************************************************/
         //* Si trae Unidad 1
         //*************************************************************/
-        Unidad1 = '';
-        if (typeof Unidades[Concesion] != 'undefined' && typeof Unidades[Concesion][1] != 'undefined') {
-          Unidad1 = Unidades[Concesion][1];
-        }   
-
+        Unidad1 = Unidades[Concesion]?.[1] ?? "";
         if (Tramites.length == index) {
           currentConcesionIndex = updateCollection(Concesion);
           concesionNumber[currentConcesionIndex] = {
@@ -3351,7 +3316,7 @@ function fCleanSelectErrorMsg() {
             CodigoAvisoCobro: '',
             ID_Resolucion: '',
             Placa: Placa,
-            Unidad: Unidades[Concesion][0],
+            Unidad: Unidades[Concesion]?.[0] ?? "",
             Unidad1: Unidad1,
             Tramites: TramitesPreforma,
           }
@@ -3368,12 +3333,16 @@ function fCleanSelectErrorMsg() {
           //***********************************************************************/
           //* Agregando placa actual asociada a concesion */
           //***********************************************************************/
-          addElementToAutoComplete(Concesion,Unidades[Concesion][0].ID_Placa + ' => ' + Concesion);
+          if (Unidades[Concesion]?.[0]?.ID_Placa != null) {
+            addElementToAutoComplete(Concesion, Unidades[Concesion][0].ID_Placa + ' => ' + Concesion);
+          }
           //***********************************************************************/
           //* Agregando placa Anterior Asociada a concesion */
           //***********************************************************************/
-          if (Unidades[Concesion][0].ID_Placa_Antes_Replaqueo != Unidades[Concesion][0].ID_Placa) {
-            addElementToAutoComplete(Concesion,Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
+          if (Unidades[Concesion]?.[0]?.ID_Placa_Antes_Replaqueo != null && 
+            Unidades[Concesion]?.[0]?.ID_Placa != null &&
+            Unidades[Concesion][0].ID_Placa_Antes_Replaqueo !== Unidades[Concesion][0].ID_Placa) {
+            addElementToAutoComplete(Concesion, Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
           }
           if (Unidad1 != '' && Unidad1.ID_Placa != 'undefined') {
             //***********************************************************************/
@@ -3383,8 +3352,11 @@ function fCleanSelectErrorMsg() {
             //***********************************************************************/
             //* Agregando placa Anterior Asociada a concesion */
             //***********************************************************************/
-            if (Unidad1.ID_Placa_Antes_Replaqueo != Unidad1.ID_Placa && Unidad1.ID_Placa_Antes_Replaqueo != 'undefined') {
-              addElementToAutoComplete(Concesion,Unidad1.ID_Placa_Antes_Replaqueo + ' => ' + Concesion);    
+            if (Unidad1?.ID_Placa_Antes_Replaqueo != null &&
+              Unidad1?.ID_Placa != null &&
+              Unidad1.ID_Placa_Antes_Replaqueo !== Unidad1.ID_Placa) {
+          
+              addElementToAutoComplete(Concesion, Unidad1.ID_Placa_Antes_Replaqueo + ' => ' + Concesion);
             }
             //***********************************************************************/      
           }
@@ -3668,7 +3640,7 @@ function fCleanSelectErrorMsg() {
                 html = html + mallaDinamica(
                 {
                   titulo: "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
-                  name: "PREFORMA",
+                  name: "DOCUMENTOS/EXPEDIENTES",
                 },
                 Datos.Placas
               );
@@ -4154,33 +4126,23 @@ function fCleanSelectErrorMsg() {
       if (parts[0].slice(-1) == 1 && esCambioDeVehiculo == true || parts[0].slice(-1) != 1) {
         //* If de si el valor es valido para preventDefault
         if (!isValid) {
-
-          console.log(event.target.value,'event.target.value');
-          console.log(event.target.id,'event.target.id');
-
           event.preventDefault();
           // Pocicionando el cursor en el input actual
           if (setFocus == true) {
             event.target.focus();
             event.target.select();
           }
-
           event.target.classList.add("errortxt");
-
           var label = document.getElementById(event.target.id + "label");
-
           if (label != null) {
             label.classList.add("errorlabel");
           }
-
           var labelerror = document.getElementById(
             event.target.id + "labelerror"
           );
-
           if (labelerror != null) {
             labelerror.style.visibility = "visible";
           }
-
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else {
           event.target.classList.remove("errortxt");
@@ -4321,39 +4283,28 @@ function fCleanSelectErrorMsg() {
     isDirty[currentstep] = false;
   });
 
-function callFunctionBorrarTramite (Concesion,ID,Linea,el) {
-  Swal.fire({
-      title: '¿ESTÁ SEGURO?',
-      text: `¿QUIERE ELIMINAR ESTE TRAMITE DE LA CONCESION No. ${document.getElementById("concesion_concesion").innerHTML} ?`,
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'SÍ, ELIMINAR',
-      cancelButtonText: 'CANCELAR'
-  }).then((result) => {
-      //****************************************************************************************************/
-      //* si confirma que esta seguro de eliminar llamamos la funcion para que elimine de la base de datos.
-      //****************************************************************************************************/
-      if (result.isConfirmed) {
-        //***********************************************************************************************/
-        //* Verificamos que tengamos mas de un elemento (tramite)
-        //***********************************************************************************************/
-        if (countFormalities() > 0) {
-            //*****************************************************************************/
-            //* Eliminar Registro de Tramite
-            //*****************************************************************************/
-            if (fEliminarTramite(Concesion, ID, Linea,false, false, el.id,document.getElementById("ID_Unidad").value,document.getElementById("ID_Unidad1").value) == true) {
-              el.checked = true;  
-            } else {
-              removeAttribute(el,'data-iddb');
-            }
-        } else {
-            el.checked = true;  
-            Swal.fire('¡ALERTA!', 'NO SE PUEDE DEJAR SIN NINGÚN TRÁMITE.', 'warning');
-        }
-      } else {
-        el.checked = true;  
-      }
+async function callFunctionBorrarTramite (Concesion,ID,Linea,el) {
+  const result = await Swal.fire({
+    title: '¿ESTÁ SEGURO?',
+    text: `¿QUIERE ELIMINAR ESTE TRAMITE DE LA CONCESION No. ${document.getElementById("concesion_concesion").innerHTML} ?`,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: 'SÍ, BORRAR',
+    cancelButtonText: 'CANCELAR'
   });
+  if (result.isConfirmed) {
+    var success = await fEliminarTramite(Concesion, ID, Linea, false, false, el.id, document.getElementById("ID_Unidad").value, document.getElementById("ID_Unidad1").value);
+    if (success) {
+      console.log('fEliminarTramite retornó true');
+      return true;
+    } else {
+      console.log('fEliminarTramite retornó false');
+      return false;
+    }
+  } else {
+    console.log('Usuario canceló la acción en fEliminarTramite');
+    return false;
+  }
 }
 
   //*********************************************************************************************************************/
@@ -4385,86 +4336,57 @@ function callFunctionBorrarTramite (Concesion,ID,Linea,el) {
   //*********************************************************************************************************************/
   //** Inicio Function para Salvar Tramite en Preforma                                                                 **/
   //*********************************************************************************************************************/
-  function addTramitePreforma(el) {
-    // URL del Punto de Acceso a la API
-    const url = $appcfg_Dominio + "Api_Ram.php";
-    let fd = new FormData(document.forms.form1);
-    var Tramites = '';
-    var Unidad = null;
-    var Unidad1 = null;
-    // Adjuntando el action al FormData
-    fd.append("action", "add-tramite-preforma");
-    // Enviar el número de Expediente
-    fd.append("ID_Expediente",  document.getElementById("ID_Expediente").value);
-    // Enviar el número de Solicitud
-    fd.append("ID_Solicitud",  document.getElementById("ID_Solicitud").value);    
-    // Funcion debe hacer echo no retornar
-    fd.append("echo", true);
-    // Número de RAM
-    fd.append("RAM", document.getElementById('RAM').value);
-    // Adjuntando el Concesion y Caracterización al FormData
-    fd.append("Concesion", JSON.stringify(setConcesion()));
-    // Adjuntando el Tramites al FormData
-    Tramites = setOneTramites(el);
-    fd.append("Tramites", JSON.stringify(Tramites));
-    //  Fetch options
-    const options = {
-      method: "POST",
-      body: fd,
-    };
-    // Hacer al solicitud fetch con un timeout de 2 minutos
-    fetchWithTimeout(url, options, 120000)
-      .then((response) => response.json())
-      .then(function (Datos) {
-        if (typeof Datos.error != "undefined") {
-          fSweetAlertEventNormal(
-            Datos.errorhead,
-            Datos.error + "- " + Datos.errormsg,
-            "error"
-          );
+  async function addTramitePreforma(el) {
+    
+    try {
+      // URL del Punto de Acceso a la API
+      const url = $appcfg_Dominio + "Api_Ram.php";
+      let fd = new FormData(document.forms.form1);
+      var Tramites = '';
+      var Unidad = null;
+      var Unidad1 = null;
+      // Adjuntando el action al FormData
+      fd.append("action", "add-tramite-preforma");
+      // Enviar el número de Expediente
+      fd.append("ID_Expediente",  document.getElementById("ID_Expediente").value);
+      // Enviar el número de Solicitud
+      fd.append("ID_Solicitud",  document.getElementById("ID_Solicitud").value);    
+      // Funcion debe hacer echo no retornar
+      fd.append("echo", true);
+      // Número de RAM
+      fd.append("RAM", document.getElementById('RAM').value);
+      // Adjuntando el Concesion y Caracterización al FormData
+      fd.append("Concesion", JSON.stringify(setConcesion()));
+      // Adjuntando el Tramites al FormData
+      Tramites = setOneTramites(el);
+      fd.append("Tramites", JSON.stringify(Tramites));
+      //  Fetch options
+      const options = {
+        method: "POST",
+        body: fd,
+      };
+      const response = await fetchWithTimeout(url, options, 120000);
+      const Datos = await response.json();
+      if (Datos.error) {
+        fSweetAlertEventNormal(Datos.errorhead, Datos.error + "- " + Datos.errormsg, "error");
+        return false;
+      } else {
+        if (Datos) {
+          setAttribute(el, 'data-iddb', Datos[0]['ID']);
+          addConcesionNumber(Datos[0]['ID'], el.id, getAttribute(el, 'data-monto'), document.getElementById('descripcion_' + el.value).innerHTML, el.value);
+          sendToast("TRAMITE EN PREFORMA INSERTADO SATISFACTORIAMENTE", /* ... otros parámetros ... */);
+          return true;
         } else {
-          if (typeof Datos != false) {
-            setAttribute(el,'data-iddb',Datos[0]['ID']);
-            addConcesionNumber (Datos[0]['ID'],el.id,getAttribute(el,'data-monto'),document.getElementById('descripcion_'+el.value).innerHTML ,el.value)
-            sendToast(
-              "TRAMITE EN PREFORMA INSERTADO SATISFACTORIAMENTE",
-              $appcfg_milisegundos_toast,
-              "",
-              true,
-              true,
-              "top",
-              "right",
-              true,
-              $appcfg_background_toast,
-              function () {},
-              "error",
-              $appcfg_pocision_toast,
-              $appcfg_icono_toast
-              );
-              return true;
-            } else {
-              el.checked = false;
-              fSweetAlertEventSelect(
-                "",
-                "PRECAUCIÓN",
-                "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-                "error"
-              );
-              return false;
-            }
-         }
-      })
-      .catch((error) => {
-        el.checked = false;
-        console.log('error addTramitePreforma' + error);
-        fSweetAlertEventSelect(
-          "",
-          "CATCH addTramitePreforma() ",
-          "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-          "warning"
-        );
-        return true;
-      });
+          el.checked = false;
+          fSweetAlertEventSelect("", "PRECAUCIÓN", "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA", "error");
+          return false;
+        }
+      }
+    } catch (error) {
+      console.log("CATCH addTramitePreforma()", "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA");
+      fSweetAlertEventSelect("", "CATCH addTramitePreforma()", "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA", "warning");
+      return false;
+    }
   }
   //*********************************************************************************************************************/
   //** Final Function para Salvar Tramite en Preforma
@@ -4473,411 +4395,284 @@ function callFunctionBorrarTramite (Concesion,ID,Linea,el) {
 //**************************************************************************************/
 //* INICIO: Agregar Tramite a Preforma Cuando ya esta salvada la concesion
 //**************************************************************************************/
-function addTramite (el) {
-  //**************************************************************************************/
-  //* Separando el valor del input
-  //**************************************************************************************/
-  const [tipo_tramite, clase_tramite, acronimo_tipo, acronimo_clase] =
-    el.id.split("_");
-  //**************************************************************************************/
-  Swal.fire({
-      title: '¿ESTÁ SEGURO?',
-      text: `¿QUIERE AGREGAR ESTE TRAMITE A LA CONCESION No. ${document.getElementById("concesion_concesion").innerHTML} ?`,
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'SÍ, AGREGAR',
-      cancelButtonText: 'CANCELAR'
-  }).then((result) => {
-      //****************************************************************************************/
-      //* si confirma que esta seguro de eliminar llamamos la funcion para que elimine de la base de datos.
-      //****************************************************************************************/
-      if (result.isConfirmed) {
-        //*****************************************************************************/
-        //* Eliminar Registro de Tramite
-        //*****************************************************************************/
-        if (addTramitePreforma(el) == true) {
-          el.checked = false;  
-          //**************************************************************************************/
-          //* Verificadno si es cambio de unidad o cambio de placa
-          //**************************************************************************************/
-          if (acronimo_clase && (acronimo_clase === "CU" || acronimo_clase === "CL")) {
-            // Cache the DOM element
-            const element = document.getElementById(`concesion_tramite_placa_${acronimo_clase}`);
-            if (element) { element.style.display = "none";}          
-          }
-        }
-      } else {
-        el.checked = false;  
-        //**************************************************************************************/
-        //* Verificadno si es cambio de unidad o cambio de placa
-        //**************************************************************************************/
-        if (acronimo_clase && (acronimo_clase === "CU" || acronimo_clase === "CL")) {
-          // Cache the DOM element
-          const element = document.getElementById(`concesion_tramite_placa_${acronimo_clase}`);
-          if (element) { element.style.display = "none";}          
-        }
-      }
+async function addTramite(el) {
+  const result = await Swal.fire({
+    title: '¿ESTÁ SEGURO?',
+    text: `¿QUIERE AGREGAR ESTE TRAMITE A LA CONCESION No. ${document.getElementById("concesion_concesion").innerHTML} ?`,
+    icon: 'info',
+    showCancelButton: true,
+    confirmButtonText: 'SÍ, AGREGAR',
+    cancelButtonText: 'CANCELAR'
   });
+  if (result.isConfirmed) {
+    const success = await addTramitePreforma(el);
+    if (success) {
+      console.log('addTramitePreforma retornó true');
+      return true;
+    } else {
+      console.log('addTramitePreforma retornó false');
+      return false;
+    }
+  } else {
+    console.log('Usuario canceló la acción en addTramite');
+    return false;
+  }
 }
 //**************************************************************************************/
 //* FINAL: Agregar Tramite a Preforma Cuando ya esta salvada la concesion
 //**************************************************************************************/
-
 //**************************************************************************************/
-//* INICIO: Validaciones sobre CheckBox de Tramites
+//* INICIO: Funcion hidde and show lineas de tramites dependiente del caso
 //**************************************************************************************/
-function fReviewCheck(el) {
-  var checkbox = '';
-  //**************************************************************************************/
-  //* INICIO: Arreglo de codigos de tramites de Cambios 
-  //**************************************************************************************/
-  const checkboxIds = [
-    "IHTTTRA-03_CLATRA-15_M_CL",
-    "IHTTTRA-03_CLATRA-17_M_CM",
-    "IHTTTRA-03_CLATRA-18_M_CC",
-    "IHTTTRA-03_CLATRA-19_M_CS",
-  ];
-  //**************************************************************************************/
-  //* Final: Arreglo de codigos de tramites de Cambios 
-  //**************************************************************************************/
+function fHiddenShowTramites(el, acronimo_tipo, acronimo_clase, checked = true) {
 
-  //**************************************************************************************/
-  //* Separando el valor del input
-  //**************************************************************************************/
-  const [tipo_tramite, clase_tramite, acronimo_tipo, acronimo_clase] = el.id.split("_");
-  //**************************************************************************************/
+  const checkboxIds = {
+    ['R']: ["IHTTTRA-08_CLATRA-02_X_PS","IHTTTRA-08_CLATRA-02_X_CO","IHTTTRA-08_CLATRA-01_X_PE"],
+    ['M']: ["IHTTTRA-03_CLATRA-08_M_CU"],
+    ['M_CU']: ["IHTTTRA-03_CLATRA-15_M_CL","IHTTTRA-03_CLATRA-17_M_CM","IHTTTRA-03_CLATRA-18_M_CC","IHTTTRA-03_CLATRA-19_M_CS"],
+    ['X']: ["IHTTTRA-02_CLATRA-02_R_CO","IHTTTRA-02_CLATRA-01_R_PE","IHTTTRA-02_CLATRA-03_R_PS"]
+    };  
 
-  //**************************************************************************************/
-  //* Verificadno si es cambio de unidad o cambio de placa
-  //**************************************************************************************/
-  if (acronimo_clase && (acronimo_clase === "CU" || acronimo_clase === "CL")) {
-    // Cache the DOM element
-    const element = document.getElementById(
-      `concesion_tramite_placa_${acronimo_clase}`
-    );
-    if (element) {
-      //Validaciones si el elemento viene checked
-      if (el.checked) {
-        element.style.display = "flex";
-        element.focus();
-        // Si es cambio de unidad
-        if (acronimo_clase === "CU") {
-          esCambioDeVehiculo = true;
-          //******************************************************************************************/
-          //* Debe recuperarse porque se marco el tramite de cambio de unidad
-          //******************************************************************************************/
-          if (
-            document.getElementById("estaPagadoElCambiodePlaca").value == false
-          ) {
-            document.getElementById("row_tramite_M_CL").style.display = "none";
-          }
+  var display = 'flex';
+  var checkedItem = true;
+  if (checked == true) {
+    display = 'none';
+    checkedItem = false;
+  }
 
-          elem = document.getElementById("row_tramite_M_CL");
-          if (elem != null && document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").hasAttribute('disabled') == false) {
-            document.getElementById("row_tramite_M_CL").style.display = "none";          
-          }
-
-          var elem = document.getElementById("row_tramite_M_CM");
-          if (elem != null){
-            document.getElementById("row_tramite_M_CM").style.display = "none";
-          }
-
-          elem = document.getElementById("row_tramite_M_CS");
-          if (elem != null){          
-            document.getElementById("row_tramite_M_CS").style.display = "none";
-          }
-
-          elem = document.getElementById("row_tramite_M_CC");
-          if (elem != null){          
-            document.getElementById("row_tramite_M_CC").style.display = "none";
-          }
-
-          //******************************************************************************************/
-          //* Desmarcando checks de cambios en la unidad cuando se check = true en el cambio de unidad
-          //******************************************************************************************/
-          var checked = false;
-          for (let id of checkboxIds) {
-            const checkbox = document.getElementById(id);
-            console.log(getAttribute(checkbox,'disabled',false));
-            if (checkbox && checkbox.checked && getAttribute(checkbox,'disabled',false)== true) {
-              checkbox.checked = false;
-            }
-          }
-          //************************************************************************/
-          //*Salvando Tramite
-          //************************************************************************/
-          let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb == '' && modalidadDeEntrada == 'U') {
-            addTramite (el);
-          }
-        } else {
-          //******************************************************************************************/
-          //* Else cuando el cambio de unidad no esta check
-          //******************************************************************************************/
-          esCambioDePlaca = true;
-          var elem = document.getElementById("row_tramite_M_CM");
-          if (elem != null){
-            document.getElementById("row_tramite_M_CM").style.display = "flex";
-          }
-
-          elem = document.getElementById("row_tramite_M_CS");
-          if (elem != null){          
-            document.getElementById("row_tramite_M_CS").style.display = "flex";
-          }
-
-          elem = document.getElementById("row_tramite_M_CC");
-          if (elem != null){          
-            document.getElementById("row_tramite_M_CC").style.display = "flex";
-          }
-
-          document.getElementById("row_tramite_M_CU").style.display = "none";
-
-          //************************************************************************/
-          //*Salvando Tramite
-          //************************************************************************/
-          let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb == '' && modalidadDeEntrada == 'U') {
-            addTramite (el);
-          }
-        }
+  if (acronimo_clase == 'CU' || acronimo_clase == 'CL') {
+    console.log('concesion_tramite_placa_' + acronimo_clase,'placa id element');
+    var placa = document.getElementById('concesion_tramite_placa_' + acronimo_clase);
+    console.log(placa,'placa afuera');
+    if (placa) {
+      console.log(checked,'checked')
+      if (checked == true) {
+        placa.style.display = 'flex';
+        placa.disabled = false;
       } else {
-        //Validaciones si el elemento  no viene checked
-        element.style.display = "none";
-        element.value = "";
-        // Si es cambio de unidad
-        if (acronimo_clase == "CU") {
-          esCambioDeVehiculo = false;
-          //******************************************************************************************/
-          //* No Debe recuperarse porque se desmarco el tramite de cambio de unidad
-          //******************************************************************************************/
-          document.getElementById("row_tramite_M_CL").style.display = "flex";
-          document.getElementById("row_tramite_M_CM").style.display = "flex";
-          document.getElementById("row_tramite_M_CC").style.display = "flex";
-          document.getElementById("row_tramite_M_CS").style.display = "flex";
-          seRecuperoVehiculoDesdeIP = 0;
-          document.getElementById("btnCambiarUnidad").style.display = "none";
-          document.getElementById("idVistaSTPC1").style = "display:fixed;";                
-          document.getElementById("idVistaSTPC2").style = "display:none;";                
-        } else {
-          esCambioDePlaca = false;
-          // Si cambio de placa
-          var checked = false;
-          for (let id of checkboxIds) {
-            const checkbox = document.getElementById(id);
-            if (checkbox && checkbox.checked) {
-              var checked = true;
-            }
-          }
-          if (checked == false) {
-            document.getElementById("row_tramite_M_CU").style.display = "flex";
-          }
-        }
-        //**********************************************************************************************************/
-        //* INICIO: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-        //**********************************************************************************************************/
-        let iddb = getAttribute(el,'data-iddb',false);
-        if (iddb != '') {
-          callFunctionBorrarTramite (document.getElementById("concesion_concesion").innerHTML,iddb,null,el);
-        } else {
-          console.log('Attribute data-iddb se encuentra en blanco o no se encuentra');
-        }
-        //**********************************************************************************************************/
-        //* FINAL: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-        //**********************************************************************************************************/
-      }
-    } else {
-      console.error(
-        `Element con id 'concesion_tramite_placa_${acronimo_clase}' no encontrado.`
-      );
-    }
-  } else {
-    // Si son modificaciones
-    if (acronimo_tipo === "M") {
-      if (el.checked) {
-        // Si cambio de placa
-
-        document.getElementById("row_tramite_M_CU").style.display = "none";
-        document.getElementById("row_tramite_M_CL").style.display = "flex";
-
-        var elem = document.getElementById("row_tramite_M_CM");
-        if (elem) {
-          document.getElementById("row_tramite_M_CM").style.display = "flex";
-        }
-
-        elem = document.getElementById("row_tramite_M_CC");
-        if (elem) {        
-          document.getElementById("row_tramite_M_CC").style.display = "flex";
-        }
-
-        elem = document.getElementById("row_tramite_M_CS");
-        if (elem) {        
-          document.getElementById("row_tramite_M_CS").style.display = "flex";
-        }
-        //************************************************************************/
-        //*Salvando Tramite
-        //************************************************************************/
-        let iddb = getAttribute(el,'data-iddb',false);
-        if (iddb == '' && modalidadDeEntrada == 'U') {
-          addTramite (el);
-        }
-      } else {
-        var checked = false;
-        for (let id of checkboxIds) {
-          const checkbox = document.getElementById(id);
-          if (
-            checkbox &&
-            checkbox.checked 
-          ) {
-            var checked = true;
-          }
-        }
-        if (checked == false) {
-          document.getElementById("row_tramite_M_CU").style.display = "flex";
-        }
-        //**********************************************************************************************************/
-        //* INICIO: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-        //**********************************************************************************************************/
-        let iddb = getAttribute(el,'data-iddb',false);
-        if (iddb != '') {
-          callFunctionBorrarTramite (document.getElementById("concesion_concesion").innerHTML,iddb,null,el);
-        } else {
-          console.log('Attribute data-iddb se encuentra en blanco o no se encuentra');
-        }
-        //**********************************************************************************************************/
-        //* FINAL: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-        //**********************************************************************************************************/
-      }
-    } else {
-      // Si son renovaciones
-      if (acronimo_tipo === "R") {
-        if (el.checked) {
-          if (acronimo_clase === "CO") {
-            document.getElementById("row_tramite_X_CO").style.display = "none";
-          } else {
-            if (acronimo_clase === "PE") {
-              document.getElementById("row_tramite_X_PE").style.display =
-                "none";
-            } else {
-              if (acronimo_clase === "PS") {
-                document.getElementById("row_tramite_X_PS").style.display =
-                  "none";
-              }
-            }
-          }
-          //************************************************************************/
-          //*Salvando Tramite
-          //************************************************************************/
-          let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb == '' && modalidadDeEntrada == 'U') {
-            addTramite (el);
-          }
-        } else {
-          if (acronimo_clase === "CO") {
-            document.getElementById("row_tramite_X_CO").style.display = "flex";
-          } else {
-            if (acronimo_clase === "PE") {
-              document.getElementById("row_tramite_X_PE").style.display =
-                "flex";
-            } else {
-              if (acronimo_clase === "PS") {
-                document.getElementById("row_tramite_X_PS").style.display =
-                  "flex";
-              }
-            }
-          }
-          //**********************************************************************************************************/
-          //* INICIO: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-          //**********************************************************************************************************/
-          let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb != '') {
-            callFunctionBorrarTramite (document.getElementById("concesion_concesion").innerHTML,iddb,null,el);
-          } else {
-            console.log('Attribute data-iddb se encuentra en blanco o no se encuentra');
-          }
-          //**********************************************************************************************************/
-          //* FINAL: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-          //**********************************************************************************************************/
-        }
-      } else {
-        // Si son reimpresiones
-        if (acronimo_tipo === "X") {
-          if (el.checked) {
-            if (acronimo_clase === "CO") {
-              checkbox = document.getElementById("IHTTTRA-03_CLATRA-20_R_CO");
-              if (checkbox && checkbox.getAttribute("disabled") != "") {
-                document.getElementById("row_tramite_R_CO").style.display =
-                  "none";
-              }
-            } else {
-              if (acronimo_clase === "PE") {
-                checkbox = document.getElementById("IHTTTRA-03_CLATRA-20_R_PE");
-                if (checkbox && checkbox.getAttribute("disabled") != "") {
-                  document.getElementById("row_tramite_R_PE").style.display =
-                    "none";
-                }
-              } else {
-                if (acronimo_clase === "PS") {
-                  checkbox = document.getElementById(
-                    "IHTTTRA-03_CLATRA-20_R_PS"
-                  );
-                  if (checkbox && checkbox.getAttribute("disabled") != "") {
-                    document.getElementById("row_tramite_R_PS").style.display =
-                      "none";
-                  }
-                }
-              }
-            }
-            //************************************************************************/
-            //*Salvando Tramite
-            //************************************************************************/
-            let iddb = getAttribute(el,'data-iddb',false);
-            if (iddb == '' && modalidadDeEntrada == 'U') {
-              addTramite (el);
-            }
-          } else {
-            if (acronimo_clase === "CO") {
-              document.getElementById("row_tramite_R_CO").style.display =
-                "flex";
-            } else {
-              if (acronimo_clase === "PE") {
-                document.getElementById("row_tramite_R_PE").style.display =
-                  "flex";
-              } else {
-                if (acronimo_clase === "PS") {
-                  document.getElementById("row_tramite_R_PS").style.display =
-                    "flex";
-                }
-              }
-            }
-          }
-          //**********************************************************************************************************/
-          //* INICIO: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-          //**********************************************************************************************************/
-          let iddb = getAttribute(el,'data-iddb',false);
-          if (iddb != '') {
-            callFunctionBorrarTramite (document.getElementById("concesion_concesion").innerHTML,iddb,null,el);
-          } else {
-            console.log('Attribute data-iddb se encuentra en blanco o no se encuentra');
-          }
-          //**********************************************************************************************************/
-          //* FINAL: Borrando Tramite al Desmarcar Checkbox y iddb != '' (esto indica que ya habia sido salvado el tramite)
-          //**********************************************************************************************************/
-        }
+        placa.style.display = 'none';
+        placa.disabled = true;
       }
     }
   }
+
+  if (acronimo_tipo != 'M') {
+    for (let id of checkboxIds[acronimo_tipo]) {
+      const checkbox = document.getElementById(id);
+      if (checkbox && getAttribute(checkbox,'disabled',false) == false) {
+        const [tipo_tramite1, clase_tramite1, acronimo_tipo1, acronimo_clase1] = id.split("_");
+        if (acronimo_clase === acronimo_clase1) {
+          checkbox.checked = false;
+          const row = 'row_tramite_'+ acronimo_tipo1 + '_'+ acronimo_clase1;
+          const elemento = document.getElementById(row)
+          if (elemento) {
+            elemento.style.display = display;
+          } else {
+            console.log(elemento,'row no encontrada');
+          }
+        }
+      }
+    }
+  } else {
+    const acronimo = acronimo_tipo +  '_' +acronimo_clase;
+    if (acronimo == 'M_CU') {
+      for (let id of checkboxIds[acronimo]) {
+        const checkbox = document.getElementById(id);
+        if (checkbox && getAttribute(checkbox,'disabled',false) == false) {
+          const [tipo_tramite1, clase_tramite1, acronimo_tipo1, acronimo_clase1] = id.split("_");
+          if (acronimo_tipo === acronimo_tipo1) {
+            checkbox.checked = false;
+            const row = 'row_tramite_'+ acronimo_tipo1 + '_'+ acronimo_clase1;
+            const elemento = document.getElementById(row)
+            if (elemento) {
+              elemento.style.display = display;
+            } else {
+              console.log(elemento,'row no encontrada');
+            }
+          }
+        }
+      }
+    } else {
+      var contador = 0;
+      for (let id of checkboxIds['M_CU']) {
+        const checkbox = document.getElementById(id);
+        if (checkbox && checkbox.checked == true && getAttribute(checkbox,'disabled',false) == false) {
+          contador++;
+        }
+      }
+      if (parseInt(contador) > 0) {
+        const elemento = document.getElementById('row_tramite_M_CU');
+        if (elemento) {
+            elemento.style.display = 'none';
+            const elementochk = document.getElementById('IHTTTRA-03_CLATRA-08_M_CU');
+            if (elementochk) {
+              elementochk.checked = false
+            }
+        }  
+      } else {
+        const elemento = document.getElementById('row_tramite_M_CU');
+        if (elemento) {
+            elemento.style.display = 'flex';
+            const elementochk = document.getElementById('IHTTTRA-03_CLATRA-08_M_CU');
+            if (elementochk) {
+              elementochk.checked = false;
+            }
+        }  
+      }
+    }
+  }
+}
+//**************************************************************************************/
+//* FINAL: Funcion hidde and show lineas de tramites dependiente del caso
+//**************************************************************************************/
+//**************************************************************************************/
+//* INICIO: Validaciones sobre CheckBox de Tramites
+//**************************************************************************************/
+function fReviewCheck() {
+  var chkTramites = [].slice.call(document.querySelectorAll(".tramiteschk"));
+  chkTramites.forEach(function (chk) {
+      chk.addEventListener("click", async function (event) {
+        //**************************************************************************************/
+        //* Separando el valor del input
+        //**************************************************************************************/
+        const [tipo_tramite, clase_tramite, acronimo_tipo, acronimo_clase] = event.target.id.split("_");
+        //**************************************************************************************/
+        //Validaciones si el elemento viene checked
+        if (event.target.checked) {
+          //****************************************************************************************/
+          //* Inicio Salvando Tramite y Marcado Desmarcado Tramites Incompatibles con el actual
+          //****************************************************************************************/
+          let iddb = getAttribute(event.target,'data-iddb',false);
+          if (iddb == '' && modalidadDeEntrada == 'U') {
+            const success = await addTramite(event.target);
+            if (success) {
+              seRecuperoVehiculoDesdeIP = 0;
+              //***************************************************************************/
+              //* Inicio Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+              //***************************************************************************/
+              fHiddenShowTramites(event.target, acronimo_tipo, acronimo_clase, true);
+              if (acronimo_clase == 'CU') {
+                esCambioDeVehiculo = true;
+                document.getElementById('concesion_tramite_placa_CU').focus();
+              } else {
+                if (acronimo_clase == 'CL') {
+                  esCambioDePlaca = true;
+                  document.getElementById('concesion_tramite_placa_CL').focus();
+                } else {
+                  document.getElementById('concesion_vin').focus();
+                }
+              }
+              //***************************************************************************/
+              //* Final Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+              //***************************************************************************/
+            } else {
+              console.log('event.preventDefault() false on AddTramite');
+              event.target.checked = false;
+            }
+            //***************************************************************************/
+            //* Final Salvando Tramite
+            //***************************************************************************/
+          } else {
+            //***************************************************************************/
+            //* Inicio Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+            //***************************************************************************/
+            console.log('fHiddenShowTramites Add Modalidad I');
+            fHiddenShowTramites(event.target, acronimo_tipo, acronimo_clase, true);
+            //***************************************************************************/
+            //* Final Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+            //***************************************************************************/
+          }
+          //****************************************************************************************/
+          //* Final Marcado Desmarcado Tramites Incompatibles con el actual
+          //****************************************************************************************/          
+        } else {
+          //****************************************************************************************/
+          //* Inicio Salvando Tramite y Marcado Desmarcado Tramites Incompatibles con el actual
+          //****************************************************************************************/
+          let iddb = getAttribute(event.target,'data-iddb',false);
+          if (iddb != '') {
+            const success = await callFunctionBorrarTramite (document.getElementById("concesion_concesion").innerHTML,iddb,null,event.target);
+            if(success) {
+              if (acronimo_clase == 'CU') {
+                esCambioDeVehiculo = false;
+              } else {
+                if (acronimo_clase == 'CL') {
+                  esCambioDePlaca = false;
+                }
+              }
+              seRecuperoVehiculoDesdeIP = 0;
+              //***************************************************************************/
+              //* Inicio Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+              //***************************************************************************/
+              fHiddenShowTramites(event.target, acronimo_tipo, acronimo_clase,false);
+              //***************************************************************************/
+              //* Final Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+              //***************************************************************************/
+            } else {
+              console.log('event.preventDefault() false en borrar callFunctionBorrarTramite removeAttribute');
+              event.target.checked = true;
+            }
+          } else {
+            console.log('fHiddenShowTramites delete cuando es modalidad I');
+            //***************************************************************************/
+            //* Inicio Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+            //***************************************************************************/
+            fHiddenShowTramites(event.target, acronimo_tipo, acronimo_clase,false);
+            //***************************************************************************/
+            //* Final Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
+            //***************************************************************************/
+          }
+          //****************************************************************************************/
+          //* Final Marcado Desmarcado Tramites Incompatibles con el actual
+          //****************************************************************************************/          
+        }
+    });
+  });
+
+  //*********************************************************************************************/
+  //* INICIO: Se ocultan las row de tramites de acuerdo a los checkbox marcados e inabilitacion
+  //* de los tramites de renovacion, ya que los mismo solo pueden ser marcados por sistema
+  //*********************************************************************************************/
+  const el = document.getElementById("IHTTTRA-02_CLATRA-02_R_CO");
+  if (el){
+    el.disabled = true;
+  }
+  el = document.getElementById("IHTTTRA-02_CLATRA-01_R_PE");
+  if (el){
+    el.disabled = true;
+  }
+  el = document.getElementById("IHTTTRA-02_CLATRA-03_R_PS");
+  if (el){
+    el.disabled = true;
+  }    
+  chkTramites.forEach(function (chk) {
+    if (chk.checked == true) {
+      const [tipo_tramite, clase_tramite, acronimo_tipo, acronimo_clase] = chk.id.split("_");
+      fHiddenShowTramites(chk, acronimo_tipo, acronimo_clase, true);
+    }
+  });
+  //**************************************************************************************/
+  //* FINAL: Se ocultan las row de tramites de acuerdo a los checkbox marcados
+  //**************************************************************************************/
+
+  
 }
 //**************************************************************************************/
 //* FINAL: Validaciones sobre Check Box de Tramites
 //**************************************************************************************/
 
 function getVehiculoDesdeIPMoveDatos(vehiculo,Tipo_Tramite) {
-
   var sufijo = '1'
   if (Tipo_Tramite == 'CL') {
     sufijo = '';
+  } else {
+    document.getElementById("capacidad"+sufijo).value =  (sufijo !== '') ? document.getElementById("capacidad").value : '';
+    document.getElementById("alto"+sufijo).value = (sufijo !== '') ? document.getElementById("alto").value : '';
+    document.getElementById("largo"+sufijo).value = (sufijo !== '') ? document.getElementById("largo").value : '';
+    document.getElementById("ancho"+sufijo).value = (sufijo !== '') ? document.getElementById("ancho").value : '';
   }
 
+  document.getElementById("combustible"+sufijo).value = (sufijo !== '') ? document.getElementById("combustible").value : vehiculo.cargaUtil.combustible;
   //**********************************************************************************/
   //* INICIO: MOVIEMIENTO DE DATOS DEL IP A PANTALLA
   //**********************************************************************************/ 
@@ -4886,7 +4681,6 @@ function getVehiculoDesdeIPMoveDatos(vehiculo,Tipo_Tramite) {
     concesionlabel.innerHTML =
       document.getElementById("concesionlabel").innerHTML;
   }
-
   document.getElementById("concesion"+sufijo+"_cerant").innerHTML =  document.getElementById("concesion_cerant").innerHTML;
   document.getElementById("concesion"+sufijo+"_numregant").innerHTML = document.getElementById("concesion_numregant").innerHTML;
   document.getElementById("concesion"+sufijo+"_numeroregistro").innerHTML = document.getElementById("concesion_numeroregistro").innerHTML;
@@ -4899,57 +4693,42 @@ function getVehiculoDesdeIPMoveDatos(vehiculo,Tipo_Tramite) {
   document.getElementById("concesion"+sufijo+"_nombreconcesionario").innerHTML = document.getElementById("concesion_nombreconcesionario").innerHTML;
   document.getElementById("concesion"+sufijo+"_rtn").innerHTML = document.getElementById("concesion_rtn").innerHTML;
   document.getElementById("concesion"+sufijo+"_resolucion").innerHTML = document.getElementById("concesion_resolucion").innerHTML;
-
-  document.getElementById("concesion"+sufijo+"_nombre_propietario").innerHTML = (sufijo === '') ? document.getElementById("concesion_nombre_propietario").innerHTML : vehiculo.cargaUtil.propietario.nombre;
-  document.getElementById("concesion"+sufijo+"_identidad_propietario").innerHTML = (sufijo === '') ? document.getElementById("concesion_identidad_propietario").innerHTML : vehiculo.cargaUtil.propietario.identificacion;
-  
   if (document.getElementById("concesion_placaanterior").innerHTML != "") {
-    document.getElementById("concesion"+sufijo+"_placaanterior").innerHTML = (sufijo === '') ? document.getElementById("concesion_placaanterior").innerHTML : vehiculo.cargaUtil.placaAnterior;
+    document.getElementById("concesion"+sufijo+"_placaanterior").innerHTML = (sufijo !== '') ? document.getElementById("concesion_placaanterior").innerHTML : vehiculo.cargaUtil.placaAnterior;
     document.getElementById("concesion"+sufijo+"_placaanterior").style = "display:inline;";
   } else {
     document.getElementById("concesion"+sufijo+"_placaanterior").style = "display:none;";
     document.getElementById("concesion"+sufijo+"_placaanterior").innerHTML = "";
   }
-
-  document.getElementById("concesion"+sufijo+"_vin").value = (sufijo === '') ? document.getElementById("concesion_vin").value : vehiculo.cargaUtil.vin;
-  document.getElementById("concesion"+sufijo+"_placa").value = (sufijo === '') ? document.getElementById("concesion_placa").value : vehiculo.cargaUtil.placa;
-  document.getElementById("concesion"+sufijo+"_serie").value = (sufijo === '') ? document.getElementById("concesion_serie").value : vehiculo.cargaUtil.chasis;
-  document.getElementById("concesion"+sufijo+"_motor").value = (sufijo === '') ? document.getElementById("concesion_motor").value : vehiculo.cargaUtil.motor;
-  document.getElementById("concesion"+sufijo+"_tipo_vehiculo").value = (sufijo === '') ? document.getElementById("concesion_tipo_vehiculo").value : vehiculo.cargaUtil.tipo;
-  document.getElementById("concesion"+sufijo+"_modelo_vehiculo").value = (sufijo === '') ? document.getElementById("concesion_modelo_vehiculo").value : vehiculo.cargaUtil.modelo;
-
-  document.getElementById("combustible"+sufijo).value = (sufijo === '') ? document.getElementById("combustible").value : vehiculo.cargaUtil.combustible;
-  document.getElementById("capacidad"+sufijo).value =  (sufijo === '') ? document.getElementById("capacidad").value : '';
-  document.getElementById("alto"+sufijo).value = (sufijo === '') ? document.getElementById("alto").value : '';
-  document.getElementById("largo"+sufijo).value = (sufijo === '') ? document.getElementById("largo").value : '';
-  document.getElementById("ancho"+sufijo).value = (sufijo === '') ? document.getElementById("ancho").value : '';
-
+  document.getElementById("concesion"+sufijo+"_nombre_propietario").innerHTML = (sufijo !== '') ? document.getElementById("concesion_nombre_propietario").innerHTML : vehiculo.cargaUtil.propietario.nombre;
+  document.getElementById("concesion"+sufijo+"_identidad_propietario").innerHTML = (sufijo !== '') ? document.getElementById("concesion_identidad_propietario").innerHTML : vehiculo.cargaUtil.propietario.identificacion;
+  document.getElementById("concesion"+sufijo+"_vin").value = (sufijo !== '') ? document.getElementById("concesion_vin").value : vehiculo.cargaUtil.vin;
+  document.getElementById("concesion"+sufijo+"_placa").value = (sufijo !== '') ? document.getElementById("concesion_placa").value : vehiculo.cargaUtil.placa;
+  document.getElementById("concesion"+sufijo+"_serie").value = (sufijo !== '') ? document.getElementById("concesion_serie").value : vehiculo.cargaUtil.chasis;
+  document.getElementById("concesion"+sufijo+"_motor").value = (sufijo !== '') ? document.getElementById("concesion_motor").value : vehiculo.cargaUtil.motor;
+  document.getElementById("concesion"+sufijo+"_tipo_vehiculo").value = (sufijo !== '') ? document.getElementById("concesion_tipo_vehiculo").value : vehiculo.cargaUtil.tipo;
+  document.getElementById("concesion"+sufijo+"_modelo_vehiculo").value = (sufijo !== '') ? document.getElementById("concesion_modelo_vehiculo").value : vehiculo.cargaUtil.modelo;
   fLlenarSelect(
     "marcas"+sufijo,
     dataConcesion["marcas"],
-    (sufijo === '') ? document.getElementById("marcas").value : vehiculo.cargaUtil.marcacodigo,
+    (sufijo !== '') ? document.getElementById("marcas").value : vehiculo.cargaUtil.marcacodigo,
     false,
     { text: "SELECCIONE UNA AÑO", value: "-1" }
   );
   fLlenarSelect(
     "colores"+sufijo,
     dataConcesion["colores"],
-    (sufijo === '') ? document.getElementById("colores").value : vehiculo.cargaUtil.colorcodigo,
+    (sufijo !== '') ? document.getElementById("colores").value : vehiculo.cargaUtil.colorcodigo,
     false,
     { text: "SELECCIONE UN COLOR", value: "-1" }
   );
   fLlenarSelect(
     "anios"+sufijo,
     dataConcesion["anios"],
-    (sufijo === '') ? document.getElementById("anios").value : vehiculo.cargaUtil.axo,
+    (sufijo !== '') ? document.getElementById("anios").value : vehiculo.cargaUtil.axo,
     false,
     { text: "SELECCIONE UN AÑO", value: "-1" }
   );
-
-  //document.getElementById("marcas"+sufijo+"").value = vehiculo.cargaUtil.marcacodigo;
-  //document.getElementById("colores"+sufijo+"").value = vehiculo.cargaUtil.colorcodigo;
-  //document.getElementById("anios"+sufijo+"").value = vehiculo.cargaUtil.axo;
-
   //**********************************************************************************/
   //* FINAL: MOVIEMIENTO DE DATOS DEL IP A PANTALLA
   //**********************************************************************************/ 
@@ -4965,9 +4744,11 @@ function getVehiculoDesdeIPMoveDatos(vehiculo,Tipo_Tramite) {
 
 function getVehiculoDesdeIP(Obj) {
   if (
-    document.getElementById("concesion_tramite_placa_CL").value !=
-    document.getElementById("concesion_tramite_placa_CU").value
-  ) {
+    (document.getElementById("concesion_tramite_placa_CU").value !== '' && document.getElementById("concesion_tramite_placa_CL").value !== '' && document.getElementById("concesion_tramite_placa_CL").value !== document.getElementById("concesion_tramite_placa_CU").value) ||
+    (document.getElementById("concesion_tramite_placa_CL").value !== '' && document.getElementById("concesion_tramite_placa_CL").value !== document.getElementById("concesion_placa").value)  ||
+    (document.getElementById("concesion_tramite_placa_CU").value !== '' && document.getElementById("concesion_tramite_placa_CU").value !== document.getElementById("concesion_placa").value)    
+    ) 
+    {
     //*********************************************************************************************************************/
     //* Si es Certificado Entra Aqui para obtener el CO y PE
     //*********************************************************************************************************************/
@@ -5002,74 +4783,67 @@ function getVehiculoDesdeIP(Obj) {
     fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (vehiculo) {
-        ejecutar = true;
         console.log(vehiculo,'vehiculo en getVehiculoDesdeIP()')
         if (!vehiculo.error) {
-          if (vehiculo.codigo && vehiculo.codigo == 200) {
+          if (vehiculo?.codigo && vehiculo.codigo == 200) {
             if (vehiculo.cargaUtil.estadoVehiculo == "NO BLOQUEADO") {
-              if (
-                typeof vehiculo.cargaUtil.Multas[0] == "undefined" &&
-                typeof vehiculo.cargaUtil.Preformas[0] == "undefined"
-              ) {
-                isVehiculeBlock = false;
-                getVehiculoDesdeIPMoveDatos(vehiculo,Obj.id.split("_")[3]);                
-                sendToast(
-                  "INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",
-                  $appcfg_milisegundos_toast,
-                  "",
-                  true,
-                  true,
-                  "top",
-                  "right",
-                  true,
-                  $appcfg_background_toast,
-                  function () {},
-                  "success",
-                  $appcfg_pocision_toast,
-                  $appcfg_icono_toast
+              document.getElementById('concesion_vin').focus();
+              document.getElementById('concesion_tramite_placa_CL').value = '';
+              document.getElementById('concesion_tramite_placa_CU').value = '';
+              isVehiculeBlock = false;
+              sendToast(
+                "INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",
+                $appcfg_milisegundos_toast,
+                "",
+                true,
+                true,
+                "top",
+                "right",
+                true,
+                $appcfg_background_toast,
+                function () {},
+                "success",
+                $appcfg_pocision_toast,
+                $appcfg_icono_toast
+              );
+              var html = "";
+              if (vehiculo?.cargaUtil?.Multas?.[0]) {
+                html = mallaDinamica(
+                  { titulo: "LISTADO DE MULTAS", name: "MULTAS" },
+                  vehiculo.cargaUtil.Multas
                 );
-              } else {
-
-                var html = "";
-                if (typeof vehiculo.cargaUtil.Multas[0] != "undefined") {
-                  html = mallaDinamica(
-                    { titulo: "LISTADO DE MULTAS", name: "MULTAS" },
-                    vehiculo.cargaUtil.Multas
+              }
+              if (vehiculo?.cargaUtil?.Preformas?.[0]) {
+                html =
+                  html +
+                  mallaDinamica(
+                    {
+                      titulo: "LISTADO DE PREFORMAS PENDIENTES DE RESOLUCIÓN",
+                      name: "PREFORMAS",
+                    },
+                    vehiculo.cargaUtil.Preformas
                   );
-                }
-
-                if (typeof vehiculo.cargaUtil.Preformas[0] != "undefined") {
-                  html =
-                    html +
-                    mallaDinamica(
-                      {
-                        titulo: "LISTADO DE PREFORMAS PENDIENTES DE RESOLUCIÓN",
-                        name: "PREFORMAS",
-                      },
-                      vehiculo.cargaUtil.Preformas
-                    );
-                }
-
-                if (typeof vehiculo.cargaUtil.Placas[0] != "undefined") {
-                  html =
-                    html +
-                    mallaDinamica(
-                      {
-                        titulo: "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
-                        name: "PREFORMAS",
-                      },
-                      vehiculo.cargaUtil.Placas
-                    );
-                }                
-
+              }
+              if (vehiculo?.cargaUtil?.Placas?.[0]) {
+                html =
+                  html +
+                  mallaDinamica(
+                    {
+                      titulo: "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
+                      name: "PREFORMAS",
+                    },
+                    vehiculo.cargaUtil.Placas
+                  );
+              }
+              if (html != '')            {
                 fSweetAlertEventNormal(
                   "VALIDACIONES",
                   "LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE",
                   "error",
                   html
                 );
-
               }
+              getVehiculoDesdeIPMoveDatos(vehiculo,Obj.id.split("_")[3]); 
             } else {
               if (vehiculo.cargaUtil.estadoVehiculo == "BLOQUEADO") {
                 fSweetAlertEventNormal(
@@ -5079,30 +4853,27 @@ function getVehiculoDesdeIP(Obj) {
                 );
                 isVehiculeBlock = true;
               } else {
-                if (isset(vehiculo.codigo) == 407 || vehiculo.codigo == 408) {
-                  fSweetAlertEventNormal(
-                    "ADVERTENCIA",
-                    "NO HEMOS PODIDO CONECTARNOS CON EL INSTITUTO DE LA PROPIEDAD, FAVOR INTENTENLO EN UN MOMENTO SI EL PROBLEMA PERSIOSTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
-                    "warning"
-                  );
-                  isVehiculeBlock = true;
-                } else {
                   fSweetAlertEventNormal(
                     "ERROR",
                     "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
                     "error"
                   );
-                  isVehiculeBlock = true;
-                }
               }
             }
           } else {
-            fSweetAlertEventNormal(
-              "INFORMACIÓN",
-              "EL VEHICULO NO HA SIDO ENCONTRADO EN LA BASE DE DATOS DEL IP",
-              "warning"
-            );
-            isVehiculeBlock = true;
+            if (vehiculo?.codigo != null && (vehiculo.codigo === 407 || vehiculo.codigo === 408)) {
+              fSweetAlertEventNormal(
+                "ADVERTENCIA",
+                "NO HEMOS PODIDO CONECTARNOS CON EL INSTITUTO DE LA PROPIEDAD, FAVOR INTENTENLO EN UN MOMENTO SI EL PROBLEMA PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
+                "warning"
+              );
+            } else {
+              fSweetAlertEventNormal(
+                "INFORMACIÓN",
+                "EL VEHICULO NO HA SIDO ENCONTRADO EN LA BASE DE DATOS DEL IP",
+                "warning"
+              );
+            }
           }
         } else {
           fSweetAlertEventNormal(
@@ -5111,22 +4882,25 @@ function getVehiculoDesdeIP(Obj) {
             "error"
           );
         }
-      })
+        ejecutar = true;
+      }
+      )
       .catch((error) => {
+        ejecutar = true;
         fSweetAlertEventNormal(
           "ERROR CATCH",
           "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
           "error"
         );
         console.log('getVehiculoDesdeIP catch error' + error);
-        isVehiculeBlock = true;
       });
   } else {
     fSweetAlertEventNormal(
       "ERROR EN PLACAS",
-      "LA PLACA DE LA UNIDAD NUEVA NO PUEDE SER IGUAL A LA PLACA DEL TRAMITE DE CAMBIO DE PLACA",
-      "warning"
+      "LA PLACA NO PUEDE SER IGUAL A LA PLACA DEL TRAMITE DE CAMBIO DE PLACA o CAMBIO DE UNIDAD",
+      "error"
     );
+    ejecutar = true;
   }
 }
 
@@ -5134,69 +4908,102 @@ var ejecutar = true;
 
 function setaddEventListener() { 
 
+  //******************************************************************/
+  //* INICIO: Crear eventListener para los checkbox de Tramite
+  //******************************************************************/
+  fReviewCheck();
+  //******************************************************************/
+  //* FINAL: Crear eventListener para los checkbox de Tramite
+  //******************************************************************/
+
   ejecutar = true;
 
-  const elCambioUnidad = document.getElementById("concesion_tramite_placa_CU");
-
-  console.log(elCambioUnidad,'elCambioUnidad Afuera');
-
-  if (elCambioUnidad) {
-    
-    console.log(elCambioUnidad,'elCambioUnidad Adentro');
-
-    elCambioUnidad.addEventListener("keydown", function(event) {
-      console.log('ejecutar keydown '+ejecutar);
+  const inputCambioUnidad = document.getElementById("concesion_tramite_placa_CL");
+  if (inputCambioUnidad) {
+    function handleChangeCU(event) {
       if (ejecutar == true && event.target.value !== '') {
-        console.log('ejecutar keydown adentro '+ejecutar);
-        if (event.key === "Tab" || event.key === "Enter") {
-          ejecutar = false;
-          seRecuperoVehiculoDesdeIP = 2;
-          alert('keydown => ' + event.target.id);
-          getVehiculoDesdeIP(event.target);
-        }
-      }
-    });
-
-    elCambioUnidad.addEventListener("change", function(event) {
-        console.log('ejecutar change ' + ejecutar);
-        if (ejecutar == true  && event.target.value !== '') {
-          alert('ejecutar change '+ejecutar)
-          console.log('ejecutar change adentro '+ejecutar);
-          ejecutar = false;
-          seRecuperoVehiculoDesdeIP = 2;
-          alert('change => ' + event.target.id);
-          getVehiculoDesdeIP(event.target);
-        }
-    });
-
-  }
-
-  const elCambioPlaca = document.getElementById("concesion_tramite_placa_CL");
-
-  if (elCambioPlaca) {
-    console.log(elCambioPlaca);
-    elCambioPlaca.addEventListener("keydown", function(event) {
-      if (ejecutar == true) {
         ejecutar = false;
+        console.log(event.target.value,'event.target.value');
+        inputCambioUnidad.removeEventListener("keyup", handleKeyPressCU);
         seRecuperoVehiculoDesdeIP = 2;
-        if (event.key === "Tab" || event.key === "Enter") {
-          getVehiculoDesdeIP(event.target);
-        }
-      }
-    });
-    elCambioPlaca.addEventListener("change", function(event) {
-      if (ejecutar == true) {
-        seRecuperoVehiculoDesdeIP = 2;
-        ejecutar = false;   
+        event.preventDefault();
         getVehiculoDesdeIP(event.target);
-      }
-    });
+        setTimeout(() => {
+          inputCambioUnidad.addEventListener("keyup", handleKeyPressCU);
+          console.log("Evento keypress reactivado");
+        }, 8000);
 
-  }
+      }        
+    }
+    function handleKeyPressCU(event) {
+        if (event.target.value !== '') {
+          if (ejecutar == true && (event.key === "Tab" || event.key === "Enter")) {
+            ejecutar = false;
+            // Deshabilitar el evento change temporalmente
+            inputCambioUnidad.removeEventListener("change", handleChangeCU);
+            seRecuperoVehiculoDesdeIP = 2;
+            event.preventDefault();
+            getVehiculoDesdeIP(event.target);
+            // Simular una tarea (por ejemplo, esperar 2 segundos antes de reactivar change)
+            setTimeout(() => {
+              inputCambioUnidad.addEventListener("change", handleChangeCU);
+              console.log("Evento change reactivado");
+            }, 8000);
+          }
+        }
+    }
+    inputCambioUnidad.addEventListener("change", handleChangeCU);
+    inputCambioUnidad.addEventListener("keyup", handleKeyPressCU);
+  } 
 
+  const inputCambioPlaca = document.getElementById("concesion_tramite_placa_CL");
+  if (inputCambioPlaca) {
+    function handleChangeCP(event) {
+      console.log(ejecutar,'ejecutar change afuera');
+      console.log(event.target.value,'event.target.value change afuera');
+      if (ejecutar == true && event.target.value !== '') {
+        ejecutar = false;
+        console.log(ejecutar,'ejecutar change adentro');
+        console.log(event.target.value,'event.target.value change adentro');
+        inputCambioPlaca.removeEventListener("keyup", handleKeyPressCP);
+        seRecuperoVehiculoDesdeIP = 2;
+        event.preventDefault();
+        getVehiculoDesdeIP(event.target);
+        setTimeout(() => {
+          inputCambioPlaca.addEventListener("keyup", handleKeyPressCP);
+          console.log("Evento keyup reactivado");
+        }, 8000);
+
+      }        
+    }
+    function handleKeyPressCP(event) {
+        if (event.target.value !== '') {
+          console.log(ejecutar,'ejecutar keyup afuera');
+          console.log(event.target.value,'event.target.value keyup afuera');
+          console.log(event.key,'event.key keyup afuera');
+          if (ejecutar == true && (event.key === "Tab" || event.key === "Enter")) {
+            ejecutar = false;
+            console.log(ejecutar,'ejecutar keyup adentro');
+            console.log(event.target.value,'event.target.value keyup adentro');
+            console.log(event.key,'event.key keyup adentro');
+            // Deshabilitar el evento change temporalmente
+            inputCambioPlaca.removeEventListener("change", handleChangeCP);
+            console.log(event.key,'event.key');
+            seRecuperoVehiculoDesdeIP = 2;
+            event.preventDefault();
+            getVehiculoDesdeIP(event.target);
+            // Simular una tarea (por ejemplo, esperar 2 segundos antes de reactivar change)
+            setTimeout(() => {
+              inputCambioPlaca.addEventListener("change", handleChangeCP);
+              console.log("Evento change reactivado");
+            }, 8000);
+          }
+        }
+    }
+    inputCambioPlaca.addEventListener("change", handleChangeCP);
+    inputCambioPlaca.addEventListener("keyup", handleKeyPressCP);
+  } 
 }
-
-
 //**************************************************************************************/
 //Habilitando las teclas F2 y F10 para moverse entre los paneles
 //**************************************************************************************/
@@ -5382,3 +5189,18 @@ window.addEventListener("scroll", () => {
     scrollDiv.style.top = `${newYPosition}px`;
   }
 });
+
+function adjustLayout() {
+  let divVista1 = document.getElementById("div-vista-1");
+  let divVista2 = document.getElementById("div-vista-2");
+
+  if (window.getComputedStyle(divVista1).display === "none") {
+      divVista2.classList.add("full-width"); // Center div-vista-2
+  } else {
+      divVista2.classList.remove("full-width"); // Restore normal width
+  }
+}
+
+// Run on page load & resize
+window.onload = adjustLayout;
+window.onresize = adjustLayout;

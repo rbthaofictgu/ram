@@ -270,8 +270,8 @@ class Api_Ram
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'ERROR AL INTENTAR ELIMINAR TRAMITE EN PREFORMA, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			$this->db->rollBack();
-			//$this->db->commit();			
+			//$this->db->rollBack();
+			$this->db->commit();			
 			echo json_encode(['Borrado'  =>  True]);
 		}
 	}

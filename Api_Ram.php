@@ -323,8 +323,8 @@ require_once("../qr/qrlib.php");
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'ERROR AL INTENTAR ELIMINAR TRAMITE EN PREFORMA, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			$this->db->rollBack();
-			//$this->db->commit();			
+			//$this->db->rollBack();
+			$this->db->commit();			
 			echo json_encode(['Borrado'  =>  True]);
 		}
 	}
@@ -368,14 +368,14 @@ require_once("../qr/qrlib.php");
 						$this->db->rollBack();
 						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR LA UNIDAD NORMAL'));
 					} else {								
-						//$this->db->commit();
-						$this->db->rollBack();
+						$this->db->commit();
+						//$this->db->rollBack();
 						echo json_encode(['Borrado'  =>  True,'Adentro'  =>  True, 'ID_Unidad1' => intval($_POST["ID_Unidad1"]), 'ID_Unidad' => intval($_POST["ID_Unidad"])]);
 					}
 				}
 			} else {
-				//$this->db->commit();
-				$this->db->rollBack();
+				$this->db->commit();
+				//$this->db->rollBack();
 				echo json_encode(['Borrado'  =>  True,'ID_Unidad1'  =>  'NO SET()', 'ID_TRAMITE' => $_POST["idTramite"]]);
 			}
 		}
@@ -954,8 +954,7 @@ require_once("../qr/qrlib.php");
 					$html = $html . '<div class="row border border-info" id="row_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '">
 					<div class="col-md-1">
 					  <input data-monto="' . $row['Monto'] . '" 
-							 class="form-check-input" 
-							 onclick="fReviewCheck(this)" 
+							 class="form-check-input tramiteschk" 
 							 id="' . $row['ID_CHECK'] . '" 
 							 type="checkbox" 
 							 name="tramites[]" 
@@ -974,7 +973,7 @@ require_once("../qr/qrlib.php");
 					</div>
 				  </div>';
 				} else {
-					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div></div>';
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div></div>';
 				}
 			}
 		} else {
@@ -989,8 +988,7 @@ require_once("../qr/qrlib.php");
 				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
 					$html = $html . '<div id="field1_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '" class="col-md-1">
 					<input data-monto="' . $row['Monto'] . '" 
-						   class="form-check-input" 
-						   onclick="fReviewCheck(this)" 
+						   class="form-check-input tramiteschk" 
 						   id="' . $row['ID_CHECK'] . '" 
 						   type="checkbox" 
 						   name="tramites[]" 
@@ -1000,8 +998,7 @@ require_once("../qr/qrlib.php");
 					' . $row["descripcion_larga"] . '
 				  </div>
 				  <div class="col-md-2">
-					<input onchange="getVehiculoDesdeIP(this, \'' . $row['Acronimo_Clase'] . '\');" 
-						   style="display:none; text-transform: uppercase;" 
+					<input style="display:none; text-transform: uppercase;" 
 						   id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 						   title="La placa debe contener los primeros 3 dígitos alfa y los últimos 4 numéricos, máximo 7 caracteres" 
 						   pattern="^[A-Z]{3}\d{4}$" 
@@ -1011,7 +1008,7 @@ require_once("../qr/qrlib.php");
 						   maxlength="7">
 				  </div>';
 				} else {
-					$html = $html . '<div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div>';
+					$html = $html . '<div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div>';
 				}
 				$process++;
 				if ($process == 2) {
@@ -1072,7 +1069,7 @@ require_once("../qr/qrlib.php");
     ) AS Monto,
     CASE 
         WHEN isnull(SOL.ID,0) = 0 THEN ''
-        ELSE 'checked'
+        ELSE 'checked=true'
     END AS Checked
 		FROM 
 			[IHTT_DB].[dbo].[TB_CLASE_TRAMITE] C
@@ -1106,8 +1103,7 @@ require_once("../qr/qrlib.php");
 					$html = $html . '<div class="row border border-info" id="row_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '">
 					<div class="col-md-1">
 					  <input ' . $row['Checked'] . ' data-iddb="' . $row['ID'] . '" data-monto="' . $row['Monto'] . '" 
-							 class="form-check-input" 
-							 onclick="fReviewCheck(this)" 
+							 class="form-check-input tramiteschk" 
 							 id="' . $row['ID_CHECK'] . '" 
 							 type="checkbox" 
 							 name="tramites[]" 
@@ -1115,8 +1111,7 @@ require_once("../qr/qrlib.php");
 					</div>
 					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div>
 					<div class="col-md-2">
-					  <input onchange="getVehiculoDesdeIP(this, \'' . $row['Acronimo_Clase'] . '\');" 
-							 style="' . $display . ' text-transform: uppercase;" 
+					  <input style="display:none; text-transform: uppercase;" 
 							 id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 							 title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
 							 pattern="^[A-Z]{3}\d{4}$" 
@@ -1127,7 +1122,7 @@ require_once("../qr/qrlib.php");
 					</div>
 				  </div>';
 				} else {
-					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input  ' . $row['Checked']  . ' data-iddb="' . $row['ID'] . '"  data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div></div>';
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input  ' . $row['Checked']  . ' data-iddb="' . $row['ID'] . '"  data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div></div>';
 				}
 			}
 		} else {
@@ -1142,8 +1137,7 @@ require_once("../qr/qrlib.php");
 				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
 					$html = $html . '<div id="field1_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '" class="col-md-1">
 					<input ' . $row['Checked']  . ' data-iddb="' . $row['ID'] .  '"  data-monto="' . $row['Monto'] . '" 
-						   class="form-check-input" 
-						   onclick="fReviewCheck(this)" 
+						   class="form-check-input tramiteschk" 
 						   id="' . $row['ID_CHECK'] . '" 
 						   type="checkbox" 
 						   name="tramites[]" 
@@ -1153,8 +1147,7 @@ require_once("../qr/qrlib.php");
 					' . $row["descripcion_larga"] . '
 				  </div>
 				  <div class="col-md-2">
-					<input onchange="getVehiculoDesdeIP(this, \'' . $row['Acronimo_Clase'] . '\');" 
-						   style="display:none; text-transform: uppercase;" 
+					<input style="display:none; text-transform: uppercase;" 
 						   id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 						   title="La placa debe contener los primeros 3 dígitos alfa y los últimos 4 numéricos, máximo 7 caracteres" 
 						   pattern="^[A-Z]{3}\d{4}$" 
@@ -1164,7 +1157,7 @@ require_once("../qr/qrlib.php");
 						   maxlength="7">
 				  </div>';
 				} else {
-					$html = $html . '<div class="col-md-1"><input ' . $row['Checked']  . ' data-iddb="' . $row['ID'] .  '" data-monto="' . $row['Monto'] . '" class="form-check-input" onclick="fReviewCheck(this)" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div>';
+					$html = $html . '<div class="col-md-1"><input ' . $row['Checked']  . ' data-iddb="' . $row['ID'] .  '" data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div>';
 				}
 				$process++;
 				if ($process == 2) {
@@ -1736,7 +1729,7 @@ require_once("../qr/qrlib.php");
 			}
 		} else {
 			if ($datos[0] > 0) {
-				$data = (array("error" => 40001, "errorhead" => 'ASIGNADA A OTRO', "errormsg" => "SE EN ENCONTRO LA CONCESIÓN NO. " . $_POST["Concesion"] . " PERO ESTA ASIGNADA A OTRO CONCESIONARIO CON NÚMERO DE RTN: " . $_POST["RTN_Concesionario"]));
+				$data = (array("error" => 40001, "errorhead" => 'ASIGNADA A OTRO', "errormsg" => "SE EN ENCONTRO LA CONCESIÓN NO. " . $_POST["Concesion"] . " PERO ESTA ASIGNADA A OTRO CONCESIONARIO CON NÚMERO DE RTN: " . $data[0]['RTN_Concesionario']));
 			} else {
 				$data = (array("error" => 40002, "errorhead" => 'CONCESION NO ENCONTRADA', "errormsg" => "NO EN ENCONTRO LA CONCESIÓN NO. " . $_POST["Concesion"]));
 			}
@@ -3061,14 +3054,15 @@ require_once("../qr/qrlib.php");
 			$responseValidarUsuario = true;
 			$responseValidarCiudad = true;
 		}
+		//print_r($responseValidarPreforma);die();
 		if (
 			$RAM == false or
 			((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or
 			((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or
 			((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
-			((isset($responseValidarMultas)    and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
-			((isset($responseValidarMultas1)   and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
-			((isset($responseValidarPreforma)  and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+			((isset($responseValidarMultas)    and isset($responseValidarMultas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+			((isset($responseValidarMultas1)   and isset($responseValidarMultas1[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			((isset($responseValidarPreforma)  and isset($responseValidarPreforma[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
 		) {
 			$this->db->rollBack();
 			echo json_encode([
@@ -3219,14 +3213,15 @@ require_once("../qr/qrlib.php");
 			$responseValidarUsuario = true;
 			$responseValidarCiudad = true;
 		}
+		//print_r($responseValidarPreforma);die();
 		if (
 			$RAM == false or
 			((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or
 			((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or
 			((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
-			((isset($responseValidarMultas)    and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
-			((isset($responseValidarMultas1)   and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
-			((isset($responseValidarPreforma)  and isset($responseValidarPlacas[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+			((isset($responseValidarMultas)    and isset($responseValidarMultas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+			((isset($responseValidarMultas1)   and isset($responseValidarMultas1[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			((isset($responseValidarPreforma)  and isset($responseValidarPreforma[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
 		) {
 			$this->db->rollBack();
 			echo json_encode([
