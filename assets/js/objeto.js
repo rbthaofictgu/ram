@@ -8,19 +8,15 @@ let rowsPerPage = 10;
 //* Variable global para almacenar las filas de los tramites
 let filasTramites = [];
 
-// tramite['ID_Compuesto'].split("_")[3].toUpperCase() === 'M_CL
 let suma = 0;
 //*definiendo los roles permitidos
 var rol = [7, 9];
 var modulo = '';
 //*rol que tiene el usuario logiado.
 let rolUser = [7];
-
 //*variable para obtener el ram en que se esta trabajando.
 var ramElement = document.getElementById("RAM");
 var ram = ramElement ? ramElement.value ?? 'RAM' : 'RAM';
-//*se asigna el arreglo que se envia a la funcion principal.
-//*estado actual
 
 //*estados para mostarar cambio de unidad link
 const estadosValidosModificacionUnidad = ['IDE-1', 'IDE-2'];
@@ -31,13 +27,14 @@ const estadosValidos = ['IDE-1', 'IDE-2', 'IDE-5'];
 
 var dataGlobal = [];
 var tituloGlobal = '';
+//*se excluyen los encabezados de la tabla de objeto.
 const encabezadoExclui = new Set(['Tramites', 'Unidad', 'Unidad1', 'ID_Memo', 'Concesion_Encriptada', 'esCarga', 'esCertificado', 'Permiso_Explotacion_Encriptado']);
-
+//*para saber el estado de la RAM actual.
 var estadoRam = document.getElementById("ID_Estado_RAM").value;
 
 function mostrarData(data, contenedorId = 'tabla-container', title = 'Titulo de la Tabla') {
 
-   console.log(data, 'datdInicial');
+   // console.log(data, 'datdInicial');
    document.getElementById(contenedorId).innerHTML = '';
 
    tituloGlobal = title;
@@ -468,23 +465,25 @@ function renderTableRowst(data, tbody, rowsPerPage, currentPage) {
                const divFila = document.createElement('div');
                divFila.id = `fila_Oculta_${index}`;
                divFila.style.display = 'none';
-               divFila.style.width = '990px';
+               divFila.style.maxWidth = '1200px';
+               divFila.style.minWidth = '1000px';
 
 
                //*para pasar data y desplegar datos en fila
                row.onclick = (event) => {
                   //*para evitar la propagación del click.
                   event.stopPropagation();
-
                   if (divFila.style.display === 'none') {
                      divFila.style.display = 'block'; // Muestra la fila
-                     divFila.style.width = '990px';
+                     divFila.style.maxWidth = '1200px';
+                     divFila.style.minWidth = '1000px';
                      divFila.innerHTML = '';
                   } else {
                      divFila.style.display = 'none'; // Oculta la fila
                   }
                   idFilaAnterior = 'idRow' + index;
-                  agregar_fila(fila['Tramites'], index, idFilaAnterior, divFila, fila['Concesion']);
+
+                  agregar_fila(fila['Tramites'], index, idFilaAnterior, divFila, fila['Concesion'], fila['Unidad'], fila['Unidad1']);
 
                   if (event.target.type === "checkbox") {
                      event.stopPropagation(); // Prevent the click from reaching the outer div
@@ -590,7 +589,7 @@ function renderTableRowst(data, tbody, rowsPerPage, currentPage) {
                      divFila.style.display = 'none'; // Oculta la fila
                   }
                   idFilaAnterior = 'idRow' + index;
-                  agregar_fila(fila['Tramites'], index, idFilaAnterior, divFila, fila['Concesion']);
+                  agregar_fila(fila['Tramites'], index, idFilaAnterior, divFila, fila['Concesion'], fila['Unidad'], fila['Unidad1'], td, row);
 
                }
             }
@@ -603,13 +602,16 @@ function renderTableRowst(data, tbody, rowsPerPage, currentPage) {
 //****************************************************************/
 //*funcion encargada de crear las subtabla de la tabla principal.
 //***************************************************************/
-function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
+function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion, unidad = '', unidad1 = '', td, row) {
+   console.log(data_tramites, 'dataTramites agregarFilas');
    let indexTotal = index + 1; //indice de la concesion
    var indice = 1;
    suma = 0;
 
-   let indexFilaConcesio = index;
+   let ID_Unidad = unidad['ID'] || unidad['ID_Unidad'] || unidad.ID_Unidad;
+   let ID_Unidad1 = unidad1['ID'] || unidad1['ID_Unidad'] || unidad1.ID_Unidad;
 
+   let indexFilaConcesio = index;
    //* tramites contiene la nueva data ya con los elementos excluidos
    let tramites = dataNueva(data_tramites);
    let filaAnterior = document.getElementById(idFilaAnterior);
@@ -619,10 +621,7 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
       !(tramite === false || (tramite && typeof tramite === 'object' && Object.keys(tramite).length === 0))
    );
 
-   console.log(tramites, 'tramites');
-   console.log(tramitesValidos.length, 'tamaño tramites');
-   console.log(tramites);
-
+   // console.log(tramites, 'tramites');
    tramitesValidos.forEach((tramite, ind) => {
       let row_agregada = document.createElement('tr');
       row_agregada.id = 'idTramite' + index + ind;
@@ -639,15 +638,18 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
       td_trash.className = 'table-secondary';
       td_trash.style.cursor = 'pointer';
 
-
-      //*indice de las nuevas filas creadas.
-      td_trash.innerHTML =
-         (tramite['ID_Compuesto'].split("_")[2] !== 'R' || tramite['ID_Compuesto'].split("_")[3] !== 'M_CL')
-            ? (rolUser.some(role => rol.includes(role))
-               ? `<span><i class="fa-solid fa-trash deleteTramite"></i></span>`
-               : '')
-            : '';
-
+      //*indice de las nuevas filas creadas. //'M_CL'
+      if (rolUser.some(role => rol.includes(role))) {
+         if ((tramite['ID_Compuesto'].split("_")[2] === 'R') || (tramite['ID_Compuesto'].split("_")[3] === 'CL')) {
+            td_trash.innerHTML = '';
+            td_trash.style.cursor = 'none';
+         } else {
+            td_trash.innerHTML = `<span><i class="fa-solid fa-trash deleteTramite"></i></span>`;
+         }
+      } else {
+         td_trash.innerHTML = ``;
+         td_trash.style.cursor = 'none';
+      }
 
       row_agregada.appendChild(td_trash);
       tdfila.innerHTML = `${indexTotal}.${ind + 1}`;
@@ -672,15 +674,17 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
                   //* si confirma que esta seguro de eliminar llamomos la funcion para que elimine de la base de datos.
                   if (result.isConfirmed) {
                      //*buscamos en el arreglo aquellos elementos que son distintos de false
-                     // const tramitesValidos = tramites.filter(tramite => tramite !== false);
-                     //* Eliminar Registro de Tramite
-                     // console.log(tramitesValidos.length, 'tamaño tramites es mayor que 1');
-                     // console.log(tramite['ID_Compuesto'], 'ID_Compuesto');
+                     //?nota: tramite['ID'] =idtramite la bd, idTramiteC=tramite de la fila,indexTotal=Indece de la concesion.
+                     //?nota: monto,idCompuesto.
 
-                     fEliminarTramite(Concesion, tramite['ID'], IdTramiteC, indexTotal, (parseInt(tramite['Cantidad_Vencimientos']) * parseFloat(tramite['Monto']).toFixed(2)).toFixed(2), tramite['ID_Compuesto']);
-                     //*modificando el valor de los traites en fila principal.
+                     
+                     console.log(ID_Unidad, ID_Unidad1, 'ID_Unidad ID_Unidad1');
+                     fEliminarTramite(Concesion, tramite['ID'], IdTramiteC, indexTotal, (parseInt(tramite['Cantidad_Vencimientos']) * parseFloat(tramite['Monto']).toFixed(2)).toFixed(2), tramite['ID_Compuesto'], ID_Unidad, ID_Unidad1);
+                     //*modificando el valor de los tramites en fila principal.
                      let cambioTamañoT = document.getElementById(`tamañoTramite${indexFilaConcesio}`).textContent;
                      document.getElementById(`tamañoTramite${indexFilaConcesio}`).textContent = parseInt(cambioTamañoT, 10) - 1;
+
+                     //*crearSpans(value, unidad , unidad1 , td, row, idConcesion)
                   }
                });
             } else {
@@ -690,13 +694,8 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
       }
 
       for (const key in tramite) {
-
          if (key !== 'ID_Compuesto') {
-
-
             const tdSub = document.createElement('td');
-
-
             if (Object.prototype.hasOwnProperty.call(tramite, key)) {
                if (key === 'Monto') {
                   let monto = +tramite[key]; // Convertir el valor de 'Monto' a número
@@ -707,19 +706,15 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
                }
                tdSub.className = (key === 'Monto') ? 'text-nowrap table-secondary' : 'text-nowrap table-secondary';
                //*si es cambio de MODIFICACIÓN CAMBIO DE UNIDAD el tramite.
-               // if (tramite[key] == tramite['descripcion']) {
-               //    tdSub.setAttribute("colspan", "3");
-               // }
                if (tramite['descripcion'] == 'MODIFICACIÓN CAMBIO DE UNIDAD') {
-
                   var estadoRam = document.getElementById("ID_Estado_RAM").value;
                   // const estadosValidosModificacionUnidad = ['IDE-1', 'IDE-2'];
-                  console.log(estadoRam, 'constancias estado');
                   //*siel parametro se manda y hay cambio de unidad se muestra las constancias.
                   if (estadosValidosModificacionUnidad.includes(estadoRam)) {
                      //*se muestra texto si no es url o el cambio de unidad
                      const link = document.createElement('a');
                      link.style.textDecoration = 'none';
+
                      link.innerHTML = (tramite[key] == 'MODIFICACIÓN CAMBIO DE UNIDAD') ? `<i class="fa-sharp fa-solid fa-eye"></i> ${tramite[key]}` : tramite[key];
                      link.target = "_blank";
                      link.href = $appcfg_Dominio_Raiz + `:140/RenovacionesE/NuevoDictamenR.aspx?Solicitud=${ram}`
@@ -734,12 +729,14 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
                   //*cuando el tramite no es cambio de unidad.
                   if (key == 'Fecha_Expiracion') {
                      tdSub.textContent = tramite[key] || "";
+                     //*si no existe el dato de fecha que coloque padin para dar el espacio de las fechas.
                      if (tdSub.textContent.trim() === "") {
                         tdSub.style.padding = "0 50px";
                      }
                   } else {
                      if (key == 'Fecha_Expiracion_Nueva') {
                         tdSub.textContent = tramite[key] || "";
+                        //*si no existe el dato de fecha que coloque padin para dar el espacio de las fechas.
                         if (tdSub.textContent.trim() === "") {
                            tdSub.style.padding = "0 50px";
                         }
@@ -752,6 +749,7 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion) {
             }
          }
       }
+
       const tdSubMonto = document.createElement('td');
       tdSubMonto.className = 'text-nowrap table-secondary text-end';
       tdSubMonto.textContent = (tramite['Cantidad_Vencimientos'] * tramite['Monto']) + '.00';
@@ -800,8 +798,6 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
    } else {
       link.innerHTML = value;
    }
-
-
    //*Abrir en una nueva pestaña
    link.target = "_blank";
 
@@ -820,7 +816,6 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
       link.style.color = '#043653c9';
       link.style.textDecoration = 'underline';
    });
-
 
    //*Añadir un manejador de clic para evitar la propagación y verificar la ruta
    link.addEventListener('click', function (event) {
@@ -853,6 +848,8 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
 //*funcion que se necarga de crear la tabla de la revision del vehiculo
 //**********************************************************************/
 function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
+   console.log(unidad, 'unidad span');
+   console.log(unidad1, 'unidad1 span');
    var texto = '';
    //console.log(unidad1,unidad,value);
    if (unidad1 != undefined && unidad1 != '' && unidad1 != null) {
@@ -862,10 +859,9 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
    }
    //* Separar el texto por el delimitador '->'
    //?nota: "aplit()", para dividir en partes por el elemento o signo.
-   console.log(value,'value undefined')     ;
-   console.log(texto,'texto undefined')     ;;
+   // console.log(value,'value undefined')     ;
+   // console.log(texto,'texto undefined')     ;
    var partes = texto.split("->");
-   
    //* Obtener el contenedor donde se agregarán los span
    const container = td;
    //console.log(partes, 'partes');
@@ -874,10 +870,9 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
       //console.log(index, 'index crear span');
       //* Crear el span dinámicamente para cada parte del texto
       const span = document.createElement("span");
-      span.id = 'id_' + index;
+      span.id = 'id_placa_'+index +'_' + idConcesion ;
       //* Establecer el espacio entre los spans
       span.style.marginRight = "8px";
-
       //* Cambiar el cursor cuando se pasa sobre el span
       span.style.cursor = "pointer";
       //* Asignar texto al span
@@ -897,7 +892,7 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
          if (valor == 'S') {
             //*creando un nuevo span para la flecha
             let arrowSpan = document.createElement('span');
-            arrowSpan.innerHTML = '<i class="fa-solid fa-arrow-right"></i> ';
+            arrowSpan.innerHTML = `<i id="id_flecha_${index}_${idConcesion}" class="fa-solid fa-arrow-right"></i>`;
             //* Añadir el nuevo span al DOM
             container.appendChild(arrowSpan);
             //*asignando valor a span origiunal 
@@ -908,14 +903,11 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
          }
       } else {
          var estadoRam = document.getElementById("ID_Estado_RAM").value;
-
          //*siel parametro se manda y hay cambio de unidad se muestra las constancias.
          if (estadosValidosConstancia.includes(estadoRam)) {
             //!funcion encargada de actualizar el icono de la constancia de generar a ver constancia
             actualizarContenido(span, index, unidad1);
          }
-         //!funcion encargada de actualizar el icono de la constancia de generar a ver constancia
-         //  actualizarContenido(span, index, unidad1);
       }
 
       //* Evento de clic para mostrar la constancia
@@ -925,11 +917,11 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
          //*Dependiendo de la placa seleccionada, pasamos los valores necesarios
          //?nota: es 2 cuando hay cambio de unidad y se deben crear las constancias.
          if (index != 2) {
-            //*mostramos la revision de la placa seleccionada.
-            mostrarUnidades(unidad, unidad1, valor, index);
+            //!mostramos la revision de la placa seleccionada.
+            mostrarUnidades(unidad, unidad1);
          } else {
-            //*llamamos la funcion constancia que decide si genermaos o vemos al constancia.
-            constancia(unidad1['ID_Placa'], unidad1['ID_Memo'], unidad1, index, span, idConcesion);
+            //!llamamos la funcion constancia que decide si genermaos o vemos al constancia.
+            constancia(unidad1['ID_Placa'], unidad1['ID_Memo'], unidad1, idConcesion);
          }
       };
       //* Añadir el span al contenedor
@@ -1085,7 +1077,7 @@ function renderPagination(currentPage, data, rowsPerPage, paginationContainer) {
 //******************************************/
 //*funcion encargada de mostrar la revision.
 //******************************************/
-function mostrarUnidades(unidad = '', unidad1 = '', valor, index, est_constancia) {
+function mostrarUnidades(unidad = '', unidad1 = '') {
    var myModalPlaca = new bootstrap.Modal(document.getElementById('modalPlaca'));
    myModalPlaca.show();
 
@@ -1114,7 +1106,7 @@ function mostrarUnidades(unidad = '', unidad1 = '', valor, index, est_constancia
          const tbody = document.createElement('tbody');
          tbody.className = 'table-group-divider';
 
-         //*arreglo para renombrar encabezados
+         //*arreglo para renombrar encabezados para mostrar la tabla de las placas
          const renombrarKey = {
             "ID_Placa": "PLACA",
             "Nombre_Propietario": "PROPIETARIO",
@@ -1140,7 +1132,6 @@ function mostrarUnidades(unidad = '', unidad1 = '', valor, index, est_constancia
             "DESC_Tipo_Vehiculo": "DESC VEHÍCULO",
             "Clase Servicio": "SERVICIO",
             "Desc_Marca": "DES_MARCA"
-
          };
 
          for (const key in obj) {
@@ -1148,7 +1139,6 @@ function mostrarUnidades(unidad = '', unidad1 = '', valor, index, est_constancia
                const element = obj[key];
 
                const tr = document.createElement('tr');
-
                const th = document.createElement('th');
                const td = document.createElement('td');
 
@@ -1160,31 +1150,27 @@ function mostrarUnidades(unidad = '', unidad1 = '', valor, index, est_constancia
                //    th.className = "bg-primary-subtle auto";
                //    th.textContent = newKey;
                // } else {
-
                //    th.className = "bg-primary-subtle auto";
                //    th.style.textAlign = "center";  // Centra el contenido horizontalmente
                //    th.style.padding = "8px"; // Puedes agregar un poco de padding si lo deseas para el espaciado
                //    th.innerHTML = '<i class="fa-solid fa-arrow-right" style="font-size: 18px;"></i>';
-
                // }
 
                td.textContent = element;
 
+            let placa= obj['ID_Placa'] || obj['Placa']
                if (key === 'ID_Placa' || 'Placa') {
                   titulo.innerHTML = tobjeto === 1
                      ? (tipo === 'objeto' ? 'PLACA QUE SALE: ' : 'PLACA QUE ENTRA: ') +
-                     `<button type="button" class="btn btn-${tipo === 'objeto' ? 'danger' : 'success'}" data-bs-dismiss="modal">${element}</button>`
-                     : `PLACA: <button type="button" class="btn btn-info" data-bs-dismiss="modal">${element}</button>`;
-
+                     `<button type="button" class="btn btn-${tipo === 'objeto' ? 'danger' : 'success'}" data-bs-dismiss="modal">${placa}</button>`
+                     : `PLACA: <button type="button" class="btn btn-info" data-bs-dismiss="modal">${placa}</button>`;
                   divTitulo.appendChild(titulo);
                }
-
                tr.appendChild(th);
                tr.appendChild(td);
                tbody.appendChild(tr);
             }
          }
-
          table.appendChild(tbody);
          divTitulo.appendChild(table);
          return divTitulo;
@@ -1210,7 +1196,6 @@ function mostrarUnidades(unidad = '', unidad1 = '', valor, index, est_constancia
 //**********************************************************************************************/
 
 function seleccionarTodos() {
-   //console.log('seleccionar todo');
    document.getElementById('check_trash_all').addEventListener('change', function () {
       //*el check principal esta marcado?
       const isChecked = this.checked;
@@ -1229,7 +1214,6 @@ function seleccionarTodos() {
 //*funcion encargada de obtener los arreglos de las filas y las concesion que fueorn selecionadas
 //************************************************************************************************/
 function trash_Consession(data) {
-   console.log(data);
    const checkboxes = document.querySelectorAll('.check_trash');
    let filas = [];//*instanciando filas.
    let concesiones = [];//*instanciando arreglo de concesiones
@@ -1237,14 +1221,11 @@ function trash_Consession(data) {
    checkboxes.forEach(checkbox => {
       if (checkbox.checked == true) {
          let texto = checkbox.value.split('/');
-
          filas.push(texto[0]);  //* La primera parte (antes del '/')
          concesiones.push(texto[1]);  //* La segunda parte (después del '/')
       }
    });
-
    f_FetchDeletConcesiones(concesiones, filas);
-   console.log(filas, concesiones);
 }
 //******************************************************************************/
 //*funcion encargada de verificar la decision del usuario y mostar las alertas.
@@ -1253,13 +1234,9 @@ function f_FetchDeletConcesiones(idConcesiones, filas) {
    // console.log(idConcesiones, 'consession');
    let tipoAccion = false;
    if (idConcesiones.length != 0) {
-      tipoAccion = true;
-
-      mostrarAlerta(tipoAccion, idConcesiones, filas)
-
+      mostrarAlerta(tipoAccion = true, idConcesiones, filas)
    } else {
       mostrarAlerta(tipoAccion, idConcesiones, filas);
-
    }
 }
 //*****************************************************************************/
@@ -1291,7 +1268,6 @@ function mostrarAlerta(tipoAccion, idConcesiones, filas) {
             //* si cancela la eliminacion limpiamos la seleccion de los check
             //* Obtener todos los checkboxes con la clase 'check_trash'
             const checkboxes = document.querySelectorAll('.check_trash');
-
             //*Recorro todos los checkboxes y desmarco todos
             checkboxes.forEach(checkbox => {
                checkbox.checked = false;
@@ -1303,10 +1279,9 @@ function mostrarAlerta(tipoAccion, idConcesiones, filas) {
 //************************************************************/
 //*encargada de eliminar las concesione en la base de datos.
 //***********************************************************/
-function eliminar(idConcesiones, idRows) {
+function eliminar(idConcesiones, idRows, Monto = 0) {
    // *URL del Punto de Acceso a la API
    var ram = document.getElementById("RAM").value;
-   // console.log(ram,'ram delete concesion');
    const url = $appcfg_Dominio + "Api_Ram.php";
    let fd = new FormData(document.forms.form1);
    //*Adjuntando el action al FormData
@@ -1326,7 +1301,7 @@ function eliminar(idConcesiones, idRows) {
    fetchWithTimeout(url, options, 120000)
       .then((response) => response.json())
       .then(function (datos) {
-         console.log(datos);
+         // console.log(datos);
          if (typeof datos.error == "undefined" && datos.Borrado == true) {
             //* si respuesta existe quiere decir que la funcion clearCollection modifico el arreglo.
             let respuesta = clearCollections(idConcesiones);
@@ -1348,13 +1323,14 @@ function eliminar(idConcesiones, idRows) {
                   $appcfg_pocision_toast,
                   $appcfg_icono_toast
                );
-               //**************************/
+               //**********************************************************************/
                //* INICIO: Borrando La Linea de la Pantalla que contiene la concesion
-               //**************************/
+               //**********************************************************************/
                let contador = idRows.length
                for (i = 0; i < contador; i++) {
                   let element = document.getElementById("idRow" + idRows[i]);
                   if (element) {
+                     //*quitamos la fila del div de los tamites de la concesion.
                      element.remove();
                      element = document.getElementById('fila_Oculta_' + idRows[i]);
                      if (element) {
@@ -1365,6 +1341,12 @@ function eliminar(idConcesiones, idRows) {
                //**************************/
                //* FINAL: Borrando La Linea de la Pantalla que contiene la concesion
                //**************************/
+               let Total_A_Pagar_El = document.getElementById("Total_A_Pagar");
+               if (Total_A_Pagar_El) {
+                  Monto = parseFloat(Monto).toFixed(2);
+                  let Total_A_Pagar = parseFloat(document.getElementById("Total_A_Pagar").innerHTML).toFixed(2);
+                  document.getElementById("Total_A_Pagar").innerHTML = (parseFloat(Total_A_Pagar - Monto).toFixed(2)).toString();
+               }
             }
          } else {
             if (typeof datos.error != "undefined") {
@@ -1389,51 +1371,37 @@ function eliminar(idConcesiones, idRows) {
 //***************************************************************************************************/
 //*funcion encargada de actulaizar las iconos de la constancia de la placas si hay cambio de unidad.
 //**************************************************************************************************/
-function actualizarContenido(span, index, unidad1, td) {
-   console.log('actualizar constancia', index, ' index es ?')
+function actualizarContenido(span, index, unidad1) {
    //*si el indix es 2 es cambio de unidad y ID_Memo false que no tiene constancias generada.
-   // console.log(unidad1['ID_Memo'], 'idmemo de la unidad');
    if (index === 2 && unidad1 != undefined && unidad1 != null && (unidad1['ID_Memo'] === false || unidad1['ID_Memo'] === 'false')) {
-      // span.setAttribute("data-id", "2");
       span.innerHTML = `<i id="est_const" class="fas fa-cog"></i> `;
       //*si el indix es 1 es cambio de unidad y ID_Memo tiene datos si tiene constancia entonces la visualizamos
    } else if (index === 2 && unidad1 != undefined && unidad1 != null && (unidad1['ID_Memo'] !== false || unidad1['ID_Memo'] !== 'false')) {
       //* En caso de que 'ID_Memo' no sea false y tenga un ID_Memo.
-
       span.innerHTML = `<i id="est_const" class="fas fa-file-pdf"></i>`;
    }
-
 }
 //***************************************************************************************/
 //*funcion encargada de decidir si se mira o se genera la constancia y evaluar la placa 
 //***************************************************************************************/
-function constancia(placa, ID_Memo, unidad1, index, span, idConcesion) {
-
-   //console.log(idConcesion, 'constancia');
-   // console.log(ID_Memo, 'ID_Memo');
+function constancia(placa, ID_Memo, unidad1, idConcesion) {
    let $placabegin = '';
    //* Obtener los primeros dos caracteres de la placa
    if (placa !== undefined && placa !== null) {
       $placabegin = placa.slice(0, 2);
-   } else {
-      console.log(placa, 'placa');
    }
-
+   //*arreglo de placas permitidas.
    let $placas = ["TB", "TC", "TE", "TP", "TT", "TR"];
 
    //* Verificar si $placabegin NO está en el array $placas
    if (($placas.includes($placabegin))) {
       //*id_memo si genero_contancia es true quiere decir que ya se genero y ponemos 
       //*Memo global que tiene el id_memo que se creo al generar constancia si no es el que se pasa por parametro por que ya existe
-      // ID_Memo = (genero_const == true) ? Memo : ID_Memo;
-      console.log(ID_Memo, 'ID_Memo y ');
       //*Comprobamos si el ID_Memo es una cadena 'true' o un valor booleano true
       if (ID_Memo === 'false' || ID_Memo === false) {
          //* Llamar a la función generarConstancia
-         generarConstancia(unidad1, index, span, idConcesion);
-
+         generarConstancia(unidad1, idConcesion);
       } else {
-         // alert(ID_Memo, 'ID_Memo y entro en ver constancia');
          //*Llamar a la función verConstancia pasando el valor de 'ID_Memo'
          verConstancia(ID_Memo);
       }
@@ -1444,8 +1412,8 @@ function constancia(placa, ID_Memo, unidad1, index, span, idConcesion) {
 //******************************************/
 //*cambio de unidad y placa distinta 
 //**************************************
-function generarConstancia(unidad1, index, span, idConcesion) {
-
+function generarConstancia(unidad1, idConcesion) {
+   //*globales.
    var ID_Usuario = document.getElementById("ID_Usuario").value;
    var User_Name = document.getElementById("User_Name").value;
 
@@ -1472,7 +1440,6 @@ function generarConstancia(unidad1, index, span, idConcesion) {
       data: form_data,
       type: 'post',
       success: function (dataserver) {
-         console.log(dataserver.ID_Memo, 'se genero id_memo');
          Memo = dataserver.ID_Memo;
          if (dataserver.status == 2) {
             fSweetAlertEventNormal(
@@ -1499,7 +1466,7 @@ function generarConstancia(unidad1, index, span, idConcesion) {
                $link = $appcfg_Dominio_Raiz + ':288/PDF_Constancia.php?ID_Memo=' + dataserver.ID_Memo + '&FSL=' + document.getElementById("RAM").value;
                //*llamando a la funcion cambiar link para modificar si ya esta generada la constancia.
 
-               cambiarLink(dataserver.ID_Memo, span, index, unidad1, idConcesion); // Llama a la función adicional
+               cambiarLink(dataserver.ID_Memo, idConcesion); // Llama a la función adicional
                Swal.fire({
                   title: "CONTANCIA SALVADA SATISFACTORIAMENTE",
                   text: "CONSTANCIA GENERADA CORRECTAMENTE CON EL NUMERO DE MEMO " + dataserver.ID_Memo,
@@ -1511,7 +1478,6 @@ function generarConstancia(unidad1, index, span, idConcesion) {
                }).then(function () {
                   window.open($link, '_blank'); // Abre el enlace
                });
-
             }
          }
       },
@@ -1527,7 +1493,7 @@ function generarConstancia(unidad1, index, span, idConcesion) {
 //******************************************/
 //*funcion encargada de realizar el cambio 
 //******************************************/
-function cambiarLink(MEMO, span, index, unidad1, idConcesion) {
+function cambiarLink(MEMO, idConcesion) {
    //*modificamos arreglo original con el memo nuevo
    modificarIdMemo(idConcesion, MEMO);
    //*llamo a la funcion de la tabla para recargar de nuevo con los datos nuevos y paso el nuevo objeto modificadoi
@@ -1537,7 +1503,6 @@ function cambiarLink(MEMO, span, index, unidad1, idConcesion) {
 //*funcion encargada de modificar el arreglo 
 //******************************************/
 function modificarIdMemo(idConcesion, MEMO) {
-
    concesionNumber.forEach((element, index) => {
       Object.values(element).forEach(dato => {
          //*comparamos el dato del arreglo con el id del elemento de la concession que selecionamos.
@@ -1553,79 +1518,19 @@ function modificarIdMemo(idConcesion, MEMO) {
          }
       });
    });
-
-   // Retornar el arreglo modificado
-   // return concesionNumber;
-}
-//*******************************************************************************/
-//* funcion encargada de modificar el tramite en false al momento de eliminar
-//*******************************************************************************/
-
-function EliminarTramite(idConcesion, i, idTramite) {
-   //clearCollections(idConcesiones);
-   concesionNumber.forEach((element, index) => {
-      Object.values(element).forEach(dato => {
-         //*comparamos el dato del arreglo con el id del elemento de la concession que selecionamos.
-         if (dato == idConcesion) {
-            //*si es igual verificamos si la unidad existe y si existe
-            if (element['Tramites'] && typeof element['Tramites'] === 'object') {
-               //*modifico el ID_Memo y inserto el elemento. cambio false por el valor.
-               console.log(element['Tramites'][i]);
-               //*cambiando el tramite en la posicion i por false.
-               element['Tramites'][i] = false;
-               //*volver a cargar la tabla con los nuevos datos.
-               mostrarData(concesionNumber, 'tabla-container', tituloGlobal);
-               console.log('llamar data');
-               console.log(concesionNumber);
-            } else {
-               //*si no no hay unidad
-               console.log('no hay tramites => para el idConcesion' + idConcesion);
-            }
-         }
-      });
-   });
 }
 //******************************************/
 //*funcion encargada de ver la constancia.
 //******************************************/
 function verConstancia(MEMO) {
-
    // MEMO = 'IHTT-CON-1939-23';
-   // alert('ver constancia link');'FSL-28897-14159-23
-
-   var numPreforma = document.getElementById("RAM").value//UNIDAD1['ID_Formulario_Solicitud']//$('#numpreforma').val(); // Obtener el valor de #numpreforma
-   // console.log(numPreforma, 'numPreforma y', MEMO, 'MEMO EN VERCONSTANCIA');
+   var numPreforma = document.getElementById("RAM").value//UNIDAD1['ID_Formulario_Solicitud']//$('#numpreforma').val(); // 
    var url = $appcfg_Dominio_Raiz + ':288/PDF_Constancia.php?ID_Memo=' + MEMO + '&FSL=' + numPreforma;
    window.open(url, '_blank'); // Abrir en una nueva ventana
 }
-//****************************************************************************/
-//*Recupero los estados dependiendo del usuario que esta dentro del sistema
-//****************************************************************************/
-
-function estados() {
-   let respuestaEstados = [];
-   fetch(`${$appcfg_Dominio}/estados_sistemas_por_user.php`, {
-      method: 'GET',
-      headers: {
-         'Authorization': 'Bearer token',
-      },
-   })
-      .then(response => {
-         if (!response.ok) {
-            throw new Error('Error en la solicitud estdos en archivo de objeto');
-         }
-         return response.json();
-      })
-      .then(data => {
-         respuestaEstados = data;
-         console.log('Respuesta:', data);
-      })
-      .catch(error => {
-         console.error('Error:', error);
-      });
-   return respuestaEstados
-}
-
+//**************************************************/
+//*genra certificado dependiendo de las concesiones.
+//**************************************************/
 function tipoConcesion(esCarga, esCertificado, Concesion_Encriptada, Permiso_Explotacion_Encriptado) {
    //  console.log(esCarga, esCertificado, Concesion_Encriptada, Permiso_Explotacion_Encriptado);
    const dominio = `${$appcfg_Dominio_Raiz}:172/api_rep.php?action=`;
@@ -1661,8 +1566,6 @@ function tipoConcesion(esCarga, esCertificado, Concesion_Encriptada, Permiso_Exp
          link['rutacertificado'] = rutacertificado;
          link['rutapermisoexplotacion'] = '';
       }
-
    }
-
    return link;
 }

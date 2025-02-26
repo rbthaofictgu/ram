@@ -2329,6 +2329,66 @@ a {
     text-align: center;
     justify-content: center;
 }
-.tramiteschk{
-	justify-content: center;
+.fade-out {
+	opacity: 0;
+	transition: opacity 5.00s ease;
 }
+
+@keyframes highlight {
+	0% {
+	  font-size: 18px; /* Original size */
+	  color: rgb(160, 158, 158);    /* Original color */
+	}
+	10% {
+	  font-size: 24px; /* Enlarged size */
+	  color: rgb(132, 174, 236);      /* Changed color */
+	}
+	50% {
+		font-size: 22px; /* Enlarged size */
+		color: rgb(132, 174, 236);      /* Changed color */
+	  }
+	90% {
+	  font-size: 18px; /* Keep the enlarged size */
+	  color: rgb(10, 10, 10);      /* Keep the changed color */
+	}
+	100% {
+	  font-size: 1.5rem; /* Return to original size */
+	  color: var(--bs-gobierno1);    /* Return to original color */
+	}
+  }
+  
+.animate-highlight {
+	animation: highlight 12s forwards;
+}
+
+/* Efecto de resaltado: cambio de color de fondo y escalado */
+@keyframes highlightEffect {
+	0% {
+	  transform: scale(1);
+	  background-color: transparent;
+	}
+	25% {
+	  transform: scale(1.1);
+	  background-color: #ffeb3b; /* un amarillo suave */
+	}
+	50% {
+	  transform: scale(1.1);
+	  background-color: #ffc107; /* un tono un poco más intenso */
+	}
+	75% {
+	  transform: scale(1.05);
+	  background-color: #ffeb3b;
+	}
+	100% {
+	  transform: scale(1);
+	  background-color: transparent;
+	}
+  }
+  
+  .highlight {
+	animation: highlightEffect 5s ease-out;
+  }
+  .animate__delay-3s {
+	animation-delay: 3s;
+  }
+  

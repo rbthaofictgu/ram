@@ -5,6 +5,9 @@ const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]
 const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
 
+//*************************************************************************************************************************/
+//** INICIO: permite que el input se despliegue al precionar el icono de la lupa y que se seleccione el contenido si hay
+//*************************************************************************************************************************/
 icon.addEventListener('click', () => {
    input.classList.toggle('expanded');
    console.log(concesionForAutoComplete);
@@ -16,9 +19,13 @@ icon.addEventListener('click', () => {
    }
 });
 
-//*******************************************************************************************************/
-//* Ejecuta AutoComplet sobre concesionForAutoComplete para buscar Concesiones
-//*******************************************************************************************************/
+//*************************************************************************************************************************/
+//** FINAL: permite que el input se despliegue al precionar el icono de la lupa y que se seleccione el contenido si hay
+//*************************************************************************************************************************/
+
+//****************************************************************************************/
+//* INICIO:Ejecuta AutoComplet sobre concesionForAutoComplete para buscar Concesiones
+//****************************************************************************************/
 function fAutoComplete() {
    console.log(concesionForAutoComplete);
    // alert('AutoComplete');
@@ -29,17 +36,23 @@ function fAutoComplete() {
       select: function (event, ui) {
          //*campos de entrada de data
          const selectedItem = concesionForAutoComplete.find(item => item.text === ui.item.label);
-         $("#input-prefetch").val(ui.item.label);  // Mostrar el texto seleccionado
-         console.log('Texto seleccionado: ' + ui.item.label);  // Texto seleccionado
-         console.log('Valor asociado: ' + selectedItem.value); // Valor asociado  
+         $("#input-prefetch").val(ui.item.label);  //* Mostrar el texto seleccionado
+         // console.log('Texto seleccionado: ' + ui.item.label);  // Texto seleccionado
+         // console.log('Valor asociado: ' + selectedItem.value); // Valor asociado  
          verificar_existencia_dato(selectedItem.value, event);
       }
    });
 
 
 }
+//****************************************************************************************/
+//* FINAL:Ejecuta AutoComplet sobre concesionForAutoComplete para buscar Concesiones
+//****************************************************************************************/
 
-//*verifica primero la existencia de los datos para saber si se edita o se ingresa la concesión
+//**********************************************************************************************************/
+//* INICIO:verifica primero la existencia de los datos para saber si se edita o se ingresa la concesión
+//**********************************************************************************************************/
+
 function verificar_existencia_dato(concesion, event) {
 
    //*Debuelve true si existe
@@ -55,7 +68,6 @@ function verificar_existencia_dato(concesion, event) {
    } else {
       let existe = buscar_placa_concesion(concesion);
       if (existe) {
-         // console.log('se llama para editar' + concesion);
          if (currentstep != 2) {
             stepperForm.to(3);
          }
@@ -94,17 +106,24 @@ function verificar_existencia_dato(concesion, event) {
    }
 
 }
+//**********************************************************************************************************/
+//* FINAL:verifica primero la existencia de los datos para saber si se edita o se ingresa la concesión
+//**********************************************************************************************************/
 
-//*Realiza la busqueda para ver si ya existe.
+//*****************************************************/
+//*INICIO: Realiza la busqueda para ver si ya existe.
+//*****************************************************/
 function buscar_placa_concesion(concesion) {
    //* Verifica si el valor proporcionado es una concesión o una placa
    return concesionNumber.some(item => item.Concesion === concesion);
 }
+//*****************************************************/
+//*FINAL: Realiza la busqueda para ver si ya existe.
+//*****************************************************/
 
-
-//*********************************************************************************************************************/
-//** Inicio Cuando Se Da Click a Element de AutoComplete de Concesiones
-//*********************************************************************************************************************/
+//*************************************************************************/
+//** INICIO: Cuando Se Da Click a Element de AutoComplete de Concesiones
+//*************************************************************************/
 const inputPrefetch = document.getElementById("input-prefetch");
 inputPrefetch.addEventListener("keydown", function (event) {
    if (event.key === "Enter") {
@@ -126,6 +145,9 @@ inputPrefetch.addEventListener("keydown", function (event) {
       }
    }
 });
+//************************************************************************/
+//** FINAL: Cuando Se Da Click a Element de AutoComplete de Concesiones
+//************************************************************************/
 
 inputPrefetch.addEventListener("focus", function () {
    inputPrefetch.select(); // Selecciona el texto dentro del input cuando se hace focus

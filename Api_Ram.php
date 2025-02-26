@@ -353,20 +353,19 @@ require_once("../qr/qrlib.php");
 			echo json_encode(array("error" => 2000, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'ERROR AL INTENTAR ELIMINAR TRAMITE EN PREFORMA, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
 			if (isset($_POST["ID_Unidad1"])) {
-				$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] where ID = :ID";
-				$p = array(":ID" => intval($_POST["ID_Unidad1"]));
-				$return = $this->delete($query, $p);
+				$query = "UPDATE [IHTT_PREFORMA].[dbo].[TB_Vehiculo] SET ESTADO = 'NORMAL' where ID = :ID";
+				$p = array(":ID" => intval($_POST["ID_Unidad"]));
+				$return = $this->update($query, $p);
 				if ($return == false) {
 					$this->db->rollBack();
-					echo json_encode(array("error" => 2001, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
+					echo json_encode(array("error" => 2001, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ACTUALIZAR LA UNIDAD SALIENTE'));
 				} else {			
-					$query = "UPDATE [IHTT_PREFORMA].[dbo].[TB_Vehiculo] SET ESTADO = 'NORMAL' where ID = :ID";
-					$p = array(":ID" => intval($_POST["ID_Unidad"]));
-					
-					$return = $this->update($query, $p);
+					$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] where ID = :ID";
+					$p = array(":ID" => intval($_POST["ID_Unidad1"])); 
+					$return = $this->delete($query, $p);
 					if ($return == false) {
 						$this->db->rollBack();
-						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR LA UNIDAD NORMAL'));
+						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
 					} else {								
 						$this->db->commit();
 						//$this->db->rollBack();
@@ -520,13 +519,11 @@ require_once("../qr/qrlib.php");
 		veh.[RTN_Propietario],
 		veh.[Nombre_Propietario],
 		veh.[ID_Placa],
-		veh.[ID_Marca],
-		mar.Desc_Marca,
+		concat(veh.[ID_Marca],' => ',mar.Desc_Marca) as [Marca],
 		veh.[Anio],
 		veh.[Modelo],
 		veh.[Tipo_Vehiculo],
-		veh.[ID_Color],
-		col.Desc_Color,
+		concat(veh.[ID_Color],' => ',col.Desc_Color) as [Color],
 		veh.[Motor],
 		veh.[Chasis],
 		veh.[Estado],
@@ -759,12 +756,12 @@ require_once("../qr/qrlib.php");
 		veh.[Nombre_Propietario],
 		veh.[ID_Placa],
 		veh.[ID_Marca],
-		mar.Desc_Marca,
+		concat(veh.[ID_Marca],' => ',mar.Desc_Marca) as [Marca],
 		veh.[Anio],
 		veh.[Modelo],
 		veh.[Tipo_Vehiculo],
 		veh.[ID_Color],
-		col.Desc_Color,
+		concat(veh.[ID_Color],' => ',col.Desc_Color) as [Color],
 		veh.[Motor],
 		veh.[Chasis],
 		veh.[Estado],
@@ -2580,10 +2577,10 @@ require_once("../qr/qrlib.php");
 			":Chasis" => strtoupper($Unidad['Serie']),
 			":VIN" => strtoupper($Unidad['VIN']),
 			":Combustible" => strtoupper($Unidad['Combustible']),
-			":Alto" => $Unidad['Alto'],
-			":Ancho" => $Unidad['Ancho'],
-			":Largo" => $Unidad['Largo'],
-			":Capacidad_Carga" => $Unidad['Capacidad'],
+			":Alto" =>  floatval($Unidad['Alto']),
+			":Ancho" => floatval($Unidad['Ancho']),
+			":Largo" => floatval($Unidad['Largo']),
+			":Capacidad_Carga" => floatval($Unidad['Capacidad']),
 			":Peso_Unidad" => 0,
 			":Permiso_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
 			":Certificado_Operacion" => strtoupper($CERTIFICADO_OPERACION),
@@ -2924,12 +2921,11 @@ require_once("../qr/qrlib.php");
 			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
 			$PERMISO_EXPLOTACION = "";
 			$CERTIFICADO_OPERACION = "";
-		}
+		} 
 
 		// Consulta SQL para actualizar el vehículo
 		$query = "UPDATE [IHTT_PREFORMA].[dbo].[TB_Vehiculo]
-		SET 
-			RTN_Propietario = :RTN_Propietario,
+		SET RTN_Propietario = :RTN_Propietario,
 			Nombre_Propietario = :Nombre_Propietario,
 			ID_Marca = :ID_Marca,
 			Anio = :Anio,
@@ -2951,16 +2947,13 @@ require_once("../qr/qrlib.php");
 			Sistema_Fecha = SYSDATETIME(),
 			Estado = :Estado,
 			ID_Placa_Antes_Replaqueo = :ID_Placa_Antes_Replaqueo,
+			ID_Placa = :ID_Placa,
 			Sistema_Usuario = :Sistema_Usuario
 		WHERE 
-			ID_Formulario_Solicitud = :ID_Formulario_Solicitud AND
-			ID_Placa = :ID_Placa";  
-
+			ID = :ID";  
 		$parametros = array(
-			":ID_Formulario_Solicitud" => $RAM,
 			":RTN_Propietario" => $Unidad['RTN_Propietario'],
 			":Nombre_Propietario" => strtoupper($Unidad['Nombre_Propietario']),
-			":ID_Placa" => strtoupper($Unidad['Placa']),
 			":ID_Marca" => $Unidad['Marca'],
 			":Anio" => $Unidad['Anio'],
 			":Modelo" => strtoupper($Unidad['Modelo']),
@@ -2970,16 +2963,18 @@ require_once("../qr/qrlib.php");
 			":Chasis" => strtoupper($Unidad['Serie']),
 			":VIN" => strtoupper($Unidad['VIN']),
 			":Combustible" => strtoupper($Unidad['Combustible']),
-			":Alto" => $Unidad['Alto'],
-			":Ancho" => $Unidad['Ancho'],
-			":Largo" => $Unidad['Largo'],
-			":Capacidad_Carga" => $Unidad['Capacidad'],
+			":Alto" => floatval($Unidad['Alto']),
+			":Ancho" => floatval($Unidad['Ancho']),
+			":Largo" => floatval($Unidad['Largo']),
+			":Capacidad_Carga" => floatval($Unidad['Capacidad']),
 			":Permiso_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
 			":Certificado_Operacion" => strtoupper($CERTIFICADO_OPERACION),
 			":Permiso_Especial" => strtoupper($PERMISO_ESPECIAL),
 			":Estado" => $Estado,
 			":ID_Placa_Antes_Replaqueo" => strtoupper($Unidad['ID_Placa_Antes_Replaqueo']),
-			":Sistema_Usuario" => $_SESSION["user_name"]
+			":ID_Placa" => strtoupper($Unidad['Placa']),
+			":Sistema_Usuario" => $_SESSION["user_name"],
+			":ID" => intval($Unidad['ID_Unidad'])
 		);
 
 		// Ejecutar la actualización (esto usa la función insert, que también puede manejar updates)
@@ -3083,7 +3078,7 @@ require_once("../qr/qrlib.php");
 			}
 			if ($isOKSolicitante == false) {
 				$this->db->rollBack();
-				echo json_encode('solicitante');
+				echo json_encode(array("error" => 4000, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR EL SOLICITANTE'));
 			} else {
 				if ($_POST["Concesion"]['RAM'] == '') {
 					$isOKApoderado = $this->updateApoderado($RAM['nuevo_numero'], $_POST["Apoderado"]);
@@ -3092,7 +3087,7 @@ require_once("../qr/qrlib.php");
 				}
 				if ($isOKApoderado == false) {
 					$this->db->rollBack();
-					echo json_encode('apoderado');
+					echo json_encode(array("error" => 4001, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR EL APODERADO'));
 				} else {
 					$isOKUnidad = $_POST["Unidad"]['ID_Unidad'];
 					if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
@@ -3102,7 +3097,7 @@ require_once("../qr/qrlib.php");
 					}
 					if ($isOKUnidad == false) {
 						$this->db->rollBack();
-						echo json_encode(['UNIDAD'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
+						echo json_encode(array("error" => 4002, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD'));
 					} else {
 						if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
 							if ($_POST["Unidad1"]['ID_Unidad'] !== '' && $_POST["Unidad1"]['ID_Unidad'] !== null) {
@@ -3112,7 +3107,7 @@ require_once("../qr/qrlib.php");
 							}
 							if ($isOKUnidad1 == false) {
 								$this->db->rollBack();
-								echo json_encode(['UNIDAD1'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
+								echo json_encode(array("error" => 4003, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD 1'));
 								$ERROR = true;
 							} else {
 								$this->db->commit();
@@ -3242,7 +3237,7 @@ require_once("../qr/qrlib.php");
 			}
 			if ($isOKSolicitante == false) {
 				$this->db->rollBack();
-				echo json_encode('solicitante');
+				echo json_encode(array("error" => 4000, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR EL SOLICITANTE'));
 			} else {
 				if ($_POST["Concesion"]['RAM'] == '') {
 					$isOKApoderado = $this->saveApoderado($RAM['nuevo_numero'], $_POST["Apoderado"]);
@@ -3251,7 +3246,7 @@ require_once("../qr/qrlib.php");
 				}
 				if ($isOKApoderado == false) {
 					$this->db->rollBack();
-					echo json_encode('apoderado');
+					echo json_encode(array("error" => 4001, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR EL APODERADO'));
 				} else {
 					if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
 						$isOKUnidad = $this->saveUnidad($RAM['nuevo_numero'], $_POST["Unidad"], $_POST["Concesion"], 'SALE');
@@ -3260,13 +3255,13 @@ require_once("../qr/qrlib.php");
 					}
 					if ($isOKUnidad == false) {
 						$this->db->rollBack();
-						echo json_encode(['UNIDAD'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
+						echo json_encode(array("error" => 4002, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR LA UNIDAD'));
 					} else {
 						if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
 							$isOKUnidad1 = $this->saveUnidad($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
 							if ($isOKUnidad1 == false) {
 								$this->db->rollBack();
-								echo json_encode(['UNIDAD1'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
+								echo json_encode(array("error" => 4003, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR LA UNIDAD 1'));
 								$ERROR = true;
 							}
 						}
@@ -3274,7 +3269,7 @@ require_once("../qr/qrlib.php");
 							$isOKTramites = $this->saveTramites($RAM['nuevo_numero'], $_POST["Tramites"]);
 							if ($isOKTramites[0] == false) {
 								$this->db->rollBack();
-								echo json_encode(['TRAMITES'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
+								echo json_encode(array("error" => 4004, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR LOS TRAMITES'));
 							} else {
 								$isOKBitacora = true;
 								if ($_POST["Concesion"]['RAM'] == '') {
@@ -3282,14 +3277,14 @@ require_once("../qr/qrlib.php");
 								}
 								if ($isOKBitacora == false) {
 									$this->db->rollBack();
-									echo json_encode(['BITACORA'  =>  $RAM['nuevo_numero'], 'ESTADO'  => false]);
+									echo json_encode(array("error" => 4005, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR LA BITACORA'));
 								} else {
 									$isOKCrearCarpeta = true;
 									if ($_POST["Concesion"]['RAM'] == '') {
 										$isOKCrearCarpeta = $this->crearCarpeta($RAM['nuevo_numero']);
 									}
 									if ($isOKCrearCarpeta != true) {
-										echo json_encode($isOKCrearCarpeta);
+										echo json_encode(array("error" => 4006, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO CREAR LA CARPETA PARA ALMACENAR DOCUMENTOS'));
 									} else {
 										$this->db->commit();
 										echo json_encode(

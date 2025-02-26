@@ -183,7 +183,7 @@ include_once('configuracion/configuracion_js.php');
 
       <div class="col-5">
         <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA&nbsp;&nbsp;&nbsp;<span id="rotulo"></span>
-          <button style="display:none;" id="RAM-ROTULO" type="button" class="btn btn-outline-<?php echo $appcfg_clase; ?> btn-sm"></button>
+          <button style="display:none;" id="RAM-ROTULO" type="button" class="btn btn-outline-<?php echo $appcfg_clase; ?> btn-sm animate__animated animate__backInUp animate__delay-3s"></button>
         </h6>
       </div>
 
