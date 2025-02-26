@@ -628,7 +628,7 @@ include_once('configuracion/configuracion_js.php');
                       </div>
 
                       <div class="col-md-3 bordered-row">
-                        <strong id="concesion_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<span title="Placa anterior del vehiculo" class="gobierno1" style="display: none; font: weight 800px;" id="concesion_placaanterior"></span></strong></strong>
+                        <strong id="concesion_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<h3 title="Placa anterior del vehiculo" class="gobierno3" style="display: none; font: weight 800px;" id="concesion_placaanterior"></h3></strong></strong>
                       </div>
 
                       <div class="col-md-3 bordered-row">

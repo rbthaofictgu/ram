@@ -316,14 +316,14 @@ function fGetInputsSelect() {
       let parts = input.id.split("_");
       if (parts[0].slice(-1) == 1 && esCambioDeVehiculo == true || parts[0].slice(-1) != 1) {
         if (input.getAttribute("data-valor") > input.value) {
-          input.classList.add("errortxt");
+          input.classList.add("text-error");
           var label = document.getElementById(input.id + "label");
           if (label != null) {
             label.classList.add("errorlabel");
           }
           paneerror[currentstep][idinputs.indexOf(input.id)] = 1;
         } else {
-          input.classList.remove("errortxt");
+          input.classList.remove("text-error");
           var label = document.getElementById(input.id + "label");
           if (label != null) {
             label.classList.remove("errorlabel");
@@ -355,7 +355,7 @@ function fCleanErrorMsg() {
   inputs = Array.from(inputs);
   // Iterar sobre los elementos de entrada y eliminar las clases de error
   inputs.forEach((input) => {
-    input.classList.remove("errortxt");
+    input.classList.remove("text-error");
     var label = document.getElementById(input.id + "label");
     if (label != null) {
       label.classList.remove("errorlabel");
@@ -379,7 +379,7 @@ function fCleanSelectErrorMsg() {
   inputs = Array.from(inputs);
   // Iterar sobre los elementos de entrada y eliminar las clases de error
   inputs.forEach((inputx) => {
-    inputx.classList.remove("errortxt");
+    inputx.classList.remove("text-error");
     let id = inputx.id.concat("label");
     var label = document.getElementById(id);
     if (label != null) {
@@ -1366,7 +1366,7 @@ function animateValue(element, start, end, duration) {
               "warning"
             );
             event.preventDefault();
-            event.target.classList.add("errortxt");
+            event.target.classList.add("text-error");
             var label = document.getElementById(event.target.id + "label");
             if (label != null) {
               label.classList.add("errorlabel");
@@ -1383,7 +1383,7 @@ function animateValue(element, start, end, duration) {
               "error"
             );
             event.preventDefault();
-            event.target.classList.add("errortxt");
+            event.target.classList.add("text-error");
             var label = document.getElementById(event.target.id + "label");
             if (label != null) {
               label.classList.add("errorlabel");
@@ -1399,7 +1399,7 @@ function animateValue(element, start, end, duration) {
             );
             event.preventDefault();
             //event.target.select();
-            event.target.classList.add("errortxt");
+            event.target.classList.add("text-error");
             var label = document.getElementById(event.target.id + "label");
             if (label != null) {
               label.classList.add("errorlabel");
@@ -1417,7 +1417,7 @@ function animateValue(element, start, end, duration) {
           "warning"
         );
         event.preventDefault();
-        event.target.classList.add("errortxt");
+        event.target.classList.add("text-error");
         var label = document.getElementById(event.target.id + "label");
         if (label != null) {
           label.classList.add("errorlabel");
@@ -1510,7 +1510,7 @@ function animateValue(element, start, end, duration) {
               "warning"
             );
             event.preventDefault();
-            event.target.classList.add("errortxt");
+            event.target.classList.add("text-error");
             var label = document.getElementById(event.target.id + "label");
             if (label != null) {
               label.classList.add("errorlabel");
@@ -1527,7 +1527,7 @@ function animateValue(element, start, end, duration) {
               "error"
             );
             event.preventDefault();
-            event.target.classList.add("errortxt");
+            event.target.classList.add("text-error");
             var label = document.getElementById(event.target.id + "label");
             if (label != null) {
               label.classList.add("errorlabel");
@@ -1543,7 +1543,7 @@ function animateValue(element, start, end, duration) {
             );
             event.preventDefault();
             //event.target.select();
-            event.target.classList.add("errortxt");
+            event.target.classList.add("text-error");
             var label = document.getElementById(event.target.id + "label");
             if (label != null) {
               label.classList.add("errorlabel");
@@ -1562,7 +1562,7 @@ function animateValue(element, start, end, duration) {
           "warning"
         );
         event.preventDefault();
-        event.target.classList.add("errortxt");
+        event.target.classList.add("text-error");
         var label = document.getElementById(event.target.id + "label");
         if (label != null) {
           label.classList.add("errorlabel");
@@ -2151,7 +2151,7 @@ function animateValue(element, start, end, duration) {
         //*********************************************************************************************/
         if (isError == true) {
           event.preventDefault();
-          event.target.classList.add("errortxt");
+          event.target.classList.add("text-error");
           var label = document.getElementById(event.target.id + "label");
           if (label != null) {
             document.getElementById(event.target.id + "label").classList.add("errorlabel");
@@ -2191,7 +2191,7 @@ function animateValue(element, start, end, duration) {
           "warning"
         );
         event.preventDefault();
-        event.target.classList.add("errortxt");
+        event.target.classList.add("text-error");
         var label = document.getElementById(event.target.id + "label");
         if (label != null) {
           document
@@ -4129,7 +4129,7 @@ function animateValue(element, start, end, duration) {
         if (event.target.getAttribute("data-valor") > event.target.value) {
           event.preventDefault();
 
-          event.target.classList.add("errortxt");
+          event.target.classList.add("text-error");
 
           var label = document.getElementById(event.target.id + "label");
           if (label != null) {
@@ -4145,7 +4145,7 @@ function animateValue(element, start, end, duration) {
 
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else {
-          event.target.classList.remove("errortxt");
+          event.target.classList.remove("text-error");
 
           var label = document.getElementById(event.target.id + "label");
           if (label != null) {
@@ -4187,7 +4187,7 @@ function animateValue(element, start, end, duration) {
         if (event.key === "Tab" || event.key === "Enter") {
           if (event.target.getAttribute("data-valor") > event.target.value) {
             event.preventDefault();
-            event.target.classList.add("errortxt");
+            event.target.classList.add("text-error");
             var label = document.getElementById(event.target.id + "label");
 
             if (label != null) {
@@ -4203,7 +4203,7 @@ function animateValue(element, start, end, duration) {
 
             paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
           } else {
-            event.target.classList.remove("errortxt");
+            event.target.classList.remove("text-error");
 
             var label = document.getElementById(event.target.id + "label");
             if (label != null) {
@@ -4263,7 +4263,7 @@ function animateValue(element, start, end, duration) {
             event.target.focus();
             event.target.select();
           }
-          event.target.classList.add("errortxt");
+          event.target.classList.add("text-error");
           var label = document.getElementById(event.target.id + "label");
           if (label != null) {
             label.classList.add("errorlabel");
@@ -4276,7 +4276,7 @@ function animateValue(element, start, end, duration) {
           }
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else {
-          event.target.classList.remove("errortxt");
+          event.target.classList.remove("text-error");
 
           var label = document.getElementById(event.target.id + "label");
           if (label != null) {
@@ -4351,7 +4351,7 @@ function animateValue(element, start, end, duration) {
           //   setFocus = true;
           // }
 
-          event.target.classList.add("errortxt");
+          event.target.classList.add("text-error");
 
           var label = document.getElementById(event.target.id + "label");
           if (label != null) {
@@ -4368,7 +4368,7 @@ function animateValue(element, start, end, duration) {
           // Marcando que hay un error en el input actual del panel actual
           paneerror[currentstep][idinputs.indexOf(idinput)] = 1;
         } else {
-          event.target.classList.remove("errortxt");
+          event.target.classList.remove("text-error");
 
           var label = document.getElementById(event.target.id + "label");
           if (label != null) {
