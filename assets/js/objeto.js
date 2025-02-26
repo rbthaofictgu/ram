@@ -18,6 +18,9 @@ let rolUser = [7];
 var ramElement = document.getElementById("RAM");
 var ram = ramElement ? ramElement.value ?? 'RAM' : 'RAM';
 
+
+//*titulos variables 
+var lengTramites = 0;
 //*estados para mostarar cambio de unidad link
 const estadosValidosModificacionUnidad = ['IDE-1', 'IDE-2'];
 //*estados para mostrar las constancias.
@@ -74,10 +77,11 @@ function mostrarData(data, contenedorId = 'tabla-container', title = 'Titulo de 
    let encabezado = Array.from(uniqueKeys);
    let concesion = '';
    var icon = 0;
-   var lengTramites = 0;
+
    var totalMonto = 0;
    var ramElement = document.getElementById("RAM");
    var ram = ramElement ? ramElement.value ?? 'RAM' : 'RAM';
+
    //*para realizar los calculos 
    dataGlobal.forEach(data => {
       for (let key in data) {
@@ -107,7 +111,7 @@ function mostrarData(data, contenedorId = 'tabla-container', title = 'Titulo de 
    })
 
    //*ENCABEZADOS DEL MODAL
-   let titulo = ` ${tituloGlobal} (${dataGlobal.length}) <i class="fa-solid fa-cube text-secondary"></i> ${ram} <i class="fa-duotone fa-solid fa-folder-open text-secondary"></i> TRAMITES (${lengTramites}) <i class="fa-solid fa-money-bill-trend-up text-secondary"></i> TOTAL LPS. <span id="Total_A_Pagar">${totalMonto.toFixed(2)}</span>`;
+   let titulo = ` ${tituloGlobal} (<span id="idLengConcesion">${dataGlobal.length}</span>) <i class="fa-solid fa-cube text-secondary"></i> ${ram} <i class="fa-duotone fa-solid fa-folder-open text-secondary"></i> TRAMITES (<span id="idLengTramites">${lengTramites}</span>) <i class="fa-solid fa-money-bill-trend-up text-secondary"></i> TOTAL LPS. <span id="Total_A_Pagar">${totalMonto.toFixed(2)}</span>`;
    //!llamamos a la fucnion TablaBusquedaInterna
 
    if (!data || data.length === 0) {
@@ -377,7 +381,7 @@ function handleSearch(event, data) {
 //*funcion encargada de renderizar el body de la tabla.
 //******************************************************/
 function renderTableRowst(data, tbody, rowsPerPage, currentPage) {
-   console.log(data, 'data objeto');
+   // console.log(data, 'data objeto');
    //*limpiando el body de la tabla
    tbody.innerHTML = '';
 
@@ -397,7 +401,7 @@ function renderTableRowst(data, tbody, rowsPerPage, currentPage) {
 
       //*creamos la columna y añadimos el numero de fila para despues añadir al elemnto de fila
       row.appendChild(document.createElement('td')).innerHTML = ((rolUser.some(role => rol.includes(role))) ? `<div class="form-check">
-         <input onclick="event.stopPropagation();" class="form-check-input check_trash"  type="checkbox" value="${index}/${fila['Concesion']}" id="id_trash_${row.id}"> 
+         <input onclick="event.stopPropagation();" class="form-check-input check_trash"  type="checkbox" value="${index}/${fila['Concesion']}/${fila['Tramites']}" id="id_trash_${row.id}"> 
          <label class="form-check-label" for="flexCheckDefault">
             &nbsp;&nbsp; ${startIndex + index + 1}
          </label>
@@ -609,7 +613,8 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion, unid
    suma = 0;
 
    let ID_Unidad = unidad['ID'] || unidad['ID_Unidad'] || unidad.ID_Unidad;
-   let ID_Unidad1 = unidad1['ID'] || unidad1['ID_Unidad'] || unidad1.ID_Unidad;
+   // let ID_Unidad1 = unidad1?.ID_Unidad || unidad1?.ID;
+   let ID_Unidad1 = unidad1?.['ID_Unidad'] || unidad1?.['ID'];
 
    let indexFilaConcesio = index;
    //* tramites contiene la nueva data ya con los elementos excluidos
@@ -676,14 +681,15 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion, unid
                      //*buscamos en el arreglo aquellos elementos que son distintos de false
                      //?nota: tramite['ID'] =idtramite la bd, idTramiteC=tramite de la fila,indexTotal=Indece de la concesion.
                      //?nota: monto,idCompuesto.
-
-                     
-                     console.log(ID_Unidad, ID_Unidad1, 'ID_Unidad ID_Unidad1');
+                     // console.log(ID_Unidad, ID_Unidad1, 'ID_Unidad ID_Unidad1');
                      fEliminarTramite(Concesion, tramite['ID'], IdTramiteC, indexTotal, (parseInt(tramite['Cantidad_Vencimientos']) * parseFloat(tramite['Monto']).toFixed(2)).toFixed(2), tramite['ID_Compuesto'], ID_Unidad, ID_Unidad1);
                      //*modificando el valor de los tramites en fila principal.
                      let cambioTamañoT = document.getElementById(`tamañoTramite${indexFilaConcesio}`).textContent;
                      document.getElementById(`tamañoTramite${indexFilaConcesio}`).textContent = parseInt(cambioTamañoT, 10) - 1;
 
+                     //*modificamos el conteo principal del total de tramites en el titulo
+                     // lengTramites -= 1;
+                     // document.getElementById('idLengTramites').textContent=`(${lengTramites})`
                      //*crearSpans(value, unidad , unidad1 , td, row, idConcesion)
                   }
                });
@@ -848,8 +854,8 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
 //*funcion que se necarga de crear la tabla de la revision del vehiculo
 //**********************************************************************/
 function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
-   console.log(unidad, 'unidad span');
-   console.log(unidad1, 'unidad1 span');
+   // console.log(unidad, 'unidad span');
+   // console.log(unidad1, 'unidad1 span');
    var texto = '';
    //console.log(unidad1,unidad,value);
    if (unidad1 != undefined && unidad1 != '' && unidad1 != null) {
@@ -870,7 +876,7 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
       //console.log(index, 'index crear span');
       //* Crear el span dinámicamente para cada parte del texto
       const span = document.createElement("span");
-      span.id = 'id_placa_'+index +'_' + idConcesion ;
+      span.id = 'id_placa_' + index + '_' + idConcesion;
       //* Establecer el espacio entre los spans
       span.style.marginRight = "8px";
       //* Cambiar el cursor cuando se pasa sobre el span
@@ -892,7 +898,7 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
          if (valor == 'S') {
             //*creando un nuevo span para la flecha
             let arrowSpan = document.createElement('span');
-            arrowSpan.innerHTML = `<i id="id_flecha_${index}_${idConcesion}" class="fa-solid fa-arrow-right"></i>`;
+            arrowSpan.innerHTML = `<i id="id_flecha_${index}_${idConcesion}" class="fa-solid fa-arrow-right">&nbsp;</i> `;
             //* Añadir el nuevo span al DOM
             container.appendChild(arrowSpan);
             //*asignando valor a span origiunal 
@@ -1158,7 +1164,7 @@ function mostrarUnidades(unidad = '', unidad1 = '') {
 
                td.textContent = element;
 
-            let placa= obj['ID_Placa'] || obj['Placa']
+               let placa = obj['ID_Placa'] || obj['Placa']
                if (key === 'ID_Placa' || 'Placa') {
                   titulo.innerHTML = tobjeto === 1
                      ? (tipo === 'objeto' ? 'PLACA QUE SALE: ' : 'PLACA QUE ENTRA: ') +
@@ -1214,9 +1220,12 @@ function seleccionarTodos() {
 //*funcion encargada de obtener los arreglos de las filas y las concesion que fueorn selecionadas
 //************************************************************************************************/
 function trash_Consession(data) {
+   console.log(data, 'trasconcesion');
    const checkboxes = document.querySelectorAll('.check_trash');
    let filas = [];//*instanciando filas.
    let concesiones = [];//*instanciando arreglo de concesiones
+   let tramites = 0;
+   let montos = [];
 
    checkboxes.forEach(checkbox => {
       if (checkbox.checked == true) {
@@ -1225,6 +1234,11 @@ function trash_Consession(data) {
          concesiones.push(texto[1]);  //* La segunda parte (después del '/')
       }
    });
+
+   concesiones.forEach(concesion => {
+
+   })
+
    f_FetchDeletConcesiones(concesiones, filas);
 }
 //******************************************************************************/
@@ -1263,7 +1277,6 @@ function mostrarAlerta(tipoAccion, idConcesiones, filas) {
          if (result.isConfirmed) {
             //* si confirma que esta seguro de eliminar llamomos la funcion para que elimine de la base de datos.
             eliminar(idConcesiones, filas);
-            Swal.fire('¡ELIMINADO!', 'LOS REGISTROS HAN SIDO ELIMADOS.', 'success');
          } else {
             //* si cancela la eliminacion limpiamos la seleccion de los check
             //* Obtener todos los checkboxes con la clase 'check_trash'
@@ -1303,13 +1316,16 @@ function eliminar(idConcesiones, idRows, Monto = 0) {
       .then(function (datos) {
          // console.log(datos);
          if (typeof datos.error == "undefined" && datos.Borrado == true) {
+            console.log('Monto Antes');
+            let respuestareduceConcesionNumber =  reduceConcesionNumber(idConcesiones);
+            preDeleteAutoComplete(idConcesiones, 'CONCESION');
             //* si respuesta existe quiere decir que la funcion clearCollection modifico el arreglo.
-            let respuesta = clearCollections(idConcesiones);
+            let respuestaclearCollections = clearCollections(idConcesiones);
             //*si existe mandamos alerta
-            if (respuesta) {
+            if (respuestaclearCollections) {
                // mostrarData(concesionNumber);
                sendToast(
-                  "LAS CONCESIONES SELECCIONADA SE BORRARON EXITOSAMENTE ",
+                  "LA CANTIDAD DE " + idConcesiones.length + "  CONCESION(ES) SELECCIONADA(S) SE BORRARON EXITOSAMENTE ",
                   $appcfg_milisegundos_toast,
                   "",
                   true,
@@ -1341,17 +1357,18 @@ function eliminar(idConcesiones, idRows, Monto = 0) {
                //**************************/
                //* FINAL: Borrando La Linea de la Pantalla que contiene la concesion
                //**************************/
-               let Total_A_Pagar_El = document.getElementById("Total_A_Pagar");
-               if (Total_A_Pagar_El) {
-                  Monto = parseFloat(Monto).toFixed(2);
-                  let Total_A_Pagar = parseFloat(document.getElementById("Total_A_Pagar").innerHTML).toFixed(2);
-                  document.getElementById("Total_A_Pagar").innerHTML = (parseFloat(Total_A_Pagar - Monto).toFixed(2)).toString();
-               }
+               const elem = document.getElementById("idLengConcesion");
+               animateValue(elem, parseInt(document.getElementById("idLengConcesion").textContent), parseInt(parseInt(document.getElementById("idLengConcesion").textContent) - parseInt(respuestareduceConcesionNumber.total_concesiones)), 6000,'highlightRed',parseInt,0);
+               const elemt = document.getElementById("idLengTramites");
+               animateValue(elemt, parseInt(document.getElementById("idLengTramites").textContent), parseInt(parseInt(document.getElementById("idLengTramites").textContent) - parseInt(respuestareduceConcesionNumber.total_tramites)), 9000,'highlightGris',parseInt,0);
+               let total_pagar_ele = document.getElementById("Total_A_Pagar");
+               let Total_A_Pagar = parseFloat(document.getElementById("Total_A_Pagar").innerHTML).toFixed(2);
+               animateValue(total_pagar_ele, Total_A_Pagar, parseFloat(Total_A_Pagar - respuestareduceConcesionNumber.total).toFixed(2), 13000);
             }
          } else {
             if (typeof datos.error != "undefined") {
                //let errormsgcash='NO SE PUDO BORRAR LAS CONCESIONES';
-               fSweetAlertSelect(
+               fSweetAlertEventNormal(
                   datos.errorhead,
                   datos.error + "- " + errormsgcash,
                   "error"
@@ -1360,8 +1377,8 @@ function eliminar(idConcesiones, idRows, Monto = 0) {
          }
       })
       .catch((error) => {
-         console.log(error, 'error');
-         fSweetAlertEventSelect(
+         console.log(error, 'error catch objeto,js funcion eliminar');
+         fSweetAlertEventNormal(
             "CONEXÍON",
             "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
             "warning"

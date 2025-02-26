@@ -205,11 +205,31 @@ function addElementToAutoComplete(value,text) {
 //********************************************************************************/
 //* Inicio Filtrar los elementos que no son iguales a 'Concesion'
 //********************************************************************************/
-function deleteElementFromAutoComplete(Concesion) {   
+function deleteElementFromAutoComplete(Referencia) {   
   //*item !== Concesion
-  concesionForAutoComplete = concesionForAutoComplete.filter(Concesion => Concesion.value !== Concesion);
+  concesionForAutoComplete = concesionForAutoComplete.filter(Concesion => !Concesion.text.includes(Referencia));
 }
 
+function  reduceConcesionNumber(idConcesiones) { 
+  var total = parseFloat((0.00).toFixed(2));
+  var total_concesiones = 0;
+  var total_tramites = 0;
+  idConcesiones.forEach((idConcesion) => {  
+    var index = updateCollection(idConcesion);
+    var Tramites = concesionNumber[index].Tramites;
+    //* Si no existe o no tiene el array Tramites, se omite
+      if (Tramites && Array.isArray(Tramites)) {
+      total_concesiones+=1;
+      //* Sumamos los Total_A_Pagar de todos los trámites de la concesión actual
+      const sumaTramites = Tramites.reduce((acum, Tramite) => {
+        total_tramites+=1;
+        return parseFloat(acum) + parseFloat(Tramite.Total_A_Pagar);
+      }, 0);
+      total += sumaTramites;
+    }
+  });
+  return {'total':total,'total_concesiones':total_concesiones,'total_tramites':total_tramites};
+}
 
 // var multas3ra = document.getElementById("btnmultas");
 // if (multas3ra != null) {
@@ -388,28 +408,94 @@ function fCleanSelectErrorMsg() {
   });
 }
 
-function animateValue(element, start, end, duration) {
-  //* Agrega la clase para aplicar el efecto visual
-  element.classList.add('highlight');
-  let startTime = null;
-  function animation(currentTime) {
-    if (!startTime) startTime = currentTime;
-    const elapsed = currentTime - startTime;
-    const progress = Math.min(elapsed / duration, 1); // Asegura que progress no supere 1
-    start = parseFloat(start);
-    end  = parseFloat(end);
-    const currentValue = parseFloat((start + (end - start) * progress).toFixed(2));
-    element.textContent = currentValue.toFixed(2);
-    if (progress < 1) {
-      requestAnimationFrame(animation);
-    } else {
-      //* Remueve la clase de resaltado cuando termina la animación numérica
-      element.classList.remove("highlight");
+  function animateValue(element, start, end, duration,clase='highlight',parse=parseFloat,round=2) {
+    //* Agrega la clase para aplicar el efecto visual
+    element.classList.add(clase);
+    let startTime = null;
+    function animation(currentTime) {
+      if (!startTime) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1); // Asegura que progress no supere 1
+      start = parse(start);
+      end  = parse(end);
+      const currentValue = parse((start + (end - start) * progress).toFixed(round));
+      element.textContent = currentValue.toFixed(round);
+      if (progress < 1) {
+        requestAnimationFrame(animation);
+      } else {
+        //* Remueve la clase de resaltado cuando termina la animación numérica
+        element.classList.remove(clase);
+      }
     }
+    requestAnimationFrame(animation);
   }
-  requestAnimationFrame(animation);
-}
 
+  function preDeleteAutoComplete(Concesiones,ElementType='PLACAS') {
+    if (ElementType == 'PLACAS' || ElementType == 'TODOS') {
+      currentConcesionIndex = updateCollection(Concesiones);
+      console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+        ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+        : concesionNumber[currentConcesionIndex].Unidad1['Placa'],'ID_Placa');
+
+      deleteElementFromAutoComplete(
+        concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+          ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+          : concesionNumber[currentConcesionIndex].Unidad1['Placa']
+      );
+      console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+        ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+        : concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Antes_Replaqueo'],'ID_Placa_Antes_Replaqueo');
+      deleteElementFromAutoComplete(
+        concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+          ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+          : concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Antes_Replaqueo']
+      );    
+    } else {
+      if (ElementType == 'CONCESION') {
+        Concesiones.forEach(function(Concesion) {
+          currentConcesionIndex = updateCollection(Concesion);
+          deleteElementFromAutoComplete(concesionNumber[currentConcesionIndex].Concesion);    
+          deleteElementFromAutoComplete(concesionNumber[currentConcesionIndex].Permiso_Explotacion);  
+          console.log(concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
+            ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
+            : concesionNumber[currentConcesionIndex].Unidad['Placa'],'ID_Placa');
+          deleteElementFromAutoComplete(
+            concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
+              ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
+              : concesionNumber[currentConcesionIndex].Unidad['Placa']
+          );
+          console.log(concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
+            ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
+            : concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Antes_Replaqueo'],'ID_Placa_Antes_Replaqueo');
+          deleteElementFromAutoComplete(
+            concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
+              ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
+              : concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Antes_Replaqueo']
+          );    
+          if (concesionNumber[currentConcesionIndex].Unidad1 != undefined && concesionNumber[currentConcesionIndex].Unidad1 != '' &&
+            concesionNumber[currentConcesionIndex].Unidad1 != null) {
+            console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+            ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+            : concesionNumber[currentConcesionIndex].Unidad1['Placa'],'ID_Placa');
+            deleteElementFromAutoComplete(
+              concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+                ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
+                : concesionNumber[currentConcesionIndex].Unidad1['Placa']
+            );
+            console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+              ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+              : concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Antes_Replaqueo'],'ID_Placa_Antes_Replaqueo');
+            deleteElementFromAutoComplete(
+              concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+                ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
+                : concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Antes_Replaqueo']
+            );    
+          }    
+        });
+      }
+    }
+    fAutoComplete();
+  }
   //***********************************************************************************************/
   //* INICIO: ELIMINAR TRAMITES */
   //***********************************************************************************************/
@@ -463,6 +549,10 @@ function animateValue(element, start, end, duration) {
         );
         return false;
       } else {
+        //*******************************************************************************************************/
+        //*INICIO: LLAANDO FUNCION DE PREBORRADO DE concesionForAutoComplete
+        //*******************************************************************************************************/
+        preDeleteAutoComplete(idConcesion);             
         //*******************************************************************************************************/
         //*INICIO: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
         //*******************************************************************************************************/
@@ -553,7 +643,7 @@ function animateValue(element, start, end, duration) {
           document.getElementById("ID_Unidad1").value == '';
           document.getElementById("btnCambiarUnidad").style.display = "none";
           document.getElementById("idVistaSTPC1").style = "display:fixed;";                
-          document.getElementById("idVistaSTPC2").style = "display:none;";                
+          document.getElementById("idVistaSTPC2").style = "display:none;";   
         }
         //************************************************************************************************/
         return true;
@@ -4782,7 +4872,6 @@ function fReviewCheck() {
               //***************************************************************************/
             } else {
               console.log('event.preventDefault() false en borrar callFunctionBorrarTramite removeAttribute');
-              event.preventDefault();
               if (acronimo_clase == 'CU') {
                 esCambioDeVehiculo = false;
                 seRecuperoVehiculoDesdeIP = 0;
@@ -4798,7 +4887,7 @@ function fReviewCheck() {
                   seRecuperoVehiculoDesdeIP = 0;
                 }
               }
-
+              event.preventDefault();
             }
           } else {
             console.log('fHiddenShowTramites delete cuando es modalidad I');
@@ -4806,6 +4895,21 @@ function fReviewCheck() {
             //* Inicio Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
             //***************************************************************************/
             fHiddenShowTramites(event.target, acronimo_tipo, acronimo_clase,false);
+            if (acronimo_clase == 'CU') {
+              esCambioDeVehiculo = false;
+              seRecuperoVehiculoDesdeIP = 0;
+              document.getElementById('input-prefetch').style.display = 'block';
+              document.getElementById('toggle-icon').style.display = 'block';        
+              document.getElementById('rightDiv').style.display = 'flex';                
+            } else {
+              if (acronimo_clase == 'CL') {
+                document.getElementById('input-prefetch').style.display = 'block';
+                document.getElementById('toggle-icon').style.display = 'block';        
+                document.getElementById('rightDiv').style.display = 'flex';                
+                esCambioDePlaca = false;
+                seRecuperoVehiculoDesdeIP = 0;
+              }
+            }
             //***************************************************************************/
             //* Final Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
             //***************************************************************************/

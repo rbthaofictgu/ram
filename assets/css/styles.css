@@ -2382,12 +2382,72 @@ a {
 	  transform: scale(1);
 	  background-color: transparent;
 	}
-  }
-  
-  .highlight {
-	animation: highlightEffect 5s ease-out;
-  }
-  .animate__delay-3s {
-	animation-delay: 3s;
-  }
+}
+
+@keyframes highlightEffectGris {
+	0% {
+	  transform: scale(1);
+	  background-color: transparent;
+	}
+	25% {
+	  transform: scale(1.1);
+	  background-color: #d3c8ca; /* un amarillo suave */
+	}
+	50% {
+	  transform: scale(1.1);
+	  background-color: #9e9797; /* un tono un poco más intenso */
+	}
+	75% {
+	  transform: scale(1.05);
+	  background-color: #464040;
+	}
+	100% {
+	  transform: scale(1);
+	  background-color: transparent;
+	}
+}
+
+
+@keyframes highlightEffectRed {
+	0% {
+	  transform: scale(1);
+	  background-color: transparent;
+	}
+	25% {
+	  transform: scale(1.1);
+	  background-color: #f9607c; /* un amarillo suave */
+	}
+	50% {
+	  transform: scale(1.1);
+	  background-color: #ed434c; /* un tono un poco más intenso */
+	}
+	75% {
+	  transform: scale(1.05);
+	  background-color: #e62626;
+	}
+	100% {
+	  transform: scale(1);
+	  background-color: transparent;
+	}
+}
+
+.highlight {
+	animation: highlightEffect 13s ease-out;
+}
+
+.highlightGris {
+	animation: highlightEffectGris 9s ease-in-out;
+}
+
+.highlightRed {
+	animation: highlightEffectRed 6s ease-in;
+}
+
+
+.animate__delay-3s {
+animation-delay: 3s;
+}
+.animate__delay-6s {
+animation-delay: 6s;
+}
   

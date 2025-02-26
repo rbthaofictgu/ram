@@ -96,7 +96,7 @@ $logo='';
 //****************************/
 //* RAM-ROTULO CLASE
 //****************************/	
-$appcfg_clase = 'secondary';
+$appcfg_clase = 'primary';
 //!*********************MENU DINAMICO*******************************************
 $cfgapp_ruta_completa_foto_usuario=$appcfg_Dominio.'assets/images/check.png'; 
 $appcfg_width_logo = "50px";

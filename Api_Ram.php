@@ -303,8 +303,8 @@ require_once("../qr/qrlib.php");
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			//$this->db->rollBack();
-			$this->db->commit();
+			$this->db->rollBack();
+			//$this->db->commit();
 			echo json_encode(['Borrado'  =>  True]);
 		}
 	}
@@ -367,14 +367,14 @@ require_once("../qr/qrlib.php");
 						$this->db->rollBack();
 						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
 					} else {								
-						$this->db->commit();
-						//$this->db->rollBack();
+						//$this->db->commit();
+						$this->db->rollBack();
 						echo json_encode(['Borrado'  =>  True,'Adentro'  =>  True, 'ID_Unidad1' => intval($_POST["ID_Unidad1"]), 'ID_Unidad' => intval($_POST["ID_Unidad"])]);
 					}
 				}
 			} else {
-				$this->db->commit();
-				//$this->db->rollBack();
+				//$this->db->commit();
+				$this->db->rollBack();
 				echo json_encode(['Borrado'  =>  True,'ID_Unidad1'  =>  'NO SET()', 'ID_TRAMITE' => $_POST["idTramite"]]);
 			}
 		}
@@ -1270,7 +1270,7 @@ require_once("../qr/qrlib.php");
 	/*****************************************************************************************/
 	protected function getDatosUnidadDesdeIP($placa)
 	{
-		$vehiculo = json_decode($this->file_contents($_SESSION["appcfg_Dominio_Raiz"] . ":184/api/Unidad/ConsultarDatosIP/" . $placa));
+		$vehiculo = json_decode($this->file_contents($_SESSION["appcfg_Dominio_Raiz"] . ":184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
 		//Recuperando el codigo de la marca del vehiculo
 		if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
 			$marca = $this->getMarcaByDesc($vehiculo->cargaUtil->marca);
@@ -1298,6 +1298,10 @@ require_once("../qr/qrlib.php");
 				$vehiculo->cargaUtil->Preformas = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"], $_POST["RAM"]);
 				$vehiculo->cargaUtil->Placas = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 			}
+		}
+		if (!isset($vehiculo->codigo)) {
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	getDatosUnidadDesdeIP():; ' . $_SESSION['usuario'] . '; - Error ;  NO RESPONDIO CONSULTA AL IP: ' . $_SESSION["appcfg_Dominio_Raiz"] . ':184/api/Unidad/ConsultarDatosIP/' . $placa;
+			logErr($txt, '../logs/logs-ip.txt');
 		}
 		return $vehiculo;
 	}

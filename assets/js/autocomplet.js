@@ -1,6 +1,10 @@
-const idInput = document.getElementById('input-prefetch');
+const idInputRef = document.getElementById('input-prefetch');
+//console.log(idInputRef,'idInputRef');
+const idInput = document.getElementById(idInputRef.value);
+//console.log(idInput,'idInput');
 const input = document.querySelector('.input-container input');
 const icon = document.getElementById('toggle-icon');
+//console.log(icon,'icon');
 const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
 const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
@@ -10,10 +14,6 @@ const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstra
 //*************************************************************************************************************************/
 icon.addEventListener('click', () => {
    input.classList.toggle('expanded');
-   console.log(concesionForAutoComplete);
-   // concesionForAutoComplete.forEach(item => {
-   //    console.log(item.value, item.text);
-   // });
    if (idInput != '') {
       idInput.select();
    }
@@ -27,19 +27,24 @@ icon.addEventListener('click', () => {
 //* INICIO:Ejecuta AutoComplet sobre concesionForAutoComplete para buscar Concesiones
 //****************************************************************************************/
 function fAutoComplete() {
-   console.log(concesionForAutoComplete);
-   // alert('AutoComplete');
-   $("#input-prefetch").autocomplete({
+   console.log(idInput.id);
+   $("#"+idInput.id).autocomplete({
       //*Se recorre data.
       source: concesionForAutoComplete.map((item) => item.text),
       minLength: 2,
       select: function (event, ui) {
          //*campos de entrada de data
+         console.log(concesionForAutoComplete, 'concesionForAutoComplete Cinthia fAutoComplete()');
          const selectedItem = concesionForAutoComplete.find(item => item.text === ui.item.label);
-         $("#input-prefetch").val(ui.item.label);  //* Mostrar el texto seleccionado
-         // console.log('Texto seleccionado: ' + ui.item.label);  // Texto seleccionado
+         $("#"+idInputRef.id).val(ui.item.label);  //* Mostrar el texto seleccionado
+         console.log('Texto seleccionado: ' + ui.item.label);  // Texto seleccionado
          // console.log('Valor asociado: ' + selectedItem.value); // Valor asociado  
-         verificar_existencia_dato(selectedItem.value, event);
+         if (selectedItem) {
+            verificar_existencia_dato(selectedItem.value, event);
+         } else {
+            verificar_existencia_dato(ui.item.label, event);
+         }
+
       }
    });
 
@@ -95,8 +100,8 @@ function verificar_existencia_dato(concesion, event) {
                   if (currentstep != 2) {
                      stepperForm.to(3);
                   }
-                  //*si no existe se pregunta si desea ingresar lo si es asi se llama la funcion para ingresar una concesión
-                  f_FetchCallConcesion(concesion, event, 'input-prefetch');
+                  //*si no existe se pregunta si desea ingresarlo si es asi se llama la funcion para ingresar una concesión
+                  f_FetchCallConcesion(concesion, event, idInputRef.id);
                }
             });
          }
@@ -124,8 +129,8 @@ function buscar_placa_concesion(concesion) {
 //*************************************************************************/
 //** INICIO: Cuando Se Da Click a Element de AutoComplete de Concesiones
 //*************************************************************************/
-const inputPrefetch = document.getElementById("input-prefetch");
-inputPrefetch.addEventListener("keydown", function (event) {
+const inputPrefetch = document.getElementById(idInputRef);
+idInputRef.addEventListener("keydown", function (event) {
    if (event.key === "Enter") {
       const selectedItem = concesionForAutoComplete.find(item => item.text === event.target.value);
       if (selectedItem != undefined) {
@@ -134,9 +139,9 @@ inputPrefetch.addEventListener("keydown", function (event) {
          if (event.target.value.length > 9) {
             verificar_existencia_dato(event.target.value.toUpperCase(), event);
          } else {
-           
+
             Swal.fire({
-               title:`!${event.target.value.toUpperCase()}¡`,
+               title: `!${event.target.value.toUpperCase()}¡`,
                text: 'NO SE PUEDE AGREGAR CONCESION CON LONGITUD MENOR A 10 CARACTERES ',
                icon: 'warning',
                confirmButtonText: 'OK',
@@ -149,6 +154,7 @@ inputPrefetch.addEventListener("keydown", function (event) {
 //** FINAL: Cuando Se Da Click a Element de AutoComplete de Concesiones
 //************************************************************************/
 
-inputPrefetch.addEventListener("focus", function () {
-   inputPrefetch.select(); // Selecciona el texto dentro del input cuando se hace focus
+idInputRef.addEventListener("focus", function (event) {
+   event.target.select();
+   //inputPrefetch.select(); // Selecciona el texto dentro del input cuando se hace focus
 });

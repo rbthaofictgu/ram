@@ -194,7 +194,7 @@ include_once('configuracion/configuracion_js.php');
 
       <div class="col-2">
       <div class="input-container">
-        <input type="text" class="form-control input-prefetch" id="input-prefetch" placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20">
+        <input autocomplete="off"  type="text" class="form-control input-prefetch" id="input-prefetch" placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20">
         <i class="fas fa-search-location" id="toggle-icon"></i>
       </div>
       </div>
@@ -1050,7 +1050,7 @@ include_once('configuracion/configuracion_js.php');
                       </div>
 
                       <div class="col-md-3 bordered-row">
-                        <strong id="concesion1_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<span title="Placa anterior del vehiculo" class="gobierno1" style="display: none; font: weight 400px;" id="concesion1_placaanterior"></span></strong></strong>
+                        <strong id="concesion1_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<span title="Placa anterior del vehiculo" class="gobierno3" style="display: none; font: weight 400px;" id="concesion1_placaanterior"></span></strong></strong>
                       </div>
 
                       <div class="col-md-3 bordered-row">
