@@ -1,5 +1,9 @@
 
-
+var setUnSetEvent1 = localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value);
+setUnSetEvent1 = JSON.parse(setUnSetEvent1); //
+if (setUnSetEvent1 == null) {
+   localStorage.setItem('setUnSetEvent' + document.getElementById("ID_Usuario").value, JSON.stringify({ 'setUnSetEvent': 'add' }));
+}
 // document.addEventListener("DOMContentLoaded", function () {
 //* Página actual, comenzamos en la página 1
 let currentPage = 1;
@@ -35,8 +39,80 @@ const encabezadoExclui = new Set(['Tramites', 'Unidad', 'Unidad1', 'ID_Memo', 'C
 //*para saber el estado de la RAM actual.
 var estadoRam = document.getElementById("ID_Estado_RAM").value;
 
-function mostrarData(data, contenedorId = 'tabla-container', title = 'Titulo de la Tabla') {
 
+function setUnSetEvent(event, events, accion, handles,prefijo) {
+   let limite = concesionNumber.length;
+   console.log(event,'event')
+   console.log(events,'events')
+   console.log(accion,'accion');
+   console.log(handles,'handles')
+   console.log(event.target.id,'event.target.id');
+   for (let i = 0; i < limite; i++) {
+
+      if (prefijo == 'idRow') {
+         var obj = document.getElementById(prefijo +  i + '_placa_0');
+         var obj1 = document.getElementById(prefijo +  i + '_placa_1');
+      } else {
+         var obj = document.getElementById(prefijo + i);
+      }
+
+      if (prefijo == 'numero_concesion_') {
+         console.log(obj,'obj prefijo numero_concesion_');
+         console.log(i,'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
+      }
+      
+      if (obj) {
+         if (accion == 'remover') {
+            let limitej = events.length;
+            for (let j = 0; j < limitej; j++) {
+               if (handles[j]) {
+                  console.log(events[j],'events[j] remover');
+                  console.log(handles[j],'handles[j] remover');
+                  console.log(obj.id,'obj.id');
+                  obj.removeEventListener(events[j], handles[j]);
+               }
+            }
+         } else {
+            let limitej = events.length;
+            for (let j = 0; j < limitej; j++) {
+            if (handles[j]) {
+                  console.log(events[j],'events[j] add');
+                  console.log(handles[j],'handles[j] add');
+                  console.log(obj.id,'obj.id');
+                  obj.addEventListener(events[j], handles[j]);
+               }
+            }
+         }
+      }
+      if (obj1) {
+         if (accion == 'remover') {
+            let limitej = events.length;
+            for (let j = 0; j < limitej; j++) {
+               if (handles[j]) {
+                  console.log(events[j],'events[j] remover');
+                  console.log(handles[j],'handles[j] remover');
+                  console.log(obj1.id,'obj.id');
+                  obj1.removeEventListener(events[j], handles[j]);
+               }
+            }
+         } else {
+            let limitej = events.length;
+            for (let j = 0; j < limitej; j++) {
+            if (handles[j]) {
+                  console.log(events[j],'events[j] add');
+                  console.log(handles[j],'handles[j] add');
+                  console.log(obj.id,'obj.id');
+                  obj1.addEventListener(events[j], handles[j]);
+               }
+            }
+         }
+      }
+      console.log("Iteración número:", i);
+   }
+}
+
+function mostrarData(data, contenedorId = 'tabla-container', title = 'Titulo de la Tabla') {
+   lengTramites = 0;
    // console.log(data, 'datdInicial');
    document.getElementById(contenedorId).innerHTML = '';
 
@@ -334,11 +410,69 @@ function clearSearchFiled(tableContainer, data, tbody) {
 
       // //*pasando boton a divTrash
       divClear.appendChild(btn_trash);
-      tableContainer.appendChild(divClear);
+      //tableContainer.appendChild(divClear);
       //*Función onclick
    }
-   //*pasasndo el div que continen el btn a contenedor de la tabla
+
+   //*boton para cambiar el estilo.
+   const btn_style = document.createElement('button');
+
+   //*el tipo de boton
+   btn_style.type = 'button';
+   //*añadiendo el texto al boton
+
+   let setUnSetEvent1 = localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value);
+   setUnSetEvent1 = JSON.parse(setUnSetEvent1); //
+   if (setUnSetEvent1.setUnSetEvent == 'add') {
+      console.log(setUnSetEvent1.setUnSetEvent,'setUnSetEvent1.setUnSetEvent ADD');
+      btn_style.innerHTML = '<i class="fas fa-times"></i>';
+      btn_style.setAttribute('data-accion','remover');
+   } else {
+      console.log(setUnSetEvent1.setUnSetEvent,'setUnSetEvent1.setUnSetEvent REMOVE');
+      btn_style.innerHTML = '<i class="fas fa-check"></i>';
+      btn_style.setAttribute('data-accion','add');
+   }
+   //*añadiendo las clases del boton y estilos
+   btn_style.className = 'justify-content-rigth align-items-rigth btn btn-warning  mx-2 btn-sm';
+   btn_style.id = 'btnAccion';
+   btn_style.onclick = (event) => {
+      if (event.target.id == 'btnAccion') {
+         console.log(event.target.id,'event.target.id en onclick');
+         setUnSetEvent(event, ['mouseenter','mouseleave'], event.target.getAttribute('data-accion'), [onmouseenterAccion,onmouseleaveAccion],'numero_concesion_');
+         setUnSetEvent(event, ['mouseenter','mouseleave'], event.target.getAttribute('data-accion'), [onmouseenterAccion,onmouseleaveAccion],'idRow');   
+         event.target.innerHTML = '';
+         if (event.target.getAttribute('data-accion') == 'remover') {
+            event.target.setAttribute('data-accion', 'add');
+            event.target.innerHTML = '<i class="fas fa-check"></i>'; 
+            localStorage.setItem('setUnSetEvent' + document.getElementById("ID_Usuario").value, JSON.stringify({ 'setUnSetEvent': 'remover' }));
+         } else {
+            event.target.setAttribute('data-accion', 'remover');
+            event.target.innerHTML = '<i class="fas fa-times"></i>'; 
+            localStorage.setItem('setUnSetEvent' + document.getElementById("ID_Usuario").value, JSON.stringify({ 'setUnSetEvent': 'add' }));
+         }
+         event.stopPropagation();
+         event.preventDefault();
+      } else {
+
+         console.log(event.target.id,'event.target.id en onclick no button accion');
+         var evento = new Event("click", {
+            bubbles: false,
+            cancelable: true,
+          });
+          document.getElementById("btnAccion").dispatchEvent(evento);
+
+      }
+   };
+
+   // //*pasando boton a divTrash
+   divClear.appendChild(btn_style);
    tableContainer.appendChild(divClear);
+   //*Función onclick
+
+
+
+   //*pasasndo el div que continen el btn a contenedor de la tabla
+   //tableContainer.appendChild(divClear);
 }
 //******************************************************************************/
 //*Funcion handSearch encargada de realizar la busqueda del input en la tabla.
@@ -377,6 +511,17 @@ function handleSearch(event, data) {
    //! llamamos la funcion renderPaginacion para que muestr la paginacion actualizada con los datos enconytrados.
    renderPagination(currentPage, filtrarData, rowsPerPage, paginationContainer);
 }
+
+function onmouseleaveAccion (event) {
+   console.log(event.target.id,'event.target.id leave');
+   event.target.style = "fontSize='1rem';";
+}
+function onmouseenterAccion (event) {
+   console.log(event.target.id,'event.target.id enter');
+   event.target.style.fontSize = "1.5rem";
+   event.target.style.fontWeight = "bolder";
+}
+
 //*******************************************************/
 //*funcion encargada de renderizar el body de la tabla.
 //******************************************************/
@@ -449,12 +594,26 @@ function renderTableRowst(data, tbody, rowsPerPage, currentPage) {
                      if (estadosValidos.includes(estadoRam) || fila['ID_Expediente']) {
                         linkConcesiones(td, linksConcesion['rutapermisoexplotacion'], value, tamaño_Tramite, index, tipoConsesion = 'C');
                      } else {
-                        td.innerHTML = td.innerHTML = value + ` <span id="tamañoTramite${index}" style="display: inline-block; border-radius: 15%; background-color:rgb(17, 88, 99); color: white; padding: 3px 7px; font-size: 10px;">${tamaño_Tramite}</span>`;
+                        var spanConcesion = document.createElement('span');
+                        spanConcesion.id = 'numero_concesion_'+index;
+                        spanConcesion.innerHTML = value;
+                        td.appendChild(spanConcesion);
+                        if (JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent == 'add') {
+                           console.log(value,'value mouseenter');
+                           spanConcesion.addEventListener("mouseleave", onmouseleaveAccion);
+                           spanConcesion.addEventListener("mouseenter", onmouseenterAccion);
+                        }
+                        var spanTramite = document.createElement('span');
+                        spanTramite.id = `tamañoTramite${index}`;
+                        spanTramite.style.cssText = "display: inline-block; border-radius: 15%; background-color: rgb(17, 88, 99); color: white; padding: 3px;";
+                        spanTramite.innerHTML = tamaño_Tramite;
+                        td.appendChild(document.createTextNode("\u00A0")); // Agrega un espacio
+                        td.appendChild(spanTramite);
                      }
                   } else {
                      if (key == 'Permiso_Explotacion') {
 
-                        //*asignamos el texto de cada columna
+                        //*asignamos el texto de cada columna\
                         if (estadosValidos.includes(estadoRam) || fila['ID_Expediente']) {
                            linkConcesiones(td, linksConcesion['rutapermisoexplotacion'], value, fila['Tramites'], index, tipoConsesion = 'P');
                         } else {
@@ -686,11 +845,6 @@ function agregar_fila(data_tramites, index, idFilaAnterior, div, Concesion, unid
                      //*modificando el valor de los tramites en fila principal.
                      let cambioTamañoT = document.getElementById(`tamañoTramite${indexFilaConcesio}`).textContent;
                      document.getElementById(`tamañoTramite${indexFilaConcesio}`).textContent = parseInt(cambioTamañoT, 10) - 1;
-
-                     //*modificamos el conteo principal del total de tramites en el titulo
-                     // lengTramites -= 1;
-                     // document.getElementById('idLengTramites').textContent=`(${lengTramites})`
-                     //*crearSpans(value, unidad , unidad1 , td, row, idConcesion)
                   }
                });
             } else {
@@ -876,7 +1030,7 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
       //console.log(index, 'index crear span');
       //* Crear el span dinámicamente para cada parte del texto
       const span = document.createElement("span");
-      span.id = 'id_placa_' + index + '_' + idConcesion;
+      span.id = String(row.id)  + '_placa' + '_' + index;
       //* Establecer el espacio entre los spans
       span.style.marginRight = "8px";
       //* Cambiar el cursor cuando se pasa sobre el span
@@ -886,26 +1040,47 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
       if (index === 0) {
          //?nota: como existe la unidad1 la placa original pasa a ser placa que sale 
          if (unidad1 != undefined && unidad1 != '' && unidad1 != null) {
-            span.innerHTML = unidad['ID_Placa'] || unidad['Placa']; //value;
-            span.className = "borderPlacaSale";
+            span.innerHTML = '<strong>' +
+               (unidad['ID_Placa'] || unidad['Placa']) +
+               '</strong>';
+            span.className = "justify-content-center align-items-center borderPlacaSale";
+            if (JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent == 'add') {            
+               console.log(JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent,'add add add addd');
+               span.addEventListener("mouseleave", onmouseleaveAccion);
+               span.addEventListener("mouseenter", onmouseenterAccion);
+            }
          } else {
             //?nota: si no hay ynidad 1 solo se muestra la unidad
-            span.innerHTML = unidad['ID_Placa'] || unidad['Placa'];  //valor;
-            span.className = "borderPlaca";
+            span.innerHTML = '<strong">' +
+               (unidad['ID_Placa'] || unidad['Placa']) +
+               '</strong>';
+            span.className = "flex justify-content-center align-items-center borderPlaca";
+            if (JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent == 'add') {
+               console.log(JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent,'add add');
+               span.addEventListener("mouseleave", onmouseleaveAccion);
+               span.addEventListener("mouseenter", onmouseenterAccion);
+            }
          }
       } else if (index === 1) {
          //*?nota: es S cuando si hay cambio de unidad?
          if (valor == 'S') {
             //*creando un nuevo span para la flecha
             let arrowSpan = document.createElement('span');
-            arrowSpan.innerHTML = `<i id="id_flecha_${index}_${idConcesion}" class="fa-solid fa-arrow-right">&nbsp;</i> `;
-            //* Añadir el nuevo span al DOM
+            let idspan = String(row.id) + "_flecha";
+            arrowSpan.id = idspan;            
+            arrowSpan.innerHTML = '<i class="fa-solid fa-arrow-right flex justify-content-center align-items-center"></i>';
+            //* Añadir el nuevo span al DOMfo
             container.appendChild(arrowSpan);
             //*asignando valor a span origiunal 
             //?nota: la placa que entra es la placa de la unidad1
             // console.log(unidad1['ID_Placa'], 'unidad1["ID_Placa"] antes de asignar');
-            span.innerHTML = unidad1['ID_Placa'] || unidad1['Placa']; // Segunda parte
-            span.className = "borderPlacaEntra";
+            span.innerHTML = '<strong>' + (unidad1['ID_Placa'] || unidad1['Placa']) +          '</strong>';
+            span.className = "justify-content-center align-items-center borderPlacaEntra";
+            if (JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent == 'add') {
+               console.log(JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent,'add add');
+               span.addEventListener("mouseleave", onmouseleaveAccion);
+               span.addEventListener("mouseenter", onmouseenterAccion);
+            }
          }
       } else {
          var estadoRam = document.getElementById("ID_Estado_RAM").value;
@@ -1317,7 +1492,7 @@ function eliminar(idConcesiones, idRows, Monto = 0) {
          // console.log(datos);
          if (typeof datos.error == "undefined" && datos.Borrado == true) {
             console.log('Monto Antes');
-            let respuestareduceConcesionNumber =  reduceConcesionNumber(idConcesiones);
+            let respuestareduceConcesionNumber = reduceConcesionNumber(idConcesiones);
             preDeleteAutoComplete(idConcesiones, 'CONCESION');
             //* si respuesta existe quiere decir que la funcion clearCollection modifico el arreglo.
             let respuestaclearCollections = clearCollections(idConcesiones);
@@ -1358,9 +1533,9 @@ function eliminar(idConcesiones, idRows, Monto = 0) {
                //* FINAL: Borrando La Linea de la Pantalla que contiene la concesion
                //**************************/
                const elem = document.getElementById("idLengConcesion");
-               animateValue(elem, parseInt(document.getElementById("idLengConcesion").textContent), parseInt(parseInt(document.getElementById("idLengConcesion").textContent) - parseInt(respuestareduceConcesionNumber.total_concesiones)), 6000,'highlightRed',parseInt,0);
+               animateValue(elem, parseInt(document.getElementById("idLengConcesion").textContent), parseInt(parseInt(document.getElementById("idLengConcesion").textContent) - parseInt(respuestareduceConcesionNumber.total_concesiones)), 6000, 'highlightRed', parseInt, 0);
                const elemt = document.getElementById("idLengTramites");
-               animateValue(elemt, parseInt(document.getElementById("idLengTramites").textContent), parseInt(parseInt(document.getElementById("idLengTramites").textContent) - parseInt(respuestareduceConcesionNumber.total_tramites)), 9000,'highlightGris',parseInt,0);
+               animateValue(elemt, parseInt(document.getElementById("idLengTramites").textContent), parseInt(parseInt(document.getElementById("idLengTramites").textContent) - parseInt(respuestareduceConcesionNumber.total_tramites)), 9000, 'highlightGris', parseInt, 0);
                let total_pagar_ele = document.getElementById("Total_A_Pagar");
                let Total_A_Pagar = parseFloat(document.getElementById("Total_A_Pagar").innerHTML).toFixed(2);
                animateValue(total_pagar_ele, Total_A_Pagar, parseFloat(Total_A_Pagar - respuestareduceConcesionNumber.total).toFixed(2), 13000);

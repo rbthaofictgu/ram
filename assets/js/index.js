@@ -1,3 +1,4 @@
+//*186.2.137.13
 "use strict";
 
 var isFromfGetInputs = false;
@@ -309,6 +310,7 @@ function fGetInputs() {
         input.focus();
         input.select();
       }
+
     }
 
     index++;
@@ -431,20 +433,13 @@ function fCleanSelectErrorMsg() {
   }
 
   function preDeleteAutoComplete(Concesiones,ElementType='PLACAS') {
-    if (ElementType == 'PLACAS' || ElementType == 'TODOS') {
+    if (ElementType == 'PLACAS') {
       currentConcesionIndex = updateCollection(Concesiones);
-      console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
-        ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
-        : concesionNumber[currentConcesionIndex].Unidad1['Placa'],'ID_Placa');
-
       deleteElementFromAutoComplete(
         concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
           ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
           : concesionNumber[currentConcesionIndex].Unidad1['Placa']
       );
-      console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
-        ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
-        : concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Antes_Replaqueo'],'ID_Placa_Antes_Replaqueo');
       deleteElementFromAutoComplete(
         concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
           ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
@@ -456,17 +451,11 @@ function fCleanSelectErrorMsg() {
           currentConcesionIndex = updateCollection(Concesion);
           deleteElementFromAutoComplete(concesionNumber[currentConcesionIndex].Concesion);    
           deleteElementFromAutoComplete(concesionNumber[currentConcesionIndex].Permiso_Explotacion);  
-          console.log(concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
-            ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
-            : concesionNumber[currentConcesionIndex].Unidad['Placa'],'ID_Placa');
           deleteElementFromAutoComplete(
             concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
               ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa']
               : concesionNumber[currentConcesionIndex].Unidad['Placa']
           );
-          console.log(concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
-            ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
-            : concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Antes_Replaqueo'],'ID_Placa_Antes_Replaqueo');
           deleteElementFromAutoComplete(
             concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
               ? concesionNumber[currentConcesionIndex].Unidad['ID_Placa_Anterior']
@@ -474,17 +463,11 @@ function fCleanSelectErrorMsg() {
           );    
           if (concesionNumber[currentConcesionIndex].Unidad1 != undefined && concesionNumber[currentConcesionIndex].Unidad1 != '' &&
             concesionNumber[currentConcesionIndex].Unidad1 != null) {
-            console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
-            ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
-            : concesionNumber[currentConcesionIndex].Unidad1['Placa'],'ID_Placa');
             deleteElementFromAutoComplete(
               concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
                 ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa']
                 : concesionNumber[currentConcesionIndex].Unidad1['Placa']
             );
-            console.log(concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
-              ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
-              : concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Antes_Replaqueo'],'ID_Placa_Antes_Replaqueo');
             deleteElementFromAutoComplete(
               concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
                 ? concesionNumber[currentConcesionIndex].Unidad1['ID_Placa_Anterior']
@@ -549,9 +532,12 @@ function fCleanSelectErrorMsg() {
         );
         return false;
       } else {
+
         //*******************************************************************************************************/
         //*INICIO: LLAANDO FUNCION DE PREBORRADO DE concesionForAutoComplete
         //*******************************************************************************************************/
+        const elemt = document.getElementById("idLengTramites");
+        animateValue(elemt, parseInt(document.getElementById("idLengTramites").textContent), parseInt(parseInt(document.getElementById("idLengTramites").textContent) - parseInt(1)), 9000, 'highlightGris', parseInt, 0);
         preDeleteAutoComplete(idConcesion);             
         //*******************************************************************************************************/
         //*INICIO: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
@@ -614,15 +600,22 @@ function fCleanSelectErrorMsg() {
         //* BLANQUEANDO EL ID_Unidad1 CUANDO SE BORRA LA TRANSACCIÓN DE CAMBIO DE UNIDAD UNICAMENTE     */
         //************************************************************************************************/
         if (idCheckBox.split("_")[3] == 'CU') {
-            const placa = document.getElementById("id_placa_1_"+idConcesion);
+            idRowConcesion = String(parseInt(idRowConcesion) - 1);
+            idRowConcesion = 'idRow'+String(idRowConcesion);
+            var idRowConcesionOriginal = idRowConcesion;
+            idRowConcesion = idRowConcesion +'_placa_' + '1';
+            const placa = document.getElementById(idRowConcesion);
+            console.log(placa,'placa')
             if (placa){
               placa.classList.add('fade-out');
               placa.addEventListener('transitionend', () => {
                 placa.remove();
                 console.log('placa.remove()');
               });
-              const flecha = document.getElementById("id_flecha_1_"+idConcesion);
-              console.log('afuera flecha');
+              idRowConcesion=idRowConcesionOriginal;
+              idRowConcesion = idRowConcesion +'_flecha';              
+              const flecha = document.getElementById(idRowConcesion);
+              console.log(idRowConcesion,'flecha');
               if (flecha){
                 console.log('adentro flecha');
                 flecha.classList.add('fade-out');
@@ -630,8 +623,10 @@ function fCleanSelectErrorMsg() {
                   flecha.remove();
                   console.log('flecha.remove()');
                 });            
-                console.log('placa1 afuera');
-                const placa1 = document.getElementById("id_placa_0_"+idConcesion);
+                idRowConcesion=idRowConcesionOriginal;
+                idRowConcesion = idRowConcesion +'_placa_' + '0';                              
+                const placa1 = document.getElementById(idRowConcesion);
+                console.log(idRowConcesion,'placa1');
                 if (placa1){
                   console.log('placa1 adentro');
                   placa1.classList.remove('borderPlacaSale');
@@ -4853,7 +4848,7 @@ function fReviewCheck() {
                 seRecuperoVehiculoDesdeIP = 0;
                 document.getElementById('input-prefetch').style.display = 'block';
                 document.getElementById('toggle-icon').style.display = 'block';        
-                document.getElementById('rightDiv').style.display = 'flex';                
+                document.getElementById('rightDiv').style.display = 'flex';      
               } else {
                 if (acronimo_clase == 'CL') {
                   document.getElementById('input-prefetch').style.display = 'block';
@@ -4898,11 +4893,19 @@ function fReviewCheck() {
             if (acronimo_clase == 'CU') {
               esCambioDeVehiculo = false;
               seRecuperoVehiculoDesdeIP = 0;
+              document.getElementById("ID_Unidad1").value == '';
+              document.getElementById("btnCambiarUnidad").style.display = "none";
+              document.getElementById("idVistaSTPC1").style = "display:fixed;";                
+              document.getElementById("idVistaSTPC2").style = "display:none;";   
               document.getElementById('input-prefetch').style.display = 'block';
               document.getElementById('toggle-icon').style.display = 'block';        
               document.getElementById('rightDiv').style.display = 'flex';                
             } else {
               if (acronimo_clase == 'CL') {
+                document.getElementById("ID_Unidad1").value == '';
+                document.getElementById("btnCambiarUnidad").style.display = "none";
+                document.getElementById("idVistaSTPC1").style = "display:fixed;";                
+                document.getElementById("idVistaSTPC2").style = "display:none;";   
                 document.getElementById('input-prefetch').style.display = 'block';
                 document.getElementById('toggle-icon').style.display = 'block';        
                 document.getElementById('rightDiv').style.display = 'flex';                

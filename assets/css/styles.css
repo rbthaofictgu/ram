@@ -1933,7 +1933,7 @@ a {
 
 .borderPlaca {
 	width: 100%;
-	border: 1px solid #08485c;
+	border: 2.5px solid #08485c;
 	color: #08485c;
 	/* Definir el borde con color y grosor */
 	border-radius: 10px;
@@ -1946,7 +1946,7 @@ a {
 
 .borderPlacaSale {
 	width: 100%;
-	border: 1.5px solid #d64f4f;
+	border: 2.5px solid #d64f4f;
 	color: #d64f4f;
 	/* Definir el borde con color y grosor */
 	border-radius: 10px;
@@ -1959,7 +1959,7 @@ a {
 
 .borderPlacaEntra {
 	width: 100%;
-	border: 1.5px solid #61af51;
+	border: 2.5px solid #61af51;
 	color: #61af51;
 	/* Definir el borde con color y grosor */
 	border-radius: 10px;

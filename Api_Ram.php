@@ -303,8 +303,8 @@ require_once("../qr/qrlib.php");
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			$this->db->rollBack();
-			//$this->db->commit();
+			//$this->db->rollBack();
+			$this->db->commit();
 			echo json_encode(['Borrado'  =>  True]);
 		}
 	}
@@ -367,14 +367,14 @@ require_once("../qr/qrlib.php");
 						$this->db->rollBack();
 						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
 					} else {								
-						//$this->db->commit();
-						$this->db->rollBack();
+						$this->db->commit();
+						//$this->db->rollBack();
 						echo json_encode(['Borrado'  =>  True,'Adentro'  =>  True, 'ID_Unidad1' => intval($_POST["ID_Unidad1"]), 'ID_Unidad' => intval($_POST["ID_Unidad"])]);
 					}
 				}
 			} else {
-				//$this->db->commit();
-				$this->db->rollBack();
+				$this->db->commit();
+				//$this->db->rollBack();
 				echo json_encode(['Borrado'  =>  True,'ID_Unidad1'  =>  'NO SET()', 'ID_TRAMITE' => $_POST["idTramite"]]);
 			}
 		}
@@ -450,7 +450,7 @@ require_once("../qr/qrlib.php");
 		FROM [IHTT_Preforma].[dbo].[TB_Solicitud] Sol,[IHTT_DB].[dbo].[TB_Tramite] Tra,[IHTT_DB].[dbo].[TB_Tipo_Tramite] Tip,[IHTT_DB].[dbo].[TB_Clase_Tramite] Cla,[IHTT_DB].[dbo].[TB_Modalidad] md, [IHTT_SGCERP].[dbo].[v_Listado_General] CO
 		where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and Sol.ID_Tramite = Tra.ID_Tramite and Tra.ID_Tipo_Tramite = Tip.ID_Tipo_Tramite and tra.ID_Clase_Tramite = cla.ID_Clase_Tramite and
 		sol.ID_Modalidad = md.ID_Modalidad and (Sol.N_Certificado = CO.N_Certificado or Sol.N_Permiso_Especial = CO.N_Certificado)
-		order by sol.Permiso_Explotacion,sol.N_Certificado,sol.N_Permiso_Especial";
+		order by sol.N_Certificado,sol.N_Permiso_Especial";
 		$rows = $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
 		$max = count($rows);
 		for ($i=0; $i<$max; $i++) {

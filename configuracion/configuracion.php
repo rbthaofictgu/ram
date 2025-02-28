@@ -73,7 +73,7 @@ $appcfg_tramites_una_linea = true;
 //************************************************************************************/
 //* Toast
 //************************************************************************************/	
-$appcfg_milisegundos_toast = 3500;
+$appcfg_milisegundos_toast = 2500;
 
 $appcfg_icono_toast = $appcfg_Dominio.'/assets/images/logos/escudo.jpg';
 $appcfg_max_field_on_net = 1000;
