@@ -30,7 +30,6 @@ include_once('configuracion/configuracion_js.php');
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="auto">
-
 <head>
   <?php
   include_once('encabezado.php');
@@ -81,6 +80,10 @@ include_once('configuracion/configuracion_js.php');
   <input value="<?php echo $User_Name; ?>" type="hidden" id="User_Name">
   <?php $Ciudad = isset($_SESSION['ciudad']) ? htmlspecialchars($_SESSION['ciudad'], ENT_QUOTES, 'UTF-8') : ''; ?>
   <input value="<?php echo $Ciudad; ?>" type="hidden" id="Ciudad">
+  <!-- Cargar el sonido -->
+  <audio id="celebrationSound" muted="false" autoplay="false">
+    <source src="assets/sounds/397353_plasterbrain_tada-fanfare-g.mp3" type="audio/wav">
+</audio>
   <div class="container-fluid bg-white shadow-sm">
 
     <!-- ******************************************************* -->
@@ -188,11 +191,6 @@ include_once('configuracion/configuracion_js.php');
       </div>
 
       <div class="col-2">
-        <h6 id="idEstado" style="font-size: 1.25rem;" class="gobierno3 fw-bolder fst-italic px-1" style="font-style: italic;font-weight: 800;">
-        </h6>
-      </div>
-
-      <div class="col-2">
       <div class="input-container">
         <input autocomplete="off"  type="text" class="form-control input-prefetch" id="input-prefetch" placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20">
         <i class="fas fa-search-location" id="toggle-icon"></i>
@@ -201,7 +199,6 @@ include_once('configuracion/configuracion_js.php');
 
 
       <div class="col-3 d-flex justify-content-end">
-
         <button title="Salvar la información en actual" id="btnSalvarConcesion" type="button" style="display: none;" class="btn btn-primary btn-sm">
           <i class="fa-solid fa-floppy-disk"></i>&nbsp;&nbsp;SALVAR
         </button>
@@ -209,8 +206,12 @@ include_once('configuracion/configuracion_js.php');
         <button title="Agregar una nueva concesion y/o verificar si una concesion ya fue ingresada a esta solicitud" style="display: none;" id="btnAddConcesion" type="button" class="btn btn-success btn-sm">
           <i class="fa-solid fa-magnifying-glass"></i>&nbsp;&nbsp;BUSCAR
         </button>
-
+      </div>      
+      <div class="col-2 text-end">
+        <h6 id="idEstado" style="font-size: 1.00rem;" class="gobierno3 fw-bolder fst-italic px-1" style="font-style: italic;font-weight: 800;">
+        </h6>
       </div>
+
 
     </div>
 
@@ -1568,7 +1569,7 @@ include_once('configuracion/configuracion_js.php');
 
       </div>
       <div id="id_stepper_gif" class="d-flex justify-content-center align-items-center" style="height: 100vh; display: none;">
-        <img id="id_img_stepper_gif" style="height: 100vh; display: none;" width="250px" height="250px" class="content-center img-fluid" src="assets/images/loading-waiting.gif" alt="Cargando pantalla" />
+        <img id="id_img_stepper_gif" style="height: 100vh; display: none;" width="50px" height="50px" class="content-center img-fluid" src="assets/images/loading-waiting.gif" alt="Cargando pantalla" />
       </div>      
     </div>
   </div>

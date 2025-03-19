@@ -1,7 +1,7 @@
 //*******************************************************/
 //******INICIO: FUNCION DE ALERTA PARA LOS ERRORES.******/
 //*******************************************************/
-function fSweetAlertEventNormal(title, msg, type,  html = '', width=1400,errorcode = 'success') {
+function fSweetAlertEventNormal(title, msg, type,  html = '', width=1400,errorcode = 'success',textBotton = 'Aceptar',funcion = '') {
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
         confirmButton: "btn btn-"+errorcode
@@ -14,20 +14,34 @@ function fSweetAlertEventNormal(title, msg, type,  html = '', width=1400,errorco
         title: title,
         text: msg,
         icon: type,
-        confirmButtonText: 'Aceptar'
+        confirmButtonText: textBotton,
+        confirmButtonColor: "#3085d6",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          if (typeof funcion === 'function') {
+            funcion();
+          }
+        }
       });
     } else {
       swalWithBootstrapButtons.fire({
         title: title,
         html: html,
         icon: type,
-        width: width,         
-        confirmButtonText: 'Aceptar'
+        width: width, 
+        confirmButtonText: textBotton,
+        confirmButtonColor: "#3085d6",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          if (typeof funcion === 'function') {
+            funcion();
+          }
+        }
       });
     }
   } 
 
-function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400, errorcode = 'success') {
+function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400, errorcode = 'success',textBotton = 'Aceptar',funcion = '') {
   const swalWithBootstrapButtons = Swal.mixin({
     customClass: {
       confirmButton: "btn btn-"+errorcode
@@ -40,7 +54,7 @@ function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400
       title: title,
       text: msg,
       icon: type,
-      confirmButtonText: 'Aceptar',
+      confirmButtonText: textBotton,
       confirmButtonColor: "#3085d6",
     }).then((result) => {
       if (result.isConfirmed) {
@@ -50,6 +64,9 @@ function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400
             event.target.select();
           }
         }
+        if (typeof funcion === 'function') {
+          funcion();
+        }
       }
     });
   } else {
@@ -58,7 +75,7 @@ function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400
       html: html,
       icon: type,
       width: width, 
-      confirmButtonText: 'Aceptar',
+      confirmButtonText: textBotton,
       confirmButtonColor: "#3085d6",
     }).then((result) => {
       if (result.isConfirmed) {
@@ -67,6 +84,9 @@ function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400
           if (event.target.type == 'text') {
             event.target.select();
           }
+        }
+        if (typeof funcion === 'function') {
+          funcion();
         }
       }
     });

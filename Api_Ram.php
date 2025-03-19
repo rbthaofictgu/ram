@@ -192,7 +192,7 @@ require_once("../qr/qrlib.php");
 	{
 		$stmt = $this->db->prepare($q);
 		try {
-			$resp = $stmt->execute($p);
+			$stmt->execute($p);
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
 				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' UPDATE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3];
@@ -215,7 +215,7 @@ require_once("../qr/qrlib.php");
 	{
 		$stmt = $this->db->prepare($q);
 		try {
-			$resp = $stmt->execute($p);
+			$stmt->execute($p);
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
 				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' INSERT: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3];
@@ -256,6 +256,528 @@ require_once("../qr/qrlib.php");
 			return false;
 		}
 	}
+	protected function saveIhttDbSoliciante($RAM,$RTN) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Solicitante] AS target
+				USING (
+				SELECT 
+					[RTN_Solicitante], 
+					[Nombre_Solicitante], 
+					[Denominacion_Social], 
+					[ID_Tipo_Solicitante], 
+					[Domicilo_Solicitante], 
+					[Telefono_Solicitante], 
+					[Email_Solicitante], 
+					[Observaciones], 
+					[ID_Aldea], 
+					[Usuario_Creacion], 
+					[Sistema_Fecha]
+				FROM [IHTT_PREFORMA].[dbo].[TB_Solicitante] 
+				WHERE RTN_Solicitante = :RTN_Solicitante and ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+				) AS source
+				ON target.RTNSolicitante = source.RTN_Solicitante
+				WHEN MATCHED THEN 
+					UPDATE SET 
+						target.NombreSolicitante = source.Nombre_Solicitante,
+						target.NombreEmpresa = source.Denominacion_Social,
+						target.CodigoSolicitanteTipo = source.ID_Tipo_Solicitante,
+						target.Direccion = source.Domicilo_Solicitante,
+						target.Telefono = source.Telefono_Solicitante,
+						target.Email = source.Email_Solicitante,
+						target.Observaciones = source.Observaciones,
+						target.Aldea = source.ID_Aldea,
+						target.SistemaUsuario = source.Usuario_Creacion,
+						target.SistemaFecha = source.Sistema_Fecha
+				WHEN NOT MATCHED THEN 
+				INSERT (RTNSolicitante, NombreSolicitante, NombreEmpresa, CodigoSolicitanteTipo, Direccion, Telefono, Email, Observaciones, Aldea, SistemaUsuario, SistemaFecha)
+				VALUES (source.RTN_Solicitante, source.Nombre_Solicitante, source.Denominacion_Social, source.ID_Tipo_Solicitante, source.Domicilo_Solicitante, source.Telefono_Solicitante, source.Email_Solicitante, source.Observaciones, source.ID_Aldea, source.Usuario_Creacion, source.Sistema_Fecha);";
+		$parametros = array(":RTN_Solicitante" => $RTN,":ID_Formulario_Solicitud" => $RAM);
+		return $this->update($query, $parametros);		
+	}
+	protected function saveIhttDbApoderadoLegal($RAM,$ID_Colegiacion) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Apoderado_Legal] AS target
+					USING (
+						SELECT 
+							[ID_Colegiacion], 
+							[Nombre_Apoderado_Legal], 
+							[Ident_Apoderado_Legal], 
+							[Direccion_Apoderado_Legal], 
+							[Telefono_Apoderado_Legal], 
+							[Email_Apoderado_Legal], 
+							[Sistema_Fecha]
+						FROM [IHTT_PREFORMA].[dbo].[TB_Apoderado_Legal]
+						WHERE ID_Colegiacion IS NOT NULL  and
+							ID_Colegiacion = :ID_Colegiacion and ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+					) AS source
+					ON target.ID_ColegiacionAPL = source.ID_Colegiacion
+					WHEN MATCHED THEN 
+						UPDATE SET 
+							target.Nombre_Apoderado_Legal = source.Nombre_Apoderado_Legal,
+							target.Identidad = source.Ident_Apoderado_Legal,
+							target.Direccion = source.Direccion_Apoderado_Legal,
+							target.Telefono = source.Telefono_Apoderado_Legal,
+							target.Email = source.Email_Apoderado_Legal,
+							target.SistemaFecha = source.Sistema_Fecha
+					WHEN NOT MATCHED THEN 
+						INSERT (ID_ColegiacionAPL, Nombre_Apoderado_Legal, Identidad, Direccion, Telefono, Email, SistemaFecha)
+						VALUES (source.ID_Colegiacion, source.Nombre_Apoderado_Legal, source.Ident_Apoderado_Legal, source.Direccion_Apoderado_Legal, source.Telefono_Apoderado_Legal, source.Email_Apoderado_Legal, source.Sistema_Fecha);";
+		$parametros = array(":ID_Colegiacion" => $ID_Colegiacion,":ID_Formulario_Solicitud" => $RAM);
+		return $this->update($query, $parametros);		
+	}	
+	
+	protected function saveIhttDbSolicitanteRepresentanteLegal($RAM) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Solicitante_Representante_Legal] AS target
+					USING (
+						SELECT 
+							RL.[ID_Formulario_Solicitud], 
+							RL.[Nombre_Representante_Legal], 
+							RL.[RTN_Representante_Legal], 
+							RL.[Numero_Inscripcion], 
+							RL.[Numero_Escritura], 
+							RL.[Notario_Autorizante], 
+							RL.[Lugar_Escritura], 
+							RL.[Fecha_Escritura], 
+							RL.[Domicilio_Representante_Legal], 
+							RL.[Telefono_Representante_Legal] AS Telefono, 
+							RL.[Correo_Representante_Legal] AS Email, 
+							RL.[Sistema_Fecha], 
+							RL.[RTN_Notario_Representante]
+						FROM [IHTT_PREFORMA].[dbo].[TB_Representante_Legal] RL
+						WHERE RL.ID_Formulario_Solicitud = :ID_Formulario_Solicitud 
+						AND RL.ID_Formulario_Solicitud IS NOT NULL
+					) AS source
+					ON target.ID_Representante_Legal = source.RTN_Representante_Legal
+					WHEN MATCHED THEN 
+						UPDATE SET 
+							target.Nombre_Representante_Legal = source.Nombre_Representante_Legal,
+							target.Direccion = source.Domicilio_Representante_Legal,
+							target.Telefono = source.Telefono,
+							target.Email = source.Email,
+							target.Sistema_Fecha = source.Sistema_Fecha
+					WHEN NOT MATCHED THEN 
+						INSERT (ID_Representante_Legal,         Nombre_Representante_Legal,        Direccion,                            Telefono,        Email,        Sistema_Fecha,   Sistema_Usuario)
+						VALUES (source.RTN_Representante_Legal, source.Nombre_Representante_Legal, source.Domicilio_Representante_Legal, source.Telefono, source.Email, SYSDATETIME(), :Sistema_Usuario);";
+		$parametros = array(":ID_Formulario_Solicitud" => $RAM,":Sistema_Usuario" => $_SESSION['usuario']);
+		return $this->update($query, $parametros);		
+	}	
+
+	
+	protected function saveIhttDbSolicitantexRepresentanteLegal($RAM) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Solicitante_x_Representante_Legal] AS target
+					USING (
+						SELECT RL.[RTN_Representante_Legal] AS ID_Representante_Legal,
+							SL.[ID_Formulario_Solicitud] AS ID_Solicitante,
+							'EST-1' AS ID_Estado,
+							:USUARIO AS Sistema_Usuario,
+							SYSDATETIME() AS Sistema_Fecha
+						FROM [IHTT_PREFORMA].[dbo].[TB_Representante_Legal] SL
+						JOIN [IHTT_PREFORMA].[dbo].[TB_Representante_Legal] RL
+						ON SL.[ID_Formulario_Solicitud] = RL.[ID_Formulario_Solicitud]
+						WHERE SL.[ID_Formulario_Solicitud] = :ID_Formulario_Solicitud
+					) AS source
+					ON target.ID_Solicitante = source.ID_Solicitante AND target.ID_Representante_Legal = source.ID_Representante_Legal
+					WHEN MATCHED THEN
+						UPDATE SET 
+							target.ID_Estado = source.ID_Estado,
+							target.Sistema_Usuario = source.Sistema_Usuario,
+							target.Sistema_Fecha = source.Sistema_Fecha
+					WHEN NOT MATCHED THEN
+						INSERT ([ID_Solicitante], [ID_Representante_Legal], [ID_Estado], [Sistema_Usuario], [Sistema_Fecha])
+						VALUES (source.ID_Solicitante, source.ID_Representante_Legal, source.ID_Estado, source.Sistema_Usuario, source.Sistema_Fecha);";
+		$parametros = array(":ID_Formulario_Solicitud" => $RAM,":USUARIO" => $RAM);
+		return $this->update($query, $parametros);		
+	}	
+	
+	protected function saveIhttDbExpedientes($RAM) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Expedientes] AS target
+					USING (
+						SELECT 
+							SUBSTRING(s.ID_Formulario_Solicitud, 1, 25) AS ID_Solicitud, 
+							SUBSTRING(s.ID_Formulario_Solicitud, 1, 25) AS ID_Expediente, 
+							SUBSTRING(s.Nombre_Solicitante, 1, 300) AS NombreSolicitante, 
+							s.ID_Tipo_Solicitante, 
+							s.RTN_Solicitante, 
+							SUBSTRING(s.Domicilo_Solicitante, 1, 500) AS Domicilo_Solicitante, 
+							SUBSTRING(s.Denominacion_Social, 1, 300) AS Denominacion_Social, 
+							s.ID_Aldea, 
+							SUBSTRING(s.Telefono_Solicitante, 1, 8) AS Telefono_Solicitante, 
+							SUBSTRING(s.Email_Solicitante, 1, 80) AS Email_Solicitante, 
+							SUBSTRING(s.Numero_Escritura, 1, 20) AS Numero_Escritura, 
+							SUBSTRING(s.RTN_Notario, 1, 15) AS RTN_Notario, 
+							SUBSTRING(s.Notario_Autorizante, 1, 100) AS Notario_Autorizante, 
+							SUBSTRING(s.Lugar_Constitucion, 1, 300) AS Lugar_Constitucion, 
+							s.Fecha_Constitucion, 
+							SUBSTRING(s.Estado_Formulario, 1, 50) AS Estado_Formulario, 
+							s.Fecha_Cancelacion, 
+							SUBSTRING(s.Observaciones, 1, 300) AS Observacion, 
+							SUBSTRING(s.Usuario_Cancelacion, 1, 50) AS Usuario_Cancelacion, 
+							SUBSTRING(s.Aviso_Cobro, 1, 4) AS Aviso_Cobro, 
+							SUBSTRING(s.Presentacion_Documentos, 1, 10) AS Presentacion_Documentos, 
+							s.Sistema_Fecha, 
+							s.Etapa_Preforma, 
+							SUBSTRING(s.Usuario_Acepta, 1, 50) AS Usuario_Acepta, 
+							s.Fecha_Aceptacion, 
+							SUBSTRING(s.Codigo_Usuario_Acepta, 1, 5) AS Codigo_Usuario_Acepta, 
+							SUBSTRING(s.Observacion_Cancelacion, 1, 400) AS Observacion_Cancelacion, 
+							SUBSTRING(s.Usuario_Inadmision, 1, 50) AS Usuario_Inadmision, 
+							s.Fecha_Inadmision, 
+							SUBSTRING(s.Observacion_Inadmision, 1, 400) AS Observacion_Inadmision, 
+							SUBSTRING(s.Tipo_Solicitud, 1, 10) AS Tipo_Solicitud, 
+							SUBSTRING(s.Entrega_Ubicacion, 1, 15) AS Entrega_Ubicacion, 
+							SUBSTRING(s.Usuario_Creacion, 1, 50) AS Usuario_Creacion, 
+							SUBSTRING(s.Codigo_Ciudad, 1, 6) AS Codigo_Ciudad, 
+							GETDATE() AS FechaRecibido, 
+							0 AS Folio, 
+							'' AS Vin, 
+							'' AS ID_Placa, 
+							'' AS Certificado_Operacion, 
+							NULL AS VerificacionFecha, 
+							'' AS VerificacionEmpleado, 
+							'' AS Expediente_Actual, 
+							SUBSTRING(s.Usuario_Creacion, 1, 50) AS SistemaUsuario, 
+							GETDATE() AS SitemaFecha,  
+							'IHTT' AS Fuente, 
+							CONVERT(VARCHAR(128), HASHBYTES('SHA2_512', 
+								CAST(SUBSTRING(s.ID_Formulario_Solicitud, 1, 128) AS VARCHAR(128)) + 
+								CAST(NEWID() AS VARCHAR(36)) 
+							), 2) AS SOL_MD5, 
+							SUBSTRING(s.ID_Formulario_Solicitud, 1, 50) AS Preforma, 
+							'' AS ID_gea, 
+							'' AS Estado_gea_solicitud, 
+							'' AS Observacion_gea_solicitud, 
+							'' AS Expediente_Secuestrado, 
+							'' AS Expediente_Desistido, 
+							'' AS Placa_ingresa, 
+							'ESTADO-020' AS Expediente_Estado, 
+							'' AS ID_Ticket, 
+							'' AS Unidad_Censada, 
+							'' AS Area_Operacion_MTX, 
+							s.Es_Renovacion_Automatica, 
+							s.Originado_En_Ventanilla, 
+							'' AS N_Permiso_Especial, 
+							'' AS RTN_Taller 
+						FROM [IHTT_PREFORMA].[dbo].[TB_Solicitante] s 
+						WHERE s.ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+					) AS source
+					ON target.ID_Expediente = source.ID_Solicitud
+					WHEN MATCHED THEN 
+					UPDATE SET 
+						target.FechaRecibido = source.FechaRecibido,
+						target.ID_Solicitante = source.RTN_Solicitante,
+						target.NombreSolicitante = source.NombreSolicitante,
+						target.Permiso_Explotacion = '',
+						target.Observacion = source.Observacion,
+						target.SistemaUsuario = source.SistemaUsuario,
+						target.SitemaFecha = SYSDATETIME(),
+						target.Es_Renovacion_Automatica = source.Es_Renovacion_Automatica,
+						target.Originado_En_Ventanilla = source.Originado_En_Ventanilla
+					WHEN NOT MATCHED THEN
+					INSERT (
+						ID_Solicitud, ID_Expediente, Folio, FechaRecibido, ID_Solicitante, 
+						NombreSolicitante, Vin, ID_Placa, Permiso_Explotacion, Certificado_Operacion, 
+						VerificacionFecha, VerificacionEmpleado, Observacion, Expediente_Actual, 
+						SistemaUsuario, SitemaFecha, Fuente, SOL_MD5, Preforma, 
+						ID_gea, Estado_gea_solicitud, Observacion_gea_solicitud, Expediente_Secuestrado, 
+						Expediente_Desistido, Placa_ingresa, Expediente_Estado, ID_Ticket, Unidad_Censada, 
+						Area_Operacion_MTX, Es_Renovacion_Automatica, Originado_En_Ventanilla, 
+						N_Permiso_Especial, RTN_Taller
+					) 
+					VALUES (
+						source.ID_Solicitud, source.ID_Expediente, source.Folio, source.FechaRecibido, source.RTN_Solicitante, 
+						source.NombreSolicitante, source.Vin, source.ID_Placa, '', source.Certificado_Operacion, 
+						source.VerificacionFecha, source.VerificacionEmpleado, source.Observacion, source.Expediente_Actual, 
+						source.SistemaUsuario, source.SitemaFecha, source.Fuente, source.SOL_MD5, source.Preforma, 
+						source.ID_gea, source.Estado_gea_solicitud, source.Observacion_gea_solicitud, source.Expediente_Secuestrado, 
+						source.Expediente_Desistido, source.Placa_ingresa, source.Expediente_Estado, source.ID_Ticket, source.Unidad_Censada, 
+						source.Area_Operacion_MTX, source.Es_Renovacion_Automatica, source.Originado_En_Ventanilla, 
+						source.N_Permiso_Especial, source.RTN_Taller
+					);";
+		$parametros = array(":ID_Formulario_Solicitud" => $RAM);
+		return $this->update($query, $parametros);
+	}
+
+	protected function saveIhttDbSolicitudVehiculoActual($RAM) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] AS target
+				USING (
+					SELECT  
+						s.ID_Formulario_Solicitud AS ID_Solicitud,
+						s.RTN_Propietario,
+						s.Nombre_Propietario,
+						s.ID_Placa,
+						s.ID_Marca,
+						s.Anio,
+						s.Modelo,
+						s.Tipo_Vehiculo,
+						s.ID_Color,
+						s.Motor,
+						s.Chasis,
+						s.Sistema_Usuario,
+						s.Sistema_Fecha,
+						s.Combustible,
+						s.VIN,
+						s.Alto,
+						s.Ancho,
+						s.Largo,
+						s.Capacidad_Carga,
+						s.Peso_Unidad,
+						s.Certificado_Operacion AS Numero_Certificado,
+						s.Permiso_Explotacion AS Numero_Explotacion,
+						s.ID_Placa_Antes_Replaqueo,
+						s.Permiso_Especial AS Numero_PermisoEspecial
+					FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] s
+					WHERE 
+						s.ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+						AND s.Estado IN ('NORMAL', 'SALE')
+				) AS source
+				ON (target.ID_Solicitud = source.ID_Solicitud 
+					AND ((target.Numero_Certificado = source.Numero_Certificado and source.Numero_Certificado != '')
+						OR (target.Numero_PermisoEspecial = source.Numero_PermisoEspecial and source.Numero_PermisoEspecial != '')))
+				WHEN MATCHED THEN
+					UPDATE SET 
+						target.RTN_Propietario = source.RTN_Propietario,
+						target.Nombre_Propietario = source.Nombre_Propietario,
+						target.ID_Placa = source.ID_Placa,
+						target.ID_Marca = source.ID_Marca,
+						target.Anio = source.Anio,
+						target.Modelo = source.Modelo,
+						target.Tipo_Vehiculo = source.Tipo_Vehiculo,
+						target.ID_Color = source.ID_Color,
+						target.Motor = source.Motor,
+						target.Chasis = source.Chasis,
+						target.Sistema_Usuario = source.Sistema_Usuario,
+						target.Sistema_Fecha = source.Sistema_Fecha,
+						target.Combustible = source.Combustible,
+						target.VIN = source.VIN,
+						target.Alto = source.Alto,
+						target.Ancho = source.Ancho,
+						target.Largo = source.Largo,
+						target.Capacidad_Carga = source.Capacidad_Carga,
+						target.Peso_Unidad = source.Peso_Unidad,
+						target.ID_Placa_Antes_Replaqueo = source.ID_Placa_Antes_Replaqueo
+				WHEN NOT MATCHED THEN
+					INSERT ([ID_Solicitud], [RTN_Propietario], [Nombre_Propietario], 
+							[ID_Placa], [ID_Marca], [Anio], [Modelo], [Tipo_Vehiculo], 
+							[ID_Color], [Motor], [Chasis], [Sistema_Usuario], 
+							[Sistema_Fecha], [Combustible], [VIN], [Alto], [Ancho], 
+							[Largo], [Capacidad_Carga], [Peso_Unidad], [Numero_Certificado], 
+							[Numero_Explotacion], [ID_Placa_Antes_Replaqueo], [Numero_PermisoEspecial])
+					VALUES (source.ID_Solicitud, source.RTN_Propietario, source.Nombre_Propietario, 
+							source.ID_Placa, source.ID_Marca, source.Anio, source.Modelo, 
+							source.Tipo_Vehiculo, source.ID_Color, source.Motor, source.Chasis, 
+							source.Sistema_Usuario, source.Sistema_Fecha, source.Combustible, 
+							source.VIN, source.Alto, source.Ancho, source.Largo, source.Capacidad_Carga, 
+							source.Peso_Unidad, source.Numero_Certificado, source.Numero_Explotacion, 
+							source.ID_Placa_Antes_Replaqueo, source.Numero_PermisoEspecial);";
+		$parametros = array(":ID_Formulario_Solicitud" => $RAM);
+		return $this->update($query, $parametros);
+	}	
+	protected function saveIhttDbSolicitudVehiculoEntra($RAM) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] AS target
+					USING (
+						SELECT  
+							s.ID_Formulario_Solicitud AS ID_Solicitud,
+							s.RTN_Propietario,
+							s.Nombre_Propietario,
+							s.ID_Placa,
+							s.ID_Marca,
+							s.Anio,
+							s.Modelo,
+							s.Tipo_Vehiculo,
+							s.ID_Color,
+							s.Motor,
+							s.Chasis,
+							s.Sistema_Usuario,
+							s.Sistema_Fecha,
+							s.Combustible,
+							s.VIN,
+							s.Alto,
+							s.Ancho,
+							s.Largo,
+							s.Capacidad_Carga,
+							s.Peso_Unidad,
+							s.Certificado_Operacion AS Numero_Certificado,
+							s.Permiso_Explotacion AS Numero_Explotacion,
+							s.ID_Placa_Antes_Replaqueo,
+							s.Permiso_Especial AS Numero_PermisoEspecial
+						FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] s
+						WHERE 
+							s.ID_Formulario_Solicitud = :ID_Formulario_Solicitud 
+							AND s.Estado = 'ENTRA'
+					) AS source
+					ON (target.ID_Solicitud = source.ID_Solicitud 
+						AND ((target.Numero_Certificado = source.Numero_Certificado and source.Numero_Certificado != '') 
+							OR (target.Numero_PermisoEspecial = source.Numero_PermisoEspecial and source.Numero_PermisoEspecial != '')))
+					WHEN MATCHED THEN
+						UPDATE SET 
+							target.RTN_Propietario = source.RTN_Propietario,
+							target.Nombre_Propietario = source.Nombre_Propietario,
+							target.ID_Placa = source.ID_Placa,
+							target.ID_Marca = source.ID_Marca,
+							target.Anio = source.Anio,
+							target.Modelo = source.Modelo,
+							target.Tipo_Vehiculo = source.Tipo_Vehiculo,
+							target.ID_Color = source.ID_Color,
+							target.Motor = source.Motor,
+							target.Chasis = source.Chasis,
+							target.Sistema_Usuario = source.Sistema_Usuario,
+							target.Sistema_Fecha = source.Sistema_Fecha,
+							target.Combustible = source.Combustible,
+							target.VIN = source.VIN,
+							target.Alto = source.Alto,
+							target.Ancho = source.Ancho,
+							target.Largo = source.Largo,
+							target.Capacidad_Carga = source.Capacidad_Carga,
+							target.Peso_Unidad = source.Peso_Unidad,
+							target.ID_Placa_Antes_Replaqueo = source.ID_Placa_Antes_Replaqueo
+					WHEN NOT MATCHED THEN
+						INSERT ([ID_Solicitud], [RTN_Propietario], [Nombre_Propietario], 
+								[ID_Placa], [ID_Marca], [Anio], [Modelo], [Tipo_Vehiculo], 
+								[ID_Color], [Motor], [Chasis], [Sistema_Usuario], 
+								[Sistema_Fecha], [Combustible], [VIN], [Alto], [Ancho], 
+								[Largo], [Capacidad_Carga], [Peso_Unidad], [Numero_Certificado], 
+								[Numero_Explotacion], [ID_Placa_Antes_Replaqueo], Numero_PermisoEspecial)
+						VALUES (source.ID_Solicitud, source.RTN_Propietario, source.Nombre_Propietario, 
+								source.ID_Placa, source.ID_Marca, source.Anio, source.Modelo, 
+								source.Tipo_Vehiculo, source.ID_Color, source.Motor, source.Chasis, 
+								source.Sistema_Usuario, source.Sistema_Fecha, source.Combustible, 
+								source.VIN, source.Alto, source.Ancho, source.Largo, source.Capacidad_Carga, 
+								source.Peso_Unidad, source.Numero_Certificado, source.Numero_Explotacion, 
+								source.ID_Placa_Antes_Replaqueo, source.Numero_PermisoEspecial);";
+		$parametros = array(":ID_Formulario_Solicitud" => $RAM);
+		return $this->update($query, $parametros);
+	}
+
+	protected function saveIhttDbExpedientexApoderado($RAM) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Expediente_X_Apoderado] AS target
+					USING (
+						SELECT  
+							s.ID_Formulario_Solicitud AS ID_Solicitud,
+							s.ID_Colegiacion AS ID_ColegiacionAPL,
+							s.Nombre_Apoderado_Legal AS NombreApoderadoLega,
+							s.Direccion_Apoderado_Legal AS OBS_Apoderado,
+							s.Sistema_Fecha AS SistemaFecha,
+							s.Telefono_Apoderado_Legal,
+							s.Email_Apoderado_Legal,
+							s.Ident_Apoderado_Legal,
+							s.Sistema_Fecha,
+							s.Sistema_Fecha AS Fecha_Cargo,
+							NULL AS Fecha_Descargo,
+							'APL-E-01' AS ID_Estado_Apl, 
+							s.Sistema_Fecha AS SistemaUsuario
+						FROM [IHTT_PREFORMA].[dbo].[TB_Apoderado_Legal] s where s.ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+					) AS source
+					ON (target.ID_Solicitud = source.ID_Solicitud)
+					WHEN MATCHED THEN
+						UPDATE SET 
+							target.ID_ColegiacionAPL = source.ID_ColegiacionAPL,
+							target.NombreApoderadoLega = source.NombreApoderadoLega,
+							target.OBS_Apoderado = source.OBS_Apoderado,
+							target.Fecha_Cargo = source.Fecha_Cargo,
+							target.Fecha_Descargo = source.Fecha_Descargo,
+							target.ID_Estado_Apl = source.ID_Estado_Apl,
+							target.SistemaUsuario = source.SistemaUsuario,
+							target.SistemaFecha = source.SistemaFecha
+					WHEN NOT MATCHED THEN
+						INSERT ([ID_Solicitud], [ID_ColegiacionAPL], [NombreApoderadoLega], 
+								[OBS_Apoderado], [Fecha_Cargo], [Fecha_Descargo], [ID_Estado_Apl], 
+								[SistemaUsuario], [SistemaFecha])
+						VALUES (source.ID_Solicitud, source.ID_ColegiacionAPL, source.NombreApoderadoLega, 
+								source.OBS_Apoderado, source.Fecha_Cargo, source.Fecha_Descargo, 
+								source.ID_Estado_Apl, source.SistemaUsuario, source.SistemaFecha);";
+		$parametros = array(":ID_Formulario_Solicitud" => $RAM);
+		return $this->update($query, $parametros);
+	}	
+
+
+	protected function saveIhttDbExpedientexTipoTramite($RAM) : string {
+		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] AS target
+				USING (
+					SELECT 
+						ID_Formulario_Solicitud,
+						ID_Tramite,
+						Observaciones,
+						Sistema_Usuario,
+						Sistema_Fecha,
+						ID_Tipo_Categoria,
+						Tipo_Servicio,
+						N_Certificado,
+						Permiso_Explotacion,
+						N_Permiso_Especial
+					FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud]
+					WHERE ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+				) AS source
+				ON target.ID_Solicitud = source.ID_Formulario_Solicitud
+				AND target.ID_Tramite = source.ID_Tramite
+				AND (
+				(target.Certificado_Operacion = source.N_Certificado and source.N_Certificado  != '')
+				OR  
+				(target.N_Permiso_Especial = source.N_Permiso_Especial and source.N_Permiso_Especial   != '')
+				)
+				WHEN NOT MATCHED BY SOURCE 
+					AND target.ID_Solicitud = :ID_Solicitud THEN 
+					DELETE
+				WHEN NOT MATCHED BY TARGET THEN 
+					INSERT (ID_Solicitud, ID_Tramite, OBS_Expediente, Estado_gea_tramite, 
+							Observacion_gea_tramite, SistemaUsuario, SistemaFecha, 
+							ID_Categoria_Subservicio, CategoriaSubservicio, ID_Servicios, 
+							ServiciosNombre, DescripcionTramite, ID_Transporte, 
+							Id_Tipo_Categoria, Certificado_Operacion, Permiso_Explotacion, 
+							N_Permiso_Especial)
+					VALUES (source.ID_Formulario_Solicitud, source.ID_Tramite, source.Observaciones, 
+							'', 
+							'',
+							source.Sistema_Usuario, source.Sistema_Fecha, 
+							source.ID_Tipo_Categoria, source.Tipo_Servicio, 
+							'','', '', '', 
+							source.ID_Tipo_Categoria, source.N_Certificado, 
+							source.Permiso_Explotacion, source.N_Permiso_Especial);";
+		$parametros = array(":ID_Formulario_Solicitud" => $RAM,":ID_Solicitud" => $RAM);
+		return $this->update($query, $parametros);
+	}	
+
+	protected function saveIhttDbExpedienteMovimiento($RAM) : string {
+		$row_ciudad = $this->getCiudad($_SESSION['ID_Usuario']);
+		//*******************************************************************************************************************/
+		//**Cuando ls fsl venga de Sps ubicar el expediente fisico en SPS, tomando la ciudad del FSL Codigo_Ciudad en      **/
+		//**[IHTT_PREFORMA].[dbo].[TB_Solicitud], hacer cambio aqui                                                        **/
+		//*******************************************************************************************************************/
+		if ($row_ciudad[0]['Codigo_Ciudad'] == 'TGU') {
+			$ID_AREA_VENTANILLA = 'IHTT08-02';
+		}else if ($row_ciudad[0]['Codigo_Ciudad'] == 'SPS') {
+			$ID_AREA_VENTANILLA = 'IHTT08-04';
+		}else if ($row_ciudad[0]['Codigo_Ciudad'] == 'CHO') {
+			$ID_AREA_VENTANILLA = 'IHTT08-06';
+		}else {
+			$ID_AREA_VENTANILLA = 'IHTT08-05';
+		}
+		$query = "INSERT INTO [IHTT_DB].[dbo].[TB_Expediente_Movimiento] 
+				(ID_Solicitud, ID_Area_Actual, SistemaUsuario, Observaciones, Numero_Folio, 
+				ID_Area_Iba, ID_Actividad, FechaRecibe, FechaEnvia, CodigoEstadoMovimiento, 
+				ID_EmpleadoResponsable, ID_Usuario, SistemaFecha)
+			SELECT :ID_Solicitud, :ID_Area_Actual, :SistemaUsuario, 'PARA REVISION OFICIAL JURIDICO', 
+				0, '', 'ACT-01', SYSDATETIME(), NULL, 'TRABAJO', '', '', SYSDATETIME()
+			WHERE NOT EXISTS (
+				SELECT 1 FROM [IHTT_DB].[dbo].[TB_Expediente_Movimiento]
+				WHERE ID_Solicitud = :ID_Solicitud AND ID_Actividad = 'ACT-01'
+			);";
+		$parametros = array(":ID_Solicitud" =>$RAM, ":ID_Area_Actual" =>$ID_AREA_VENTANILLA, ":SistemaUsuario"=>$_SESSION["user_name"]);
+		return $this->insert($query, $parametros);
+	}	
+
+	protected function saveIhttDbExpedienteMovimientoInterno($RAM,$ID_Movimiento) : string {
+		$query = "INSERT INTO [IHTT_DB].[dbo].[TB_Movimiento_Interno] 
+				([ID_Movimiento], [Fecha_Entreda], [Fecha_Salida], [ID_Empleado], [Cod_Movimiento_Interno], 
+				[ID_Usuario], [Fecha_Sistema], [Observacion], [ID_Actividad], [ID_AUTO])
+			SELECT :ID_Movimiento, SYSDATETIME(), NULL, '', 'TRABAJO', '', SYSDATETIME(), 
+				'PARA REVISION', 'ACT-29', NULL
+			WHERE NOT EXISTS (
+				SELECT 1 
+				FROM [IHTT_DB].[dbo].[TB_Expediente_Movimiento]
+				WHERE ID_Solicitud = :ID_Solicitud 
+				AND ID_Actividad = 'ACT-01'
+			);";
+		$parametros = array(":ID_Movimiento" => $ID_Movimiento,":ID_Solicitud" => $RAM);
+		return $this->insert($query, $parametros);
+	}	
 
 	protected function cerrarPreforma() {
 		$this->db->beginTransaction();
@@ -264,20 +786,86 @@ require_once("../qr/qrlib.php");
 			$respuestaGetEmpleado = $this->getEmpleado($respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta']);
 			if ($respuestaGetEmpleado != false) {
 				$respuestaupdateEstadoPreforma = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
-				if (!isset($respuesta['error'])) {
-					$this->db->rollBack();
-					$respuesta['SOL'] =  $respuestaPDFAvisodeCobroVentanillaApi['formulario_encriptado'];
-					$respuesta['SOL2'] = $_POST["RAM"];
-					$respuesta['Cod_Usuario'] =  $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
-					$respuesta['Nombre_Usuario_Largo'] =  $respuestaGetEmpleado['0']['Apellidos'] . ' ' . $respuestaGetEmpleado['0']['Nombres'];
-					$respuesta['Nombre_Usuario'] = $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
-					$respuesta['url_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['url_aviso'];
-					$respuesta['numero_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['numero_aviso'];
-					$respuesta['msg'] =  $_POST["RAM"];
-					$respuesta['user_name'] =  $_SESSION["user_name"];
-					$respuesta['ID_Usuario'] = $_SESSION["ID_Usuario"];
-					echo json_encode($respuesta);
-					//$this->db->commit();
+				if (!isset($respuestaupdateEstadoPreforma['error'])) {
+					$respuestasaveIhttDbSoliciante = $this->saveIhttDbSoliciante($_POST["RAM"],$respuestaPDFAvisodeCobroVentanillaApi['RTN_Solicitante']);
+					if ($respuestasaveIhttDbSoliciante != false) {
+						$respuestasaveIhttDbApoderadoLegal = $this->saveIhttDbApoderadoLegal($_POST["RAM"],$respuestaPDFAvisodeCobroVentanillaApi['ID_ColegiacionAPL']);
+						if ($respuestasaveIhttDbApoderadoLegal != false) {
+							$respuestasaveIhttDbSolicitanteRepresentanteLegal = $this->saveIhttDbSolicitanteRepresentanteLegal($_POST["RAM"]);
+							if ($respuestasaveIhttDbSolicitanteRepresentanteLegal != false) {
+								$respuestasaveIhttDbSolicitantexRepresentanteLegal = $this->saveIhttDbSolicitantexRepresentanteLegal($_POST["RAM"]);
+								if ($respuestasaveIhttDbSolicitantexRepresentanteLegal != false) {
+									$respuestasaveIhttDbExpedientes = $this->saveIhttDbExpedientes($_POST["RAM"]);
+									if ($respuestasaveIhttDbExpedientes != false) {
+										$respuestasaveIhttDbSolicitudVehiculoActual = $this->saveIhttDbSolicitudVehiculoActual($_POST["RAM"]);
+										if ($respuestasaveIhttDbSolicitudVehiculoActual != false) {
+											$respuestasaveIhttDbSolicitudVehiculoEntra = $this->saveIhttDbSolicitudVehiculoEntra($_POST["RAM"]);
+											if ($respuestasaveIhttDbSolicitudVehiculoEntra != false) {
+												$respuestasaveIhttDbExpedientexApoderado = $this->saveIhttDbExpedientexApoderado($_POST["RAM"]);
+												if ($respuestasaveIhttDbExpedientexApoderado != false) {
+													$respuestasaveIhttDbExpedientexTipoTramite = $this->saveIhttDbExpedientexTipoTramite($_POST["RAM"]);
+													if ($respuestasaveIhttDbExpedientexTipoTramite != false) {
+														$respuestasaveIhttDbExpedienteMovimiento = $this->saveIhttDbExpedienteMovimiento($_POST["RAM"]);
+														if ($respuestasaveIhttDbExpedienteMovimiento != false) {
+															$respuestasaveIhttDbExpedienteMovimientoInterno = $this->saveIhttDbExpedienteMovimientoInterno($_POST["RAM"],$respuestasaveIhttDbExpedienteMovimiento);
+															if ($respuestasaveIhttDbExpedienteMovimientoInterno != false) {
+																$respuesta['SOL'] =  $respuestaPDFAvisodeCobroVentanillaApi['formulario_encriptado'];
+																$respuesta['SOL2'] = $_POST["RAM"];
+																$respuesta['Cod_Usuario'] =  $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
+																$respuesta['Nombre_Usuario_Largo'] =  $respuestaGetEmpleado['0']['Apellidos'] . ' ' . $respuestaGetEmpleado['0']['Nombres'];
+																$respuesta['Nombre_Usuario'] = $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
+																$respuesta['url_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['url_aviso'];
+																$respuesta['numero_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['numero_aviso'];
+																$respuesta['msg'] =  $_POST["RAM"];
+																$respuesta['user_name'] =  $_SESSION["user_name"];
+																$respuesta['ID_Usuario'] = $_SESSION["ID_Usuario"];
+																echo json_encode($respuesta);
+																$this->db->rollBack();
+																//$this->db->commit();
+															} else {
+																$this->db->rollBack();
+																echo json_encode(array("error" => 7012, "errorhead" => "SALVANDO MOVIMIENTO INTERNO", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
+															}																												
+														} else {
+															$this->db->rollBack();
+															echo json_encode(array("error" => 7011, "errorhead" => "SALVANDO MOVIMIENTO", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
+														}												
+													} else {
+														$this->db->rollBack();
+														echo json_encode(array("error" => 7010, "errorhead" => "SALVANDO TRAMITES EXPEDIENTE", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
+													}												
+												} else {
+													$this->db->rollBack();
+													echo json_encode(array("error" => 7009, "errorhead" => "SALVANDO APODERADO EXPEDIENTE", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
+												}												
+											} else {
+												$this->db->rollBack();
+												echo json_encode(array("error" => 7008, "errorhead" => "SALVANDO VEHICULO ENTRA", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
+											}
+										} else {
+											$this->db->rollBack();
+											echo json_encode(array("error" => 7007, "errorhead" => "SALVANDO VEHICULO NORMAL/SALE", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
+										}
+									} else {
+										$this->db->rollBack();
+										echo json_encode(array("error" => 7006, "errorhead" => "SALVANDO EXPEDIENTE", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR EL EXPEDIENTE'));
+									}
+								} else {
+									$this->db->rollBack();
+									echo json_encode(array("error" => 7005, "errorhead" => "SALVANDO APODERADO LEGAL X SOLICITANTE", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR EL APODERADO LEGAL POR SOLICITANTE'));
+								}
+							} else {
+								$this->db->rollBack();
+								echo json_encode(array("error" => 7004, "errorhead" => "SALVANDO APODERADO LEGAL", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR EL APODERADO LEGAL SOLICITANTE'));
+							}
+						} else {
+							$this->db->rollBack();
+							echo json_encode(array("error" => 7003, "errorhead" => "SALVANDO APODERADO LEGAL", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR EL APODERADO LEGAL DE EXPEDIENTE'));
+						}
+					} else {
+						$this->db->rollBack();
+						echo json_encode(array("error" => 7002, "errorhead" => "SALVANDO SOLICITANTE", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR EL SOLICITANTE DE EXPEDIENTE'));
+					}
 				} else {
 					$this->db->rollBack();
 					echo json_encode(array("error" => 7001, "errorhead" => "ACTUALIZAICON DE ESTADO", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA ACTUALIZAR EL ESTADO DE LA RAM'));
@@ -318,8 +906,8 @@ require_once("../qr/qrlib.php");
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			//$this->db->rollBack();
-			$this->db->commit();
+			$this->db->rollBack();
+			//$this->db->commit();
 			echo json_encode(['Borrado'  =>  True]);
 		}
 	}
@@ -382,14 +970,14 @@ require_once("../qr/qrlib.php");
 						$this->db->rollBack();
 						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
 					} else {								
-						$this->db->commit();
-						//$this->db->rollBack();
+						//$this->db->commit();
+						$this->db->rollBack();
 						echo json_encode(['Borrado'  =>  True,'Adentro'  =>  True, 'ID_Unidad1' => intval($_POST["ID_Unidad1"]), 'ID_Unidad' => intval($_POST["ID_Unidad"])]);
 					}
 				}
 			} else {
-				$this->db->commit();
-				//$this->db->rollBack();
+				//$this->db->commit();
+				$this->db->rollBack();
 				echo json_encode(['Borrado'  =>  True,'ID_Unidad1'  =>  'NO SET()', 'ID_TRAMITE' => $_POST["idTramite"]]);
 			}
 		}
@@ -2244,7 +2832,7 @@ require_once("../qr/qrlib.php");
 					$eventox = 'INADMITIDO';
 					$etapax = 5;
 				} else {
-					if ($idEstado == "IDE-1") {
+					if ($idEstado == 'IDE-1') {
 						$eventox = 'INICIO';
 						$etapax = 1;
 					}
@@ -4846,6 +5434,8 @@ require_once("../qr/qrlib.php");
 		$tramitepeticion = '';
 		$url_aviso = '';
 		$tramite = '';
+		$RTN='';
+		$ID_ColegiacionAPL='';
 		$msg = '';
 		$Numero_Aviso=0;
 		// Funcion que recupera los datos para insertar en el template
@@ -4859,6 +5449,8 @@ require_once("../qr/qrlib.php");
 		foreach ($row_rs_todos_los_registros as $row_rs_expediente){
 			$formulario_encriptado = $row_rs_expediente['ID_Formulario_Solicitud_Encrypted'];
 			$usuario_acepta  = $row_rs_expediente['Usuario_Acepta'];
+			$RTN = $row_rs_expediente['RTN_Solicitante'];
+			$ID_ColegiacionAPL = $row_rs_expediente['ID_ColegiacionAPL'];			
 			// Si se recuperaron datos del expediente procesar
 			if ($row_rs_expediente['ID_Tramite'] != '') {
 				$preforma = $row_rs_expediente['Preforma'];
@@ -5000,7 +5592,9 @@ require_once("../qr/qrlib.php");
 				$response['msg'] = 'IMPRIMIR AVISO DE COBRO NO:'. $Data[0]['Numero_Aviso'];
 				$response['url_aviso'] = $url_aviso_calificada;
 				$response['formulario_encriptado'] = $formulario_encriptado;
-				$response['usuario_acepta'] = $usuario_acepta;				
+				$response['usuario_acepta'] = $usuario_acepta;	
+				$response['RTN_Solicitante'] = $RTN;	
+				$response['ID_ColegiacionAPL'] = $ID_ColegiacionAPL;	
 			} else {
 				$response['ERROR'] = true;
 				$response['msg'] = 'saveAvisoCobro ' . $respuesta_aviso[0]['msg'];

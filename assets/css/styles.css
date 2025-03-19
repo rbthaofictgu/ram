@@ -1,5 +1,6 @@
-/**************************
-/***************************************** estilos del byry ****************************************/
+/***************************************************************************************************/
+/************************************* Estilos del IHTT  -  RAM ************************************/
+/***************************************************************************************************/
 body {
 	background-color: var(--main_color_bg_body);
 }
@@ -146,13 +147,6 @@ dropdown-item:focus,
 	transition: var(--bs-navbar-toggler-transition);
 }
 
-/* 
-  --bs-gobierno1: #88cfe0;
-  --bs-gobierno1-rgb: rgba(136, 207, 224); 
-  --bs-gobierno2: #949699;
-  --bs-gobierno3: #db473c;
-  --bs-gobierno4:#d8d9da;
- */
 .navbar-toggler:hover {
 	text-decoration: none;
 	/* background-color: #949699 */
@@ -2451,3 +2445,11 @@ animation-delay: 3s;
 animation-delay: 6s;
 }
   
+.particle {
+	position: fixed;
+	font-size: 2.5rem;
+	pointer-events: none;
+	user-select: none;
+	z-index: 1000;
+	opacity: 1;
+}

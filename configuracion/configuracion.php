@@ -40,6 +40,11 @@ if(isset($_SESSION["usuario"])){
 }else{
 	$usuario='USUARIO';
 }
+//$appcfg_icono_de_importante = '<i class="fas fa-exclamation-triangle gobierno2"></i>  ';
+//$appcfg_icono_de_importante = '<i class="fas fa-star gobierno2"></i>  ';
+$appcfg_icono_de_importante = '<i class="fas fa-exclamation-circle gobierno2"></i>  ';
+$appcfg_icono_de_importante = '<i class="far fa-star gobierno2"></i>  ';
+//$appcfg_icono_de_importante = '<i class="fas fa-exclamation gobierno2"></i>  ';
 //************************************************************************************/
 //* Ambiente (Dev=Desarrollo PROD=Producción)
 //************************************************************************************/	
