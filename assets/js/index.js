@@ -232,6 +232,27 @@ function  reduceConcesionNumber(idConcesiones) {
   return {'total':total,'total_concesiones':total_concesiones,'total_tramites':total_tramites};
 }
 
+function  resencuenciarConcesionNumber() { 
+  var contador_concesiones = 0;
+  var contador_tramites = 0;
+  var longitud_arreglo_concesiones = concesionNumber.length;
+  concesionNumber.forEach((Concesion) => {  
+    for (i=1;i<=longitud_arreglo_concesiones;i++) {
+
+    }
+    //* Si no existe o no tiene el array Tramites, se omite
+      if (Concesion.Tramites && Array.isArray(Concesion.Tramites)) {
+        var longitud_arreglo_tramites = Concesion.Tramites.length;
+        //* Resecuenciación
+        concesionNumber.forEach((Concesion) => {  
+          for (i=1;i<=longitud_arreglo_concesiones;i++) {
+
+          }
+        });
+     }
+  });
+}
+
 // var multas3ra = document.getElementById("btnmultas");
 // if (multas3ra != null) {
 //   multas3ra.addEventListener("click", function (event) {
@@ -942,7 +963,7 @@ function fCleanSelectErrorMsg() {
     // Adjuntando el action al FormData
     if (document.getElementById("ID_Expediente").value == ''){
       fd.append("action", "cerrar-preforma");
-      fd.append("idEstado ", JSON.stringify('IDE-1'));    
+      fd.append("idEstado", 'IDE-1');    
       var text = "RAM CERRADA EXITOSAMENTE Y ENVIADA A REVISIÓN LEGAL POR OFICIALES JURIDICOS";
     } else {
       var text = "EXPEDIENTE FINALIZADO EXITOSAMENTE, SE GENERO EL RESPECTIVO AUTOMOTIVADO DE INGRESO Y RESOLUCIÓN";
@@ -951,7 +972,7 @@ function fCleanSelectErrorMsg() {
       fd.append("ID_Expediente",  document.getElementById("ID_Expediente").value);
       // Enviar el número de Solicitud
       fd.append("ID_Solicitud",  document.getElementById("ID_Solicitud").value);    
-      fd.append("idEstado ", JSON.stringify('IDE-1'));    
+      fd.append("idEstado", 'IDE-1');    
     }       
     // Adjuntando el Concesion y Caracterización al FormData
     fd.append("RAM", document.getElementById("RAM").value);
@@ -991,9 +1012,17 @@ function fCleanSelectErrorMsg() {
             $appcfg_pocision_toast,
             $appcfg_icono_toast
           );
-          fSweetAlertSelect(
-            "IMPRIMIR DOCUMENTOS",
-            text,
+          var title = 'SE CERRO SATISFACTORIAMENTE LA PREFORMA ' + Datos.SOL2;
+          var msg = "Su solicitud en línea: <span style='color:#ff8f5e;'>"+ Datos.SOL2 + " Asignada a:" + Datos.Nombre_Usuario+"/"+ Datos.Cod_Usuario + "</span> se ha guardo.";
+          console.log(Datos.url_aviso);
+          console.log(Datos.msg);
+          var linkaviso = '<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="'+Datos.url_aviso + '" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>IMPRIMIR '+ Datos.msg + ' CON NÚMERO DE AVISO DE COBRO: '+ Datos.numero_aviso+'</a>';
+          var urlcomprobante = $appcfg_Dominio_Raiz +':293/api_rep.php?action=get-PDFComprobante&Solicitud='+Datos.SOL+'&fls='+Datos.SOL2+'&Nombre_Usuario='+Datos.Nombre_Usuario+'&Cod_Usuario='+Datos.Cod_Usuario+'&Originano_En_Ventanilla=1&ID_Usuario='+Datos.ID_Usuario+'&user_name='+Datos.user_name;
+          var linkcomprobante = '<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="'+ urlcomprobante + '" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>IMPRIMIR COMPROBANTE RAM No. ' + Datos.SOL2 + '</a>';
+          var html = linkcomprobante + '<br/>' + linkaviso;
+          fSweetAlertEventNormal(
+            title,
+            msg,
             "info",
             html
           );
@@ -4699,7 +4728,8 @@ function fHiddenShowTramites(el, acronimo_tipo, acronimo_clase, checked = true) 
     if (acronimo == 'M_CU') {
       for (let id of checkboxIds[acronimo]) {
         const checkbox = document.getElementById(id);
-        if (checkbox && getAttribute(checkbox,'disabled',false) == false) {
+        if (checkbox &&  (checkbox.disabled == false && checkedItem == false) ||
+            checkbox &&  (checkbox.checked == false && checkbox.disabled == false && checkedItem == true)) {
           const [tipo_tramite1, clase_tramite1, acronimo_tipo1, acronimo_clase1] = id.split("_");
           if (acronimo_tipo === acronimo_tipo1) {
             checkbox.checked = false;

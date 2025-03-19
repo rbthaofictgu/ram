@@ -259,20 +259,35 @@ require_once("../qr/qrlib.php");
 
 	protected function cerrarPreforma() {
 		$this->db->beginTransaction();
-		$respuesta = $this->PDFAvisodeCobroVentanillaApi($_POST["RAM"]);
-		if (isset($respuesta['error']) and $respuesta['error'] == false) {
-			$respuesta = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
-			if (!isset($respuesta->error)) {
-				$this->db->commit();
-				//echo json_encode(array("SOL"=>$api->Idforms_MD5,"SOL2"=>$api->Idforms,'status'=> 1, 'Nombre_Usuario'=> $api->Nombre_Usuario,'Cod_Usuario'=> $api->Cod_Usuario,'numero_aviso'=>$aviso['numero_aviso'],'msg'=>$aviso['msg'],'url_aviso'=>$aviso['url_aviso'],'ID_Usuario'=>$_SESSION["ID_Usuario"],'user_name'=>$_SESSION["user_name"]));
-				echo json_encode($respuesta);
+		$respuestaPDFAvisodeCobroVentanillaApi = $this->PDFAvisodeCobroVentanillaApi($_POST["RAM"]);
+		if (!isset($respuestaPDFAvisodeCobroVentanillaApi['error'])) {
+			$respuestaGetEmpleado = $this->getEmpleado($respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta']);
+			if ($respuestaGetEmpleado != false) {
+				$respuestaupdateEstadoPreforma = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
+				if (!isset($respuesta['error'])) {
+					$this->db->rollBack();
+					$respuesta['SOL'] =  $respuestaPDFAvisodeCobroVentanillaApi['formulario_encriptado'];
+					$respuesta['SOL2'] = $_POST["RAM"];
+					$respuesta['Cod_Usuario'] =  $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
+					$respuesta['Nombre_Usuario_Largo'] =  $respuestaGetEmpleado['0']['Apellidos'] . ' ' . $respuestaGetEmpleado['0']['Nombres'];
+					$respuesta['Nombre_Usuario'] = $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
+					$respuesta['url_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['url_aviso'];
+					$respuesta['numero_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['numero_aviso'];
+					$respuesta['msg'] =  $_POST["RAM"];
+					$respuesta['user_name'] =  $_SESSION["user_name"];
+					$respuesta['ID_Usuario'] = $_SESSION["ID_Usuario"];
+					echo json_encode($respuesta);
+					//$this->db->commit();
+				} else {
+					$this->db->rollBack();
+					echo json_encode(array("error" => 7001, "errorhead" => "ACTUALIZAICON DE ESTADO", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA ACTUALIZAR EL ESTADO DE LA RAM'));
+				}
 			} else {
-				$this->db->rollBack();
-				echo json_encode($respuesta);
+				echo json_encode(array("error" => 7000, "errorhead" => "USUARIO ACEPTA", "errormsg" => 'NO SE ENCUENTRA EL USUARIO ACEPTA EN RRHH'));
 			}
 		} else {
 			$this->db->rollBack();
-			echo json_encode($respuesta);
+			echo json_encode($respuestaPDFAvisodeCobroVentanillaApi);
 		}
 	}
 	//***********************************************************************************************************************/
@@ -2220,21 +2235,24 @@ require_once("../qr/qrlib.php");
 		$p = array(":Estado_Formulario" => $idEstado, ":ID_FORMULARIO_SOLICITUD" => $RAM);
 		$estadoOk = $this->update($query, $p);
 		if ($estadoOk == true) {
+
 			if ($idEstado == 'IDE-3') {
-				$evento = 'CANCELADO';
-				$etapa = 4;
+				$eventox = 'CANCELADO';
+				$etapax = 4;
 			} else {
 				if ($idEstado == 'IDE-4') {
-					$evento = 'INADMITIDO';
-					$etapa = 5;
+					$eventox = 'INADMITIDO';
+					$etapax = 5;
 				} else {
-					if ($idEstado == 'IDE-1') {
-						$evento = 'INICIO';
-						$etapa = 1;
+					if ($idEstado == "IDE-1") {
+						$eventox = 'INICIO';
+						$etapax = 1;
 					}
 				}	
 			}
-			$saveBitacoraOk = $this->saveBitacora($_POST["RAM"], $evento, $etapa);
+
+			$saveBitacoraOk = $this->saveBitacora($_POST["RAM"], $eventox , $etapax);
+			
 			if ($saveBitacoraOk != false) {
 				if (!isset($_POST["echo"])) {
 					return $saveBitacoraOk;
@@ -2838,9 +2856,7 @@ require_once("../qr/qrlib.php");
 			Sistema_Fecha = SYSDATETIME(),
 			Presentacion_Documentos = :Presentacion_Documentos,
 			Etapa_Preforma = :Etapa_Preforma,
-			Usuario_Acepta = :Usuario_Acepta,
 			Fecha_Aceptacion = SYSDATETIME(),
-			Codigo_Usuario_Acepta = :Codigo_Usuario_Acepta,
 			Tipo_Solicitud = :Tipo_Solicitud,
 			Entrega_Ubicacion = :Entrega_Ubicacion
 		WHERE 
@@ -2872,8 +2888,6 @@ require_once("../qr/qrlib.php");
 			":Usuario_Cancelacion" => '',
 			":Presentacion_Documentos" => $Apoderado['Tipo_Presentacion'],
 			":Etapa_Preforma" => 1,
-			":Usuario_Acepta" => $_SESSION["user_name"],
-			":Codigo_Usuario_Acepta" => $_SESSION["ID_Usuario"],
 			":Tipo_Solicitud" => $Concesion['esCarga'] = true ? 'CARGA' : 'PASAJEROS',
 			":Entrega_Ubicacion" => $Apoderado['Lugar_Entrega']
 		);
@@ -4280,7 +4294,7 @@ require_once("../qr/qrlib.php");
 		$respuesta[0]['error'] = false;	
 		$respuesta[0]['errorcode'] = '';
 		try {
-			$query_rs_expediente = "SELECT  M.ID_Formulario_Solicitud_Encrypted,M.Email_Solicitante,g.N_Permiso_Especial,cs.ID_Clase_Servico,S.ID_Modalidad,
+			$query_rs_expediente = "SELECT  M.Usuario_Acepta,M.ID_Formulario_Solicitud_Encrypted,M.Email_Solicitante,g.N_Permiso_Especial,cs.ID_Clase_Servico,S.ID_Modalidad,
 			G.ID_Modalidad,G.ID_Tipo_Categoria,Q.Email_Apoderado_Legal,G.ID_Formulario_Solicitud as Preforma,M.RTN_Solicitante,
 			D.ID_Tramite,G.Permiso_Explotacion,G.N_Certificado as Certificado_Operacion,
 			(select ISNULL(concat(concat(Y.Nombres,' '),Y.Apellidos),'') from [IHTT_RRHH].[dbo].[TB_Empleados] Y where Y.ID_Empleado = L.id_comisionado) as firma_comisionado,
@@ -4313,7 +4327,7 @@ require_once("../qr/qrlib.php");
 			S.ID_Clase_Servicio != 'FTT03' and
 			S.ID_Clase_Servicio = CS.ID_Clase_Servico and
 			M.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and k.id = :ID_Template
-			order by D.ID_Clase_Tramite";
+			order by G.N_Certificado,G.N_Permiso_Especial,D.ID_Clase_Tramite";
 			// Recuperando la información del expediente
 			$expediente = $this->db->prepare($query_rs_expediente);
 			$expediente->execute(Array(':ID_Formulario_Solicitud' => $rs_id_rs_solicitud,':ID_Template' => $rs_id_rs_template));
@@ -4483,6 +4497,7 @@ require_once("../qr/qrlib.php");
 		} else {
 			$Data[0]['Tramites'][$contador]['Certificado_Operacion'] = $row_rs_expediente['Certificado_Operacion'];
 		}
+		$Data[0]['Tramites'][$contador]['Acronimo_Tramite'] = $vehiculos[0]['ID_Placa'];
 		$Data[0]['Tramites'][$contador]['ID_Placa'] = $vehiculos[0]['ID_Placa'];
 		$Data[0]['Tramites'][$contador]['Monto'] = $row_rs_Tarifa['Monto'];
 		$Data[0]['Tramites'][$contador]['IDHistoricoTarifas'] = $row_rs_Tarifa['IDHistoricoTarifas'];
@@ -4492,13 +4507,25 @@ require_once("../qr/qrlib.php");
 		// Dependiendo de la si es certificado o permiso se ajusta la referencia del aviso de cobro
 		// ***********************************************************************************************
 		If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01') {
-			$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO: ' . $row_rs_expediente['Permiso_Explotacion'] . $row_rs_expediente['Periodo-Explotacion'];
+			if ($row_rs_expediente['Acronimo_Tramite'] == 'R') {
+				$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO: ' . $row_rs_expediente['Permiso_Explotacion'] . $row_rs_expediente['Periodo-Explotacion'];
+			} else {
+				$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO: ' . $row_rs_expediente['Permiso_Explotacion'];
+			}
 		} else {
 			If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02') {
-				$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO: ' . $row_rs_expediente['Certificado_Operacion'] . $row_rs_expediente['Periodo'];
+				if ($row_rs_expediente['Acronimo_Tramite'] == 'R') {
+					$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO: ' . $row_rs_expediente['Certificado_Operacion'] . $row_rs_expediente['Periodo'];
+				} else {
+					$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO: ' . $row_rs_expediente['Certificado_Operacion'];
+				}
 			} else {        
 				If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-03') {
-					$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ' CON NÚMERO: ' . $row_rs_expediente['N_Permiso_Especial'] . $row_rs_expediente['Periodo'];
+					if ($row_rs_expediente['Acronimo_Tramite'] == 'R') {
+						$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ' CON NÚMERO: ' . $row_rs_expediente['N_Permiso_Especial'] . $row_rs_expediente['Periodo'];
+					} else {
+						$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ' CON NÚMERO: ' . $row_rs_expediente['N_Permiso_Especial'];
+					}
 				} else {
 					If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-08') {
 						$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ' A NUEVO NÚMERO DE PLACA: ' . $vehiculos[0]['ID_Placa'];
@@ -4784,12 +4811,30 @@ require_once("../qr/qrlib.php");
 	//* FINAL: RECUPERACION CERTIFCIADO ACTUAL
 	//***********************************************************************************************
 
+	//***********************************************************************************************
+	//* INICIO: RECUPERACION EMPLEADO
+	//***********************************************************************************************
+	protected function getEmpleado($Usuario_Nombre)	{
+		//***********************************************************************************************************/
+		//* rbthaofic@gmail.com 2023/03/04 Pendiente de finalización (recuperar el area del empleados)
+		//* Inicio: Agregar usuario que realiza la acción y la ciudad donde se ubica el usuario
+		//***********************************************************************************************************/
+		$query = "select E.Nombres,E.Apellidos from [IHTT_USUARIOS].[dbo].[TB_USUARIOS] U,[IHTT_RRHH].[dbo].[TB_Empleados] E
+		WHERE U.Usuario_Nombre = :Usuario_Nombre and u.ID_Empleado = E.ID_Empleado";
+		$p = array(":Usuario_Nombre" => $Usuario_Nombre);
+		return $this->select($query, $p);
+	}	
+	//***********************************************************************************************
+	//* FINAL: RECUPERACION EMPLEADO
+	//***********************************************************************************************
 
 	//***********************************************************************************************
 	//* Inicio: FUNCION INICIAL DE GENERACION DE PDF
 	//***********************************************************************************************
 	protected function PDFAvisodeCobroVentanillaApi($rs_id_rs_solicitud,$rs_id_rs_template=5):array {
 		$esCobroPeriodosAtrasados = true;
+		$formulario_encriptado = '';
+		$usuario_acepta = '';
 		$cfg_institucion = 'INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE';
 		/**************************************************************************************************/
 		// Inicio-> Recuperando IP de la conexión
@@ -4812,6 +4857,8 @@ require_once("../qr/qrlib.php");
 		//echo '$total_registros' . $total_registros . '<br>';die();
 		$ConcesionValue = '';
 		foreach ($row_rs_todos_los_registros as $row_rs_expediente){
+			$formulario_encriptado = $row_rs_expediente['ID_Formulario_Solicitud_Encrypted'];
+			$usuario_acepta  = $row_rs_expediente['Usuario_Acepta'];
 			// Si se recuperaron datos del expediente procesar
 			if ($row_rs_expediente['ID_Tramite'] != '') {
 				$preforma = $row_rs_expediente['Preforma'];
@@ -4835,8 +4882,8 @@ require_once("../qr/qrlib.php");
 					if (isset($concesion['rencon']) && isset($concesion['rencon'][1]) && isset($concesion['rencon'][1]['periodo'])){
 						$row_rs_expediente['Periodo'] = $concesion['rencon'][1]['periodo'];
 					}
-					If ($row_rs_expediente['N_Permiso_Especial'] == '') {
-						if (isset($concesion['renperexp']) && isset($concesion['renperexp'][1]) && isset($concesion['renperexp'][1]['periodo'])){
+					If ($row_rs_expediente['Permiso_Explotacion'] != '') {
+						if (isset($concesion['renper-explotacion-cantidad']) && isset($concesion['renper-explotacion-cantidad'][1]) && isset($concesion['renper-explotacion-cantidad'][1]['periodo'])){
 							$row_rs_expediente['Periodo-Explotacion'] = $concesion['renperexp'][1]['periodo'];
 						}
 					}
@@ -4868,14 +4915,14 @@ require_once("../qr/qrlib.php");
 						//**********************************************************************************************************************************************/
 						// Si hay más de un periodo de cobrar de Per Exp comienza a parir del 2 en este ciclo porque el segundo periodo ya quedo en el primer ciclo
 						// primer ciclo ya fue procesado anteriormente
-						//**********************************************************************************************************************************************/                        
+						//**********************************************************************************************************************************************/  
 							if ($concesion['renper-explotacion-cantidad'] > 1 && $row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01')   {                        
 								for ($i=2; $i<$concesion['renper-explotacion-cantidad']; $i++) {
 									$contador++;
 									//***********************************************************************************/
 									//*Recuperando el rotulo del periodo a renovar de la concesion
 									//***********************************************************************************/
-									$row_rs_expediente['Periodo-Explotacion'] = $concesion['renperexp'][$i]['periodo'];
+									$row_rs_expediente['Periodo-Explotacion'] = $concesion['renper-explotacion-cantidad'][$i]['periodo'];
 									$Data = $this->moverData($Data,$row_rs_expediente,$vehiculos,$row_rs_Tarifa,$contador);
 								}
 							}
@@ -4952,6 +4999,8 @@ require_once("../qr/qrlib.php");
 				$response['numero_aviso'] = $Data[0]['Numero_Aviso'];
 				$response['msg'] = 'IMPRIMIR AVISO DE COBRO NO:'. $Data[0]['Numero_Aviso'];
 				$response['url_aviso'] = $url_aviso_calificada;
+				$response['formulario_encriptado'] = $formulario_encriptado;
+				$response['usuario_acepta'] = $usuario_acepta;				
 			} else {
 				$response['ERROR'] = true;
 				$response['msg'] = 'saveAvisoCobro ' . $respuesta_aviso[0]['msg'];
@@ -4984,3 +5033,5 @@ if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
 		$appcfg_smtp_user,
 		$appcfg_smtp_password);
 }
+
+https://satt2.transporte.gob.hn:293/api_rep.php?action=get-PDFComprobante&Solicitud=ff59d187c38b13b562a50194420a15eee44df2f27105d1e48f0363dc8323816fafe325f8ae8c82b303371933e0b9505141ef117e0716f3895f7457d57a6592f2&fls=RAM-20250228-000000059&Nombre_Usuario=ORDO%C3%91EZ%20BARAHONA%20CARLOS%20RIDEL&Cod_Usuario=cordonez&Originano_En_Ventanilla=1&ID_Usuario=1059&user_name=ccaballero

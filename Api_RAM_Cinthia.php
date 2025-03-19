@@ -1951,7 +1951,7 @@ class Api_Ram
 					$evento = 'INADMITIDO';
 					$etapa = 5;
 				} else {
-					if ($_POST['idEstado'] == 'IDE-4') {
+					if ($_POST['idEstado'] == 'IDE-1') {
 						$evento = 'TRABAJO';
 						$etapa = 2;
 					}
