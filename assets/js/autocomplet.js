@@ -1,10 +1,6 @@
-const idInputRef = document.getElementById('input-prefetch');
-//console.log(idInputRef,'idInputRef');
-const idInput = document.getElementById(idInputRef.value);
-//console.log(idInput,'idInput');
+const idInput = document.getElementById('input-prefetch');
 const input = document.querySelector('.input-container input');
 const icon = document.getElementById('toggle-icon');
-//console.log(icon,'icon');
 const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
 const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
 
@@ -14,6 +10,10 @@ const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstra
 //*************************************************************************************************************************/
 icon.addEventListener('click', () => {
    input.classList.toggle('expanded');
+   // console.log(concesionForAutoComplete);
+   // concesionForAutoComplete.forEach(item => {
+   //    console.log(item.value, item.text);
+   // });
    if (idInput != '') {
       idInput.select();
    }
@@ -27,16 +27,19 @@ icon.addEventListener('click', () => {
 //* INICIO:Ejecuta AutoComplet sobre concesionForAutoComplete para buscar Concesiones
 //****************************************************************************************/
 function fAutoComplete() {
-   console.log(idInput.id);
-   $("#"+idInput.id).autocomplete({
+   // console.log(concesionForAutoComplete);
+   // console.log(concesionForAutoComplete, 'concesionForAutoComplete cinthia');
+   // document.getElementById
+   // alert('AutoComplete');
+   $("#input-prefetch").autocomplete({
       //*Se recorre data.
       source: concesionForAutoComplete.map((item) => item.text),
       minLength: 2,
       select: function (event, ui) {
          //*campos de entrada de data
-         console.log(concesionForAutoComplete, 'concesionForAutoComplete Cinthia fAutoComplete()');
+
          const selectedItem = concesionForAutoComplete.find(item => item.text === ui.item.label);
-         $("#"+idInputRef.id).val(ui.item.label);  //* Mostrar el texto seleccionado
+         $("#input-prefetch").val(ui.item.label);  //* Mostrar el texto seleccionado
          console.log('Texto seleccionado: ' + ui.item.label);  // Texto seleccionado
          // console.log('Valor asociado: ' + selectedItem.value); // Valor asociado  
          if (selectedItem) {
@@ -100,8 +103,8 @@ function verificar_existencia_dato(concesion, event) {
                   if (currentstep != 2) {
                      stepperForm.to(3);
                   }
-                  //*si no existe se pregunta si desea ingresarlo si es asi se llama la funcion para ingresar una concesión
-                  f_FetchCallConcesion(concesion, event, idInputRef.id);
+                  //*si no existe se pregunta si desea ingresar lo si es asi se llama la funcion para ingresar una concesión
+                  f_FetchCallConcesion(concesion, event, 'input-prefetch');
                }
             });
          }
@@ -129,8 +132,8 @@ function buscar_placa_concesion(concesion) {
 //*************************************************************************/
 //** INICIO: Cuando Se Da Click a Element de AutoComplete de Concesiones
 //*************************************************************************/
-const inputPrefetch = document.getElementById(idInputRef);
-idInputRef.addEventListener("keydown", function (event) {
+const inputPrefetch = document.getElementById("input-prefetch");
+inputPrefetch.addEventListener("keydown", function (event) {
    if (event.key === "Enter") {
       const selectedItem = concesionForAutoComplete.find(item => item.text === event.target.value);
       if (selectedItem != undefined) {
@@ -154,7 +157,6 @@ idInputRef.addEventListener("keydown", function (event) {
 //** FINAL: Cuando Se Da Click a Element de AutoComplete de Concesiones
 //************************************************************************/
 
-idInputRef.addEventListener("focus", function (event) {
-   event.target.select();
-   //inputPrefetch.select(); // Selecciona el texto dentro del input cuando se hace focus
+inputPrefetch.addEventListener("focus", function () {
+   inputPrefetch.select(); // Selecciona el texto dentro del input cuando se hace focus
 });

@@ -1555,7 +1555,7 @@ body {
 }
 
 .background-middle-row-stpc {
-	width: 1198px;
+	width: 100%;
 	height: 135px;
 	background-image: url('../images/enc_stpc.jpg');
 	background-repeat: no-repeat;
@@ -1563,7 +1563,7 @@ body {
 }
 
 .background-botton-row-stpc {
-	width: 1198px;
+	width: 100%;
 	height: 940px;
 	background-image: url('../images/bottom_stpc.jpg');
 	background-repeat: no-repeat;
@@ -1571,7 +1571,7 @@ body {
 }
 
 .background-top-row-stec {
-	width: 1198px;
+	width: 100%;
 	height: 125px;
 	background-image: url('../images/top_stec.jpg');
 	background-repeat: no-repeat;
@@ -1579,7 +1579,7 @@ body {
 }
 
 .background-middle-row-stec {
-	width: 1198px;
+	width: 100%;
 	height: 135px;
 	background-image: url('../images/enc_stec.jpg');
 	background-repeat: no-repeat;
@@ -1587,7 +1587,7 @@ body {
 }
 
 .background-botton-row-stec {
-	width: 1198px;
+	width: 100%;
 	height: 900px;
 	background-image: url('../images/bottom_stec.jpg');
 	background-repeat: no-repeat;
@@ -1595,7 +1595,7 @@ body {
 }
 
 .background-top-row-stpp {
-	width: 1198px;
+	width: 100%;
 	height: 125px;
 	background-image: url('../images/top_stpp.jpg');
 	background-repeat: no-repeat;
@@ -1603,7 +1603,7 @@ body {
 }
 
 .background-middle-row-stpp {
-	width: 1198px;
+	width: 100%;
 	height: 135px;
 	background-image: url('../images/enc_stpp.jpg');
 	background-repeat: no-repeat;
@@ -1611,7 +1611,7 @@ body {
 }
 
 .background-botton-row-stpp {
-	width: 1198px;
+	width: 100%;
 	height: 900px;
 	background-image: url('../images/bottom_stpp.jpg');
 	background-repeat: no-repeat;
@@ -1619,7 +1619,7 @@ body {
 }
 
 .background-top-row-step {
-	width: 1198px;
+	width: 100%;
 	height: 156px;
 	background-image: url('../images/top_step.jpg');
 	background-repeat: no-repeat;
@@ -1627,7 +1627,7 @@ body {
 }
 
 .background-middle-row-step {
-	width: 1198px;
+	width: 100%;
 	height: 170px;
 	background-image: url('../images/enc_step.jpg');
 	background-repeat: no-repeat;
@@ -1635,7 +1635,7 @@ body {
 }
 
 .background-botton-row-step {
-	width: 1198px;
+	width: 100%;
 	height: 900px;
 	background-image: url('../images/bottom_stec.jpg');
 	background-repeat: no-repeat;
@@ -1677,27 +1677,38 @@ body {
 
 .scroll-div {
 	position: fixed;
-	/* Mantiene el div en una posición fija mientras se mueve */
-	top: 185px;
-	/* Puedes ajustar esta posición inicial según sea necesario */
-	left: 21%;
-	transform: translateX(-50%);
-	background-color: #ffffff;
-	padding: 20px;
-	border: 2px solid var(--bs-gobierno1);
-	border-radius: 8px;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    top: 185px; /* Ajusta según sea necesario */
+    left: 15; /* Pegado a la izquierda */
+    background-color: #ffffff;
+    padding: 20px;
+    border: 2px solid var(--bs-gobierno1);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Styling for the  showtramites button*/
+.showtramites {
+ display: none;
 }
 
 /* Styling for the div */
 #rightDiv {
 	width: 40px;
 	height: 30px;
-	background-color: #f0f0f0;
 	position: fixed;
-	right: 0;
+	right: 10;
 	top: 50%;
 	transform: translateY(-50%);
+	/* Centers vertically */
+}
+
+#rightDiv45 {
+	width: 40px;
+	height: 30px;
+	position: fixed;
+	right: 10;
+	top: 45%;
+	transform: translateY(-45%);
 	/* Centers vertically */
 }
 
@@ -2452,4 +2463,14 @@ animation-delay: 6s;
 	user-select: none;
 	z-index: 1000;
 	opacity: 1;
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+.pulse {
+    display: inline-block;
+    animation: pulse 1.5s ease-in-out infinite;
 }

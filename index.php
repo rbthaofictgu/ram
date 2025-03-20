@@ -161,14 +161,21 @@ include_once('configuracion/configuracion_js.php');
     <!-- ******************************************************* -->
     <!-- Inicio de Div De Tramites                               -->
     <!-- ******************************************************* -->
-    <div style="display: none;" id="concesion_tramites" class="col-md-5 scroll-div">
+    <div style="display: none; width:600px;" id="concesion_tramites" class="row scroll-div">
     </div>
+<!-- *********************************************************** -->
+    <!-- Final de Div De  Tramites Concesion en Pantalla         -->
     <!-- ******************************************************* -->
-    <!-- Final de Div De Tramites                               -->
+    <button title="Ver tabla de tramites para la concesión actual" onclick="fShowTramites()" style="display: flex;" id="rightDiv45" type="button" class="btn btn-primary btn-sm"><i class="fas fa-clipboard-list"></i></button>
     <!-- ******************************************************* -->
-    <button onclick="fShowConcesiones()" style="display: flex;" id="rightDiv" type="button" class="btn btn-warning btn-sm"><i class="fas fa-binoculars"></i></button>
+    <!-- Inicio de Div De  Tramites Concesion en Pantalla         -->
+    <!-- ******************************************************* -->    
     <!-- ******************************************************* -->
-    <!-- Inicio de Div De Tramites                               -->
+    <!-- Inicio de Div De Concesiones y sus Tramites              -->
+    <!-- ******************************************************* -->
+    <button title="Ver malla de todas las concesiones registradas con sus tramites" onclick="fShowConcesiones()" style="display: flex;" id="rightDiv" type="button" class="btn btn-success btn-sm"><i class="fas fa-binoculars"></i></button>
+    <!-- ******************************************************* -->
+    <!-- Final de Div De Concesiones y sus Tramites              -->
     <!-- ******************************************************* -->
     <br>
     <br>
@@ -470,7 +477,7 @@ include_once('configuracion/configuracion_js.php');
           </div>
 
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               &nbsp;
             </div>
           </div>
@@ -479,37 +486,39 @@ include_once('configuracion/configuracion_js.php');
 
 
         <div id="test-form-3" role="tabpanel" class="bs-stepper-pane readonly dstepper-none" aria-labelledby="stepperFormTrigger3">
-          <div id="idVista" class="row d-flex justify-content-center">
-            <div style="display: none;" id="div-vista-1" class="col-md-5"></div>
-            <div id="div-vista-2" class="col-md-7">
+          <div id="idVista" class="row d-flex justify-content-left">
+            <div id="div-vista-2" class="col-5">
               <!--*********************************************************************************************-->
               <!-- INICIO VISTA UNO                                                                            -->
               <!--*********************************************************************************************-->
               <span id="idVistaSTPC1">
+
                 <div class="row unbordered-row">
-                  <div class="col-md-12 background-top-row-stpc">
+
+                  <div class="col-12 background-top-row-stpc">
                     <div class="form-group"></div>
                   </div>
 
 
                   <span class="background-middle-row-stpc unbordered-row">
+                  
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">&nbsp;</div>
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <h4 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN: <span id="concesion_perexp"></span></h4>
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span> <span id="concesion_concesion"></span></h6>
                       </div>
                     </div>
                     <div class="row unbordered-row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <h4 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION: <span id="concesion_fecven"></span></h4>
                       </div>
                     </div>
@@ -517,17 +526,23 @@ include_once('configuracion/configuracion_js.php');
                   <span class="background-botton-row-stpc unbordered-row">
 
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">&nbsp;</div>
                       </div>
                     </div>
 
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
-                        <div class="form-group">
-                          <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
-                        </div>
+                      <div class="col-12 d-flex justify-content-between align-items-center">
+                        <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
+                        <button 
+                            data-bs-toggle="tooltip" data-bs-placement="top" title=""
+                            style="display: none;" 
+                            id="btnModalidad" 
+                            type="button" 
+                            class="btn btn-primary btn-sm pulse-icon">
+                            Ver Modalidad
+                        </button>
                       </div>
                     </div>
 
@@ -607,7 +622,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
                         </div>
@@ -751,7 +766,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="d-flex justify-content-center">
                           <strong style="font-size: 16px;text-align: center;">NUMERO DE REGISTRO: <span id="concesion_numeroregistro"></span></strong>
                         </div>
@@ -759,7 +774,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">3. DATOS DEL SERVICIO</strong>
                         </div>
@@ -780,13 +795,13 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">&nbsp;</div>
                       </div>
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">E. EXTRAS</strong>
                         </div>
@@ -864,7 +879,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">P. INFORMACIÓN DEL PROPIETARIO DEL VEHÍCULO</strong>
                         </div>
@@ -909,29 +924,29 @@ include_once('configuracion/configuracion_js.php');
               <!--*********************************************************************************************-->
               <span style="display: none;" id="idVistaSTPC2">
                 <div class="row unbordered-row">
-                  <div class="col-md-12 background-top-row-stpc">
+                  <div class="col-12 background-top-row-stpc">
                     <div class="form-group"></div>
                   </div>
 
 
                   <span class="background-middle-row-stpc unbordered-row">
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">&nbsp;</div>
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <h4 style="text-align: center; font-weight: bold;">PERMISO EXPLOTACIÓN: <span id="concesion1_perexp"></span></h4>
                       </div>
                     </div>
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span> <span id="concesion1_concesion"></span></h6>
                       </div>
                     </div>
                     <div class="row unbordered-row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <h4 style="text-align: center; font-weight: bold;">FECHA DE EXPIRACION: <span id="concesion1_fecven"></span></h4>
                       </div>
                     </div>
@@ -939,18 +954,24 @@ include_once('configuracion/configuracion_js.php');
                   <span class="background-botton-row-stpc unbordered-row">
 
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">&nbsp;</div>
                       </div>
                     </div>
 
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
-                        <div class="form-group">
-                          <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
-                        </div>
-                      </div>
+                      <div class="col-12 d-flex justify-content-between align-items-center">
+                        <strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong>
+                        <button 
+                            data-bs-toggle="tooltip" data-bs-placement="top" title=""
+                            style="display: none;" 
+                            id="btnModalidad1" 
+                            type="button" 
+                            class="btn btn-primary btn-sm pulse-icon">
+                            Ver Modalidad
+                        </button>
+                      </div>                      
                     </div>
 
                     <div class="row bordered-row">
@@ -1029,7 +1050,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong>
                         </div>
@@ -1173,7 +1194,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="d-flex justify-content-center">
                           <strong style="font-size: 16px;text-align: center;">NUMERO DE REGISTRO: <span id="concesion1_numeroregistro"></span></strong>
                         </div>
@@ -1181,7 +1202,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">3. DATOS DEL SERVICIO</strong>
                         </div>
@@ -1202,13 +1223,13 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">&nbsp;</div>
                       </div>
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">E. EXTRAS</strong>
                         </div>
@@ -1286,7 +1307,7 @@ include_once('configuracion/configuracion_js.php');
                     </div>
 
                     <div class="row bordered-row-grey">
-                      <div class="col-md-12">
+                      <div class="col-12">
                         <div class="form-group">
                           <strong style="font-size: 16px;">P. INFORMACIÓN DEL PROPIETARIO DEL VEHÍCULO</strong>
                         </div>
@@ -1332,14 +1353,14 @@ include_once('configuracion/configuracion_js.php');
           <!------- FINAL VISTA -->
           <!-------             -->
           <div class="row">
-            <div class="col-md-12">&nbsp;</div>
+            <div class="col-12">&nbsp;</div>
           </div>
 
           <div class="row">
-            <div class="col-md-12">&nbsp;</div>
+            <div class="col-12">&nbsp;</div>
           </div>
 
-          <div class="col-md-12">
+          <div class="col-12">
             <div class="form-group">&nbsp;</div>
           </div>
 
@@ -1354,19 +1375,19 @@ include_once('configuracion/configuracion_js.php');
           </div>
 
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               <div class="form-group">&nbsp;</div>
             </div>
           </div>
 
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               <div class="form-group">&nbsp;</div>
             </div>
           </div>
 
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               <div class="form-group">&nbsp;</div>
             </div>
           </div>
@@ -1489,7 +1510,7 @@ include_once('configuracion/configuracion_js.php');
           </div>
 
           <div id="cargadocs" class="row" style="display:none">
-            <div class="form-group col-md-12">
+            <div class="form-group col-12">
               <label for="exampleInputFile">Cargar Documento:</label>
               <div class="input-group" id="cargadocsss">
                 <div class="custom-file">
@@ -1503,7 +1524,7 @@ include_once('configuracion/configuracion_js.php');
               </div>
             </div>
             <br\>
-            <div class="form-group col-md-12">
+            <div class="form-group col-12">
               <h3 id="fileUploaded" style="display: none;" class="gobierno1"><a id="fileUploadedLink" href="" target="_blank"><i class="fas fa-file-pdf fa-2x"></i> VER ARCHIVO DE EXPEDIENTE</a></h3>
             </div>            
           </div>
@@ -1511,19 +1532,19 @@ include_once('configuracion/configuracion_js.php');
           <!------- FINAL VISTA -->
           <!-------             -->
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               &nbsp;
             </div>
           </div>
 
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               &nbsp;
             </div>
           </div>
 
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               &nbsp;
             </div>
           </div>
@@ -1542,7 +1563,7 @@ include_once('configuracion/configuracion_js.php');
           </div>
 
           <div class="row">
-            <div class="col-md-12">
+            <div class="col-12">
               &nbsp;
             </div>
           </div>
@@ -1597,5 +1618,10 @@ include_once('configuracion/configuracion_js.php');
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>;
   <script src="https://cdn.jsdelivr.net/gh/xcash/bootstrap-autocomplete@v2.3.7/dist/latest/bootstrap-autocomplete.min.js"></script>
   <script type="text/javascript" src="<?php echo $appcfg_Dominio; ?>assets/js/autocomplet.js"></script>
+  <!-- Tom Select CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet"/>
+  <!-- Tom Select JS -->
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+  <script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/select2Inicializar,js"></script>
 </body>
 </html>

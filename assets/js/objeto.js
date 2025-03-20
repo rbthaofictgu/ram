@@ -15,6 +15,7 @@ let pageNumerClick = 0;
 //* Variable global para almacenar las filas de los tramites
 let filasTramites = [];
 let crearFilaTramites = [];
+let getBtndesabilitado = '';
 //*para almacenar el tamaño de los tramites
 var tamaño_Tramite = 0;
 //*se almacenan el arreglo de los id de cada una de las filas de localStorage.
@@ -40,6 +41,8 @@ var ramElement = document.getElementById("RAM");
 var ram = ramElement ? ramElement.value ?? 'RAM' : 'RAM';
 //*creamos una copia de el contenedor de las filagas agregadas para poder utilizar en otra funcion.
 var divAgregar = '';
+let arregloDiv = [];
+let btnVer = false;
 //*titulos variables 
 var lengTramites = 0;
 //*estados para mostarar cambio de unidad link
@@ -87,33 +90,18 @@ function filtrarDataConcesionNumber() {
 //****************************************************************************************************/
 function setUnSetEvent(event, events, accion, handles, prefijo) {
    let limite = concesionNumber.length;
-   console.log(event, 'event')
-   console.log(events, 'events')
-   console.log(accion, 'accion');
-   console.log(handles, 'handles')
-   console.log(event.target.id, 'event.target.id');
    for (let i = 0; i < limite; i++) {
-
       if (prefijo == 'idRow') {
          var obj = document.getElementById(prefijo + i + '_placa_0');
          var obj1 = document.getElementById(prefijo + i + '_placa_1');
       } else {
          var obj = document.getElementById(prefijo + i);
       }
-
-      if (prefijo == 'numero_concesion_') {
-         console.log(obj, 'obj prefijo numero_concesion_');
-         console.log(i, 'iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii');
-      }
-
       if (obj) {
          if (accion == 'remover') {
             let limitej = events.length;
             for (let j = 0; j < limitej; j++) {
                if (handles[j]) {
-                  console.log(events[j], 'events[j] remover');
-                  console.log(handles[j], 'handles[j] remover');
-                  console.log(obj.id, 'obj.id');
                   obj.removeEventListener(events[j], handles[j]);
                }
             }
@@ -121,9 +109,6 @@ function setUnSetEvent(event, events, accion, handles, prefijo) {
             let limitej = events.length;
             for (let j = 0; j < limitej; j++) {
                if (handles[j]) {
-                  console.log(events[j], 'events[j] add');
-                  console.log(handles[j], 'handles[j] add');
-                  console.log(obj.id, 'obj.id');
                   obj.addEventListener(events[j], handles[j]);
                }
             }
@@ -134,9 +119,6 @@ function setUnSetEvent(event, events, accion, handles, prefijo) {
             let limitej = events.length;
             for (let j = 0; j < limitej; j++) {
                if (handles[j]) {
-                  console.log(events[j], 'events[j] remover');
-                  console.log(handles[j], 'handles[j] remover');
-                  console.log(obj1.id, 'obj.id');
                   obj1.removeEventListener(events[j], handles[j]);
                }
             }
@@ -144,9 +126,6 @@ function setUnSetEvent(event, events, accion, handles, prefijo) {
             let limitej = events.length;
             for (let j = 0; j < limitej; j++) {
                if (handles[j]) {
-                  console.log(events[j], 'events[j] add');
-                  console.log(handles[j], 'handles[j] add');
-                  console.log(obj.id, 'obj.id');
                   obj1.addEventListener(events[j], handles[j]);
                }
             }
@@ -425,7 +404,6 @@ function clearSearchFiled(tableContainer, tbody) {
    divClear1.appendChild(btn_limpiar);
    //*Función onclick
    btn_limpiar.onclick = function () {
-      // console.log("El botón LIMPIAR ha sido clickeado");
       //*selecciona al input y le asigna '' para blanquear.
       //document.querySelectorAll('input').forEach(input => input.value = '');
       document.getElementById('buscarEnMalla').value = '';
@@ -506,11 +484,9 @@ function btnVerTramites() {
 function btnStyle() {
    //*boton para cambiar el estilo.
    const btn_style = document.createElement('button');
-
    //*el tipo de boton
    btn_style.type = 'button';
    //*añadiendo el texto al boton
-
    let setUnSetEvent1 = localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value);
    setUnSetEvent1 = JSON.parse(setUnSetEvent1); //
    if (setUnSetEvent1.setUnSetEvent == 'add') {
@@ -527,33 +503,32 @@ function btnStyle() {
    //*añadiendo las clases del boton y estilos
    btn_style.className = 'justify-content-rigth align-items-rigth btn btn-warning  mx-2 btn-sm';
    btn_style.id = 'btnAccion';
-   btn_style.onclick = (event) => {
-      if (event.target.id == 'btnAccion') {
-         setUnSetEvent(event, ['mouseenter', 'mouseleave'], event.target.getAttribute('data-accion'), [onmouseenterAccion, onmouseleaveAccion], 'numero_concesion_');
-         setUnSetEvent(event, ['mouseenter', 'mouseleave'], event.target.getAttribute('data-accion'), [onmouseenterAccion, onmouseleaveAccion], 'idRow');
-         event.target.innerHTML = '';
-         if (event.target.getAttribute('data-accion') == 'remover') {
-            event.target.setAttribute('data-accion', 'add');
-            event.target.innerHTML = '<i class="fas fa-check"></i>';
+   btn_style.addEventListener('click', (e) => {
+      if (e.target.id == 'btnAccion') {
+         setUnSetEvent(e, ['mouseenter', 'mouseleave'], e.target.getAttribute('data-accion'), [onmouseenterAccion, onmouseleaveAccion], 'numero_concesion_');
+         setUnSetEvent(e, ['mouseenter', 'mouseleave'], e.target.getAttribute('data-accion'), [onmouseenterAccion, onmouseleaveAccion], 'idRow');
+         e.target.innerHTML = '';
+         if (e.target.getAttribute('data-accion') == 'remover') {
+            e.target.setAttribute('data-accion', 'add');
+            e.target.innerHTML = '<i class="fas fa-check"></i>';
             localStorage.setItem('setUnSetEvent' + document.getElementById("ID_Usuario").value, JSON.stringify({ 'setUnSetEvent': 'remover' }));
          } else {
-            event.target.setAttribute('data-accion', 'remover');
-            event.target.innerHTML = '<i class="fas fa-times"></i>';
+            e.target.setAttribute('data-accion', 'remover');
+            e.target.innerHTML = '<i class="fas fa-times"></i>';
             localStorage.setItem('setUnSetEvent' + document.getElementById("ID_Usuario").value, JSON.stringify({ 'setUnSetEvent': 'add' }));
          }
-         event.stopPropagation();
-         event.preventDefault();
+         e.stopPropagation();
+         e.preventDefault();
       } else {
-
          // console.log(event.target.id, 'event.target.id en onclick no button accion');
          var evento = new Event("click", {
             bubbles: false,
             cancelable: true,
          });
          document.getElementById("btnAccion").dispatchEvent(evento);
-
       }
-   };
+   })
+
 
    // //*pasando boton a divTrash
    copiDivClear.appendChild(btn_style);
@@ -562,180 +537,127 @@ function btnStyle() {
 //*FINCAL:funcion encargada de  crear elbtn de estylos.
 //******************************************************
 
-//*******************************************
+//*****************************************
 //*INICIO:funcion encargada deL BTNFIJAR 
-//*******************************************
-//?NOTA: Mapa global para almacenar referencias de funciones y evitar que se convierta en string
-
-//tengo una tabla que al hacer click en la filas crea nuevas filas estoy creando un boton para que cuando lo apriete no permita que se creen o muetsren las nuevas filas. pero asi como lo tengo al inspeccionar miro que toma de referencia el ultimo elemento de la fila y cuando presiono la ultima fila esa si se muestran las nuevas filas.
-// const eventHandlersMap = new Map();
-
-// function btnVerTramitesFijos() {
-//    const verDetallesFijos = document.createElement('button');
-//    verDetallesFijos.innerHTML = '';
-//    if (rolUser.some(role => rol.includes(role))) {
-//       verDetallesFijos.type = 'button';
-//       verDetallesFijos.id = 'idbtnVerTramites';
-//       verDetallesFijos.title = 'Dele click a este boton para FIJAR LOS TRAMITES siempre en VISIBLE.';
-//       verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack"></i>`;
-//       verDetallesFijos.className = 'btn btn-success mx-2 btn-sm ml-auto';
-
-//       verDetallesFijos.onclick = () => {
-//          if (!vistaHabilitada) {
-//             verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack-slash"></i>`;
-//             console.log('deshabilitado');
-//             document.getElementById('idbtnVerTramites').disabled = true;
-//             vistaHabilitada = true;
-
-//             filtrarDataConcesionNumber().forEach((element, index) => {
-//                let tr = document.getElementById('idRow' + (index + recalculandoPaginacion(pageNumerClick)));
-//                let indice = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
-//                let concesion = element['Concesion'];
-//                let unidad1 = element['unidad1'];
-//                let unidad = element['unidad'];
-
-//                // Define la función sin ejecutarla
-//                let handler = function () {
-//                   agregar_fila(index, indice, divAgregar, concesion, unidad, unidad1);
-//                };
-//                // Guarda la referencia en el Map
-//                eventHandlersMap.set(tr, handler);
-//                tr.addEventListener('click', handler, false);
-//             });
-//          } else {
-//             verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack"></i>`;
-//             console.log('habilitado');
-//             document.getElementById('idbtnVerTramites').disabled = false;
-//             vistaHabilitada = false;
-
-//             filtrarDataConcesionNumber().forEach((element, index) => {
-//                let tr = document.getElementById('idRow' + (index + recalculandoPaginacion(pageNumerClick)));
-
-//                // Recupera la referencia de la función desde el Map
-//                let handler = eventHandlersMap.get(tr);
-//                if (handler) {
-//                   tr.removeEventListener('click', handler);
-//                   eventHandlersMap.delete(tr); // Elimina la referencia
-//                   console.log('Se eliminó el evento click');
-//                }
-//             });
-//          }
-//       };
-
-//       copiDivClear.appendChild(verDetallesFijos);
-//    }
-// }
-
-const eventHandlersMap = new Map();
-
+//*****************************************
 function btnVerTramitesFijos() {
    const verDetallesFijos = document.createElement('button');
    verDetallesFijos.innerHTML = '';
    if (rolUser.some(role => rol.includes(role))) {
       verDetallesFijos.type = 'button';
-      verDetallesFijos.id = 'idbtnVerTramites';
+      verDetallesFijos.id = 'idbtnVerTramitesBloquear';
       verDetallesFijos.title = 'Dele click a este botón para FIJAR LOS TRÁMITES siempre en VISIBLE.';
       verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack"></i>`;
       verDetallesFijos.className = 'btn btn-success mx-2 btn-sm ml-auto';
 
-      verDetallesFijos.onclick = () => {
-         if (vistaHabilitada == false) {
-            verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack-slash"></i>`;
-            console.log('deshabilitado');
-
-            filtrarDataConcesionNumber().forEach((element, index) => {
-               let trId = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
-               let tr = document.getElementById(trId);
-               tr.onclick = null;
-               vistaHabilitada = true;
-            });
-         } else {
-            verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack"></i>`;
-            console.log('habilitado');
-            vistaHabilitada = false;
-
-            filtrarDataConcesionNumber().forEach((element, index) => {
-               let trId = (index + recalculandoPaginacion(pageNumerClick));
-               let tr = document.getElementById('idRow' + trId);
-               let concesion = element['Concesion'];
-               let unidad1 = element['unidad1'];
-               let unidad = element['unidad'];
-
-               tr.onclick = (event) => { agregar(event, trId, divAgregar, concesion, unidad, unidad1); };
-
-            });
-         }
-      };
-
+      verDetallesFijos.addEventListener('click', (e) => {
+         //*desabilitando el boton de vista de tramites.
+         vistaTramitesFijos();
+      });
       copiDivClear.appendChild(verDetallesFijos);
    }
 }
 
+function vistaTramitesFijos() {
+   if (vistaHabilitada == false) {
+      document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-thumbtack-slash"></i>`;
+      document.getElementById('idbtnVerTramites').disabled = true;
+      console.log('deshabilitado');
 
-// function btnVerTramitesFijos() {
-//    const verDetallesFijos = document.createElement('button');
-//    verDetallesFijos.innerHTML = '';
-//    if (rolUser.some(role => rol.includes(role))) {
-//       //*el tipo de boton
-//       verDetallesFijos.type = 'button';
-//       verDetallesFijos.id = 'idbtnVerTramites';
-//       verDetallesFijos.title = 'Dele click a este boton para FIJAR LOS TRAMITES siempre en VISIBLE.'
-//       //*añadiendo el texto al boton
-//       verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack"></i>`
-//       //*añadiendo las clases del boton y estilos
-//       verDetallesFijos.className = 'btn btn-success  mx-2 btn-sm ml-auto'
-//       verDetallesFijos.onclick = () => {
-//          if (vistaHabilitada == false) {
-//             verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack-slash"></i>`
-//             console.log('desabilitado');
-//             document.getElementById('idbtnVerTramites').disabled = true;
-//             vistaHabilitada = true;
-//             //************************************/
-//             //*Eliminacion de click en la fila.
-//             //************************************/
-//             filtrarDataConcesionNumber().forEach((element, index) => {
-//                let tr = document.getElementById('idRow' + (index + recalculandoPaginacion(pageNumerClick)));
-//                let indice = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
-//                let concesion = element['Concesion'];
-//                let unidad1 = element['unidad1'];
-//                let unidad = element['unidad'];
+      filtrarDataConcesionNumber().forEach((element, index) => {
+         let trId = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
+         let tr = document.getElementById(trId);
+         if (tr) {
+            tr.onclick = null;
+            localStorage.setItem('btndesabilitado', JSON.stringify(true));
+         }
+      });
+      vistaHabilitada = true;
+   } else {
+      //*habilitando el boton de vista de tramites.
+      document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-thumbtack"></i>`;
+      console.log('habilitado');
+      document.getElementById('idbtnVerTramites').disabled = false;
+      vistaHabilitada = false;
 
-//                // Define la función sin ejecutarla directamente
-//                let handler = function () {
-//                   agregar_fila(index, indice, divAgregar, concesion, unidad, unidad1);
-//                };
+      filtrarDataConcesionNumber().forEach((element, index) => {
+         let trId = (index + recalculandoPaginacion(pageNumerClick));
+         let tr = document.getElementById('idRow' + trId);
+         let concesion = element['Concesion'];
+         let unidad1 = element['unidad1'];
+         let unidad = element['unidad'];
 
-//                // Guarda la referencia en el elemento para poder removerla después
-//                tr.dataset.clickHandler = handler;
-//                tr.addEventListener('click', handler, false);
-//             });
-//          } else {
-//             verDetallesFijos.innerHTML = `<i class="fa-solid fa-thumbtack"></i>`
-//             console.log('habilitado');
-//             document.getElementById('idbtnVerTramites').disabled = false;
-//             vistaHabilitada = false;
+         if (tr) {
+            tr.onclick = (event) => {
+               localStorage.setItem('btndesabilitado', JSON.stringify(false));
+               //?nota:para obtener el div del elemento o fila con click "arregloDiv[index][0]"
+               agregar(event, trId, arregloDiv[index][0], concesion, unidad, unidad1);
+            };
+         }
+      });
+   }
+}
 
-//             filtrarDataConcesionNumber().forEach((element, index) => {
-//                let tr = document.getElementById('idRow' + (index + recalculandoPaginacion(pageNumerClick)));
-//                // Recupera la referencia de la función
-//                let handler = tr.dataset.clickHandler;
-//                if (handler) {
-//                   tr.removeEventListener('click', handler, true);
-//                   delete tr.dataset.clickHandler;
-//                   console.log('Se eliminó el evento click');
-//                }
-//             });
-//          }
-//       };
-//       // //*pasando boton a divTrash
-//       copiDivClear.appendChild(verDetallesFijos);
-//       //*Función onclick
-//    }
-// }
-
-//*******************************************
+//****************************************
 //*FINAL:funcion encargada deL BTNFIJAR 
-//*******************************************
+//****************************************
+
+//**************************************************************************************************************/
+//*INICIO:funcion encargada de generar  agregar fila pero con las condiciones de almacenamiento y visualizacion
+//**************************************************************************************************************/
+function agregar(e, index, div, concesion, unidad, unidad1) {
+
+   e.stopPropagation();
+   if (div.style.display === 'none') {
+      div.style.display = 'block'; // Muestra la fila
+      div.style.maxWidth = '1200px';
+      div.style.minWidth = '1000px';
+      div.innerHTML = '';
+
+      //*solo se va a ejecutar una vez.
+      document.getElementById('idRow' + index).setAttribute('visible', '1');
+      //*obtengo los id de las filas que estan visibles.
+      arregloFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
+      //*pregunto si este id existe si no lo guardo en localStorage.
+      if (!arregloFilaOculta.includes(`fila_Oculta_${index}`)) {
+         arregloFilaOculta.push(`fila_Oculta_${index}`);
+         localStorage.setItem('filaOcultaId', JSON.stringify(arregloFilaOculta));
+         //* almaceno el ram
+         localStorage.setItem('Ram', JSON.stringify(document.getElementById("RAM").value));
+      }
+      if (arregloFilaOculta != '') {
+         // console.log('hay datos en arregloFilaOculta', arregloFilaOculta);
+         document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-eye"></i>`
+      }
+   } else {
+      document.getElementById('idRow' + index).setAttribute('visible', '0');
+      //*obtengo la lista de los id de las filas visibles que estan guardados.
+      arregloFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
+      //*busco el elemneto que quiero ocultar en el arreglo para que me devuelva un arreglo sin ese elemento
+      let eFilaOculta = arregloFilaOculta.filter(item => item !== `fila_Oculta_${index}`);
+      //*guardo el elmento sin el id del elemento que estoy ocultando.
+      localStorage.setItem('filaOcultaId', JSON.stringify(eFilaOculta));
+      //*llamo el elemento para verificar si tienen datos o no y cambiar el icono del ojito.
+      arregloFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
+      // console.log(arregloFilaOculta, 'arregloFilaoculta tiene que estar vacio');
+      if (arregloFilaOculta == '') {
+         // console.log('NO HAY DATOS en arregloFilaOculta', arregloFilaOculta);
+         document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-eye-slash"></i>`
+      }
+      div.style.display = 'none'; // Oculta la fila
+   }
+   idFilaAnterior = 'idRow' + (index);
+   // fila['Tramites'], 
+   agregar_fila(index, idFilaAnterior, div, concesion, unidad, unidad1);
+
+   if (e.target.type === "checkbox") {
+      e.stopPropagation(); // Prevent the click from reaching the outer div
+      return; // Optional: Stop further execution if needed
+   }
+}
+//**************************************************************************************************************/
+//*FINAL:funcion encargada de generar  agregar fila pero con las condiciones de almacenamiento y visualizacion
+//**************************************************************************************************************/
 
 //******************************************************************************/
 //*Funcion handSearch encargada de realizar la busqueda del input en la tabla.
@@ -780,64 +702,12 @@ function onmouseenterAccion(event) {
    event.target.style.fontWeight = "bolder";
 }
 
-
-function agregar(e, index, div, concesion, unidad, unidad1) {
-   console.log(div, 'index');
-
-
-   e.stopPropagation();
-   if (div.style.display === 'none') {
-      div.style.display = 'block'; // Muestra la fila
-      div.style.maxWidth = '1200px';
-      div.style.minWidth = '1000px';
-      div.innerHTML = '';
-      // '<i class="fa-solid fa-eye"></i>'
-      //*solo se va a ejecutar una vez.
-      document.getElementById('idRow' + index).setAttribute('visible', '1');
-      //*obtengo los id de las filas que estan visibles.
-      arregloFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
-      //*pregunto si este id existe si no lo guardo en localStorage.
-      if (!arregloFilaOculta.includes(`fila_Oculta_${index}`)) {
-         arregloFilaOculta.push(`fila_Oculta_${index}`);
-         localStorage.setItem('filaOcultaId', JSON.stringify(arregloFilaOculta));
-         //* almaceno el ram
-         localStorage.setItem('Ram', JSON.stringify(document.getElementById("RAM").value));
-      }
-      if (arregloFilaOculta != '') {
-         // console.log('hay datos en arregloFilaOculta', arregloFilaOculta);
-         document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-eye"></i>`
-      }
-   } else {
-      document.getElementById('idRow' + index).setAttribute('visible', '0');
-      //*obtengo la lista de los id de las filas visibles que estan guardados.
-      arregloFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
-      //*busco el elemneto que quiero ocultar en el arreglo para que me devuelva un arreglo sin ese elemento
-      let eFilaOculta = arregloFilaOculta.filter(item => item !== `fila_Oculta_${index}`);
-      //*guardo el elmento sin el id del elemento que estoy ocultando.
-      localStorage.setItem('filaOcultaId', JSON.stringify(eFilaOculta));
-      //*llamo el elemento para verificar si tienen datos o no y cambiar el icono del ojito.
-      arregloFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
-      // console.log(arregloFilaOculta, 'arregloFilaoculta tiene que estar vacio');
-      if (arregloFilaOculta == '') {
-         // console.log('NO HAY DATOS en arregloFilaOculta', arregloFilaOculta);
-         document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-eye-slash"></i>`
-      }
-      div.style.display = 'none'; // Oculta la fila
-   }
-   idFilaAnterior = 'idRow' + (index);
-   // fila['Tramites'], 
-   agregar_fila(index, idFilaAnterior, div, concesion, unidad, unidad1);
-
-   if (e.target.type === "checkbox") {
-      e.stopPropagation(); // Prevent the click from reaching the outer div
-      return; // Optional: Stop further execution if needed
-   }
-}
 //***************************************************************/
 //*INICIO:funcion encargada de renderizar el body de la tabla.
 //***************************************************************/
 function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
    getFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
+   // getBtndesabilitado = JSON.parse(localStorage.getItem('btndesabilitado')) || [];
 
    //*limpiando el body de la tabla
    tbody.innerHTML = '';
@@ -860,6 +730,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
       //*creamos la fila de el body
       const row = document.createElement('tr');
       row.id = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
+      // console.log(row.id, 'row.id');
       //*creamos la columna y añadimos el numero de fila para despues añadir al elemnto de fila
       row.appendChild(document.createElement('td')).innerHTML = ((rolUser.some(role => rol.includes(role))) ? `<div div class="form-check" >
          <input onclick="event.stopPropagation();" class="form-check-input check_trash" type="checkbox" data-originalrow="${index}" data-concesion="${fila['Concesion']}" value="${index}" id="id_trash_${row.id}">
@@ -938,18 +809,17 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                divFila.style.display = 'none';
                divFila.style.maxWidth = '1200px';
                divFila.style.minWidth = '1000px';
-
+               // console.log(divFila, 'divFila tabla');
+               //*para pasar data y desplegar datos en fila
+               arregloDiv[index] = [divFila];
                //*asignado para poder utilizar despues.
                divAgregar = divFila;
-               //*para pasar data y desplegar datos en fila
-
                row.onclick = (event) => {
-                  //*para evitar la propagación del click.
+                  //*!llamado de la funcion que contiene agregar_fila.
                   agregar(event, (index + recalculandoPaginacion(pageNumerClick)), divFila, fila['Concesion'], fila['Unidad'], fila['Unidad1']);
                }
                //*añadimos las columnas a la fila
                row.appendChild(td);
-
             }
          }); //fin del ciclo.
          //*añadimos la columna para la accion
@@ -973,6 +843,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
             }).then((result) => {
                //* si confirma que esta seguro de eliminar llamomos la funcion para que elimine de la base de datos.
                if (result.isConfirmed) {
+                  pageNumerClick = 0;
                   //***********************************************************************************/
                   //*Ocultar Pantalla Modal donde se Concesiones Salvadas
                   //***********************************************************************************/
@@ -1038,7 +909,8 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                   } else {
                      divFila.style.display = 'none'; // Oculta la fila
                   }
-                  idFilaAnterior = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
+                  idFilaAnterior = ('idRow' + (index + recalculandoPaginacion(pageNumerClick)));
+                  console.log(index + recalculandoPaginacion(pageNumerClick), 'ss');
                   agregar_fila((index + recalculandoPaginacion(pageNumerClick)), idFilaAnterior, divFila, fila['Concesion'], fila['Unidad'], fila['Unidad1']);
                }
             }
@@ -1046,6 +918,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
       }
       //*enviamos la fila al contenedor del cuerpo de la tabla.
       tbody.appendChild(row);
+
       datos.push([index + recalculandoPaginacion(pageNumerClick), 'idRow' + (index + recalculandoPaginacion(pageNumerClick)), divAgregar, fila['Concesion'], fila['Unidad'], fila['Unidad1']]);
       datosMostra = {
          'datos': datos
@@ -1068,25 +941,17 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
 //*FINAL:funcion encargada de renderizar el body de la tabla.
 //***************************************************************/
 
-//************************************************************************************************************************* */
+//**************************************************************************************************************************/
 //*funcion encargada de mostrar las filas ocultas si estas estaban se podian visualizar antes de cerrar la pantalla o eliminar un dato *//
-//************************************************************************************************************************** */
+//***************************************************************************************************************************/
 function mostrarAgregar_fila() {
-   // console.log('mostrarAgregar_fila')
    arregloFilaOculta = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
    for (const key in datosMostra) {
       if (Object.prototype.hasOwnProperty.call(datosMostra, key)) {
          const element = datosMostra[key];
          for (const e of element) {
-            // console.log(e, 'e');
-            // console.log(getFilaOculta, 'getFilaOculta');
             let datoEncontrado = arregloFilaOculta.find(elemento => String(elemento) === String(e[2].id));
-
-            // let datoEncontrado = getFilaOculta.find(elemento => elemento == e[2].id);
-            // console.log(e[2].id, 'e[2].id',);
-            // console.log(datoEncontrado, 'datoEncontrado');
             if (datoEncontrado !== undefined) {
-               // console.log('encontro datos..........');
                setTimeout(() => {
                   e[2].style.display = 'block';
                   e[2].style.maxWidth = '1200px';
@@ -1097,7 +962,6 @@ function mostrarAgregar_fila() {
                }, 100);
             }
          }
-
       }
    }
 }
@@ -1106,6 +970,7 @@ function mostrarAgregar_fila() {
 //***********************************************************************************************/
 
 function mostrarAgregar_fila2() {
+   // console.log(datosMostra,'datosMostra');
    for (const key in datosMostra) {
       if (Object.prototype.hasOwnProperty.call(datosMostra, key)) {
          const element = datosMostra[key];
@@ -1125,13 +990,14 @@ function mostrarAgregar_fila2() {
       }
    }
 }
-//*********************************************************************/
+//*****************************************************************/
 //*FINAL: funcion que me permite desplegar todas las fila ocultas
-//*********************************************************************/
+//*****************************************************************/
 
 //****************************************************************/
 //*funcion encargada de crear las subtabla de la tabla principal.
 //***************************************************************/
+
 function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad1 = '') {
 
    //*para limpiar si se elimina un tramite;
@@ -1161,7 +1027,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
    //* tramites contiene la nueva data ya con los elementos excluidos
    let tramites = dataNueva(data_tramites);
    // console.log(idFilaAnterior, 'idFilaAnterior antes de instancia');
-   let filaAnterior = document.getElementById(idFilaAnterior);
+   let filaAnterior = document.getElementById(`${idFilaAnterior}`);
 
    // console.log(filaAnterior, 'filaAnterior');
    //*generando arreglo con los datos diferente a un arreglo y de tamaño>0 con datos distinto de false
@@ -1236,7 +1102,6 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                      // let cambioTamañoT = document.getElementById(`tamañoTramite${ indexFilaConcesio } `).textContent;
                      document.getElementById(`tamañoTramite${indiceNuevo} `).textContent = tamaño_Tramite - 1;
                      // document.getElementById(`tamañoTramite${ indexFilaConcesio } `).textContent = tamaño_Tramite;
-
                   }
                });
             } else {
@@ -1266,7 +1131,6 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                      //*se muestra texto si no es url o el cambio de unidad
                      const link = document.createElement('a');
                      link.style.textDecoration = 'none';
-
                      link.innerHTML = (tramite[key] == 'MODIFICACIÓN CAMBIO DE UNIDAD') ? `<i i class="fa-sharp fa-solid fa-eye" ></i > ${tramite[key]} ` : tramite[key];
                      link.target = "_blank";
                      link.href = $appcfg_Dominio_Raiz + `: 140 / RenovacionesE / NuevoDictamenR.aspx ? Solicitud = ${ram} `
@@ -1894,7 +1758,6 @@ function recalculandoPaginacion(pageNumerClick) {
 function mostrarDetalleTramites() {
 
    //*suma 10 si esta en otra pagina si no es 0;
-
    let existeDatos = JSON.parse(localStorage.getItem('filaOcultaId')) || [];
 
    if (existeDatos != '') {
@@ -1922,7 +1785,7 @@ function mostrarDetalleTramites() {
       filtrarDataConcesionNumber().forEach((data, index) => {
          if (index < ((rowsPerPage + recalculandoPaginacion(pageNumerClick)))) {
             let fila = document.getElementById('idRow' + (index + recalculandoPaginacion(pageNumerClick)));
-            console.log(fila, 'fila mostrar')
+            // console.log(fila, 'fila mostrar')
             if (fila != null) {
                fila.setAttribute('visible', '0');
                if (fila.getAttribute('visible') == "0" && document.getElementById(`fila_Oculta_${(index + recalculandoPaginacion(pageNumerClick))}`)) {
@@ -2262,39 +2125,40 @@ function verConstancia(MEMO) {
 //**************************************************/
 function tipoConcesion(esCarga, esCertificado, Concesion_Encriptada, Permiso_Explotacion_Encriptado) {
    //  console.log(esCarga, esCertificado, Concesion_Encriptada, Permiso_Explotacion_Encriptado);
-   const dominio = `${$appcfg_Dominio_Raiz}: 172 / api_rep.php ? action = `;
+   const dominio = `${$appcfg_Dominio_Raiz}:172/api_rep.php?action=`;
 
-   let link = {};  // Usamos un objeto en lugar de un arreglo
+   let link = {};  //* Usamos un objeto en lugar de un arreglo
 
-   // Es Renovación de Certificado
+   //* Es Renovación de Certificado
    if (esCertificado) {
       // console.log('esCertficado');
 
       if (esCarga) { // CARGA
-         const rutacertificado = `${dominio} get - PDFCertificado - Carga & Certificado=${Concesion_Encriptada} `;
-         const rutapermisoexplotacion = `${dominio} get - PDFPermisoExp - Carga & Permiso=${Permiso_Explotacion_Encriptado} `;
+         const rutacertificado = `${dominio}get-PDFCertificado-Carga&Certificado=${Concesion_Encriptada}`;
+         const rutapermisoexplotacion = `${dominio}get-PDFPermisoExp-Carga&Permiso=${Permiso_Explotacion_Encriptado}`;
          link['rutacertificado'] = rutacertificado;
          link['rutapermisoexplotacion'] = rutapermisoexplotacion;
 
       } else { // Otro caso (PAS)
-         const rutacertificado = `${dominio} get - PDFCertificado & Certificado=${Concesion_Encriptada} `;
-         const rutapermisoexplotacion = `${dominio} get - PDFPermisoExp - Pas & Permiso=${Permiso_Explotacion_Encriptado} `;
+         const rutacertificado = `${dominio}get-PDFCertificado&Certificado=${Concesion_Encriptada}`;
+         const rutapermisoexplotacion = `${dominio}get-PDFPermisoExp-Pas&Permiso=${Permiso_Explotacion_Encriptado}`;
          link['rutacertificado'] = rutacertificado;
          link['rutapermisoexplotacion'] = rutapermisoexplotacion;
       }
 
-   } else { // Es Renovación de Permisos Especiales
+   } else { //* Es Renovación de Permisos Especiales
       // console.log('no esCertficado');
       if (esCarga) { // CARGA
-         const rutacertificado = `${dominio} get - PDFPermisoEsp - Carga & PermisoEspecial=${Concesion_Encriptada} `;
+         const rutacertificado = `${dominio}get-PDFPermisoEsp-Carga&PermisoEspecial=${Concesion_Encriptada}`;
          link['rutacertificado'] = rutacertificado;
          link['rutapermisoexplotacion'] = '';
 
       } else { // Otro caso (PAS)
-         const rutacertificado = `${dominio} get - PDFPermisoEsp - Pas & PermisoEspecial=${Concesion_Encriptada} `;
+         const rutacertificado = `${dominio}get-PDFPermisoEsp-Pas&PermisoEspecial=${Concesion_Encriptada}`;
          link['rutacertificado'] = rutacertificado;
          link['rutapermisoexplotacion'] = '';
       }
    }
    return link;
 }
+

@@ -1546,13 +1546,13 @@ require_once("../qr/qrlib.php");
 					ORDER BY T.ID_Tipo_Tramite";
 		$bandera = 1;
 		if ($bandera == 1) {
-			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
+			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><i onClick="fShowTramites();" class="fas fa-window-close gobierno1"></i><strong>LISTADO DE TRAMITES</strong></div></div>';
 			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-8"><strong>TRAMITE</strong></div><div class="col-md-3"><strong>PLACA</strong></div></div>';
 			$rows = ($this->select($q, array(':ID_Categoria' => $ID_Categoria)));
 			foreach ($rows as $row) {
 				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
 					$html = $html . '<div class="row border border-info" id="row_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '">
-					<div class="col-md-1">
+					<div class="col">
 					  <input data-monto="' . $row['Monto'] . '" 
 							 class="form-check-input tramiteschk" 
 							 id="' . $row['ID_CHECK'] . '" 
@@ -1560,17 +1560,17 @@ require_once("../qr/qrlib.php");
 							 name="tramites[]" 
 							 value="' . $row["ID_Tramite"] . '">
 					</div>
-					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div>
-					<div class="col-md-2">
-					  <input style="display:none; text-transform: uppercase;" 
-							 id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
-							 title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
-							 pattern="^[A-Z]{3}\d{4}$" 
-							 placeholder="PLACA" 
-							 class="form-control form-control-sm test-controls" 
-							 minlength="7" 
-							 maxlength="7">
-					</div>
+					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col">' 
+					. '<input style="display:none; text-transform: uppercase;" 
+					id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
+					title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
+					pattern="^[A-Z]{3}\d{4}$" 
+					placeholder="PLACA" 
+					class="form-control form-control-sm test-controls" 
+					minlength="7" 
+					maxlength="7">'
+					. $row["descripcion_larga"] . 
+					'</div>
 				  </div>';
 				} else {
 					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div></div>';

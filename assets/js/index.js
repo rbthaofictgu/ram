@@ -58,7 +58,7 @@ function loading(isLoading,currentstep) {
       document.getElementById("id_img_stepper_gif").style = "display:flex";
       document.getElementById("id_stepper_content").style = "display:none";
       if (currentstep == 2) {
-        document.getElementById("concesion_tramites").style = "display:none;";
+        document.getElementById("concesion_tramites").style = "display:none;width:450px";
       } 
       //*********************************************************************************************/
       //* FINAL: Oculta la información del stepper content y presenta el gif de procesando          */
@@ -216,6 +216,16 @@ function removeAttribute(Element, Attribute) {
 //* FINAL: Funcion para Eliminar/Remover el Attribute de un elemento
 //**********************************************************************************************************/
 
+function fShowTramites() {
+  var ct = document.getElementById("concesion_tramites");
+  if (ct){
+    if (ct.style.display !== "none") {
+      ct.style = "display: none; width: 600px;";
+    } else {
+      ct.style = "display: flex; width: 600px;";
+    }
+  }
+}
 function fShowConcesiones() {
   concesionBorradoEnMalla = 0
   const myModal = new bootstrap.Modal(document.getElementById("exampleModal"));
@@ -1193,6 +1203,7 @@ function f_DataOmision() {
         document.getElementById("rightDiv").style.display = "flex";
       }
       startCelebration();
+      inicialitarTomSelect();
       //*****************************************************************************************/
       //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -1387,6 +1398,25 @@ stepperForm = new Stepper(stepperFormEl, {
   animation: true,
 });
 
+var ct = document.getElementById("concesion_tramites");
+ct.addEventListener("mouseover", function (event) {
+  if (event.target === event.currentTarget) {
+    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseover antes');
+    event.stopPropagation();
+    event.target.style.cssText += "; width: 600px";
+    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseover despues');
+  }
+});
+
+ct.addEventListener("mouseleave", function (event) {
+  if (event.target === event.currentTarget) {
+    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseleave antes');
+    event.stopPropagation();
+    event.target.style.cssText += "; width: 200px";
+    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseleaver despues');
+  }
+});
+
 var btnNextList = [].slice.call(document.querySelectorAll(".btn-next-form"));
 var btnNextListprevious = [].slice.call(
   document.querySelectorAll(".btn-previous-form")
@@ -1494,7 +1524,7 @@ function fLimpiarPantalla() {
       document.getElementById("input-prefetch").style.display = "block";
       document.getElementById("toggle-icon").style.display = "block";
       document.getElementById("rightDiv").style.display = "flex";
-      document.getElementById("div-vista-1").style = "display:none;";
+      //document.getElementById("div-vista-1").style = "display:none;";
       document.getElementById("combustible").value = "";
       document.getElementById("capacidad").value = "";
       document.getElementById("alto").value = "";
@@ -1639,7 +1669,7 @@ function fLimpiarPantalla() {
         });
       }
 
-      document.getElementById("concesion_tramites").style.display = "none";
+      document.getElementById("concesion_tramites").style = "display:none;width:600px";
 
     case 4:
       break;
@@ -2038,6 +2068,8 @@ function f_RenderConcesion(datos) {
 
   document.getElementById("concesion_tramites").innerHTML =
     datos[1][0]["Tramites"];
+
+  inicialitarTomSelect();    
 
   setaddEventListener();
 
@@ -2463,9 +2495,8 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                   "none";
                 document.getElementById("btnSalvarConcesion").style =
                   "display:fixed;";
-                document.getElementById("concesion_tramites").style =
-                  "display:fixed;";
-                document.getElementById("div-vista-1").style = "display:fixed;";
+                document.getElementById("concesion_tramites").style =  "display:fixed; width:600px;";
+                //document.getElementById("div-vista-1").style = "display:fixed;";
                 document.getElementById("concesion_tramites").value = "";
                 f_RenderConcesion(datos);
                 seRecuperoVehiculoDesdeIP = 0;
@@ -2491,6 +2522,15 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 //* Inicio: Modalidad de Entrada I = INSERT
                 //******************************************/
                 modalidadDeEntrada = "I";
+                var btn = document.getElementById("btnModalidad");
+                if (btn) {
+                  btn.style.display = "flex"; 
+                  btn.setAttribute("data-bs-original-title", "La modalidad de entrada de datos: INSERTANDO");
+                  btn.innerHTML = '<i class="fas fa-plus-circle fa-2x"></i>';
+                  document.getElementById("btnModalidad1").setAttribute("data-bs-original-title", "La modalidad de entrada de datos: INSERTANDO");
+                  document.getElementById("btnModalidad1").innerHTML = '<i class="fas fa-plus-circle fa-2x"></i>';
+                  document.getElementById("btnModalidad1").style.display = "flex"; 
+                }                
                 //*********************************************************************************/
                 //* Pocisionandose en la parte superior de la pantalla                            */
                 //*********************************************************************************/
@@ -2700,9 +2740,8 @@ function fEditarConcesion(idConcesion) {
               //***********************************************************************************/
               document.getElementById("btnSalvarConcesion").style =
                 "display:fixed;";
-              document.getElementById("concesion_tramites").style =
-                "display:fixed;";
-              document.getElementById("div-vista-1").style = "display:fixed;";
+              document.getElementById("concesion_tramites").style = "display:fixed;width:600px;";
+              //document.getElementById("div-vista-1").style = "display:fixed;";
               document.getElementById("concesion_tramites").value = "";
               f_RenderConcesionPreforma(datos);
               //**************************************************************************************************************************/
@@ -2727,6 +2766,16 @@ function fEditarConcesion(idConcesion) {
               //* Inicio: Modalidad de Entrada U = UPDATE
               //**************************************************************************************************************************/
               modalidadDeEntrada = "U";
+              var btn = document.getElementById("btnModalidad");
+              if (btn) {
+                btn.style.display = "flex"; 
+                btn.setAttribute("data-bs-original-title", "La modalidad de entrada de datos: EDITANDO");
+                btn.innerHTML = '<i class="fas fa-edit fa-2x"></i>';
+                document.getElementById("btnModalidad1").setAttribute("data-bs-original-title", "La modalidad de entrada de datos: EDITANDO");
+                document.getElementById("btnModalidad1").innerHTML = '<i class="fas fa-edit fa-2x"></i>';
+                document.getElementById("btnModalidad1").style.display = "flex"; 
+
+              }                
               //**************************************************************************************************************************/
               //* Final: Modalidad de Entrada U = UPDATE
               //**************************************************************************************************************************/
@@ -2892,6 +2941,7 @@ function f_RenderConcesionPreforma(datos) {
   document.getElementById("concesion_tramites").innerHTML =
     datos[1][0]["Tramites"];
 
+  inicialitarTomSelect();
   //*************************************************************************************************************/
   //* Llamar funcion que habilita los Listener de las Placas en el caso de cambio de placa y/o cambio de unidad
   //*************************************************************************************************************/
@@ -4528,6 +4578,12 @@ function salvarConcesion() {
         if (concesionNumber.length > 0) {
           document.getElementById("rightDiv").style.display = "flex";
         }
+        var btn = document.getElementById("btnModalidad");
+        if (btn) {
+          btn.style.display = "none";
+          btn.innerHTML = '';
+        }                
+
         return false;
       } // final del If de si Hay error
     })
@@ -4675,14 +4731,17 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       ) {
         document.getElementById("btnAddConcesion").style = "display:none;";
       }
-      document.getElementById("concesion_tramites").style = "display:none;";
+      document.getElementById("concesion_tramites").style = "display:none;width:600px";
       document.getElementById("colapoderado").focus();
       break;
     case 1:
-      document.getElementById("concesion_tramites").style = "display:none;";
+      document.getElementById("concesion_tramites").style = "display:none;width:600px";
       document.getElementById("rtnsoli").focus();
       break;
     case 2:
+      if (document.getElementById("concesion_vin").value != "") {
+        document.getElementById("concesion_tramites").style = "display:flex;width:600px";
+      }
       document.getElementById("input-prefetch").style.display = "block";
       document.getElementById("toggle-icon").style.display = "block";
       if (concesionNumber.length > 0) {
@@ -4708,7 +4767,7 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       document.getElementById("concesion").value = "";
       break;
     case 3:
-      document.getElementById("concesion_tramites").style = "display:none;";
+      document.getElementById("concesion_tramites").style = "display:none;width:600px";
       document.getElementById("btnAddConcesion").style = "display:none;";
       if (modalidadDeEntrada == "I") {
         document.getElementById("btnSalvarConcesion").style = "display:fixed;";
@@ -4717,7 +4776,7 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       }
       break;
     case 4:
-      document.getElementById("concesion_tramites").style = "display:none;";
+      document.getElementById("concesion_tramites").style = "display:none;width:600px";
       document.getElementById("btnAddConcesion").style = "display:none;";
       document.getElementById("btnSalvarConcesion").style = "display:none;";
       break;
@@ -6213,14 +6272,14 @@ window.addEventListener("scroll", () => {
 });
 
 function adjustLayout() {
-  let divVista1 = document.getElementById("div-vista-1");
-  let divVista2 = document.getElementById("div-vista-2");
+  // let divVista1 = document.getElementById("div-vista-1");
+  // let divVista2 = document.getElementById("div-vista-2");
 
-  if (window.getComputedStyle(divVista1).display === "none") {
-    divVista2.classList.add("full-width"); // Center div-vista-2
-  } else {
-    divVista2.classList.remove("full-width"); // Restore normal width
-  }
+  // if (window.getComputedStyle(divVista1).display === "none") {
+  //   divVista2.classList.add("full-width"); // Center div-vista-2
+  // } else {
+  //   divVista2.classList.remove("full-width"); // Restore normal width
+  // }
 }
 
 // Run on page load & resize
