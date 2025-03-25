@@ -47,33 +47,51 @@ function reLoadScreen() {
   window.location.href = window.location.origin + window.location.pathname;
 }
 
-function loading(isLoading,currentstep) {
+function showConcesionTramites(noOcultar = false) {
+  var ct = document.getElementById("sidebar");
+  if (document.getElementById("concesion_vin").value != "") {
+    if (ct) {
+      if (ct.style.display !== "none") {
+        if (noOcultar === false) {
+          ct.style = "display: none;";
+          document.getElementById("contenido").classList.remove("col-7");
+          document.getElementById("contenido").classList.add("col-10");
+        }
+      } else {
+        ct.style = "display: block;";
+        document.getElementById("contenido").classList.remove("col-10");
+        document.getElementById("contenido").classList.add("col-7");
+      }
+    }
+  }
+}
+function loading(isLoading, currentstep) {
   console.log('isLoading => ' + isLoading);
   if (isLoading) {
     console.log('isLoading True => ' + isLoading);
-      //*****************************************************************************************/
-      //* INICIO: Oculta la información del stepper content y presenta el gif de procesando    */
-      //*****************************************************************************************/
-      document.getElementById("id_stepper_gif").style = "display:flex";
-      document.getElementById("id_img_stepper_gif").style = "display:flex";
-      document.getElementById("id_stepper_content").style = "display:none";
-      if (currentstep == 2) {
-        document.getElementById("concesion_tramites").style = "display:none;width:450px";
-      } 
-      //*********************************************************************************************/
-      //* FINAL: Oculta la información del stepper content y presenta el gif de procesando          */
-      //*********************************************************************************************/
+    //*****************************************************************************************/
+    //* INICIO: Oculta la información del stepper content y presenta el gif de procesando    */
+    //*****************************************************************************************/
+    document.getElementById("id_stepper_gif").style = "display:flex";
+    document.getElementById("id_img_stepper_gif").style = "display:flex";
+    document.getElementById("id_stepper_content").style = "display:none";
+    if (currentstep == 2) {
+      showConcesionTramites(true);
+    }
+    //*********************************************************************************************/
+    //* FINAL: Oculta la información del stepper content y presenta el gif de procesando          */
+    //*********************************************************************************************/
   } else {
-      console.log('isLoading False => ' + isLoading);
-      //*********************************************************************************************/
-      //* INICIO: Despliega la información del stepper content y oculta el gif de procesando        */
-      //*********************************************************************************************/
-      document.getElementById("id_stepper_gif").style = "display:none";
-      document.getElementById("id_img_stepper_gif").style = "display:none";
-      document.getElementById("id_stepper_content").style = "display:block";
-      //*********************************************************************************************/
-      //* FINAL: Despliega la información del stepper content y oculta el gif de procesando        */
-      //*********************************************************************************************/
+    console.log('isLoading False => ' + isLoading);
+    //*********************************************************************************************/
+    //* INICIO: Despliega la información del stepper content y oculta el gif de procesando        */
+    //*********************************************************************************************/
+    document.getElementById("id_stepper_gif").style = "display:none";
+    document.getElementById("id_img_stepper_gif").style = "display:none";
+    document.getElementById("id_stepper_content").style = "display:block";
+    //*********************************************************************************************/
+    //* FINAL: Despliega la información del stepper content y oculta el gif de procesando        */
+    //*********************************************************************************************/
   }
 }
 
@@ -217,12 +235,16 @@ function removeAttribute(Element, Attribute) {
 //**********************************************************************************************************/
 
 function fShowTramites() {
-  var ct = document.getElementById("concesion_tramites");
-  if (ct){
+  var ct = document.getElementById("sidebar");
+  if (ct) {
     if (ct.style.display !== "none") {
-      ct.style = "display: none; width: 600px;";
+      ct.style = "display: none;";
+      document.getElementById("contenido").classList.remove("col-7");
+      document.getElementById("contenido").classList.add("col-10");
     } else {
-      ct.style = "display: flex; width: 600px;";
+      ct.style = "display: block;";
+      document.getElementById("contenido").classList.remove("col-10");
+      document.getElementById("contenido").classList.add("col-7");
     }
   }
 }
@@ -909,20 +931,30 @@ async function fEliminarTramite(
   }
 }
 
+
 btnCambiarUnidad.addEventListener("click", function (event) {
-  if (
-    event.target.innerHTML == "<strong>ENTRA</strong>" ||
-    event.target.innerHTML == "ENTRA"
-  ) {
-    event.target.innerHTML = "<strong>SALE</strong>";
-    document.getElementById("idVistaSTPC1").style = "display:fixed;";
-    document.getElementById("idVistaSTPC2").style = "display:none;";
-  } else {
-    event.target.innerHTML = "<strong>ENTRA</strong>";
-    document.getElementById("idVistaSTPC2").style = "display:fixed;";
-    document.getElementById("idVistaSTPC1").style = "display:none;";
+  const btn = event.target.closest("#btnCambiarUnidad");
+  console.log(event.target.id,'event.target.id');
+  if (btn) {
+    const texto = btn.textContent.trim();
+
+    if (texto === "ENTRA") {
+      btn.innerHTML = '<i id="idIconBtnCambiarUnidad" class="fas fa-truck-moving fa-2x"></i>  <strong>SALE</strong>';
+      btn.classList.value = "btn btn-primary btn-sm scroll-btn";
+      document.getElementById("idVistaSTPC1").style.display = "block";
+      document.getElementById("idVistaSTPC2").style.display = "none";
+    } else {
+      btn.innerHTML = '<i id="idIconBtnCambiarUnidad" class="fas fa-truck-moving fa-2x"></i>  <strong>ENTRA</strong>';
+      btn.classList.value = "btn btn-success btn-sm scroll-btn";
+      document.getElementById("idVistaSTPC2").style.display = "block";
+      document.getElementById("idVistaSTPC1").style.display = "none";
+    }
+
+    event.stopPropagation();
   }
 });
+
+
 
 //**************************************************************************************/
 //* Pocicionando el cursos en el primer input de la pantalla id=colapoderado
@@ -1009,7 +1041,7 @@ function f_DataOmision() {
   //*****************************************************************************************/
   //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
-  loading(true,currentstep);
+  loading(true, currentstep);
   //*****************************************************************************************/
   //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
@@ -1051,6 +1083,7 @@ function f_DataOmision() {
   fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (datos) {
+      console.log(datos);
       if (
         document
           .getElementById("Ciudad")
@@ -1059,8 +1092,11 @@ function f_DataOmision() {
       ) {
         document.getElementById("cargadocs").style = "display:flex";
       }
+      console.log(100);
       if (typeof datos[0] != "undefined") {
+
         if (typeof datos[2] != "undefined") {
+
           if (datos[2].length > 0) {
             fLlenarSelect("Departamentos", datos[2], -1, false, {
               text: "SELECCIONE UN DEPARTAMENTO",
@@ -1076,7 +1112,6 @@ function f_DataOmision() {
             });
           }
         }
-
         if (
           typeof datos[3] != "undefined" &&
           typeof datos[3][0] != "undefined"
@@ -1095,6 +1130,32 @@ function f_DataOmision() {
           document.getElementById("emailapoderado").value =
             datos[3][0]["Email_Apoderado_Legal"];
           document.getElementById("ID_Apoderado").value = datos[3][0]["ID"];
+          if (datos[4].length > 0) {
+            fLlenarSelect("Departamentos", datos[11], datos[4][0]["ID_Departamento"], false, {
+              text: "SELECCIONE UN DEPARTAMENTO",
+              value: "-1",
+            });
+            console.log(103);
+            fLlenarSelect("Municipios", datos[10], datos[4][0]["ID_Municipio"], false, {
+              text: "SELECCIONE UN MUNICIPIO",
+              value: "-1",
+            });
+            console.log(104);
+            fLlenarSelect("Aldeas", datos[9], datos[4][0]["ID_Aldea"], false, {
+              text: "SELECCIONE UNA ALDEA",
+              value: "-1",
+            });
+          }
+          //*******************************************************************************************************************/
+          //* Si el elemento 12 existe quiero decir que ya esta convertido a Expediente la FLS
+          //*******************************************************************************************************************/
+          if (datos?.[12]) {
+            document.getElementById("ID_Expediente").value = datos[12];
+            document.getElementById("ID_Solicitud").value = datos[12];
+          } else {
+            document.getElementById("ID_Expediente").value = '';
+            document.getElementById("ID_Solicitud").value = '';
+          }
           fLlenarSelect(
             "entregadocs",
             datos[1],
@@ -1105,8 +1166,7 @@ function f_DataOmision() {
               value: "-1",
             }
           );
-          document.getElementById("tipopresentacion").value =
-            datos[4][0]["Presentacion_Documentos"];
+          document.getElementById("tipopresentacion").value = datos[4][0]["Presentacion_Documentos"];
           //* Moviendo campos de base de datos a datos de pantalla Solicitante
           if (typeof datos[4] != "undefined") {
             document.getElementById("rtnsoli").value =
@@ -1129,22 +1189,8 @@ function f_DataOmision() {
             document.getElementById("ID_Solicitante").value = datos[4][0]["ID"];
             document.getElementById("ID_Estado_RAM").value =
               datos[4][0]["Estado_Formulario"];
-
-            var event = new Event("change", {
-              bubbles: true,
-              cancelable: true,
-            });
-            document.getElementById("Departamentos").dispatchEvent(event);
-            setTimeout(() => {
-              document.getElementById("Municipios").value =
-                datos[4][0]["ID_Municipio"];
-              document.getElementById("Municipios").dispatchEvent(event);
-            }, 2000);
-            setTimeout(() => {
-              //document.getElementById("Municipios").dispatchEvent(event);
-              document.getElementById("Aldeas").value = datos[4][0]["ID_Aldea"];
-            }, 4000);
           }
+          console.log(108);
           //***************************************************************************/
           //* Armando Objeto de Concesiones Salvadas en Preforma
           //***************************************************************************/
@@ -1192,7 +1238,7 @@ function f_DataOmision() {
       //*****************************************************************************************/
       //* INICIO: Despliega la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      loading(false,currentstep);
+      loading(false, currentstep);
       if (concesionNumber.length < 1) {
         document.getElementById("input-prefetch").style.display = "none";
         document.getElementById("toggle-icon").style.display = "none";
@@ -1212,7 +1258,7 @@ function f_DataOmision() {
       //*****************************************************************************************/
       //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      loading(false,currentstep);
+      loading(false, currentstep);
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -1229,7 +1275,7 @@ function fCerrarProcesoEnDB() {
   //*****************************************************************************************/
   //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
-  loading(true,currentstep);
+  loading(true, currentstep);
   //*****************************************************************************************/
   //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
@@ -1263,7 +1309,7 @@ function fCerrarProcesoEnDB() {
   fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (Datos) {
-      loading(false,currentstep);      
+      loading(false, currentstep);
       if (
         typeof Datos.ERROR != "undefined" ||
         typeof Datos.error != "undefined"
@@ -1337,13 +1383,13 @@ function fCerrarProcesoEnDB() {
           "</a>";
         var html = linkcomprobante + "<br/>" + linkaviso;
         fSweetAlertEventNormal(title, msg, "info", html, 'FINALIZAR', reLoadScreen);
-      } 
+      }
     })
     .catch((error) => {
       //*****************************************************************************************/
       //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      loading(false,currentstep);
+      loading(false, currentstep);
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -1396,25 +1442,6 @@ var stepperFormEl = document.querySelector("#stepperForm");
 stepperForm = new Stepper(stepperFormEl, {
   linear: true,
   animation: true,
-});
-
-var ct = document.getElementById("concesion_tramites");
-ct.addEventListener("mouseover", function (event) {
-  if (event.target === event.currentTarget) {
-    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseover antes');
-    event.stopPropagation();
-    event.target.style.cssText += "; width: 600px";
-    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseover despues');
-  }
-});
-
-ct.addEventListener("mouseleave", function (event) {
-  if (event.target === event.currentTarget) {
-    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseleave antes');
-    event.stopPropagation();
-    event.target.style.cssText += "; width: 200px";
-    console.log(event.target.style.cssText,'console.log(event.target.style.cssText); mouseleaver despues');
-  }
 });
 
 var btnNextList = [].slice.call(document.querySelectorAll(".btn-next-form"));
@@ -1668,9 +1695,7 @@ function fLimpiarPantalla() {
           }
         });
       }
-
-      document.getElementById("concesion_tramites").style = "display:none;width:600px";
-
+      showConcesionTramites();
     case 4:
       break;
     case 5:
@@ -2029,6 +2054,7 @@ function f_FetchCallSolicitante(idSolicitante, event, idinput) {
 }
 
 function f_RenderConcesion(datos) {
+
   var concesionlabel = document.getElementById("concesionlabel");
   if (concesionlabel != null) {
     document.getElementById("concesionlabel").innerHTML =
@@ -2066,11 +2092,12 @@ function f_RenderConcesion(datos) {
     document.getElementById("Permiso_Explotacion_Encriptado").value = "";
   }
 
+
+
   document.getElementById("concesion_tramites").innerHTML =
     datos[1][0]["Tramites"];
 
-  inicialitarTomSelect();    
-
+  inicialitarTomSelect();
   setaddEventListener();
 
   document.getElementById("concesion_concesion").innerHTML =
@@ -2301,6 +2328,8 @@ function f_RenderConcesion(datos) {
   // document.getElementById("btnconsultas").style = "display:inline;";
   // document.getElementById("btnperexp").style = "display:inline;";
   document.getElementById("concesion_vin").focus();
+  showConcesionTramites(true);
+  document.getElementById("rightDiv45").style.display = "flex";
   //***********************************************************************************************************************************/
   //* Cargando Información en la Pantalla 2 de Vehiculo Entra (Por si Hay cambio de Unidad)
   //***********************************************************************************************************************************/
@@ -2413,7 +2442,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
   //*****************************************************************************************/
   //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
-  loading(true,currentstep);
+  loading(true, currentstep);
   //*****************************************************************************************/
   //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
@@ -2426,13 +2455,13 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
   //   headers: {
   //     'Content-Type': 'application/json',
   //   },
-  // };
+// };
   let fd = new FormData(document.forms.form1);
   //Adjuntando el action al FormData
   fd.append("action", "get-concesion");
   //Adjuntando el idApoderado al FormData
   fd.append("RTN_Concesionario", document.getElementById("rtnsoli").value);
-  fd.append("RAM", document.getElementById("RAM").value);
+  sfd.append("RAM", document.getElementById("RAM").value);
   fd.append("Concesion", idConcesion);
   // Fetch options
   const options = {
@@ -2495,8 +2524,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                   "none";
                 document.getElementById("btnSalvarConcesion").style =
                   "display:fixed;";
-                document.getElementById("concesion_tramites").style =  "display:fixed; width:600px;";
-                //document.getElementById("div-vista-1").style = "display:fixed;";
+
                 document.getElementById("concesion_tramites").value = "";
                 f_RenderConcesion(datos);
                 seRecuperoVehiculoDesdeIP = 0;
@@ -2524,13 +2552,13 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 modalidadDeEntrada = "I";
                 var btn = document.getElementById("btnModalidad");
                 if (btn) {
-                  btn.style.display = "flex"; 
+                  btn.style.display = "flex";
                   btn.setAttribute("data-bs-original-title", "La modalidad de entrada de datos: INSERTANDO");
-                  btn.innerHTML = '<i class="fas fa-plus-circle fa-2x"></i>';
+                  btn.innerHTML = '<i class="fas fa-plus-circle fa-2x gobierno1"></i>';
                   document.getElementById("btnModalidad1").setAttribute("data-bs-original-title", "La modalidad de entrada de datos: INSERTANDO");
-                  document.getElementById("btnModalidad1").innerHTML = '<i class="fas fa-plus-circle fa-2x"></i>';
-                  document.getElementById("btnModalidad1").style.display = "flex"; 
-                }                
+                  document.getElementById("btnModalidad1").innerHTML = '<i class="fas fa-plus-circle fa-2x gobierno1"></i>';
+                  document.getElementById("btnModalidad1").style.display = "flex";
+                }
                 //*********************************************************************************/
                 //* Pocisionandose en la parte superior de la pantalla                            */
                 //*********************************************************************************/
@@ -2650,7 +2678,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
       //*****************************************************************************************/
       //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      loading(false,currentstep);
+      loading(false, currentstep);
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -2659,7 +2687,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
       //*****************************************************************************************/
       //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      loading(false,currentstep);
+      loading(false, currentstep);
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -2688,7 +2716,7 @@ function fEditarConcesion(idConcesion) {
   //*****************************************************************************************/
   //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
-  loading(true,currentstep);
+  loading(true, currentstep);
   //*****************************************************************************************/
   //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
   //*****************************************************************************************/
@@ -2740,8 +2768,6 @@ function fEditarConcesion(idConcesion) {
               //***********************************************************************************/
               document.getElementById("btnSalvarConcesion").style =
                 "display:fixed;";
-              document.getElementById("concesion_tramites").style = "display:fixed;width:600px;";
-              //document.getElementById("div-vista-1").style = "display:fixed;";
               document.getElementById("concesion_tramites").value = "";
               f_RenderConcesionPreforma(datos);
               //**************************************************************************************************************************/
@@ -2768,14 +2794,14 @@ function fEditarConcesion(idConcesion) {
               modalidadDeEntrada = "U";
               var btn = document.getElementById("btnModalidad");
               if (btn) {
-                btn.style.display = "flex"; 
+                btn.style.display = "flex";
                 btn.setAttribute("data-bs-original-title", "La modalidad de entrada de datos: EDITANDO");
-                btn.innerHTML = '<i class="fas fa-edit fa-2x"></i>';
+                btn.innerHTML = '<i class="fas fa-edit fa-2x gobierno1"></i>';
                 document.getElementById("btnModalidad1").setAttribute("data-bs-original-title", "La modalidad de entrada de datos: EDITANDO");
-                document.getElementById("btnModalidad1").innerHTML = '<i class="fas fa-edit fa-2x"></i>';
-                document.getElementById("btnModalidad1").style.display = "flex"; 
+                document.getElementById("btnModalidad1").innerHTML = '<i class="fas fa-edit fa-2x gobierno1"></i>';
+                document.getElementById("btnModalidad1").style.display = "flex";
 
-              }                
+              }
               //**************************************************************************************************************************/
               //* Final: Modalidad de Entrada U = UPDATE
               //**************************************************************************************************************************/
@@ -2863,7 +2889,7 @@ function fEditarConcesion(idConcesion) {
       //*****************************************************************************************/
       //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      loading(false,currentstep);
+      loading(false, currentstep);
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -2872,7 +2898,7 @@ function fEditarConcesion(idConcesion) {
       //*****************************************************************************************/
       //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      loading(false,currentstep);
+      loading(false, currentstep);
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -2892,6 +2918,12 @@ function fEditarConcesion(idConcesion) {
 //** Inicio Function Carga Los Datos de la Unidad1 y Presenta la Pantalla con dicha información
 //*********************************************************************************************************************/
 function f_RenderConcesionPreforma(datos) {
+
+  setTimeout(() => {
+    const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+    const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
+  }, 1000);
+
   //***********************************************************************************************************************************/
   //* Inicio: Se ubica en la pantalla 2 de Concesiones en el caso de estar en otra pantalla
   //***********************************************************************************************************************************/
@@ -3250,6 +3282,8 @@ function f_RenderConcesionPreforma(datos) {
   document.getElementById("idVistaSTPC2").style = "display:none;";
   document.getElementById("btnCambiarUnidad").style.display = "none";
   document.getElementById("idVistaSTPC1").style = "display:fixed;";
+  showConcesionTramites(true);
+  document.getElementById("rightDiv45").style.display = "flex";
   esCambioDeVehiculo = false;
   seRecuperoVehiculoDesdeIP = 0;
   if (
@@ -3385,8 +3419,7 @@ function f_RenderConcesionTramitesPreforma(datos) {
   //***********************************************************************************************************************************/
   document.getElementById("idVistaSTPC2").style = "display:fixed;";
   document.getElementById("idVistaSTPC1").style = "display:none;";
-  document.getElementById("btnCambiarUnidad").style =
-    "display:flex; position: absolute; top: 195px; right: 25px; padding: 10px;";
+  document.getElementById("btnCambiarUnidad").style = "display:flex; position: absolute; top: 195px; right: 25px; padding: 10px;";
   esCambioDeVehiculo = true;
   //***********************************************************************************************************************************/
   //* Final: Desplegando información de unidad que entra y ocultando la unidad que sale
@@ -3690,6 +3723,7 @@ function setTramites() {
 //* Inicio: Creando objeto de concesion desde Datos de Preformas
 //*********************************************************************************************************/
 function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
+  console.log(121);
   var index = 0;
   var Concesion = "";
   var Concesion_Encriptada;
@@ -3706,6 +3740,7 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
   //* Inicio: Recorriendo arreglo de concesiones y tramites
   //*********************************************************************************************************/
   Tramites.forEach((row) => {
+    console.log(1);
     //*********************************************************************************************************/
     //* La primera vez que entra llena la variable Concesion
     //*********************************************************************************************************/
@@ -3722,7 +3757,7 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
         Permiso_Explotacion_Encriptado = "";
       }
     }
-
+    console.log(2);
     if (Concesion == row["N_Certificado"]) {
       esCarga = Boolean(row["esCarga"]);
       esCertificado = Boolean(row["esCertificado"]);
@@ -3751,7 +3786,7 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
             row["Vencimientos"]["Nueva_Fecha_Expiracion"];
         }
       }
-
+      console.log(3);
       ID_Formulario_Solicitud = row["ID_Formulario_Solicitud"];
       TramitesPreforma.push({
         ID: row["ID"],
@@ -3771,6 +3806,7 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
         ID_Modalidad: row["ID_Modalidad"],
         ID_Clase_Servico: row["ID_Clase_Servicio"],
       });
+      console.log(4);
       //*************************************************************/
       //* Si trae Unidad 1
       //*************************************************************/
@@ -3794,6 +3830,7 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
           Unidad1: Unidad1,
           Tramites: TramitesPreforma,
         };
+        console.log(5);
         //***********************************************************************/
         //* Agregando concesion pura */
         //***********************************************************************/
@@ -3939,7 +3976,6 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
         }
         //***********************************************************************/
       }
-
       if (row["N_Permiso_Especial"] == "") {
         Concesion = row["N_Certificado"];
         Concesion_Encriptada = row["CertificadoEncriptado"];
@@ -3950,7 +3986,6 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
         Concesion_Encriptada = row["PermisoEspecialEncriptado"];
         Permiso_Explotacion = "";
       }
-
       //**********************************************************************************************************************/
       //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
       //**********************************************************************************************************************/
@@ -3985,7 +4020,6 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
             row["Vencimientos"]["Nueva_Fecha_Expiracion"];
         }
       }
-
       ID_Formulario_Solicitud = row["ID_Formulario_Solicitud"];
       TramitesPreforma = [];
       TramitesPreforma.push({
@@ -4582,7 +4616,7 @@ function salvarConcesion() {
         if (btn) {
           btn.style.display = "none";
           btn.innerHTML = '';
-        }                
+        }
 
         return false;
       } // final del If de si Hay error
@@ -4696,19 +4730,10 @@ btnSalvarConcesion.addEventListener("click", function (event) {
   } else {
     if (currentstep == 3) {
       salvarRequicitos();
-      // response.error = salvarRequicitos();
-      // console.log("btnAddConcesion currentstep == 3 response.error: " + response.error);
     }
   }
 });
 
-btnAddConcesion.addEventListener("click", function (event) {
-  showModalFromShown = true;
-  if (currentstep != 2) {
-    stepperForm.to(3);
-  }
-  setTimeout(showModalConcesiones, 100);
-});
 
 //Cuando presente el nuevo panel
 stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
@@ -4719,44 +4744,44 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
 
   console.log("currentstep on shown: " + currentstep);
 
+  document.getElementById("rightDiv45").style.display = "none";
+
   if (typeof isDirty[currentstep] != "undefined") {
     isDirty[currentstep] == false;
   }
 
   switch (currentstep) {
     case 0:
-      if (
-        isRecordGetted[2] == "" &&
-        document.getElementById("btnAddConcesion").style.display == "flex"
-      ) {
-        document.getElementById("btnAddConcesion").style = "display:none;";
+      showConcesionTramites();
+      if (document.getElementById("RAM").value != '') {
+        document.getElementById("btnSalvarConcesion").style = "display:fixed;";
       }
-      document.getElementById("concesion_tramites").style = "display:none;width:600px";
       document.getElementById("colapoderado").focus();
       break;
     case 1:
-      document.getElementById("concesion_tramites").style = "display:none;width:600px";
+      showConcesionTramites();
+      if (document.getElementById("RAM").value != '') {
+        document.getElementById("btnSalvarConcesion").style = "display:fixed;";
+      }
       document.getElementById("rtnsoli").focus();
       break;
     case 2:
+      console.log(document.getElementById("rightDiv45").style.display, 'display');
       if (document.getElementById("concesion_vin").value != "") {
-        document.getElementById("concesion_tramites").style = "display:flex;width:600px";
+        document.getElementById("rightDiv45").style.display = "flex";
+        document.getElementById("btnSalvarConcesion").style = "display:fixed;";
+        showConcesionTramites(true);
       }
       document.getElementById("input-prefetch").style.display = "block";
       document.getElementById("toggle-icon").style.display = "block";
       if (concesionNumber.length > 0) {
         document.getElementById("rightDiv").style.display = "flex";
       }
-
       if (fVieneFuncionEditarConcesion == false) {
         document.getElementById("btnSalvarConcesion").style.display = "none";
       } else {
         fVieneFuncionEditarConcesion = false;
       }
-
-      document.getElementById("btnAddConcesion").innerHTML =
-        '<i class="fa-solid fa-magnifying-glass"></i>&nbsp;&nbsp;BUSCAR';
-      document.getElementById("btnAddConcesion").style = "display:flex;";
       if (showModalFromShown == true) {
         showModalFromShown = false;
         //modalConcesion").modal("show");
@@ -4767,17 +4792,10 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       document.getElementById("concesion").value = "";
       break;
     case 3:
-      document.getElementById("concesion_tramites").style = "display:none;width:600px";
-      document.getElementById("btnAddConcesion").style = "display:none;";
-      if (modalidadDeEntrada == "I") {
-        document.getElementById("btnSalvarConcesion").style = "display:fixed;";
-      } else {
-        document.getElementById("btnSalvarConcesion").style = "display:none;";
-      }
+      showConcesionTramites();
       break;
     case 4:
-      document.getElementById("concesion_tramites").style = "display:none;width:600px";
-      document.getElementById("btnAddConcesion").style = "display:none;";
+      showConcesionTramites();
       document.getElementById("btnSalvarConcesion").style = "display:none;";
       break;
   }
@@ -5013,10 +5031,6 @@ testcontrols.forEach(function (input) {
     } else {
       paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
     }
-  });
-
-  idVista.addEventListener("ondblclick", function (event) {
-    alert("hola");
   });
 
   // Handle the keydown event to prevent Tab key from moving focus
@@ -6260,28 +6274,15 @@ var scrollDiv = document.querySelector(".scroll-div");
 var initialOffset = 185; // Offset inicial de 170px desde el top
 var minOffset = 80; // Mínimo offset cuando se desplaza más de 170px
 
-window.addEventListener("scroll", () => {
-  if (currentstep == 2) {
-    // Obtén la posición de desplazamiento vertical actual
-    var scrollPosition = window.scrollY;
-    // Calcula la nueva posición vertical del div
-    var newYPosition = Math.max(initialOffset - scrollPosition, minOffset);
-    // Actualiza la posición del div
-    scrollDiv.style.top = `${newYPosition}px`;
-  }
-});
-
-function adjustLayout() {
-  // let divVista1 = document.getElementById("div-vista-1");
-  // let divVista2 = document.getElementById("div-vista-2");
-
-  // if (window.getComputedStyle(divVista1).display === "none") {
-  //   divVista2.classList.add("full-width"); // Center div-vista-2
-  // } else {
-  //   divVista2.classList.remove("full-width"); // Restore normal width
-  // }
+if (scrollDiv) {
+  window.addEventListener("scroll", () => {
+    if (currentstep == 2) {
+      // Obtén la posición de desplazamiento vertical actual
+      var scrollPosition = window.scrollY;
+      // Calcula la nueva posición vertical del div
+      var newYPosition = Math.max(initialOffset - scrollPosition, minOffset);
+      // Actualiza la posición del div
+      scrollDiv.style.top = `${newYPosition}px`;
+    }
+  });
 }
-
-// Run on page load & resize
-window.onload = adjustLayout;
-window.onresize = adjustLayout;

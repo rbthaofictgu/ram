@@ -53,6 +53,8 @@ function fAutoComplete() {
 
 
 }
+
+
 //****************************************************************************************/
 //* FINAL:Ejecuta AutoComplet sobre concesionForAutoComplete para buscar Concesiones
 //****************************************************************************************/
@@ -160,3 +162,13 @@ inputPrefetch.addEventListener("keydown", function (event) {
 inputPrefetch.addEventListener("focus", function () {
    inputPrefetch.select(); // Selecciona el texto dentro del input cuando se hace focus
 });
+
+
+document
+  .getElementById('exampleDataList')
+  .addEventListener('change', function (event) {
+    console.log('Valor cambiado:', this.value);
+    verificar_existencia_dato(this.value, event);
+    console.log('Valor cambiado:', event.target.value);
+    verificar_existencia_dato(event.target.value, event);
+  });

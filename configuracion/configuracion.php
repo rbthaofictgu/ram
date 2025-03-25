@@ -42,8 +42,8 @@ if(isset($_SESSION["usuario"])){
 }
 //$appcfg_icono_de_importante = '<i class="fas fa-exclamation-triangle gobierno2"></i>  ';
 //$appcfg_icono_de_importante = '<i class="fas fa-star gobierno2"></i>  ';
-$appcfg_icono_de_importante = '<i class="fas fa-exclamation-circle gobierno2"></i>  ';
-$appcfg_icono_de_importante = '<i class="far fa-star gobierno2"></i>  ';
+$appcfg_icono_de_importante = '<i class="fas fa-exclamation-circle gobierno1"></i>  ';
+//$appcfg_icono_de_importante = '<i class="far fa-star gobierno2"></i>  ';
 //$appcfg_icono_de_importante = '<i class="fas fa-exclamation gobierno2"></i>  ';
 //************************************************************************************/
 //* Ambiente (Dev=Desarrollo PROD=Producción)
@@ -101,7 +101,7 @@ $logo='';
 //****************************/
 //* RAM-ROTULO CLASE
 //****************************/	
-$appcfg_clase = 'primary';
+$appcfg_clase = 'badge text-bg-primary';
 //!*********************MENU DINAMICO*******************************************
 $cfgapp_ruta_completa_foto_usuario=$appcfg_Dominio.'assets/images/check.png'; 
 $appcfg_width_logo = "50px";

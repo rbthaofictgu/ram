@@ -379,7 +379,7 @@ require_once("../qr/qrlib.php");
 						UPDATE SET 
 							target.ID_Estado = source.ID_Estado,
 							target.Sistema_Usuario = source.Sistema_Usuario,
-							target.Sistema_Fecha = source.Sistema_Fecha
+							target.Sistema_Fecha = SYSDATETIME()
 					WHEN NOT MATCHED THEN
 						INSERT ([ID_Solicitante], [ID_Representante_Legal], [ID_Estado], [Sistema_Usuario], [Sistema_Fecha])
 						VALUES (source.ID_Solicitante, source.ID_Representante_Legal, source.ID_Estado, source.Sistema_Usuario, source.Sistema_Fecha);";
@@ -820,8 +820,8 @@ require_once("../qr/qrlib.php");
 																$respuesta['user_name'] =  $_SESSION["user_name"];
 																$respuesta['ID_Usuario'] = $_SESSION["ID_Usuario"];
 																echo json_encode($respuesta);
-																$this->db->rollBack();
-																//$this->db->commit();
+																//$this->db->rollBack();
+																$this->db->commit();
 															} else {
 																$this->db->rollBack();
 																echo json_encode(array("error" => 7012, "errorhead" => "SALVANDO MOVIMIENTO INTERNO", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
@@ -1011,18 +1011,85 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
-	protected function getSolicitanteRAM()
+	protected function getApoderadoLegalEXP()
 	{
-		$q = "SELECT es.DESC_Estado,sol.*,ald.ID_Municipio,mn.ID_Departamento 
-		FROM [IHTT_Preforma].[dbo].[TB_Solicitante] sol, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,[IHTT_Preforma].[dbo].[TB_Estados] es,
-		[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu
-		where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and sol.ID_Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio and
-		(sol.Estado_Formulario = es.ID_Estado or sol.Estado_Formulario = es.DESC_Estado) and eu.usuario = sol.Usuario_Creacion and
-		sol.Estado_Formulario = eu.ID_Estado";
+		$q = "SELECT 
+				APDL.ID_ColegiacionAPL AS ID_Colegiacion,
+				APDL.Nombre_Apoderado_Legal,
+				APDL.Identidad,
+				APDL.Email as Email_Apoderado_Legal,
+				APDL.Telefono as Telefono_Apoderado_Legal,
+				APDL.Direccion AS Direccion_Apoderado_Legal,
+				APDL.Observaciones,
+				APDL.SistemaUsuario,
+				APDL.SistemaFecha,
+				APDL.Genero,
+				APDL.Aldea
+				FROM [IHTT_DB].[dbo].[TB_Apoderado_Legal] APDL
+				WHERE APDL.ID_ColegiacionAPL IN (
+				SELECT ID_Colegiacion 
+				FROM [IHTT_Preforma].[dbo].[TB_Apoderado_Legal]
+				WHERE ID_Formulario_Solicitud = :ID_Formulario_Solicitud
+				)";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
 		} else {
 			echo json_encode($this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"])));
+		}
+	}
+
+	protected function getSolicitanteRAM()
+	{
+	  $q = "SELECT eu.id,eu.ID_Estado,eu.usuario,sol.Usuario_Acepta,sol.Codigo_Usuario_Acepta,sol.Usuario_Creacion,
+			es.DESC_Estado,sol.[ID],sol.[ID_Formulario_Solicitud],sol.[ID_Formulario_Solicitud_Encrypted],sol.[Nombre_Solicitante]
+			,sol.[ID_Tipo_Solicitante],sol.[RTN_Solicitante],sol.[Domicilo_Solicitante],sol.[Denominacion_Social],sol.[ID_Aldea]
+			,sol.[Telefono_Solicitante],sol.[Email_Solicitante],sol.[Numero_Escritura],sol.[RTN_Notario],sol.[Notario_Autorizante]
+			,sol.[Lugar_Constitucion],sol.[Fecha_Constitucion],sol.[Estado_Formulario],sol.[Fecha_Cancelacion],sol.[Observaciones]
+			,sol.[Usuario_Cancelacion],sol.[Aviso_Cobro],sol.[Presentacion_Documentos],sol.[Sistema_Fecha],sol.[Etapa_Preforma]
+			,sol.[Usuario_Acepta],sol.[Fecha_Aceptacion],sol.[Codigo_Usuario_Acepta],sol.[Observacion_Cancelacion],sol.[Usuario_Inadmision]
+			,sol.[Fecha_Inadmision],sol.[Observacion_Inadmision],sol.[Tipo_Solicitud],sol.[Entrega_Ubicacion],sol.[Usuario_Creacion],sol.[Codigo_Ciudad]
+			,sol.[Originado_En_Ventanilla],sol.[Es_Renovacion_Automatica],ald.ID_Municipio,mn.ID_Departamento
+				FROM [IHTT_Preforma].[dbo].[TB_Solicitante] sol, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,
+				[IHTT_Preforma].[dbo].[TB_Estados] es,[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu
+				where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and sol.ID_Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio and
+				(sol.Estado_Formulario = es.ID_Estado or sol.Estado_Formulario = es.DESC_Estado) and 
+				sol.Estado_Formulario = eu.ID_Estado and sol.Usuario_Creacion = eu.usuario and eu.estado = 1";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
+		} else {
+			echo json_encode($this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"])));
+		}
+	}
+
+	protected function getSolicitanteBasEXP()
+	{
+	  $q = "SELECT  sol.ID_Solicitante
+			FROM [IHTT_DB].[dbo].[TB_Solicitante] sol
+			WHERE soli.ID_Formulario_Solicitud = :ID_Formulario_Solicitud";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
+		} else {
+			echo json_encode($this->select($q, array(':IDSolicitante' => $_POST["RAM"])));
+		}
+	}
+	protected function getSolicitanteEXP()
+	{
+	  $q = "SELECT  sol.ID_Solicitante,sol.NombreSolicitante AS Nombre_Solicitante,	sol.NombreEmpresa AS Denominacion_Social,sol.CodigoSolicitanteTipo AS ID_Tipo_Solicitante,
+			sol.IDSolicitante, sol.RTNSolicitante AS RTN_Solicitante, sol.Direccion AS Domicilo_Solicitante, sol.Telefono AS Telefono_Solicitante,
+			sol.Email AS Email_Solicitante, sol.Observaciones, sol.Aldea AS ID_Aldea, sol.SistemaUsuario AS Usuario_Creacion, sol.SistemaFecha AS Sistema_Fecha,
+			sol.Representante_Legal, sol.Socio, sol.ID_Profesion, sol.ID_Estado_Civil, soli.Entrega_Ubicacion, soli.Presentacion_Documentos,
+			ald.ID_Municipio, mn.ID_Departamento 
+			FROM [IHTT_DB].[dbo].[TB_Solicitante] sol, [IHTT_PREFORMA].[dbo].[TB_Solicitante] soli, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,[IHTT_Preforma].[dbo].[TB_Estados] es,
+			[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu
+			WHERE soli.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and soli.[RTN_Solicitante] = sol.ID_Solicitante and
+			sol.Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio and
+			(soli.Estado_Formulario = es.ID_Estado or soli.Estado_Formulario = es.DESC_Estado) and 
+			eu.usuario = soli.Usuario_Acepta and 
+			soli.Estado_Formulario = eu.ID_Estado and eu.estado = 1";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
+		} else {
+			echo json_encode($this->select($q, array(':IDSolicitante' => $_POST["RAM"])));
 		}
 	}
 
@@ -1055,6 +1122,104 @@ require_once("../qr/qrlib.php");
 		sol.ID_Modalidad = md.ID_Modalidad and (Sol.N_Certificado = CO.N_Certificado or Sol.N_Permiso_Especial = CO.N_Certificado)
 		order by sol.N_Certificado,sol.N_Permiso_Especial";
 		$rows = $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
+		$max = count($rows);
+		for ($i=0; $i<$max; $i++) {
+			$Permiso_Explotacion_Encriptado = '';
+			while($Permiso_Explotacion_Encriptado != $rows[$i]["Permiso_Explotacion_Encriptado"]){        
+				$Permiso_Explotacion_Encriptado = $rows[$i]["Permiso_Explotacion_Encriptado"];
+				$CertificadoEncriptado = '';
+				while($CertificadoEncriptado != $rows[$i]["CertificadoEncriptado"]){        
+					$CertificadoEncriptado = $rows[$i]["CertificadoEncriptado"];
+					if ($rows[$i]["ID_CHECK"] === 'IHTTTRA-02_CLATRA-01_R_PE' || $rows[$i]["ID_CHECK"] === 'IHTTTRA-02_CLATRA-02_R_CO' || $rows[$i]["ID_CHECK"] === 'IHTTTRA-02_CLATRA-02_R_PS') {
+						$rows[$i]["Vencimientos"] = $this->procesarFechaDeVencimiento($rows[$i], $rows[$i]["ID_Clase_Servicio"])[1]; 
+					} else {
+						$rows[$i]["Vencimientos"] = false;
+					}     
+				}
+			} 
+		}
+		
+		if (!isset($_POST["echo"])) {
+			return $rows;
+		} else {
+			echo json_encode($rows);
+		}
+	}
+
+	protected function getTramitesEXP()
+	{
+		$q = "SELECT 
+				CONCAT(
+					CONCAT(
+						CONCAT(
+							CONCAT(
+								CONCAT(
+									CONCAT(Tra.ID_Tipo_Tramite, '_'), 
+								Cla.ID_Clase_Tramite), '_'), 
+							Tip.Acronimo_Tramite), '_'), 
+					Cla.Acronimo_Clase
+				) AS ID_CHECK,
+				md.ID_Clase_Servicio,
+				Tip.DESC_Tipo_Tramite,
+				Cla.DESC_Clase_Tramite,
+				exp.ID_Solicitud,
+				exp.ID_Tramite,
+				exp.OBS_Expediente AS OBS_Expediente,
+				exp.Estado_gea_tramite AS Estado_gea_tramite,
+				exp.Observacion_gea_tramite AS Observacion_gea_tramite,
+				exp.SistemaUsuario AS SistemaUsuario,
+				exp.SistemaFecha AS SistemaFecha,
+				exp.ID_Categoria_Subservicio AS ID_Categoria_Subservicio,
+				exp.CategoriaSubservicio AS CategoriaSubservicio,
+				exp.ID_Servicios AS ID_Servicios,
+				exp.ServiciosNombre AS ServiciosNombre,
+				exp.DescripcionTramite AS DescripcionTramite,
+				exp.ID_Transporte AS ID_Transporte,
+				exp.Id_Tipo_Categoria AS Id_Tipo_Categoria,
+				exp.Certificado_Operacion AS CertificadoEncriptado,
+				exp.Permiso_Explotacion AS Permiso_Explotacion_Encriptado,
+				exp.N_Permiso_Especial AS PermisoEspecialEncriptado,
+				-- Monto
+				(SELECT TOP 1 b.Monto 
+				FROM [IHTT_Webservice].[dbo].[TB_Tarifas] A
+				INNER JOIN [IHTT_Webservice].[dbo].[TB_TarifasHistorico] B ON A.CodigoTramite = B.CodigoTramite 
+				WHERE A.CodigoTramite = exp.ID_Tramite 
+				ORDER BY B.FechaFin DESC
+				) AS Monto,
+				-- Clase Servicio (asumimos que viene de md.Clase_Servicio si no está en exp)
+				md.[ID_Clase_Servicio],
+				-- Indicadores booleanos
+				CASE 
+					WHEN md.[ID_Clase_Servicio] = 'STPC' THEN 1
+					WHEN md.[ID_Clase_Servicio] IN ('STPP', 'STEP') THEN 0
+					ELSE 1
+				END AS esCarga,
+
+				CASE 
+					WHEN md.[ID_Clase_Servicio] IN ('STPC', 'STPP') THEN 1
+					WHEN md.[ID_Clase_Servicio] = 'STEP' THEN 0
+					ELSE 0
+				END AS esCertificado,
+				-- Certificado y permiso
+				exp.Certificado_Operacion AS N_Certificado,
+				NULL AS Fecha_Expiracion,  -- No proporcionada en nueva tabla
+				exp.Permiso_Explotacion AS N_Permiso_Explotacion,
+				NULL AS Fecha_Expiracion_Explotacion,
+				md.ID_Modalidad,md.DESC_Modalidad -- No proporcionada en nueva tabla
+			FROM 
+				[IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] exp
+			INNER JOIN [IHTT_DB].[dbo].[TB_Tramite] Tra ON exp.ID_Tramite = Tra.ID_Tramite
+			INNER JOIN [IHTT_DB].[dbo].[TB_Tipo_Tramite] Tip ON Tra.ID_Tipo_Tramite = Tip.ID_Tipo_Tramite
+			INNER JOIN [IHTT_DB].[dbo].[TB_Clase_Tramite] Cla ON Tra.ID_Clase_Tramite = Cla.ID_Clase_Tramite
+			LEFT OUTER JOIN [IHTT_DB].[dbo].[TB_Categoria] CAT ON Tra.ID_Categoria = cat.ID_Categoria
+			LEFT OUTER JOIN [IHTT_DB].[dbo].[TB_Modalidad] md ON cat.ID_Modalidad = md.ID_Modalidad
+			WHERE 
+				exp.ID_Solicitud = :ID_Solicitud
+			ORDER BY 
+				exp.estafijado,
+				exp.Certificado_Operacion,
+				exp.N_Permiso_Especial";
+		$rows = $this->select($q, array(':ID_Solicitud' => $_POST["RAM"]));
 		$max = count($rows);
 		for ($i=0; $i<$max; $i++) {
 			$Permiso_Explotacion_Encriptado = '';
@@ -1172,6 +1337,175 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
+	protected function getUnidadesEXP()
+	{
+		$q = "SELECT 
+				Certificado_Operacion, 
+				[Clase Servicio],
+				DESC_Tipo_Vehiculo,
+				ID_Formulario_Solicitud,
+				[ID],
+				[RTN_Propietario],
+				[Nombre_Propietario],
+				[ID_Placa],
+				Marca,
+				[Anio],
+				[Modelo],
+				[Tipo_Vehiculo],
+				Color,
+				[Motor],
+				[Chasis],
+				[Sistema_Fecha],
+				Numero_PermisoEspecial,
+				Permiso_Explotacion,
+				[VIN],
+				[Combustible],
+				[Alto],
+				[Ancho],
+				[Largo],
+				[Capacidad_Carga],
+				[Peso_Unidad],
+				[ID_Placa_Antes_Replaqueo],
+				ESTADO
+			FROM
+			(
+				-- Vehículos actuales
+				SELECT 	
+					CASE 
+						WHEN veh.[Numero_Explotacion] != '' THEN RTRIM(veh.[Numero_Certificado])
+						ELSE RTRIM(veh.[Numero_PermisoEspecial])
+					END AS Certificado_Operacion,				
+					vl.[Clase Servicio],
+					CASE 
+						WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
+							(SELECT DESC_Tipo_Vehiculo 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+						ELSE 
+							(SELECT DESC_Tipo_Vehiculo_Transporte_Pas 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
+					END AS DESC_Tipo_Vehiculo,			
+					veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
+					veh.[ID],
+					veh.[RTN_Propietario],
+					veh.[Nombre_Propietario],
+					veh.[ID_Placa],
+					CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
+					veh.[Anio],
+					veh.[Modelo],
+					veh.[Tipo_Vehiculo],
+					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
+					veh.[Motor],
+					veh.[Chasis],
+					veh.[Sistema_Fecha],
+					veh.[Numero_PermisoEspecial],
+					veh.[Numero_Explotacion] AS Permiso_Explotacion,
+					veh.[VIN],
+					veh.[Combustible],
+					veh.[Alto],
+					veh.[Ancho],
+					veh.[Largo],
+					veh.[Capacidad_Carga],
+					veh.[Peso_Unidad],
+					veh.[ID_Placa_Antes_Replaqueo],
+					'NORMAL' AS ESTADO
+				FROM 
+					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] veh
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
+				JOIN
+					[IHTT_SGCERP].[dbo].[v_Listado_General] vl ON vl.N_Certificado = 
+						(SELECT TOP 1
+							CASE 
+								WHEN soli.[Numero_Explotacion] != '' THEN RTRIM(soli.[Numero_Certificado])
+								ELSE RTRIM(soli.[Numero_PermisoEspecial])
+							END 
+						FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] soli 
+						WHERE soli.ID_Solicitud = veh.ID_Solicitud)
+
+				WHERE veh.ID_Solicitud = :ID_Solicitud1
+				UNION
+				-- Vehículos entra
+				SELECT 	
+					CASE 
+						WHEN veh.[Numero_Explotacion] != '' THEN RTRIM(veh.[Numero_Certificado])
+						ELSE RTRIM(veh.[Numero_PermisoEspecial])
+					END AS Certificado_Operacion,				
+					vl.[Clase Servicio],
+					CASE 
+						WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
+							(SELECT DESC_Tipo_Vehiculo 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+						ELSE 
+							(SELECT DESC_Tipo_Vehiculo_Transporte_Pas 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
+					END AS DESC_Tipo_Vehiculo,			
+					veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
+					veh.[ID],
+					veh.[RTN_Propietario],
+					veh.[Nombre_Propietario],
+					veh.[ID_Placa],
+					CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
+					veh.[Anio],
+					veh.[Modelo],
+					veh.[Tipo_Vehiculo],
+					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
+					veh.[Motor],
+					veh.[Chasis],
+					veh.[Sistema_Fecha],
+					veh.[Numero_PermisoEspecial],
+					veh.[Numero_Explotacion] AS Permiso_Explotacion,
+					veh.[VIN],
+					veh.[Combustible],
+					veh.[Alto],
+					veh.[Ancho],
+					veh.[Largo],
+					veh.[Capacidad_Carga],
+					veh.[Peso_Unidad],
+					veh.[ID_Placa_Antes_Replaqueo],
+					'ENTRA' AS ESTADO
+
+				FROM 
+					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] veh
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
+				JOIN
+					[IHTT_SGCERP].[dbo].[v_Listado_General] vl ON vl.N_Certificado = 
+						(SELECT TOP 1
+							CASE 
+								WHEN soli.[Numero_Explotacion] != '' THEN RTRIM(soli.[Numero_Certificado])
+								ELSE RTRIM(soli.[Numero_PermisoEspecial])
+							END 
+						FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] soli 
+						WHERE soli.ID_Solicitud = veh.ID_Solicitud)
+
+				WHERE veh.ID_Solicitud = :ID_Solicitud1
+			) AS result
+			ORDER BY 
+				ESTADO,
+				Certificado_Operacion;";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q, array(':ID_Solicitud' => $_POST["RAM"],':ID_Solicitud1' => $_POST["RAM"]), PDO::FETCH_GROUP);
+		} else {
+			echo json_encode($this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]), PDO::FETCH_GROUP));
+		}
+	}
+
 	protected function getDatosPorOmision()
 	{
 		$datos[1] = $this->getEntregaUbicacion();
@@ -1182,16 +1516,47 @@ require_once("../qr/qrlib.php");
 			//* Si es un fsl que ya estaba salvada y se va a continuar trabajando
 			//*************************************************************************************/
 			if ($_POST["RAM"] != '') {
-				$datos[3] = $this->getApoderadoLegalRAM();
-				$datos[4] = $this->getSolicitanteRAM();
-				$datos[5] = $this->getTramitesRAM();
-				$datos[6] = $this->getDocumentos();				
-				$datos[7] = $this->getUnidades();
-				$datos[8] = $this->testFileExists();
+				$SolictanteBasEXP = $this->getSolicitanteBasEXP();
+				if (!isset($SolictanteBasEXP[0])) {
+					$datos[4] = $this->getSolicitanteRAM();
+					if (isset($datos[4][0]) and $datos[4][0] != false) {
+						$datos[3] = $this->getApoderadoLegalRAM();
+						$datos[5] = $this->getTramitesRAM();
+						$datos[6] = $this->getDocumentos();				
+						$datos[7] = $this->getUnidades();
+						$datos[8] = $this->testFileExists();
+						if (isset($datos[4]) and isset($datos[4][0]) and isset($datos[4][0]) and $datos[4][0]['ID_Aldea'] != '') {
+							$datos[9] = $this->getAldeas($datos[4][0]['ID_Municipio']);
+							$datos[10] = $this->getMunicipios($datos[4][0]['ID_Departamento']);
+							$datos[11] = $this->getDepartamentos();
+						}
+					} else {
+						echo json_encode(array("error" => 90001, "errorhead" => 'RAM NO ENCONTRADA', "errormsg" => 'SI LA RAM NO PUEDO SER RECUPERADA PUEDE DEBERSE A QUE NO TIENE ACCESO AL ESTADO ACTUAL DE LA MISMA O QUE EL NUMERO DE RAM NO ES EL CORRECTO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));						
+					}
+				} else {
+					$datos[4] = $this->getSolicitanteEXP();
+					if (isset($datos[4][0]) and $datos[4][0] != false) {
+						$datos[3] = $this->getApoderadoLegalRAM();
+						$datos[5] = $this->getTramitesEXP();
+						$datos[6] = $this->getDocumentos();				
+						$datos[7] = $this->getUnidadesExp();
+						$datos[8] = $this->testFileExists();
+						if (isset($datos[4]) and isset($datos[4][0]) and isset($datos[4][0]) and $datos[4][0]['ID_Aldea'] != '') {
+							$datos[9] = $this->getAldeas($datos[4][0]['ID_Municipio']);
+							$datos[10] = $this->getMunicipios($datos[4][0]['ID_Departamento']);
+							$datos[11] = $this->getDepartamentos();
+						}
+						$datos[12] = $_POST["RAM"];
+					} else {
+						echo json_encode(array("error" => 90002, "errorhead" => 'EXPEDIENTE NO ENCONTRADA', "errormsg" => 'SI LA RAM NO PUEDO SER RECUPERADA PUEDE DEBERSE A QUE NO TIENE ACCESO AL ESTADO ACTUAL DE LA MISMA O QUE EL NUMERO DE RAM NO ES EL CORRECTO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));						
+					}
+				}
+				echo json_encode($datos);
+			} else {
+				echo json_encode(array("error" => 1001, "errorhead" => 'RAM EN BLANCO', "errormsg" => 'EL NÚMERO RAM ESTA EN BLANCO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
 			}
-			echo json_encode($datos);
 		} else {
-			echo json_encode(array("error" => 1001, "errormsg" => 'ALGO RARO SUCEDIO RECUPERANDO LOS DATOS DE UBICACIONES Y DEPARTAMENTOS, INTENTELO DE NUEVO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+			echo json_encode(array("error" => 1001, "errorhead" => 'UBICACION DE ENTREGA', "errormsg" => 'ALGO RARO SUCEDIO RECUPERANDO LOS DATOS DE UBICACIONES Y DEPARTAMENTOS, INTENTELO DE NUEVO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
 		}
 	}
 
@@ -1206,7 +1571,7 @@ require_once("../qr/qrlib.php");
 	}
 	protected function getDepartamentos()
 	{
-		$q = "SELECT ID_Departamento as value, DESC_Departamento as text FROM [IHTT_SELD].[dbo].TB_Departamento";
+		$q = "SELECT ID_Departamento as value, DESC_Departamento as text FROM [IHTT_SELD].[dbo].[TB_Departamento]";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array());
 		} else {
@@ -1216,7 +1581,7 @@ require_once("../qr/qrlib.php");
 
 	protected function getMunicipios($ID_Departamento)
 	{
-		$q = "SELECT ID_Municipio as value, DESC_Municipio as text FROM [IHTT_SELD].[dbo].TB_Municipio where ID_Departamento = :ID_Departamento";
+		$q = "SELECT ID_Municipio as value, DESC_Municipio as text, ID_Departamento  FROM [IHTT_SELD].[dbo].[TB_Municipio] where ID_Departamento = :ID_Departamento";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array(':ID_Departamento' => $ID_Departamento));
 		} else {
@@ -1226,7 +1591,7 @@ require_once("../qr/qrlib.php");
 
 	protected function getAldeas($ID_Municipio)
 	{
-		$q = "SELECT ID_Aldea as value, DESC_Aldea as text FROM [IHTT_PREFORMA].[dbo].[TB_Aldea] where ID_Municipio = :ID_Municipio";
+		$q = "SELECT ID_Aldea as value, DESC_Aldea as text, ID_Municipio FROM [IHTT_SELD].[dbo].[TB_Aldea] where ID_Municipio = :ID_Municipio";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array(':ID_Municipio' => $ID_Municipio));
 		} else {
@@ -1415,9 +1780,9 @@ require_once("../qr/qrlib.php");
 	protected function ALDEASDEPARTAMENTO($col)
 	{
 		$query = "SELECT TB_Departamento.ID_Departamento, TB_Municipio.ID_Municipio, TB_Aldea.ID_Aldea 
-		FROM [IHTT_PREFORMA].[dbo].[TB_Departamento] 
-		INNER JOIN [IHTT_PREFORMA].[dbo].[TB_Municipio] ON TB_Departamento.ID_Departamento = TB_Municipio.ID_Departamento 
-		INNER JOIN [IHTT_PREFORMA].[dbo].[TB_Aldea] ON TB_Municipio.ID_Municipio = TB_Aldea.ID_Municipio WHERE TB_Aldea.ID_Aldea = :IDCOL";
+		FROM [IHTT_SELD].[dbo].[TB_Departamento] 
+		INNER JOIN [IHTT_SELD].[dbo].[TB_Municipio] ON TB_Departamento.ID_Departamento = TB_Municipio.ID_Departamento 
+		INNER JOIN [IHTT_SELD].[dbo].[TB_Aldea] ON TB_Municipio.ID_Municipio = TB_Aldea.ID_Municipio WHERE TB_Aldea.ID_Aldea = :IDCOL";
 		$p = array(":IDCOL" => $col);
 		$data = $this->select($query, $p);
 		if (count($data) > 0) {
@@ -1546,13 +1911,24 @@ require_once("../qr/qrlib.php");
 					ORDER BY T.ID_Tipo_Tramite";
 		$bandera = 1;
 		if ($bandera == 1) {
-			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><i onClick="fShowTramites();" class="fas fa-window-close gobierno1"></i><strong>LISTADO DE TRAMITES</strong></div></div>';
+			$html = '<div class="row border border-primary d-flex justify-content-between align-items-center p-2">
+            <div class="col">
+                <strong>LISTADO DE TRÁMITES</strong>
+            </div>
+            <div class="d-flex justify-content-end">
+                <i 
+					data-bs-toggle="tooltip" 
+					data-bs-placement="top" 
+					data-bs-original-title="Cerrar tabla de tramites" 
+				onClick="fShowTramites();" class="fas fa-window-close fa-2x gobierno1"></i>
+            </div>
+         	</div>';
 			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-8"><strong>TRAMITE</strong></div><div class="col-md-3"><strong>PLACA</strong></div></div>';
 			$rows = ($this->select($q, array(':ID_Categoria' => $ID_Categoria)));
 			foreach ($rows as $row) {
 				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
 					$html = $html . '<div class="row border border-info" id="row_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '">
-					<div class="col">
+					<div class="col-1">
 					  <input data-monto="' . $row['Monto'] . '" 
 							 class="form-check-input tramiteschk" 
 							 id="' . $row['ID_CHECK'] . '" 
@@ -1560,24 +1936,37 @@ require_once("../qr/qrlib.php");
 							 name="tramites[]" 
 							 value="' . $row["ID_Tramite"] . '">
 					</div>
-					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col">' 
+					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-8">' 
+					. $row["descripcion_larga"] . 
+					'</div>
+				  </div><div class="col-md-3">'				  
 					. '<input style="display:none; text-transform: uppercase;" 
 					id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 					title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
 					pattern="^[A-Z]{3}\d{4}$" 
 					placeholder="PLACA" 
 					class="form-control form-control-sm test-controls" 
+					size="8"
 					minlength="7" 
-					maxlength="7">'
-					. $row["descripcion_larga"] . 
-					'</div>
-				  </div>';
+					maxlength="7">
+				  	</div></div>';
 				} else {
-					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div></div>';
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div><div class="col-md-3">&nbsp;</div></div>';
 				}
 			}
 		} else {
-			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
+			$html = '<div class="row border border-primary d-flex justify-content-between align-items-center p-2">
+            <div class="col">
+                <strong>LISTADO DE TRÁMITES</strong>
+            </div>
+            <div class="d-flex justify-content-end">
+				<i 
+					data-bs-toggle="tooltip" 
+					data-bs-placement="top" 
+					data-bs-original-title="Cerrar tabla de tramites" 
+				onClick="fShowTramites();" class="fas fa-window-close fa-2x gobierno1"></i>
+            </div>
+         	</div>';
 			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-8"><strong>TRAMITE</strong></div><div class="col-md-3"><strong>PLACA</strong></div><div class="col-md-1"></div><div class="col-md-3"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
 			$rows = ($this->select($q, array(':ID_Categoria' => $ID_Categoria)));
 			$process = 0;
@@ -1594,21 +1983,22 @@ require_once("../qr/qrlib.php");
 						   name="tramites[]" 
 						   value="' . $row["ID_Tramite"] . '">
 				  </div>
-				  <div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">
+				  <div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">
 					' . $row["descripcion_larga"] . '
 				  </div>
-				  <div class="col-md-2">
+				  <div class="col-md-3">
 					<input style="display:none; text-transform: uppercase;" 
 						   id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 						   title="La placa debe contener los primeros 3 dígitos alfa y los últimos 4 numéricos, máximo 7 caracteres" 
 						   pattern="^[A-Z]{3}\d{4}$" 
 						   placeholder="PLACA" 
 						   class="form-control form-control-sm test-controls" 
+						   size="8"
 						   minlength="7" 
 						   maxlength="7">
 				  </div>';
 				} else {
-					$html = $html . '<div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div>';
+					$html = $html . '<div class="col-md-1"><input data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div><div class="col-md-3">&nbsp;</div>';
 				}
 				$process++;
 				if ($process == 2) {
@@ -1694,7 +2084,19 @@ require_once("../qr/qrlib.php");
 		ORDER BY T.ID_Tipo_Tramite, TR.ID_Clase_Tramite;";
 		$bandera = 1;
 		if ($bandera == 1) {
-			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
+			$html = '<div class="row border border-primary d-flex justify-content-between align-items-center p-2">
+            <div class="col">
+                <strong>LISTADO DE TRÁMITES</strong>
+            </div>
+            <div class="d-flex justify-content-end">
+		
+                <i 
+				data-bs-toggle="tooltip" 
+				data-bs-placement="top" 
+				data-bs-original-title="Cerrar tabla de tramites" 
+				onClick="fShowTramites();" class="fas fa-window-close fa-2x gobierno1"></i>
+            </div>
+         	</div>';
 			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-9"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
 			$rows = ($this->select($q, array(':ID_Formulario_Solicitud' => $RAM, ':N_Certificado' => $idConcesion, ':N_Permiso_Especial' => $idConcesion, ':ID_Categoria' => $ID_Categoria)));
 			foreach ($rows as $row) {
@@ -1709,24 +2111,37 @@ require_once("../qr/qrlib.php");
 							 name="tramites[]" 
 							 value="' . $row["ID_Tramite"] . '">
 					</div>
-					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div>
-					<div class="col-md-2">
+					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div>
+					<div class="col-md-3">
 					  <input style="display:none; text-transform: uppercase;" 
 							 id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 							 title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
 							 pattern="^[A-Z]{3}\d{4}$" 
 							 placeholder="PLACA" 
 							 class="form-control form-control-sm test-controls" 
+							 size="8"
 							 minlength="7" 
 							 maxlength="7">
 					</div>
 				  </div>';
 				} else {
-					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input  ' . $row['Checked']  . ' data-iddb="' . $row['ID'] . '"  data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-9">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div></div>';
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input  ' . $row['Checked']  . ' data-iddb="' . $row['ID'] . '"  data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div><div class="col-md-3">&nbsp;</div></div>';
 				}
 			}
 		} else {
-			$html = '<div class="row border border-primary d-flex justify-content-center"><div class="col-md-12"><strong>LISTADO DE TRAMITES</strong></div></div>';
+			$html = '<div class="row border border-primary d-flex justify-content-between align-items-center p-2">
+            <div class="col">
+                <strong>LISTADO DE TRÁMITES</strong>
+            </div>
+            <div class="d-flex justify-content-end">
+				
+                <i id="cerrar_tramites"
+					data-bs-toggle="tooltip" 
+					data-bs-placement="top" 
+					data-bs-original-title="Cerrar tabla de tramites" 
+				onClick="fShowTramites();" class="fas fa-window-close fa-2x gobierno1"></i>
+            </div>
+         	</div>';
 			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-3"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div><div class="col-md-1"></div><div class="col-md-3"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
 			$rows = ($this->select($q, array(':ID_Categoria' => $ID_Categoria)));
 			$process = 0;
@@ -1743,21 +2158,22 @@ require_once("../qr/qrlib.php");
 						   name="tramites[]" 
 						   value="' . $row["ID_Tramite"] . '">
 				  </div>
-				  <div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">
+				  <div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">
 					' . $row["descripcion_larga"] . '
 				  </div>
-				  <div class="col-md-2">
+				  <div class="col-md-3">
 					<input style="display:none; text-transform: uppercase;" 
 						   id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 						   title="La placa debe contener los primeros 3 dígitos alfa y los últimos 4 numéricos, máximo 7 caracteres" 
 						   pattern="^[A-Z]{3}\d{4}$" 
 						   placeholder="PLACA" 
 						   class="form-control form-control-sm test-controls" 
+						   size="8"
 						   minlength="7" 
 						   maxlength="7">
 				  </div>';
 				} else {
-					$html = $html . '<div class="col-md-1"><input ' . $row['Checked']  . ' data-iddb="' . $row['ID'] .  '" data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-3">' . $row["descripcion_larga"] . '</div><div class="col-md-2">&nbsp;</div>';
+					$html = $html . '<div class="col-md-1"><input ' . $row['Checked']  . ' data-iddb="' . $row['ID'] .  '" data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div><div class="col-md-3">&nbsp;</div>';
 				}
 				$process++;
 				if ($process == 2) {
