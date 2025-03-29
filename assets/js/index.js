@@ -1,6 +1,7 @@
 //*186.2.137.13
 "use strict";
 
+var isSaving = false;
 var arrayOriginalRows = Array();
 var concesionBorradoEnMalla = 0;
 var isFromfGetInputs = false;
@@ -43,8 +44,8 @@ var fVieneFuncionEditarConcesion = false;
 var requiereCambioDePlaca = false;
 
 
-function reLoadScreen() {
-  window.location.href = window.location.origin + window.location.pathname;
+function reLoadScreen(ruta) {
+  window.location.href = ruta;
 }
 
 function showConcesionTramites(noOcultar = false) {
@@ -499,18 +500,20 @@ function fGetInputs() {
   var element = document.getElementById("test-form-" + (currentstep + 1));
   // Get all input elements inside this element
   var inputs = element.querySelectorAll(".test-controls");
+  console.log(inputs,'inputs');
   // Convert NodeList to Array for easier manipulation (optional)
   inputs = Array.from(inputs);
   // Iterando entre los inputs para despachar el evento change y validar la data de cada input
   var index = 0;
   inputs.forEach((input) => {
+    //var idIgnore = input.getAttribute('data-validar-salvar');
+    //if (input.disabled == false && idIgnore!=false) {
     if (input.disabled == false) {
       // Creando un nuevo evento 'change'
       var event = new Event("change", {
         bubbles: true,
         cancelable: true,
       });
-
       input.dispatchEvent(event);
       if (setFocus == true) {
         input.focus();
@@ -736,7 +739,7 @@ async function fEliminarTramite(
     let fd = new FormData(document.forms.form1);
     var Tramites = "";
     // Adjuntando el action al FormData
-    if (document.getElementById("ID_Expediente").value == "") {
+    if (document.getElementById("ID_Expediente").value == '') {
       fd.append("action", "delete-tramite-preforma");
     } else {
       fd.append("action", "delete-tramite-expediente");
@@ -746,7 +749,9 @@ async function fEliminarTramite(
         document.getElementById("ID_Expediente").value
       );
       // Enviar el número de Solicitud
+      console.log(document.getElementById("ID_Solicitud").value,'before document.getElementById("ID_Solicitud").value');
       fd.append("ID_Solicitud", document.getElementById("ID_Solicitud").value);
+      console.log(document.getElementById("ID_Solicitud").value,'after document.getElementById("ID_Solicitud").value');
     }
 
 
@@ -787,25 +792,21 @@ async function fEliminarTramite(
       //*INICIO: LLAANDO FUNCION DE PREBORRADO DE concesionForAutoComplete
       //*******************************************************************************************************/
       const elemt = document.getElementById("idLengTramites");
-      animateValue(
-        elemt,
-        parseInt(document.getElementById("idLengTramites").textContent),
-        parseInt(
-          parseInt(document.getElementById("idLengTramites").textContent) -
-          parseInt(1)
-        ),
-        9000,
-        "highlightGris",
-        parseInt,
-        0
-      );
-      console.log(idConcesion, 'idConcesion');
+      if (elemt) {
+        animateValue(
+          elemt,
+          parseInt(elemt.textContent),
+          parseInt(parseInt(elemt.textContent) - parseInt(1)),
+          9000,
+          "highlightGris",
+          parseInt,
+          0
+        );
+      }
       preDeleteAutoComplete(idConcesion);
       //*******************************************************************************************************/
       //*INICIO: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
       //*******************************************************************************************************/
-      console.log(idTramite, 'idTramite');
-      console.log(idCheckBox, 'idCheckBox');
       updateConcesionNumber(idTramite, idCheckBox, idConcesion);
       //*******************************************************************************************************/
       //*FINAL: LLAMANDO FUNCION QUE ACTUALIZA EL ARREGLO DE TRAMITES, ELIMINANDO EL TRAMITE BORRADO EN LA DB
@@ -844,7 +845,7 @@ async function fEliminarTramite(
       //*INICIO: ENVIO DE MENSAJE DE BORRADO DEL TRAMITE EXITOSO
       //*******************************************************************************************************/
       sendToast(
-        "TRAMITE PRE-FORMA ELIMINADO EXITOSAMENTE",
+        "TRAMITE ELIMINADO EXITOSAMENTE",
         $appcfg_milisegundos_toast,
         "",
         true,
@@ -861,27 +862,9 @@ async function fEliminarTramite(
       if (idRow != null && Monto != false) {
         const row = document.getElementById(idRow);
         if (row) {
-          // console.log(idRowConcesion, 'idRowConcesion');
-          // console.log('id_trash_idRow' + String(idRowConcesion - 1), 'id_trash_idRow+String(idRowConcesion-1)');
-          // var checkID = document.getElementById('id_trash_idRow' + String(idRowConcesion - 1));
-          // var originalrow = checkID.getAttribute('data-originalrow');
-          // row.remove();
-          // console.log(originalrow, 'before to call resencuacion');
-          // console.log(updateCollection(idConcesion), 'updateCollection(idConcesion)');
-          // console.log(updateCollection(idRowConcesion), 'idRowConcesion antes ir a funcion de resecuenciar');
-          // console.log(document.getElementById('indice_row_' + parseInt(idRowConcesion)).textContent, 'previo resecuenciacion indice_row_' + parseInt(idRowConcesion).textContent);
-
-          // function eliminar(arreglo, elemento) {
-          //   return arreglo.slice(0, elemento).concat(arreglo.slice(elemento + 1));
-          // }
-          // var tramitesNuevos = eliminar(dataAgregarFila[0], idTramiteEliminar);
-          console.log('antes de agregar fila index');
           agregar_fila(dataAgregarFila[0], dataAgregarFila[1], dataAgregarFila[2], dataAgregarFila[3], dataAgregarFila[4] = '', dataAgregarFila[5] = '');
-
-          //resencuenciarConcesionNumberTramites(updateCollection(idConcesion),originalrow,document.getElementById('indice_row_'+parseInt(idRowConcesion)).textContent);        
         } else {
           console.log("Linea # " + idRow + " No Encontrada!");
-          alert("Linea # " + idRow + " No Encontrada!");
         }
       }
       //************************************************************************************************/
@@ -923,7 +906,7 @@ async function fEliminarTramite(
     );
     fSweetAlertEventSelect(
       "",
-      "ELIMINAR TRAMITE EN PREFORMA",
+      "ELIMINAR TRAMITE",
       "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
       "warning"
     );
@@ -1050,13 +1033,14 @@ function f_DataOmision() {
   // Get the URL parameters from the current page
   const urlParams = new URLSearchParams(window.location.search);
   // Get a specific parameter by name
-  const RAM = urlParams.get("RAM"); // Número de RAM
+  var RAM = urlParams.get("RAM"); // Número de RAM
   if (RAM != null) {
     document.getElementById("RAM-ROTULO").innerHTML =
       "<strong>" + RAM + "</strong>";
     document.getElementById("RAM-ROTULO").style = "display:inline-block;";
     document.getElementById("RAM").value = RAM;
   } else {
+    RAM  = '';
     document.getElementById("RAM-ROTULO").style = "display:none;";
     document.getElementById("RAM").value = "";
   }
@@ -1092,7 +1076,6 @@ function f_DataOmision() {
       ) {
         document.getElementById("cargadocs").style = "display:flex";
       }
-      console.log(100);
       if (typeof datos[0] != "undefined") {
 
         if (typeof datos[2] != "undefined") {
@@ -1112,10 +1095,7 @@ function f_DataOmision() {
             });
           }
         }
-        if (
-          typeof datos[3] != "undefined" &&
-          typeof datos[3][0] != "undefined"
-        ) {
+        if (typeof datos[3] != "undefined" && typeof datos[3][0] != "undefined") {
           //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
           document.getElementById("nomapoderado").value =
             datos[3][0]["Nombre_Apoderado_Legal"];
@@ -1135,12 +1115,10 @@ function f_DataOmision() {
               text: "SELECCIONE UN DEPARTAMENTO",
               value: "-1",
             });
-            console.log(103);
             fLlenarSelect("Municipios", datos[10], datos[4][0]["ID_Municipio"], false, {
               text: "SELECCIONE UN MUNICIPIO",
               value: "-1",
             });
-            console.log(104);
             fLlenarSelect("Aldeas", datos[9], datos[4][0]["ID_Aldea"], false, {
               text: "SELECCIONE UNA ALDEA",
               value: "-1",
@@ -1156,6 +1134,7 @@ function f_DataOmision() {
             document.getElementById("ID_Expediente").value = '';
             document.getElementById("ID_Solicitud").value = '';
           }
+          console.log(datos[4][0]["Entrega_Ubicacion"],'Entrega_Ubicacion');
           fLlenarSelect(
             "entregadocs",
             datos[1],
@@ -1182,15 +1161,16 @@ function f_DataOmision() {
               datos[4][0]["Telefono_Solicitante"];
             document.getElementById("emailsoli").value =
               datos[4][0]["Email_Solicitante"];
-            document.getElementById("tiposolicitante").value =
-              datos[4][0]["ID_Tipo_Solicitante"];
+              console.log(datos[4][0]["DESC_Solicitante"],'DESC_Solicitante');
+              console.log(datos[4][0],'DESC_Solicitante Arreglo');
+            document.getElementById("tiposolicitante").value = datos[4][0]["DESC_Solicitante"];
+            document.getElementById("tiposolicitante").setAttribute('data-id',datos[4][0]["ID_Tipo_Solicitante"]);
             document.getElementById("Departamentos").value =
               datos[4][0]["ID_Departamento"];
             document.getElementById("ID_Solicitante").value = datos[4][0]["ID"];
             document.getElementById("ID_Estado_RAM").value =
               datos[4][0]["Estado_Formulario"];
           }
-          console.log(108);
           //***************************************************************************/
           //* Armando Objeto de Concesiones Salvadas en Preforma
           //***************************************************************************/
@@ -1208,6 +1188,10 @@ function f_DataOmision() {
           } else {
             document.getElementById("fileUploaded").style.display = "none";
           }
+          console.log(datos[15],'datos[15]');
+          if (typeof datos[15] != "undefined" && datos[15] != false) {
+            document.getElementById("idEstado").textContent = datos[15].Desc_Estado;
+          }
           //***************************************************************************/
           //* Marcar requicitos
           //***************************************************************************/
@@ -1222,11 +1206,25 @@ function f_DataOmision() {
         }
       } else {
         if (typeof datos.error != "undefined") {
-          fSweetAlertEventNormal(
-            datos.errorhead,
-            datos.error + "- " + datos.errormsg,
-            "error"
-          );
+          if (datos.error == 1003) {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg,
+              undefined,
+              undefined,
+              undefined,
+              () => reLoadScreen('src/php/referenciales/infoRam.php'),
+            );
+          } else {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg
+            );
+          }
         } else {
           fSweetAlertEventNormal(
             "INFORMACIÓN",
@@ -1249,7 +1247,7 @@ function f_DataOmision() {
         document.getElementById("rightDiv").style.display = "flex";
       }
       startCelebration();
-      inicialitarTomSelect();
+      //inicialitarTomSelect(currentstep);
       //*****************************************************************************************/
       //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -1382,7 +1380,16 @@ function fCerrarProcesoEnDB() {
           Datos.SOL2 +
           "</a>";
         var html = linkcomprobante + "<br/>" + linkaviso;
-        fSweetAlertEventNormal(title, msg, "info", html, 'FINALIZAR', reLoadScreen);
+        fSweetAlertEventNormal(
+          title,
+          msg,
+          "info",
+          html,
+          'FINALIZAR',
+          undefined,
+          undefined,
+          undefined,
+          () => reLoadScreen('index.php'));
       }
     })
     .catch((error) => {
@@ -1409,9 +1416,12 @@ function fCerrarProcesoEnDB() {
 //**************************************************************************************/
 function fCerrarProceso() {
   let text = "¿DESEA CERRAR LA RENOVACIÓN MASIVA?";
-  if (document.getElementById("ID_Expediente").value != "") {
+  if (document.getElementById("ID_Expediente").value == "") {
     let text =
-      "¿DESEA CERRAR EL EXPEDIENTE RAM Y GENERAR LOS DOCUMENTOS CORRESPONDIENTES?";
+      "¿DESEA CERRAR LA PREFORMA: '  + document.getElementById('RAM').value + 'Y GENERAR LOS DOCUMENTOS CORRESPONDIENTES?";
+  } else{
+    let text =
+      "¿DESEA CERRAR EL EXPEDIENTE: '  + document.getElementById('ID_Expediente').value + ' ACTUALIZAR CONCESIONES Y GENERAR LOS DOCUMENTOS CORRESPONDIENTES(AUTOMOTIVADO, RESOLUCIÓN)])?";
   }
   Swal.fire({
     title: "CERRADO PROCESO",
@@ -1484,13 +1494,19 @@ btnNextList.forEach(function (btn) {
       //* FINAL: Cerrar proceso de registro de conseciones y/o Expediente
       //************************************************************************/
     } else {
+      console.log(seRecuperoVehiculoDesdeIP,'seRecuperoVehiculoDesdeIP');
+      console.log(currentstep,'currentstep')
+      console.log(currentstep,'currentstep')
       if (
         currentstep != 2 ||
         (seRecuperoVehiculoDesdeIP == 0 &&
-          currentstep == 2 &&
-          document.getElementById("btnSalvarConcesion").style.display != "none")
+          currentstep == 2)
       ) {
-        fGetInputs();
+        if (document.getElementById('concesion_concesion').textContent != '') {
+          isSaving = true;
+          fGetInputs();
+          isSaving = false;
+        }
         stepperForm.next();
       } else {
         if (currentstep == 2 && seRecuperoVehiculoDesdeIP != 0) {
@@ -1758,8 +1774,10 @@ btnNextListprevious.forEach(function (btn) {
       goPrevious = false;
     } else {
       if (currentstep < 3) {
-        if (isRecordGetted[currentstep] != "") {
+        if (document.getElementById('concesion_concesion').textContent != '') {
+          isSaving = true;
           fGetInputs();
+          isSaving = false;
         }
       } else {
         if (currentstep == 3) {
@@ -1947,11 +1965,9 @@ function f_FetchCallSolicitante(idSolicitante, event, idinput) {
           document.getElementById("emailsoli").value =
             datos[1].correo_solicitante;
           document.getElementById("telsoli").value = datos[1].tel_solicitante;
-          document.getElementById("tiposolicitante").value =
-            datos[1].DESC_Solicitante;
-          document
-            .getElementById("tiposolicitante")
-            .setAttribute("data-id", datos[1].ID_Tipo_Solicitante);
+          console.log(datos[1].DESC_Solicitante);
+          document.getElementById("tiposolicitante").value =datos[1].DESC_Solicitante;
+          document.getElementById("tiposolicitante").setAttribute("data-id", datos[1].ID_Tipo_Solicitante);
           if (datos[1].Departamento != null && datos[1].Departamento != "") {
             document.getElementById("Departamentos").value =
               datos[1].Departamento;
@@ -2097,8 +2113,10 @@ function f_RenderConcesion(datos) {
   document.getElementById("concesion_tramites").innerHTML =
     datos[1][0]["Tramites"];
 
-  inicialitarTomSelect();
+  //inicialitarTomSelect();
   setaddEventListener();
+  
+  seRecuperoVehiculoDesdeIP = 0;
 
   document.getElementById("concesion_concesion").innerHTML =
     datos[1][0]["N_Certificado"];
@@ -2340,13 +2358,7 @@ function f_RenderConcesion(datos) {
 //** Inicio Function Carga Los Datos de la Unidad1 y Presenta la Pantalla con dicha información
 //*********************************************************************************************************************/
 function f_RenderConcesionTramites() {
-  var concesionlabel = document.getElementById("concesion1label");
-
-  if (concesionlabel != null) {
-    concesionlabel.innerHTML =
-      document.getElementById("concesionlabel").innerHTML;
-  }
-
+  document.getElementById("concesionlabel1").textContent = document.getElementById("concesionlabel").textContent;
   document.getElementById("concesion1_concesion").innerHTML =
     document.getElementById("concesion_concesion").innerHTML;
   document.getElementById("concesion1_perexp").innerHTML =
@@ -2414,6 +2426,7 @@ function f_RenderConcesionTramites() {
     false,
     { text: "SELECCIONE UN AÑO", value: "-1" }
   );
+
   document.getElementById("concesion1_tipovehiculo").innerHTML =
     document.getElementById("concesion_tipovehiculo").innerHTML;
   document.getElementById("concesion1_cerant").innerHTML =
@@ -2461,7 +2474,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
   fd.append("action", "get-concesion");
   //Adjuntando el idApoderado al FormData
   fd.append("RTN_Concesionario", document.getElementById("rtnsoli").value);
-  sfd.append("RAM", document.getElementById("RAM").value);
+  fd.append("RAM", document.getElementById("RAM").value);
   fd.append("Concesion", idConcesion);
   // Fetch options
   const options = {
@@ -2734,7 +2747,11 @@ function fEditarConcesion(idConcesion) {
   // };
   let fd = new FormData(document.forms.form1);
   //Adjuntando el action al FormData
-  fd.append("action", "get-concesion-preforma");
+  if (document.getElementById("ID_Expediente").value == '') {
+    fd.append("action", "get-concesion-preforma");
+  } else {
+    fd.append("action", "get-concesion-expediente");
+  }
   fd.append("RAM", document.getElementById("RAM").value);
   fd.append("idConcesion", idConcesion);
   // Fetch options
@@ -2746,6 +2763,7 @@ function fEditarConcesion(idConcesion) {
   fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (datos) {
+      console.log(datos[1][0]["Unidad"]);
       if (typeof datos != "undefined" && typeof datos[0] != "undefined") {
         if (datos[0] > 0) {
           //**************************************************************************************************************************/
@@ -2973,11 +2991,13 @@ function f_RenderConcesionPreforma(datos) {
   document.getElementById("concesion_tramites").innerHTML =
     datos[1][0]["Tramites"];
 
-  inicialitarTomSelect();
+  //inicialitarTomSelect();
   //*************************************************************************************************************/
   //* Llamar funcion que habilita los Listener de las Placas en el caso de cambio de placa y/o cambio de unidad
   //*************************************************************************************************************/
   setaddEventListener();
+
+  seRecuperoVehiculoDesdeIP = 0;
 
   document.getElementById("concesion_concesion").innerHTML =
     datos[1][0]["N_Certificado"];
@@ -3166,32 +3186,6 @@ function f_RenderConcesionPreforma(datos) {
       datos[1][0]["Vencimientos"]["rencon-cantidad"];
     document.getElementById("CantidadRenovacionesPerExp").value =
       datos[1][0]["Vencimientos"]["renper-explotacion-cantidad"];
-
-    console.log(
-      document.getElementById("NuevaFechaVencimientoConcesion").value,
-      "NuevaFechaVencimientoConcesion"
-    );
-    console.log(
-      document.getElementById("FechaVencimientoConcesion").value,
-      "FechaVencimientoConcesion"
-    );
-    console.log(
-      document.getElementById("NuevaFechaVencimientoPerExp").value,
-      "NuevaFechaVencimientoPerExp"
-    );
-    console.log(
-      document.getElementById("FechaVencimientoPerExp").value,
-      "FechaVencimientoPerExp"
-    );
-    console.log(
-      document.getElementById("CantidadRenovacionesConcesion").value,
-      "CantidadRenovacionesConcesion"
-    );
-    console.log(
-      document.getElementById("CantidadRenovacionesPerExp").value,
-      "CantidadRenovacionesPerExp"
-    );
-
     //***********************************************************************************************************************************/
     //* FINAL: Fechas y Cantidad de Renovaciones por Concesion y Permiso de Explotación
     //***********************************************************************************************************************************/
@@ -3222,6 +3216,7 @@ function f_RenderConcesionPreforma(datos) {
     document.getElementById("largo").value = datos[1][0]["Unidad"][0]["Largo"];
     document.getElementById("ancho").value = datos[1][0]["Unidad"][0]["Ancho"];
     dataConcesion["marcas"] = datos[1][0]["Marcas"];
+    console.log(datos[1][0]["Unidad"][0]["ID_Marca"]);
     fLlenarSelect(
       "marcas",
       datos[1][0]["Marcas"],
@@ -3286,6 +3281,7 @@ function f_RenderConcesionPreforma(datos) {
   document.getElementById("rightDiv45").style.display = "flex";
   esCambioDeVehiculo = false;
   seRecuperoVehiculoDesdeIP = 0;
+  console.log(seRecuperoVehiculoDesdeIP);
   if (
     datos.length > 1 &&
     datos[1].length > 0 &&
@@ -3297,11 +3293,7 @@ function f_RenderConcesionPreforma(datos) {
 }
 
 function f_RenderConcesionTramitesPreforma(datos) {
-  var concesionlabel = document.getElementById("concesion1label");
-  if (concesionlabel != null) {
-    concesionlabel.innerHTML =
-      document.getElementById("concesionlabel").innerHTML;
-  }
+  document.getElementById("concesionlabel1").textContent = document.getElementById("concesionlabel").textContent;
   document.getElementById("concesion1_concesion").innerHTML =
     document.getElementById("concesion_concesion").innerHTML;
   document.getElementById("concesion1_perexp").innerHTML =
@@ -4661,18 +4653,6 @@ function f_CaseFetchCalls(value, event, idinput) {
   }
 }
 
-function showConcesion() {
-  var event = new Event("change", {
-    bubbles: true,
-    cancelable: true,
-  });
-  var input = document.getElementById("concesion");
-  input.dispatchEvent(event);
-  input.focus();
-  input.select();
-  f_FetchCallConcesion(input.value, event, input.id);
-}
-
 //********************************************************************************************/
 //Funcion ejecutada por timeout para pocicionar el cursos en el campo concesión
 //********************************************************************************************/
@@ -4697,27 +4677,57 @@ function showModalConcesiones() {
 btnSalvarConcesion.addEventListener("click", function (event) {
   var response = { error: false };
   if (currentstep == 2) {
-    //**********************************************************************************************************/
-    //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
-    //**********************************************************************************************************/
-    setFocus = false;
-    fGetInputs();
-    setFocus = true;
-    console.log(seRecuperoVehiculoDesdeIP, "seRecuperoVehiculoDesdeIP");
     if (seRecuperoVehiculoDesdeIP == 0 || seRecuperoVehiculoDesdeIP == 3) {
-      const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
-      console.log(paneerror[currentstep], "panerror");
-      console.log(sum, "sum");
-      if (sum == 0) {
-        console.log("salvarconcesion llamando");
-        salvarConcesion();
-      } else {
+      const inputPlaca = document.getElementById('concesion_placa');
+      var valorPlaca = inputPlaca ? inputPlaca.value.toUpperCase() : '';      
+      valorPlaca = valorPlaca.toUpperCase();
+      console.log(valorPlaca.substring(0,2),'valorPlaca');
+      if (esCambioDeVehiculo==false && $appcfg_placas.includes(valorPlaca.substring(0,2))==false) {
+        console.log(valorPlaca.substring(0,2),'valorPlaca');
         fSweetAlertEventSelect(
           event,
-          "ERRORES",
-          "SE HAN DETECTADO ERROR(ES) DE DATOS EN LA PANTALLA FAVOR CORRIJA Y VUELVA A INTENTAR SALVAR",
-          "error"
-        );
+          "ERROR SALVANDO",
+          '',
+          "error",
+          "LOS PRIMEROS DOS DIGITOS DE LA PLACA <strong>("+ inputPlaca.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>'
+      );
+      } else {
+        const inputPlaca1 = document.getElementById('concesion1_placa');
+        var valorPlaca1 = inputPlaca1 ? inputPlaca1.value.toUpperCase() : '';      
+        valorPlaca1 = valorPlaca1.toUpperCase();
+        console.log(valorPlaca1.substring(0,2),'valorPlaca1');
+        if ($appcfg_placas.includes(valorPlaca1.substring(0,2))==false) {
+          console.log(valorPlaca1.substring(0,2),'inputPlaca1');
+          fSweetAlertEventSelect(
+            event,
+            "ERROR SALVANDO",
+            '',
+            "error",
+            "LOS PRIMEROS DOS DIGITOS DE LA PLACA ENTRANTE <strong>("+ inputPlaca1.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br> <strong>" + $appcfg_placas.join(' , ') + '</strong>'
+          );
+        } else {
+          //**********************************************************************************************************/
+          //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
+          //**********************************************************************************************************/
+          setFocus = false;
+          isSaving = true;
+          fGetInputs();
+          isSaving = false;
+          setFocus = true;
+          const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
+          console.log(paneerror[currentstep]);
+          console.log(sum,'sum');
+          if (sum == 0) {
+            salvarConcesion();
+          } else {
+            fSweetAlertEventSelect(
+              event,
+              "ERRORES",
+              "SE HAN DETECTADO ERROR(ES) DE DATOS EN LA PANTALLA FAVOR CORRIJA Y VUELVA A INTENTAR SALVAR",
+              "error"
+            );
+          }
+        }  
       }
     } else {
       fSweetAlertEventSelect(
@@ -4753,6 +4763,7 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
   switch (currentstep) {
     case 0:
       showConcesionTramites();
+      document.getElementById("btnCambiarUnidad").style.display = "none";
       if (document.getElementById("RAM").value != '') {
         document.getElementById("btnSalvarConcesion").style = "display:fixed;";
       }
@@ -4760,6 +4771,7 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       break;
     case 1:
       showConcesionTramites();
+      document.getElementById("btnCambiarUnidad").style.display = "none";
       if (document.getElementById("RAM").value != '') {
         document.getElementById("btnSalvarConcesion").style = "display:fixed;";
       }
@@ -4767,20 +4779,19 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       break;
     case 2:
       console.log(document.getElementById("rightDiv45").style.display, 'display');
-      if (document.getElementById("concesion_vin").value != "") {
+      if (document.getElementById("concesion_concesion").textContent != "") {
         document.getElementById("rightDiv45").style.display = "flex";
         document.getElementById("btnSalvarConcesion").style = "display:fixed;";
+        document.getElementById("btnCambiarUnidad").style = "display:flex; position: absolute; top: 195px; right: 25px; padding: 10px;";
         showConcesionTramites(true);
+      } else {
+        document.getElementById("btnSalvarConcesion").style.display = "none";
+        document.getElementById("btnCambiarUnidad").style = "none";
       }
       document.getElementById("input-prefetch").style.display = "block";
       document.getElementById("toggle-icon").style.display = "block";
       if (concesionNumber.length > 0) {
         document.getElementById("rightDiv").style.display = "flex";
-      }
-      if (fVieneFuncionEditarConcesion == false) {
-        document.getElementById("btnSalvarConcesion").style.display = "none";
-      } else {
-        fVieneFuncionEditarConcesion = false;
       }
       if (showModalFromShown == true) {
         showModalFromShown = false;
@@ -4792,10 +4803,12 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       document.getElementById("concesion").value = "";
       break;
     case 3:
+      document.getElementById("btnCambiarUnidad").style.display = "none";
       showConcesionTramites();
       break;
     case 4:
       showConcesionTramites();
+      document.getElementById("btnCambiarUnidad").style.display = "none";
       document.getElementById("btnSalvarConcesion").style = "display:none;";
       break;
   }
@@ -4952,6 +4965,7 @@ testcontrols.forEach(function (input) {
   //*****************************************************************************/
   input.addEventListener("change", function (event) {
     // Obteniendo el id del input
+    event.target.value = event.target.value.toUpperCase();
     idinput = event.target.id;
     // Salvar la pocisión del cursor
     var cursorPosition = event.target.selectionStart;
@@ -5004,26 +5018,8 @@ testcontrols.forEach(function (input) {
         }
 
         paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-        // Si son los input colapoderado o rtnsoli o concesion
-        if (
-          idinput == "colapoderado" ||
-          idinput == "rtnsoli" ||
-          idinput == "concesion"
-        ) {
-          if (
-            typeof isRecordGetted[currentstep] == "undefined" ||
-            isRecordGetted[currentstep] != event.target.value
-          ) {
-            if (isDirty[currentstep] == false) {
-              f_CaseFetchCalls(value, event, idinput);
-            } else {
-              isDirty[currentstep] == false;
-            }
-          }
-        } else {
-          if (isTab == false) {
-            moveToNextInput(input, 0);
-          }
+        if (isTab == false) {
+          moveToNextInput(input, 0);
         }
         isTab = false;
         isFromfGetInputs = false;
@@ -5123,14 +5119,14 @@ testcontrols.forEach(function (input) {
   isDirty[currentstep] = false;
 });
 
-async function callFunctionBorrarTramite(Concesion, ID, Linea, el) {
+async function callFunctionBorrarTramite(Concesion, ID, Linea, el,tramiteDescripcion) {
   const result = await Swal.fire({
     title: "¿ESTÁ SEGURO?",
-    text: `¿QUIERE ELIMINAR ESTE TRAMITE DE LA CONCESION No. ${document.getElementById("concesion_concesion").innerHTML
-      } ?`,
-    icon: "info",
+    html: `¿QUIERE ELIMINAR El TRAMITE: <strong>${tramiteDescripcion}</strong></br> DE LA CONCESION No. <strong>${document.getElementById("concesion_concesion").innerHTML
+      }</strong>?`,
+    icon: "warning",
     showCancelButton: true,
-    confirmButtonText: "SÍ, BORRAR",
+    confirmButtonText: "SÍ, ELIMINAR",
     cancelButtonText: "CANCELAR",
   });
   if (result.isConfirmed) {
@@ -5145,14 +5141,11 @@ async function callFunctionBorrarTramite(Concesion, ID, Linea, el) {
       document.getElementById("ID_Unidad1").value
     );
     if (success) {
-      console.log("fEliminarTramite retornó true");
       return true;
     } else {
-      console.log("fEliminarTramite retornó false");
       return false;
     }
   } else {
-    console.log("Usuario canceló la acción en fEliminarTramite");
     return false;
   }
 }
@@ -5193,7 +5186,11 @@ async function addTramitePreforma(el) {
     var Unidad = null;
     var Unidad1 = null;
     // Adjuntando el action al FormData
-    fd.append("action", "add-tramite-preforma");
+    if (document.getElementById("ID_Expediente").value == '') {
+      fd.append("action", "add-tramite-preforma");
+    } else {
+      fd.append("action", "add-tramite-expediente");
+    }
     // Enviar el número de Expediente
     fd.append("ID_Expediente", document.getElementById("ID_Expediente").value);
     // Enviar el número de Solicitud
@@ -5267,11 +5264,11 @@ async function addTramitePreforma(el) {
 //**************************************************************************************/
 //* INICIO: Agregar Tramite a Preforma Cuando ya esta salvada la concesion
 //**************************************************************************************/
-async function addTramite(el) {
+async function addTramite(el,tramiteDescripcion) {
   const result = await Swal.fire({
     title: "¿ESTÁ SEGURO?",
-    text: `¿QUIERE AGREGAR ESTE TRAMITE A LA CONCESION No. ${document.getElementById("concesion_concesion").innerHTML
-      } ?`,
+    html: `¿QUIERE AGREGAR EL TRAMITE <strong>${tramiteDescripcion}</strong></br> A LA CONCESION No. <strong>${document.getElementById("concesion_concesion").innerHTML
+      }</strong> ?`,
     icon: "info",
     showCancelButton: true,
     confirmButtonText: "SÍ, AGREGAR",
@@ -5453,7 +5450,7 @@ function fReviewCheck() {
       //* Separando el valor del input
       //**************************************************************************************/
       const [tipo_tramite, clase_tramite, acronimo_tipo, acronimo_clase] =
-        event.target.id.split("_");
+      event.target.id.split("_");
       //**************************************************************************************/
       //Validaciones si el elemento viene checked
       if (event.target.checked) {
@@ -5462,7 +5459,7 @@ function fReviewCheck() {
         //****************************************************************************************/
         let iddb = getAttribute(event.target, "data-iddb", false);
         if (iddb == "" && modalidadDeEntrada == "U") {
-          const success = await addTramite(event.target);
+          const success = await addTramite(event.target,document.getElementById("descripcion_"+event.target.value).textContent);
           if (success) {
             seRecuperoVehiculoDesdeIP = 0;
             //***************************************************************************/
@@ -5498,7 +5495,6 @@ function fReviewCheck() {
             //* Final Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
             //***************************************************************************/
           } else {
-            console.log("event.preventDefault() false on AddTramite");
             event.target.checked = false;
           }
           //***************************************************************************/
@@ -5508,7 +5504,6 @@ function fReviewCheck() {
           //***************************************************************************/
           //* Inicio Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
           //***************************************************************************/
-          console.log("fHiddenShowTramites Add Modalidad I");
           fHiddenShowTramites(
             event.target,
             acronimo_tipo,
@@ -5551,12 +5546,15 @@ function fReviewCheck() {
             document.getElementById("concesion_concesion").innerHTML,
             iddb,
             null,
-            event.target
+            event.target,
+            document.getElementById("descripcion_"+event.target.value).textContent
           );
           if (success) {
+            chk.setAttribute('data-iddb','');
             if (acronimo_clase == "CU") {
               esCambioDeVehiculo = false;
               seRecuperoVehiculoDesdeIP = 0;
+              document.getElementById("ID_Unidad1").value = '';
               document.getElementById("input-prefetch").style.display = "block";
               document.getElementById("toggle-icon").style.display = "block";
               document.getElementById("rightDiv").style.display = "flex";
@@ -5583,9 +5581,6 @@ function fReviewCheck() {
             //* Final Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
             //***************************************************************************/
           } else {
-            console.log(
-              "event.preventDefault() false en borrar callFunctionBorrarTramite removeAttribute"
-            );
             if (acronimo_clase == "CU") {
               esCambioDeVehiculo = false;
               seRecuperoVehiculoDesdeIP = 0;
@@ -5602,10 +5597,9 @@ function fReviewCheck() {
                 seRecuperoVehiculoDesdeIP = 0;
               }
             }
-            event.preventDefault();
+            event.target.checked = true;
           }
         } else {
-          console.log("fHiddenShowTramites delete cuando es modalidad I");
           //***************************************************************************/
           //* Inicio Marcado / Desmarcando Tramitres no Compatibles con Tramite Actual
           //***************************************************************************/
@@ -5778,10 +5772,6 @@ function getVehiculoDesdeIPMoveDatos(vehiculo, Tipo_Tramite) {
     false,
     { text: "SELECCIONE UN COLOR", value: "-1" }
   );
-  console.log(
-    vehiculo.cargaUtil.colorcodigo,
-    "vehiculo.cargaUtil.colorcodigo getVehiculo"
-  );
   fLlenarSelect(
     "anios" + sufijo,
     dataConcesion["anios"],
@@ -5796,10 +5786,8 @@ function getVehiculoDesdeIPMoveDatos(vehiculo, Tipo_Tramite) {
   console.log(Tipo_Tramite, "console.log(Tipo_Tramite);");
   if (Tipo_Tramite == "CU") {
     console.log(Tipo_Tramite, "Tipo_Tramite");
-    document.getElementById("btnCambiarUnidad").innerHTML =
-      "<strong>ENTRA</strong>";
-    document.getElementById("btnCambiarUnidad").style =
-      "display:flex; position: absolute; top: 195px; right: 25px; padding: 10px;";
+    document.getElementById("btnCambiarUnidad").innerHTML = '<i id="idIconBtnCambiarUnidad" class="fas fa-truck-moving fa-2x"></i>  <strong>ENTRA</strong>';
+    document.getElementById("btnCambiarUnidad").style = "display:flex; position: absolute; top: 195px; right: 25px; padding: 10px;";
     document.getElementById("idVistaSTPC2").style = "display:fixed;";
     document.getElementById("idVistaSTPC1").style = "display:none;";
   }
@@ -6003,39 +5991,43 @@ function setaddEventListener() {
   );
   if (inputCambioUnidad) {
     async function handleChangeCU(event) {
-      console.log(ejecutar, "ejecutar");
-      console.log(event.target.value, "event.target.value");
-      if (ejecutar == true && event.target.value !== "") {
-        event.preventDefault();
-        ejecutar = false;
-        inputCambioUnidad.removeEventListener("keyup", handleKeyUpCU);
-        seRecuperoVehiculoDesdeIP = 2;
-        ejecutar = await getVehiculoDesdeIP(event.target);
-        setTimeout(() => {
-          inputCambioUnidad.addEventListener("keyup", handleKeyUpCU);
-          console.log("Evento keypress reactivado");
-        }, 8000);
+      if (isSaving == false) {
+        console.log(ejecutar, "ejecutar");
+        console.log(event.target.value, "event.target.value");
+        if (ejecutar == true && event.target.value !== "") {
+          event.preventDefault();
+          ejecutar = false;
+          inputCambioUnidad.removeEventListener("keyup", handleKeyUpCU);
+          seRecuperoVehiculoDesdeIP = 2;
+          ejecutar = await getVehiculoDesdeIP(event.target);
+          setTimeout(() => {
+            inputCambioUnidad.addEventListener("keyup", handleKeyUpCU);
+            console.log("Evento keypress reactivado");
+          }, 8000);
+        }
       }
     }
     async function handleKeyUpCU(event) {
-      if (event.target.value !== "") {
-        console.log(ejecutar, "ejecutar keyup");
-        console.log(event.key, "event.key");
-        if (
-          ejecutar == true &&
-          (event.key === "Tab" || event.key === "Enter")
-        ) {
-          ejecutar = false;
-          // Deshabilitar el evento change temporalmente
-          inputCambioUnidad.removeEventListener("change", handleChangeCU);
-          seRecuperoVehiculoDesdeIP = 2;
-          event.preventDefault();
-          ejecutar = await getVehiculoDesdeIP(event.target);
-          // Simular una tarea (por ejemplo, esperar 2 segundos antes de reactivar change)
-          setTimeout(() => {
-            inputCambioUnidad.addEventListener("change", handleChangeCU);
-            console.log("Evento change reactivado");
-          }, 8000);
+      if (isSaving == false) {
+        if (event.target.value !== "") {
+          console.log(ejecutar, "ejecutar keyup");
+          console.log(event.key, "event.key");
+          if (
+            ejecutar == true &&
+            (event.key === "Tab" || event.key === "Enter")
+          ) {
+            ejecutar = false;
+            // Deshabilitar el evento change temporalmente
+            inputCambioUnidad.removeEventListener("change", handleChangeCU);
+            seRecuperoVehiculoDesdeIP = 2;
+            event.preventDefault();
+            ejecutar = await getVehiculoDesdeIP(event.target);
+            // Simular una tarea (por ejemplo, esperar 2 segundos antes de reactivar change)
+            setTimeout(() => {
+              inputCambioUnidad.addEventListener("change", handleChangeCU);
+              console.log("Evento change reactivado");
+            }, 8000);
+          }
         }
       }
     }
@@ -6048,35 +6040,39 @@ function setaddEventListener() {
   );
   if (inputCambioPlaca) {
     async function handleChangeCP(event) {
-      if (ejecutar == true && event.target.value !== "") {
-        ejecutar = false;
-        inputCambioPlaca.removeEventListener("keyup", handleKeyUpCP);
-        seRecuperoVehiculoDesdeIP = 2;
-        event.preventDefault();
-        ejecutar = await getVehiculoDesdeIP(event.target);
-        setTimeout(() => {
-          inputCambioPlaca.addEventListener("keyup", handleKeyUpCP);
-          console.log("Evento keyup reactivado");
-        }, 8000);
-      }
-    }
-    async function handleKeyUpCP(event) {
-      if (event.target.value !== "") {
-        if (
-          ejecutar == true &&
-          (event.key === "Tab" || event.key === "Enter")
-        ) {
+      if (isSaving == false) {
+        if (ejecutar == true && event.target.value !== "") {
           ejecutar = false;
-          // Deshabilitar el evento change temporalmente
-          inputCambioPlaca.removeEventListener("change", handleChangeCP);
+          inputCambioPlaca.removeEventListener("keyup", handleKeyUpCP);
           seRecuperoVehiculoDesdeIP = 2;
           event.preventDefault();
           ejecutar = await getVehiculoDesdeIP(event.target);
-          // Simular una tarea (por ejemplo, esperar 2 segundos antes de reactivar change)
           setTimeout(() => {
-            inputCambioPlaca.addEventListener("change", handleChangeCP);
-            console.log("Evento change reactivado");
+            inputCambioPlaca.addEventListener("keyup", handleKeyUpCP);
+            console.log("Evento keyup reactivado");
           }, 8000);
+        }
+      }
+    }
+    async function handleKeyUpCP(event) {
+      if (isSaving == false) {
+        if (event.target.value !== "") {
+          if (
+            ejecutar == true &&
+            (event.key === "Tab" || event.key === "Enter")
+          ) {
+            ejecutar = false;
+            // Deshabilitar el evento change temporalmente
+            inputCambioPlaca.removeEventListener("change", handleChangeCP);
+            seRecuperoVehiculoDesdeIP = 2;
+            event.preventDefault();
+            ejecutar = await getVehiculoDesdeIP(event.target);
+            // Simular una tarea (por ejemplo, esperar 2 segundos antes de reactivar change)
+            setTimeout(() => {
+              inputCambioPlaca.addEventListener("change", handleChangeCP);
+              console.log("Evento change reactivado");
+            }, 8000);
+          }
         }
       }
     }

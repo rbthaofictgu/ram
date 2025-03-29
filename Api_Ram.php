@@ -52,8 +52,9 @@ require_once("../qr/qrlib.php");
 	protected $server_smtp_password;
 	protected $ip;
 	protected $host;
-
-	public function __construct($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password)
+	protected $appcfg_estado_inicial;
+	protected $appcfg_estado_inicial_descripcion;
+	public function __construct($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion)
 	{
 		$this->setDB(        $db,
 		         $appcfg_Dominio,
@@ -62,7 +63,9 @@ require_once("../qr/qrlib.php");
 			 $appcfg_smtp_server,
 			   $appcfg_smtp_port,
 			   $appcfg_smtp_user,
-		   $appcfg_smtp_password);
+		   $appcfg_smtp_password,
+		   $appcfg_estado_inicial,
+		   $appcfg_estado_inicial_descripcion);
 
 		$this->setIp();
 		$this->setHost();
@@ -75,6 +78,8 @@ require_once("../qr/qrlib.php");
 				$this->getConcesion();
 			} else if ($_POST["action"] == "get-concesion-preforma" && isset($_POST["idConcesion"])) {
 				$this->getConcesionPreforma();
+			} else if ($_POST["action"] == "get-concesion-expediente" && isset($_POST["idConcesion"])) {
+				$this->getConcesionExpediente();
 			} else if ($_POST["action"] == "get-datosporomision") {
 				$this->getDatosPorOmision();
 			} else if ($_POST["action"] == "get-municipios") {
@@ -85,16 +90,28 @@ require_once("../qr/qrlib.php");
 				$this->savePreforma();
 			} else if ($_POST["action"] == "save-preforma" and $_POST["modalidadDeEntrada"] == "U") {
 				$this->updatePreforma();
+			} else if ($_POST["action"] == "save-expediente" and $_POST["modalidadDeEntrada"] == "I") {
+				$this->saveExpediente();
+			} else if ($_POST["action"] == "save-expediente" and $_POST["modalidadDeEntrada"] == "U") {
+				$this->updateExpediente();
 			} else if ($_POST["action"] == "add-tramite-preforma") {
 				$_POST["Tramites"]  = json_decode($_POST["Tramites"], true);
 				$_POST["Concesion"]  = json_decode($_POST["Concesion"], true);
 				$this->saveTramites($_POST["RAM"], $_POST["Tramites"]);
+			} else if ($_POST["action"] == "add-tramite-expediente") {
+				$_POST["Tramites"]  = json_decode($_POST["Tramites"], true);
+				$_POST["Concesion"]  = json_decode($_POST["Concesion"], true);
+				$this->saveTramitesExpediente($_POST["RAM"], $_POST["Tramites"]);
 			} else if ($_POST["action"] == "save-requisitos") {
 				$this->saveRequisitos();
 			} else if ($_POST["action"] == "delete-concesion-preforma") {
 				$this->deleteConcesionesPreforma();
+			} else if ($_POST["action"] == "delete-concesion-expediente") {
+				$this->deleteConcesionesExpediente();
 			} else if ($_POST["action"] == "delete-tramite-preforma") {
 				$this->deleteTramitePreforma();
+			} else if ($_POST["action"] == "delete-tramite-expediente") {
+				$this->deleteTramiteExpediente();				
 			} else if ($_POST["action"] == "get-vehiculo") {
 				echo json_encode($this->getDatosUnidadDesdeIP($_POST["ID_Placa"]));
 			} else if ($_POST["action"] == "save-escaneo") {
@@ -112,7 +129,7 @@ require_once("../qr/qrlib.php");
 	}
 
 	
-	protected function setDB($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password): void	{
+	protected function setDB($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion): void	{
 		$this->db = $db;
 		$this->dominio = $appcfg_Dominio;
 		$this->dominio_corto = $appcfg_Dominio_Corto;
@@ -120,7 +137,9 @@ require_once("../qr/qrlib.php");
 		$this->server_smtp = $appcfg_smtp_server;
 		$this->server_smtp_port = $appcfg_smtp_port;
 		$this->server_smtp_user = $appcfg_smtp_user;
-		$this->server_smtp_password = $appcfg_smtp_password;		
+		$this->server_smtp_password = $appcfg_smtp_password;
+		$this->appcfg_estado_inicial = $appcfg_estado_inicial;
+		$this->appcfg_estado_inicial_descripcion = $appcfg_estado_inicial_descripcion;		
 	}
 
 	protected function getDB($db)
@@ -195,7 +214,7 @@ require_once("../qr/qrlib.php");
 			$stmt->execute($p);
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
-				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' UPDATE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3];
+				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' UPDATE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' parametros: ' . implode('   DATA ==>  ', $p);
 				logErr($txt, '../logs/logs.txt');
 				return false;
 			} else {
@@ -203,14 +222,14 @@ require_once("../qr/qrlib.php");
 			}
 		} catch (\Throwable $th) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch UPDATE PDOException; ' . $th->getMessage() . ' QUERY ' . $q;
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch UPDATE PDOException; ' . $th->getMessage() . ' QUERY ' . $q  . ' parametros: ' . implode('   DATA ==>  ', $p);
 			logErr($txt, '../logs/logs.txt');
 			return false;
 		}
 	}
-	//*************************************************************************************/
+	//***************************************************************************************/
 	//* FUNCION PARA EJECUTAR LA INSERCIÓN SOBRE LA BASE DE DATOS
-	//*************************************************************************************/
+	//***************************************************************************************/
 	function insert($q, $p)
 	{
 		$stmt = $this->db->prepare($q);
@@ -218,7 +237,7 @@ require_once("../qr/qrlib.php");
 			$stmt->execute($p);
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
-				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' INSERT: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3];
+				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' INSERT: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' parametros: ' . implode('   DATA ==>  ', $p);
 				logErr($txt, '../logs/logs.txt');
 				return false;
 			} else {
@@ -226,12 +245,11 @@ require_once("../qr/qrlib.php");
 			}
 		} catch (\Throwable $th) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch INSERT PDOException; ' . $th->getMessage() . ' QUERY ' . $q;
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch INSERT PDOException; ' . $th->getMessage() . ' QUERY ' . $q  . ' parametros: ' . implode('   DATA ==>  ', $p);
 			logErr($txt, '../logs/logs.txt');
 			return false;
 		}
 	}
-
 	//*************************************************************************************/
 	//* FUNCION PARA EJECUTAR LA INSERCIÓN SOBRE LA BASE DE DATOS
 	//*************************************************************************************/
@@ -750,16 +768,23 @@ require_once("../qr/qrlib.php");
 			$ID_AREA_VENTANILLA = 'IHTT08-05';
 		}
 		$query = "INSERT INTO [IHTT_DB].[dbo].[TB_Expediente_Movimiento] 
-				(ID_Solicitud, ID_Area_Actual, SistemaUsuario, Observaciones, Numero_Folio, 
-				ID_Area_Iba, ID_Actividad, FechaRecibe, FechaEnvia, CodigoEstadoMovimiento, 
-				ID_EmpleadoResponsable, ID_Usuario, SistemaFecha)
+				(ID_Solicitud,
+				 ID_Area_Actual,
+				 SistemaUsuario,
+				 Observaciones,
+				 Numero_Folio, 
+				ID_Area_Iba,
+				ID_Actividad,
+				FechaRecibe,FechaEnvia,
+				CodigoEstadoMovimiento, 
+				ID_EmpleadoResponsable,ID_Usuario, SistemaFecha)
 			SELECT :ID_Solicitud, :ID_Area_Actual, :SistemaUsuario, 'PARA REVISION OFICIAL JURIDICO', 
 				0, '', 'ACT-01', SYSDATETIME(), NULL, 'TRABAJO', '', '', SYSDATETIME()
 			WHERE NOT EXISTS (
 				SELECT 1 FROM [IHTT_DB].[dbo].[TB_Expediente_Movimiento]
-				WHERE ID_Solicitud = :ID_Solicitud AND ID_Actividad = 'ACT-01'
+				WHERE ID_Solicitud = :ID_Solicitud1 AND ID_Actividad = 'ACT-01'
 			);";
-		$parametros = array(":ID_Solicitud" =>$RAM, ":ID_Area_Actual" =>$ID_AREA_VENTANILLA, ":SistemaUsuario"=>$_SESSION["user_name"]);
+		$parametros = array(":ID_Solicitud" =>$RAM, ":ID_Solicitud1" =>$RAM, ":ID_Area_Actual" =>$ID_AREA_VENTANILLA, ":SistemaUsuario"=>$_SESSION["user_name"]);
 		return $this->insert($query, $parametros);
 	}	
 
@@ -906,31 +931,51 @@ require_once("../qr/qrlib.php");
 			$this->db->rollBack();
 			echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			$this->db->rollBack();
-			//$this->db->commit();
+			//$this->db->rollBack();
+			$this->db->commit();
 			echo json_encode(['Borrado'  =>  True]);
 		}
 	}
 	//***********************************************************************************************************************/
 	//*Inicio                                                                                                               */
-	//*rbthaofic@gmail.com 2025/01/22 Add Tramite Preforma                                                                  */
+	//*rbthaofic@gmail.com 2024/12/05 Borrar Concesiones Preforma */
 	//***********************************************************************************************************************/
-	protected function addTramitePreforma()
+	protected function deleteConcesionesExpediente()
 	{
-		$_POST["idTramite"] = json_decode($_POST["idTramite"], true);
+		$_POST["idConcesiones"] = json_decode($_POST["idConcesiones"], true);
+		$_POST["RAM"] = json_decode($_POST["RAM"], true);
+		$return = true;
 		$this->db->beginTransaction();
-		$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] where ID = :ID";
-		$p = array(":ID" => $_POST["idTramite"]);
-		$return = $this->delete($query, $p);
+		foreach ($_POST["idConcesiones"] as $Concesion) {
+			$query = "DELETE FROM [IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] where ID_Solicitud = :ID_Solicitud and (Certificado_Operacion = :Certificado_Operacion or N_Permiso_Especial = :N_Permiso_Especial or Permiso_Explotacion = :Permiso_Explotacion)";
+			$p = array(":ID_Solicitud" => $_POST["RAM"], ":Certificado_Operacion" => $Concesion, ":N_Permiso_Especial" => $Concesion, ":Permiso_Explotacion" => $Concesion);
+			$return = $this->delete($query, $p);
+			if ($return == false) {
+				break;
+			}
+			$query = "DELETE FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] where ID_Solicitud = :ID_Solicitud and (Numero_Certificado = :Numero_Certificado or Numero_PermisoEspecial = :Numero_PermisoEspecial or Numero_Explotacion = :Numero_Explotacion)";
+			$p = array(":ID_Solicitud" => $_POST["RAM"], ":Numero_Certificado" => $Concesion, ":Numero_PermisoEspecial" => $Concesion, ":Numero_Explotacion" => $Concesion);
+			$return = $this->delete($query, $p);
+			if ($return == false) {
+				break;
+			}
+			$query = "DELETE FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] where ID_Solicitud = :ID_Solicitud and (Numero_Certificado = :Numero_Certificado or Numero_PermisoEspecial = :Numero_PermisoEspecial or Numero_Explotacion = :Numero_Explotacion)";
+			$p = array(":ID_Solicitud" => $_POST["RAM"], ":Numero_Certificado" => $Concesion, ":Numero_PermisoEspecial" => $Concesion, ":Numero_Explotacion" => $Concesion);
+			$return = $this->delete($query, $p);
+			if ($return == false) {
+				break;
+			}
+		}
 		if ($return == false) {
 			$this->db->rollBack();
-			echo json_encode(array("error" => 2000, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'ERROR AL INTENTAR ELIMINAR TRAMITE EN PREFORMA, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
+			echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
 			//$this->db->rollBack();
-			$this->db->commit();			
+			$this->db->commit();
 			echo json_encode(['Borrado'  =>  True]);
 		}
 	}
+
 
 	//***********************************************************************************************************************/
 	//*Inicio                                                                                                               */
@@ -970,18 +1015,64 @@ require_once("../qr/qrlib.php");
 						$this->db->rollBack();
 						echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
 					} else {								
-						//$this->db->commit();
-						$this->db->rollBack();
+						$this->db->commit();
+						//$this->db->rollBack();
 						echo json_encode(['Borrado'  =>  True,'Adentro'  =>  True, 'ID_Unidad1' => intval($_POST["ID_Unidad1"]), 'ID_Unidad' => intval($_POST["ID_Unidad"])]);
 					}
 				}
 			} else {
-				//$this->db->commit();
-				$this->db->rollBack();
+				$this->db->commit();
+				//$this->db->rollBack();
 				echo json_encode(['Borrado'  =>  True,'ID_Unidad1'  =>  'NO SET()', 'ID_TRAMITE' => $_POST["idTramite"]]);
 			}
 		}
 	}
+	//***********************************************************************************************************************/
+	//*Inicio                                                                                                               */
+	//*rbthaofic@gmail.com 2024/12/05 Delete Tramite Preforma */
+	//***********************************************************************************************************************/
+	protected function deleteTramiteExpediente()
+	{
+		$_POST["idTramite"] = json_decode($_POST["idTramite"], true);
+
+		if (isset($_POST["ID_Unidad"])) {
+			$_POST["ID_Unidad"] = json_decode($_POST["ID_Unidad"], true);
+		}
+		if (isset($_POST["ID_Unidad1"])) {
+			$_POST["ID_Unidad1"] = json_decode($_POST["ID_Unidad1"], true);
+		}
+
+		$this->db->beginTransaction();
+		$query = "DELETE FROM [IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] where ID = :ID";
+		$p = array(":ID" => $_POST["idTramite"]);
+		$return = $this->delete($query, $p);
+		if ($return == false) {
+			$this->db->rollBack();
+			echo json_encode(array("error" => 2000, "errorhead" => "ELIMINAR TRAMITE PREFORMA", "errormsg" => 'ERROR AL INTENTAR ELIMINAR TRAMITE EN PREFORMA, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
+		} else {
+			if (isset($_POST["ID_Unidad1"])) {
+				$query = "DELETE FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] where ID = :ID";
+				$p = array(":ID" => intval($_POST["ID_Unidad1"])); 
+				$return = $this->delete($query, $p);
+				if ($return == false) {
+					$this->db->rollBack();
+					echo json_encode(array("error" => 2002, "errorhead" => "ELIMINAR TRAMITE EXPEDIENTE", "errormsg" => 'INCONVENIENTES AL INTENTAR ELIMINAR LA UNIDAD ENTRANTE'));
+				} else {								
+					$this->db->commit();
+					//$this->db->rollBack();
+					echo json_encode(['Borrado'  =>  True,'Adentro'  =>  True, 'ID_Unidad1' => intval($_POST["ID_Unidad1"]), 'ID_Unidad' => intval($_POST["ID_Unidad"])]);
+				}
+			} else {
+				$this->db->commit();
+				//$this->db->rollBack();
+				echo json_encode(['Borrado'  =>  True,'ID_Unidad1'  =>  'NO SET()', 'ID_TRAMITE' => $_POST["idTramite"]]);
+			}
+		}
+	}
+	//*************************************************************************************/
+	//* FUNCION PARA RECUPERAR EL APODERADO LEGAL DEL PORTAL DE APODERADOS 
+	//*************************************************************************************/
+
 	//*************************************************************************************/
 	//* FUNCION PARA RECUPERAR EL APODERADO LEGAL DEL PORTAL DE APODERADOS 
 	//*************************************************************************************/
@@ -1048,10 +1139,11 @@ require_once("../qr/qrlib.php");
 			,sol.[Usuario_Cancelacion],sol.[Aviso_Cobro],sol.[Presentacion_Documentos],sol.[Sistema_Fecha],sol.[Etapa_Preforma]
 			,sol.[Usuario_Acepta],sol.[Fecha_Aceptacion],sol.[Codigo_Usuario_Acepta],sol.[Observacion_Cancelacion],sol.[Usuario_Inadmision]
 			,sol.[Fecha_Inadmision],sol.[Observacion_Inadmision],sol.[Tipo_Solicitud],sol.[Entrega_Ubicacion],sol.[Usuario_Creacion],sol.[Codigo_Ciudad]
-			,sol.[Originado_En_Ventanilla],sol.[Es_Renovacion_Automatica],ald.ID_Municipio,mn.ID_Departamento
+			,sol.[Originado_En_Ventanilla],sol.[Es_Renovacion_Automatica],ald.ID_Municipio,mn.ID_Departamento,st.[DESC_Solicitante]
 				FROM [IHTT_Preforma].[dbo].[TB_Solicitante] sol, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,
-				[IHTT_Preforma].[dbo].[TB_Estados] es,[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu
+				[IHTT_Preforma].[dbo].[TB_Estados] es,[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu,[IHTT_PREFORMA].[dbo].[TB_Tipo_Solicitante] st
 				where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and sol.ID_Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio and
+				sol.[ID_Tipo_Solicitante] = st.[ID_Tipo_Solicitante] and
 				(sol.Estado_Formulario = es.ID_Estado or sol.Estado_Formulario = es.DESC_Estado) and 
 				sol.Estado_Formulario = eu.ID_Estado and sol.Usuario_Creacion = eu.usuario and eu.estado = 1";
 		if (!isset($_POST["echo"])) {
@@ -1063,9 +1155,9 @@ require_once("../qr/qrlib.php");
 
 	protected function getSolicitanteBasEXP()
 	{
-	  $q = "SELECT  sol.ID_Solicitante
-			FROM [IHTT_DB].[dbo].[TB_Solicitante] sol
-			WHERE soli.ID_Formulario_Solicitud = :ID_Formulario_Solicitud";
+	  $q = "SELECT  ID_Formulario_Solicitud
+			FROM [IHTT_PREFORMA].[dbo].[TB_Solicitante] soli
+			WHERE soli.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and soli.Estado_Formulario in ('IDE-1','IDE-2','IDE-8')";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
 		} else {
@@ -1074,20 +1166,22 @@ require_once("../qr/qrlib.php");
 	}
 	protected function getSolicitanteEXP()
 	{
-	  $q = "SELECT  sol.ID_Solicitante,sol.NombreSolicitante AS Nombre_Solicitante,	sol.NombreEmpresa AS Denominacion_Social,sol.CodigoSolicitanteTipo AS ID_Tipo_Solicitante,
+	  $q = "SELECT  
+			es.DESC_Estado,sol.ID_Solicitante,sol.NombreSolicitante AS Nombre_Solicitante,	sol.NombreEmpresa AS Denominacion_Social,sol.CodigoSolicitanteTipo AS ID_Tipo_Solicitante,
 			sol.IDSolicitante, sol.RTNSolicitante AS RTN_Solicitante, sol.Direccion AS Domicilo_Solicitante, sol.Telefono AS Telefono_Solicitante,
 			sol.Email AS Email_Solicitante, sol.Observaciones, sol.Aldea AS ID_Aldea, sol.SistemaUsuario AS Usuario_Creacion, sol.SistemaFecha AS Sistema_Fecha,
 			sol.Representante_Legal, sol.Socio, sol.ID_Profesion, sol.ID_Estado_Civil, soli.Entrega_Ubicacion, soli.Presentacion_Documentos,
-			ald.ID_Municipio, mn.ID_Departamento 
+			ald.ID_Municipio, mn.ID_Departamento,st.[DESC_Solicitante]
 			FROM [IHTT_DB].[dbo].[TB_Solicitante] sol, [IHTT_PREFORMA].[dbo].[TB_Solicitante] soli, [IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,[IHTT_Preforma].[dbo].[TB_Estados] es,
-			[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu
+			[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu,[IHTT_PREFORMA].[dbo].[TB_Tipo_Solicitante] st
 			WHERE soli.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and soli.[RTN_Solicitante] = sol.ID_Solicitante and
 			sol.Aldea = ald.ID_Aldea and ald.ID_Municipio = mn.ID_Municipio and
 			(soli.Estado_Formulario = es.ID_Estado or soli.Estado_Formulario = es.DESC_Estado) and 
-			eu.usuario = soli.Usuario_Acepta and 
-			soli.Estado_Formulario = eu.ID_Estado and eu.estado = 1";
+			eu.usuario = soli.Usuario_Acepta and soli.Usuario_Acepta = :Usuario_Acepta and
+			soli.Estado_Formulario = eu.ID_Estado and eu.estado = 1 and
+			sol.[CodigoSolicitanteTipo] = st.[ID_Tipo_Solicitante]";
 		if (!isset($_POST["echo"])) {
-			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]));
+			return $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"],':Usuario_Acepta' => $_SESSION["user_name"]));
 		} else {
 			echo json_encode($this->select($q, array(':IDSolicitante' => $_POST["RAM"])));
 		}
@@ -1148,77 +1242,41 @@ require_once("../qr/qrlib.php");
 
 	protected function getTramitesEXP()
 	{
-		$q = "SELECT 
-				CONCAT(
-					CONCAT(
-						CONCAT(
-							CONCAT(
-								CONCAT(
-									CONCAT(Tra.ID_Tipo_Tramite, '_'), 
-								Cla.ID_Clase_Tramite), '_'), 
-							Tip.Acronimo_Tramite), '_'), 
-					Cla.Acronimo_Clase
-				) AS ID_CHECK,
-				md.ID_Clase_Servicio,
-				Tip.DESC_Tipo_Tramite,
-				Cla.DESC_Clase_Tramite,
-				exp.ID_Solicitud,
-				exp.ID_Tramite,
-				exp.OBS_Expediente AS OBS_Expediente,
-				exp.Estado_gea_tramite AS Estado_gea_tramite,
-				exp.Observacion_gea_tramite AS Observacion_gea_tramite,
-				exp.SistemaUsuario AS SistemaUsuario,
-				exp.SistemaFecha AS SistemaFecha,
-				exp.ID_Categoria_Subservicio AS ID_Categoria_Subservicio,
-				exp.CategoriaSubservicio AS CategoriaSubservicio,
-				exp.ID_Servicios AS ID_Servicios,
-				exp.ServiciosNombre AS ServiciosNombre,
-				exp.DescripcionTramite AS DescripcionTramite,
-				exp.ID_Transporte AS ID_Transporte,
-				exp.Id_Tipo_Categoria AS Id_Tipo_Categoria,
-				exp.Certificado_Operacion AS CertificadoEncriptado,
-				exp.Permiso_Explotacion AS Permiso_Explotacion_Encriptado,
-				exp.N_Permiso_Especial AS PermisoEspecialEncriptado,
-				-- Monto
-				(SELECT TOP 1 b.Monto 
-				FROM [IHTT_Webservice].[dbo].[TB_Tarifas] A
-				INNER JOIN [IHTT_Webservice].[dbo].[TB_TarifasHistorico] B ON A.CodigoTramite = B.CodigoTramite 
-				WHERE A.CodigoTramite = exp.ID_Tramite 
-				ORDER BY B.FechaFin DESC
-				) AS Monto,
-				-- Clase Servicio (asumimos que viene de md.Clase_Servicio si no está en exp)
-				md.[ID_Clase_Servicio],
-				-- Indicadores booleanos
-				CASE 
-					WHEN md.[ID_Clase_Servicio] = 'STPC' THEN 1
-					WHEN md.[ID_Clase_Servicio] IN ('STPP', 'STEP') THEN 0
-					ELSE 1
-				END AS esCarga,
-
-				CASE 
-					WHEN md.[ID_Clase_Servicio] IN ('STPC', 'STPP') THEN 1
-					WHEN md.[ID_Clase_Servicio] = 'STEP' THEN 0
-					ELSE 0
-				END AS esCertificado,
-				-- Certificado y permiso
-				exp.Certificado_Operacion AS N_Certificado,
-				NULL AS Fecha_Expiracion,  -- No proporcionada en nueva tabla
-				exp.Permiso_Explotacion AS N_Permiso_Explotacion,
-				NULL AS Fecha_Expiracion_Explotacion,
-				md.ID_Modalidad,md.DESC_Modalidad -- No proporcionada en nueva tabla
-			FROM 
-				[IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] exp
-			INNER JOIN [IHTT_DB].[dbo].[TB_Tramite] Tra ON exp.ID_Tramite = Tra.ID_Tramite
-			INNER JOIN [IHTT_DB].[dbo].[TB_Tipo_Tramite] Tip ON Tra.ID_Tipo_Tramite = Tip.ID_Tipo_Tramite
-			INNER JOIN [IHTT_DB].[dbo].[TB_Clase_Tramite] Cla ON Tra.ID_Clase_Tramite = Cla.ID_Clase_Tramite
-			LEFT OUTER JOIN [IHTT_DB].[dbo].[TB_Categoria] CAT ON Tra.ID_Categoria = cat.ID_Categoria
-			LEFT OUTER JOIN [IHTT_DB].[dbo].[TB_Modalidad] md ON cat.ID_Modalidad = md.ID_Modalidad
-			WHERE 
-				exp.ID_Solicitud = :ID_Solicitud
-			ORDER BY 
-				exp.estafijado,
-				exp.Certificado_Operacion,
-				exp.N_Permiso_Especial";
+		$q = "SELECT CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(CONCAT(Tra1.ID_Tipo_Tramite,'_'),Cla.ID_Clase_Tramite),'_'),Tip.Acronimo_Tramite),'_'),Cla.Acronimo_Clase) AS ID_CHECK,
+		md.ID_Clase_Servicio,tip.DESC_Tipo_Tramite,cla.DESC_Clase_Tramite,tra.*,
+		(select top 1 b.monto from [IHTT_Webservice].[dbo].[TB_Tarifas] A,[IHTT_Webservice].[dbo].[TB_TarifasHistorico] B where A.CodigoTramite = B.CodigoTramite AND A.CodigoTramite = tra.ID_Tramite ORDER BY B.FechaFin DESC) as Monto,
+		(select top 1 ID_Placa from [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] veh where tra.ID_Solicitud = veh.ID_Solicitud and (tra.Certificado_Operacion != '' and tra.Certificado_Operacion = veh.Numero_Certificado or tra.N_Permiso_Especial = veh.Numero_PermisoEspecial)) AS ID_Placa,
+		(select top 1 ID_Placa from [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] veh where tra.ID_Solicitud = veh.ID_Solicitud and (tra.Certificado_Operacion != '' and tra.Certificado_Operacion = veh.Numero_Certificado or tra.N_Permiso_Especial = veh.Numero_PermisoEspecial)) AS ID_Placa1,
+		CO.PermisoEspecialEncriptado,CO.PermisoEspecialEncriptado,CO.CertificadoEncriptado,CO.Permiso_Explotacion_Encriptado,CO.[Clase Servicio],
+		CASE 
+			WHEN CO.[Clase Servicio] = 'STPC' THEN 1
+			WHEN CO.[Clase Servicio] = 'STPP' THEN 0
+			WHEN CO.[Clase Servicio] = 'STEP' THEN 0
+			ELSE 1
+		END as esCarga,
+		CASE 
+			WHEN CO.[Clase Servicio] = 'STPC' THEN 1
+			WHEN CO.[Clase Servicio] = 'STPP' THEN 1
+			WHEN CO.[Clase Servicio] = 'STEP' THEN 0
+			ELSE 0
+		END as esCertificado,
+		CO.N_Certificado,
+		CO.[Fecha Vencimiento Certificado] as Fecha_Expiracion,
+		CO.N_Permiso_Explotacion,
+		CO.[Fecha Vencimiento Permiso] as Fecha_Expiracion_Explotacion
+		FROM 
+		[IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] Tra,
+		[IHTT_DB].[dbo].[TB_Tramite] Tra1,
+		[IHTT_DB].[dbo].[TB_Tipo_Tramite] Tip,
+		[IHTT_DB].[dbo].[TB_Clase_Tramite] Cla,
+		[IHTT_DB].[dbo].[TB_Categoria] cat,
+		[IHTT_DB].[dbo].[TB_Modalidad] md,
+		[IHTT_SGCERP].[dbo].[v_Listado_General] CO
+		where tra.ID_Solicitud = :ID_Solicitud and tra.ID_Tramite = tra1.ID_Tramite and
+		Tra1.ID_Tipo_Tramite = Tip.ID_Tipo_Tramite and tra1.ID_Clase_Tramite = cla.ID_Clase_Tramite and
+		tra1.ID_Categoria = cat.ID_Categoria and cat.ID_Modalidad = md.ID_Modalidad and 
+		(tra.Certificado_Operacion = CO.N_Certificado or tra.N_Permiso_Especial = CO.N_Certificado)
+		order by tra.Certificado_Operacion,tra.N_Permiso_Especial";
 		$rows = $this->select($q, array(':ID_Solicitud' => $_POST["RAM"]));
 		$max = count($rows);
 		for ($i=0; $i<$max; $i++) {
@@ -1355,8 +1413,8 @@ require_once("../qr/qrlib.php");
 				Color,
 				[Motor],
 				[Chasis],
+				Estado,
 				[Sistema_Fecha],
-				Numero_PermisoEspecial,
 				Permiso_Explotacion,
 				[VIN],
 				[Combustible],
@@ -1365,8 +1423,7 @@ require_once("../qr/qrlib.php");
 				[Largo],
 				[Capacidad_Carga],
 				[Peso_Unidad],
-				[ID_Placa_Antes_Replaqueo],
-				ESTADO
+				[ID_Placa_Antes_Replaqueo]
 			FROM
 			(
 				-- Vehículos actuales
@@ -1402,8 +1459,8 @@ require_once("../qr/qrlib.php");
 					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
 					veh.[Motor],
 					veh.[Chasis],
+					'NORMAL' AS Estado,
 					veh.[Sistema_Fecha],
-					veh.[Numero_PermisoEspecial],
 					veh.[Numero_Explotacion] AS Permiso_Explotacion,
 					veh.[VIN],
 					veh.[Combustible],
@@ -1412,8 +1469,7 @@ require_once("../qr/qrlib.php");
 					veh.[Largo],
 					veh.[Capacidad_Carga],
 					veh.[Peso_Unidad],
-					veh.[ID_Placa_Antes_Replaqueo],
-					'NORMAL' AS ESTADO
+					veh.[ID_Placa_Antes_Replaqueo]
 				FROM 
 					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] veh
 				JOIN 
@@ -1430,7 +1486,7 @@ require_once("../qr/qrlib.php");
 						FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] soli 
 						WHERE soli.ID_Solicitud = veh.ID_Solicitud)
 
-				WHERE veh.ID_Solicitud = :ID_Solicitud1
+				WHERE veh.ID_Solicitud = :ID_Solicitud
 				UNION
 				-- Vehículos entra
 				SELECT 	
@@ -1465,8 +1521,8 @@ require_once("../qr/qrlib.php");
 					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
 					veh.[Motor],
 					veh.[Chasis],
+					'ENTRA' AS Estado,
 					veh.[Sistema_Fecha],
-					veh.[Numero_PermisoEspecial],
 					veh.[Numero_Explotacion] AS Permiso_Explotacion,
 					veh.[VIN],
 					veh.[Combustible],
@@ -1475,9 +1531,7 @@ require_once("../qr/qrlib.php");
 					veh.[Largo],
 					veh.[Capacidad_Carga],
 					veh.[Peso_Unidad],
-					veh.[ID_Placa_Antes_Replaqueo],
-					'ENTRA' AS ESTADO
-
+					veh.[ID_Placa_Antes_Replaqueo]
 				FROM 
 					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] veh
 				JOIN 
@@ -1506,6 +1560,17 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
+	protected function validarAccesoEstadoInicial()
+	{
+		$p = array(":usuario" => $_SESSION['user_name'],":ID_Estado" => $this->appcfg_estado_inicial);
+		$q = "SELECT ID FROM [IHTT_RENOVACIONES_AUTOMATICAS].[DBO].[TB_Estados_User] WHERE usuario =:usuario and [ID_Estado] = :ID_Estado and [estado] = 1";
+		if (!isset($_POST["echo"])) {
+			return $this->select($q, $p);
+		} else {
+			echo json_encode($this->select($q, $p));
+		}
+	}
+
 	protected function getDatosPorOmision()
 	{
 		$datos[1] = $this->getEntregaUbicacion();
@@ -1515,7 +1580,7 @@ require_once("../qr/qrlib.php");
 			//*************************************************************************************/
 			//* Si es un fsl que ya estaba salvada y se va a continuar trabajando
 			//*************************************************************************************/
-			if ($_POST["RAM"] != '') {
+			if ($_POST["RAM"] != '' && $_POST["RAM"] != Null) {
 				$SolictanteBasEXP = $this->getSolicitanteBasEXP();
 				if (!isset($SolictanteBasEXP[0])) {
 					$datos[4] = $this->getSolicitanteRAM();
@@ -1530,8 +1595,9 @@ require_once("../qr/qrlib.php");
 							$datos[10] = $this->getMunicipios($datos[4][0]['ID_Departamento']);
 							$datos[11] = $this->getDepartamentos();
 						}
+						echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 					} else {
-						echo json_encode(array("error" => 90001, "errorhead" => 'RAM NO ENCONTRADA', "errormsg" => 'SI LA RAM NO PUEDO SER RECUPERADA PUEDE DEBERSE A QUE NO TIENE ACCESO AL ESTADO ACTUAL DE LA MISMA O QUE EL NUMERO DE RAM NO ES EL CORRECTO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));						
+						echo json_encode(array("error" => 90001, "errorhead" => 'RAM <strong>' .  $_POST["RAM"] . '</strong> NO ENCONTRADA', "errormsg" => 'SI LA RAM NO PUEDO SER RECUPERADA PUEDE DEBERSE A QUE NO TIENE ACCESO AL ESTADO ACTUAL DE LA MISMA O QUE EL NUMERO DE RAM NO ES EL CORRECTO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);						
 					}
 				} else {
 					$datos[4] = $this->getSolicitanteEXP();
@@ -1547,16 +1613,22 @@ require_once("../qr/qrlib.php");
 							$datos[11] = $this->getDepartamentos();
 						}
 						$datos[12] = $_POST["RAM"];
+						echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 					} else {
-						echo json_encode(array("error" => 90002, "errorhead" => 'EXPEDIENTE NO ENCONTRADA', "errormsg" => 'SI LA RAM NO PUEDO SER RECUPERADA PUEDE DEBERSE A QUE NO TIENE ACCESO AL ESTADO ACTUAL DE LA MISMA O QUE EL NUMERO DE RAM NO ES EL CORRECTO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));						
+						echo json_encode(array("error" => 90002, "errorhead" => 'EXPEDIENTE  <strong>' .  $_POST["RAM"] . '</strong> NO ENCONTRADO', "errormsg" => 'SI EL EXPEDIENTE NO PUEDO SER RECUPERADA PUEDE DEBERSE A QUE NO TIENE ACCESO AL ESTADO ACTUAL DE LA MISMO O QUE EL NUMERO DE EXPEDIENTE NO ES EL CORRECTO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);						
 					}
 				}
-				echo json_encode($datos);
 			} else {
-				echo json_encode(array("error" => 1001, "errorhead" => 'RAM EN BLANCO', "errormsg" => 'EL NÚMERO RAM ESTA EN BLANCO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+				$estadoInicial = $this->validarAccesoEstadoInicial();
+				if (isset($estadoInicial[0])) {
+					$datos[15] = ['Estado' => $this->appcfg_estado_inicial, 'Desc_Estado' => $this->appcfg_estado_inicial_descripcion];
+					echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+				} else {
+					echo json_encode(array("error" => 1003, "errorhead" => 'SIN AUTORIZACIÓN', "errormsg" => 'SU USUARIO NO TIENE ACCESO AL ESTADO INICIAL DE INGRESO DE RAMs.</br>ESTADO INICIAL: <strong>' . $this->appcfg_estado_inicial . ' => ' . $this->appcfg_estado_inicial_descripcion . '</strong>'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+				}
 			}
 		} else {
-			echo json_encode(array("error" => 1001, "errorhead" => 'UBICACION DE ENTREGA', "errormsg" => 'ALGO RARO SUCEDIO RECUPERANDO LOS DATOS DE UBICACIONES Y DEPARTAMENTOS, INTENTELO DE NUEVO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+			echo json_encode(array("error" => 1001, "errorhead" => 'UBICACION DE ENTREGA', "errormsg" => 'ALGO RARO SUCEDIO RECUPERANDO LOS DATOS DE UBICACIONES Y DEPARTAMENTOS, INTENTELO DE NUEVO. SI EL PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 		}
 	}
 
@@ -1775,6 +1847,181 @@ require_once("../qr/qrlib.php");
 	}
 
 	//*************************************************************************************/
+	//* FUNCION PARA RECUPERAR UNIDAD ASIGNADA AL CERTIFICADO
+	//*************************************************************************************/
+
+	protected function getUnidadExpediente($RAM, $idConcesion)
+	{
+		$q = "SELECT 
+				Certificado_Operacion, 
+				[Clase Servicio],
+				DESC_Tipo_Vehiculo,
+				ID_Formulario_Solicitud,
+				[ID],
+				[RTN_Propietario],
+				[Nombre_Propietario],
+				[ID_Placa],
+				[ID_Marca],
+				[Marca],
+				[Anio],
+				[Modelo],
+				[Tipo_Vehiculo],
+				[ID_Color],
+				[Color],
+				[Color],
+				[Motor],
+				[Chasis],
+				Estado,
+				[Sistema_Fecha],
+				Permiso_Explotacion,
+				[VIN],
+				[Combustible],
+				[Alto],
+				[Ancho],
+				[Largo],
+				[Capacidad_Carga],
+				[Peso_Unidad],
+				[ID_Placa_Antes_Replaqueo]
+			FROM
+			(
+				SELECT 	
+					CASE 
+						WHEN veh.[Numero_Explotacion] != '' THEN RTRIM(veh.[Numero_Certificado])
+						ELSE RTRIM(veh.[Numero_PermisoEspecial])
+					END AS Certificado_Operacion,				
+					vl.[Clase Servicio],
+					CASE 
+						WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
+							(SELECT DESC_Tipo_Vehiculo 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+						ELSE 
+							(SELECT DESC_Tipo_Vehiculo_Transporte_Pas 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
+					END AS DESC_Tipo_Vehiculo,			
+					veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
+					veh.[ID],
+					veh.[RTN_Propietario],
+					veh.[Nombre_Propietario],
+					veh.[ID_Placa],
+					veh.[ID_Marca],
+					CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
+					veh.[Anio],
+					veh.[Modelo],
+					veh.[Tipo_Vehiculo],
+					veh.[ID_Color],
+					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
+					veh.[Motor],
+					veh.[Chasis],
+					'AAAAAAAA-NORMAL' AS Estado,
+					veh.[Sistema_Fecha],
+					veh.[Numero_Explotacion] AS Permiso_Explotacion,
+					veh.[VIN],
+					veh.[Combustible],
+					veh.[Alto],
+					veh.[Ancho],
+					veh.[Largo],
+					veh.[Capacidad_Carga],
+					veh.[Peso_Unidad],
+					veh.[ID_Placa_Antes_Replaqueo]
+				FROM 
+					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] veh
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
+				JOIN
+					[IHTT_SGCERP].[dbo].[v_Listado_General] vl ON vl.N_Certificado = 
+						(SELECT TOP 1
+							CASE 
+								WHEN soli.[Numero_Explotacion] != '' THEN RTRIM(soli.[Numero_Certificado])
+								ELSE RTRIM(soli.[Numero_PermisoEspecial])
+							END 
+						FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] soli 
+						WHERE soli.ID_Solicitud = veh.ID_Solicitud)
+
+				WHERE veh.ID_Solicitud = :ID_Solicitud and  ((veh.[Numero_PermisoEspecial] != '' and veh.[Numero_PermisoEspecial] = :Concesion) or
+				 (veh.[Numero_Certificado] != '' and veh.[Numero_Certificado] = :Concesion1))
+				UNION
+				SELECT 	
+					CASE 
+						WHEN veh.[Numero_Explotacion] != '' THEN RTRIM(veh.[Numero_Certificado])
+						ELSE RTRIM(veh.[Numero_PermisoEspecial])
+					END AS Certificado_Operacion,				
+					vl.[Clase Servicio],
+					CASE 
+						WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
+							(SELECT DESC_Tipo_Vehiculo 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
+						ELSE 
+							(SELECT DESC_Tipo_Vehiculo_Transporte_Pas 
+							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] vv
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
+					END AS DESC_Tipo_Vehiculo,			
+					veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
+					veh.[ID],
+					veh.[RTN_Propietario],
+					veh.[Nombre_Propietario],
+					veh.[ID_Placa],
+					veh.[ID_Marca],
+					CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
+					veh.[Anio],
+					veh.[Modelo],
+					veh.[Tipo_Vehiculo],
+					veh.[ID_Color],
+					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
+					veh.[Motor],
+					veh.[Chasis],
+					'ENTRA' AS Estado,
+					veh.[Sistema_Fecha],
+					veh.[Numero_Explotacion] AS Permiso_Explotacion,
+					veh.[VIN],
+					veh.[Combustible],
+					veh.[Alto],
+					veh.[Ancho],
+					veh.[Largo],
+					veh.[Capacidad_Carga],
+					veh.[Peso_Unidad],
+					veh.[ID_Placa_Antes_Replaqueo]
+				FROM 
+					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] veh
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
+				JOIN 
+					[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
+				JOIN
+					[IHTT_SGCERP].[dbo].[v_Listado_General] vl ON vl.N_Certificado = 
+						(SELECT TOP 1
+							CASE 
+								WHEN soli.[Numero_Explotacion] != '' THEN RTRIM(soli.[Numero_Certificado])
+								ELSE RTRIM(soli.[Numero_PermisoEspecial])
+							END 
+						FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] soli 
+						WHERE soli.ID_Solicitud = veh.ID_Solicitud)
+				WHERE veh.ID_Solicitud = :ID_Solicitud1 and ((veh.[Numero_PermisoEspecial] != '' and veh.[Numero_PermisoEspecial] = :Concesion2) or
+				 (veh.[Numero_Certificado] != '' and veh.[Numero_Certificado] = :Concesion3))
+			) AS result
+			ORDER BY 
+				ESTADO,
+				Certificado_Operacion;";
+				if (!isset($_POST["echo"])) {
+			return $this->select($q, array(":ID_Solicitud" => $RAM, ":ID_Solicitud1" => $RAM, ":Concesion" => $idConcesion,":Concesion1" => $idConcesion,":Concesion2" => $idConcesion,":Concesion3" => $idConcesion));
+		} else {
+			echo json_encode($this->select($q, array()));
+		}
+	}
+
+	//*************************************************************************************/
 	//* FUNCION PARA RECUPERAR Aldea, Departamento y Municipio
 	//*************************************************************************************/
 	protected function ALDEASDEPARTAMENTO($col)
@@ -1940,7 +2187,7 @@ require_once("../qr/qrlib.php");
 					. $row["descripcion_larga"] . 
 					'</div>
 				  </div><div class="col-md-3">'				  
-					. '<input style="display:none; text-transform: uppercase;" 
+					. '<input data-validar-salvar="false" style="display:none; text-transform: uppercase;" 
 					id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
 					title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
 					pattern="^[A-Z]{3}\d{4}$" 
@@ -2076,6 +2323,180 @@ require_once("../qr/qrlib.php");
 			[IHTT_PREFORMA].[dbo].[TB_Solicitud] SOL 
 		ON 
 			TR.ID_Tramite = SOL.ID_Tramite and SOL.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and (SOL.N_Certificado = :N_Certificado or SOL.N_Permiso_Especial = :N_Permiso_Especial)
+		WHERE 
+			TR.ID_Categoria = :ID_Categoria
+			AND T.Es_Renovacion_Automatica = 1 
+			AND C.ID_Tipo_Tramite IS NOT NULL 
+			AND C.Acronimo_Clase IN (" . $joined_string . ")
+		ORDER BY T.ID_Tipo_Tramite, TR.ID_Clase_Tramite;";
+		$bandera = 1;
+		if ($bandera == 1) {
+			$html = '<div class="row border border-primary d-flex justify-content-between align-items-center p-2">
+            <div class="col">
+                <strong>LISTADO DE TRÁMITES</strong>
+            </div>
+            <div class="d-flex justify-content-end">
+		
+                <i 
+				data-bs-toggle="tooltip" 
+				data-bs-placement="top" 
+				data-bs-original-title="Cerrar tabla de tramites" 
+				onClick="fShowTramites();" class="fas fa-window-close fa-2x gobierno1"></i>
+            </div>
+         	</div>';
+			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-9"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
+			$rows = ($this->select($q, array(':ID_Formulario_Solicitud' => $RAM, ':N_Certificado' => $idConcesion, ':N_Permiso_Especial' => $idConcesion, ':ID_Categoria' => $ID_Categoria)));
+			foreach ($rows as $row) {
+				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
+					$display = 'display:' .($row['Checked'] == 'checked') ? 'flex;' : 'none;';
+					$html = $html . '<div class="row border border-info" id="row_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '">
+					<div class="col-md-1">
+					  <input ' . $row['Checked'] . ' data-iddb="' . $row['ID'] . '" data-monto="' . $row['Monto'] . '" 
+							 class="form-check-input tramiteschk" 
+							 id="' . $row['ID_CHECK'] . '" 
+							 type="checkbox" 
+							 name="tramites[]" 
+							 value="' . $row["ID_Tramite"] . '">
+					</div>
+					<div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div>
+					<div class="col-md-3">
+					  <input style="display:none; text-transform: uppercase;" 
+							 id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
+							 title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" 
+							 pattern="^[A-Z]{3}\d{4}$" 
+							 placeholder="PLACA" 
+							 class="form-control form-control-sm test-controls" 
+							 size="8"
+							 minlength="7" 
+							 maxlength="7">
+					</div>
+				  </div>';
+				} else {
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '"><div class="col-md-1"><input  ' . $row['Checked']  . ' data-iddb="' . $row['ID'] . '"  data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div><div class="col-md-3">&nbsp;</div></div>';
+				}
+			}
+		} else {
+			$html = '<div class="row border border-primary d-flex justify-content-between align-items-center p-2">
+            <div class="col">
+                <strong>LISTADO DE TRÁMITES</strong>
+            </div>
+            <div class="d-flex justify-content-end">
+				
+                <i id="cerrar_tramites"
+					data-bs-toggle="tooltip" 
+					data-bs-placement="top" 
+					data-bs-original-title="Cerrar tabla de tramites" 
+				onClick="fShowTramites();" class="fas fa-window-close fa-2x gobierno1"></i>
+            </div>
+         	</div>';
+			$html = $html . '<div class="row"><div class="col-md-1"></div><div class="col-md-3"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div><div class="col-md-1"></div><div class="col-md-3"><strong>TRAMITE</strong></div><div class="col-md-2"><strong>PLACA</strong></div></div>';
+			$rows = ($this->select($q, array(':ID_Categoria' => $ID_Categoria)));
+			$process = 0;
+			foreach ($rows as $row) {
+				if ($process == 0) {
+					$html = $html . '<div class="row border border-info" id="row_tramite_'  . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase']  .  '">';
+				}
+				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
+					$html = $html . '<div id="field1_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '" class="col-md-1">
+					<input ' . $row['Checked']  . ' data-iddb="' . $row['ID'] .  '"  data-monto="' . $row['Monto'] . '" 
+						   class="form-check-input tramiteschk" 
+						   id="' . $row['ID_CHECK'] . '" 
+						   type="checkbox" 
+						   name="tramites[]" 
+						   value="' . $row["ID_Tramite"] . '">
+				  </div>
+				  <div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">
+					' . $row["descripcion_larga"] . '
+				  </div>
+				  <div class="col-md-3">
+					<input style="display:none; text-transform: uppercase;" 
+						   id="concesion_tramite_placa_' . $row['Acronimo_Clase'] . '" 
+						   title="La placa debe contener los primeros 3 dígitos alfa y los últimos 4 numéricos, máximo 7 caracteres" 
+						   pattern="^[A-Z]{3}\d{4}$" 
+						   placeholder="PLACA" 
+						   class="form-control form-control-sm test-controls" 
+						   size="8"
+						   minlength="7" 
+						   maxlength="7">
+				  </div>';
+				} else {
+					$html = $html . '<div class="col-md-1"><input ' . $row['Checked']  . ' data-iddb="' . $row['ID'] .  '" data-monto="' . $row['Monto'] . '" class="form-check-input tramiteschk" ' .  " id=" . $row['ID_CHECK']  .  ' type="checkbox" name="tramites[]" value="' . $row["ID_Tramite"] . '"></div><div id="descripcion_' . $row["ID_Tramite"] . '" class="col-md-8">' . $row["descripcion_larga"] . '</div><div class="col-md-3">&nbsp;</div>';
+				}
+				$process++;
+				if ($process == 2) {
+					$html = $html . '</div>';
+					$process = 0;
+				}
+			}
+
+			if ($process == 1) {
+				$html = $html . '<div class="col-md-1"></div><div class="col-md-3"></div><div class="col-md-2"></div></div>';
+			}
+		}
+
+		if (!isset($_POST["echo"])) {
+			return $html;
+		} else {
+			echo json_encode($html);
+			exit();
+		}
+	}
+	//*****************************************************************************************************/
+	//* Final: Recuperando Tramites Preforma
+	//*****************************************************************************************************/	
+	//*****************************************************************************************************/
+	//* Inicio: Recuperando Tramites Preforma
+	//*****************************************************************************************************/
+	protected function getTipoTramiteyClaseTramiteExpediente($filtro = array(), $ID_Categoria, $RAM, $idConcesion)
+	{
+		$joined_string = "'" . implode("', '", $filtro) . "'";
+		$q =  "SELECT SOL.ID,
+    CONCAT(T.ID_Tipo_Tramite, '_', C.ID_Clase_Tramite, '_', T.Acronimo_Tramite, '_', C.Acronimo_Clase) AS ID_CHECK,
+    CONCAT(T.DESC_Tipo_Tramite, ' ', C.DESC_Clase_Tramite) AS descripcion_larga,
+    T.ID_Tipo_Tramite,
+    C.ID_Tipo_Tramite AS ID_Tipo_Tramite_Array,
+    T.DESC_Tipo_Tramite,
+    T.Acronimo_Tramite,
+    C.ID_Clase_Tramite,
+    C.DESC_Clase_Tramite,
+    C.Acronimo_Clase,
+    TR.ID_Tramite,
+    (
+        SELECT TOP 1 
+            CASE 
+                WHEN B.Monto > 0.00 THEN ROUND(B.Monto, 2)
+                ELSE ROUND((B.SalarioMinimo * (B.ValorFraccion / 100)), 2)
+            END AS Monto
+        FROM 
+            [IHTT_Webservice].[dbo].[TB_Tarifas] A
+        INNER JOIN 
+            [IHTT_Webservice].[dbo].[TB_TarifasHistorico] B 
+        ON 
+            A.CodigoTramite = B.CodigoTramite
+        WHERE 
+            A.CodigoTramite = TR.ID_Tramite
+        ORDER BY 
+            B.SistemaFecha DESC
+    ) AS Monto,
+    CASE 
+        WHEN isnull(SOL.ID,0) = 0 THEN ''
+        ELSE 'checked=true'
+    END AS Checked
+		FROM 
+			[IHTT_DB].[dbo].[TB_CLASE_TRAMITE] C
+		INNER JOIN 
+			[IHTT_DB].[dbo].[TB_TIPO_TRAMITE] T 
+		ON 
+			C.ID_Tipo_Tramite LIKE '%' + CAST(T.ID_Tipo_Tramite AS VARCHAR) + '%'
+		INNER JOIN 
+			[IHTT_DB].[dbo].[TB_TRAMITE] TR
+		ON 
+			TR.ID_Tipo_Tramite = T.ID_Tipo_Tramite 
+			AND TR.ID_Clase_Tramite = C.ID_Clase_Tramite
+		LEFT OUTER JOIN 
+			[IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] SOL 
+		ON 
+			TR.ID_Tramite = SOL.ID_Tramite and SOL.ID_Solicitud = :ID_Formulario_Solicitud and (SOL.Certificado_Operacion = :N_Certificado or SOL.N_Permiso_Especial = :N_Permiso_Especial)
 		WHERE 
 			TR.ID_Categoria = :ID_Categoria
 			AND T.Es_Renovacion_Automatica = 1 
@@ -2652,7 +3073,7 @@ require_once("../qr/qrlib.php");
 								// Recuperando las multas del vehiculo
 								//**********************************************************************************************************************/
 								$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior);
-								$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],$_POST['RAM']);
+								$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],isset($_POST['RAM'])??'');
 								$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 								$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
 								$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
@@ -2715,7 +3136,7 @@ require_once("../qr/qrlib.php");
 									// Recuperando las multas del vehiculo
 									//**********************************************************************************************************************/
 									$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior);
-									$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],$_POST['RAM']);
+									$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],isset($_POST['RAM'])??'');
 									$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 									$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
 									$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
@@ -2760,7 +3181,7 @@ require_once("../qr/qrlib.php");
 	}
 
 	//*************************************************************************************/
-	//* FUNCION PARA RECUPERAR EL SOLICITANTE
+	//* FUNCION PARA RECUPERAR LA CONCESION EN PREFORMA
 	//*************************************************************************************/
 	protected function getConcesionPreforma()
 	{
@@ -2940,6 +3361,187 @@ require_once("../qr/qrlib.php");
 		echo json_encode($datos);
 	}
 
+		//*************************************************************************************/
+	//* FUNCION PARA RECUPERAR LA CONCESION EN PREFORMA
+	//*************************************************************************************/
+	protected function getConcesionExpediente()
+	{
+
+		$query = "select * from IHTT_SGCERP.dbo.v_Listado_General WHERE N_Certificado = :N_Certificado order by Sistema_Fecha";
+		$p = array(":N_Certificado" => $_POST["idConcesion"]);
+		$data = $this->select($query, $p);
+		$datos[0] = count($data);
+
+		if ($datos[0] > 0) {
+			$data[0]["Marcas"] = $this->getMarca();
+			$data[0]["Anios"] = $this->getAnios();
+			$data[0]["Colores"] = $this->getColor();
+			$data[0]["Tipo_Categoria_Especilizada"] = '';
+			$data[0]["Desc_Categoria_Especilizada"] = '';
+			$data[0]["ID_Area_Operacion"] = '';
+			$data[0]["Desc_Area_Operacion"] = '';
+			$record["Fecha_Expiracion"] = $data[0]["Fecha Vencimiento Certificado"];
+			$record["Fecha_Expiracion_Explotacion"] = $data[0]["Fecha Vencimiento Permiso"];
+			$data[0]["Vencimientos"] = $this->procesarFechaDeVencimiento($record, $data[0]["ID_Clase_Servico"])[1];
+			$data[0]["Unidad"][0]['ID_Marca'] = '';
+			$data[0]["Unidad"][0]['ID_Color'] = '';
+			if ($data[0]["Clase Servicio"] == 'STEC') {
+				$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"] . ":172/api_rep.php?action=get-PDFPermisoEsp-Carga&PermisoEspecial=" . $data[0]["CertificadoEncriptado"];
+				$data[0]["Vista"] = file_get_contents("vistas/pes_carga.html");
+				$data[0]["Unidad"] = $this->getUnidadExpediente($_POST["RAM"], $_POST["idConcesion"]);
+				//**********************************************************************************************************************/
+				//* Recuperando Bandera Sobre Si Pago el Cambio de Placa o No
+				//**********************************************************************************************************************/
+				if (
+					isset($data[0]) &&
+					isset($data[0]["Unidad"]) &&
+					isset($data[0]["Unidad"][0]) &&
+					Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
+				) {
+					$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+					if (isset($row_rs_stmt['MONTO'])) {
+						$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
+					} else {
+						$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+					}
+				} else {
+					$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+				}
+				//**********************************************************************************************************************/
+				//* Recuperando las multas del vehiculo
+				//**********************************************************************************************************************/
+				if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][0]) and isset($data[0]["Unidad"][0]['ID_Placa'])) {
+					$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($data[0]["Unidad"][0]['ID_Placa'], $data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+				}
+				if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][1]) and isset($data[0]["Unidad"][1]['ID_Placa'])) {
+					$data[0]["Unidad"][1]['Multas1'] = $this->getDatosMulta($data[0]["Unidad"][1]['ID_Placa'], $data[0]["Unidad"][1]['ID_Placa_Antes_Replaqueo']);
+				}
+				$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
+				$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramiteExpediente(['PS', 'CU', 'CL', 'CM', 'CC', 'CS', 'X'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
+				$tipo = $this->getCategoriaEspecilizadaCarga();
+				if (count($tipo) > 0) {
+					$data[0]["Tipo_Categoria_Especilizada"] = $tipo[0]['value'];
+					$data[0]["Desc_Categoria_Especilizada"] = $tipo[0]['text'];
+				}
+			} else {
+				if ($data[0]["Clase Servicio"] == 'STEP') {
+					$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"] . ":172/api_rep.php?action=get-PDFPermisoEsp-Pas&PermisoEspecial=" . $data[0]["CertificadoEncriptado"];
+					$data[0]["Vista"] = file_get_contents("vistas/pes_pasajero.html");
+					$data[0]["Unidad"] = $this->getUnidadExpediente($_POST["RAM"], $_POST["idConcesion"]);
+					//**********************************************************************************************************************/
+					//* Recuperando Bandera Sobre Si Pago el Cambio de Placa o No
+					//**********************************************************************************************************************/
+					if (
+						isset($data[0]) &&
+						isset($data[0]["Unidad"]) &&
+						isset($data[0]["Unidad"][0]) &&
+						Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
+					) {
+						$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+						if (isset($row_rs_stmt['MONTO'])) {
+							$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
+						} else {
+							$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+						}
+					} else {
+						$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+					}
+					//**********************************************************************************************************************/
+					//* Recuperando las multas del vehiculo
+					//**********************************************************************************************************************/
+					if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][0]) and isset($data[0]["Unidad"][0]['ID_Placa'])) {
+						$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($data[0]["Unidad"][0]['ID_Placa'], $data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+					}
+					if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][1]) and isset($data[0]["Unidad"][1]['ID_Placa'])) {
+						$data[0]["Unidad"][1]['Multas1'] = $this->getDatosMulta($data[0]["Unidad"][1]['ID_Placa'], $data[0]["Unidad"][1]['ID_Placa_Antes_Replaqueo']);
+					}
+					$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
+					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramiteExpediente(['PS', 'CU', 'CL', 'CM', 'CC', 'CS', 'X'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
+					$area = $this->getAreaOperacion();
+					if (count($area) > 0) {
+						$data[0]["Tipo_Categoria_Especilizada"] = $area[0]['value'];
+						$data[0]["Desc_Categoria_Especilizada"] = $area[0]['text'];
+					}
+				} else {
+					if ($data[0]["Clase Servicio"] == 'STPC') {
+						$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"] . ":172/api_rep.php?action=get-PDFCertificado-Carga&Certificado=" . $data[0]["CertificadoEncriptado"];
+						$data[0]["Vista"] = file_get_contents("vistas/certificado_carga.html");
+						$data[0]["Unidad"] = $this->getUnidadExpediente($_POST["RAM"], $_POST["idConcesion"]);
+						//**********************************************************************************************************************/
+						//* Recuperando Bandera Sobre Si Pago el Cambio de Placa o No
+						//**********************************************************************************************************************/
+						if (
+							isset($data[0]) &&
+							isset($data[0]["Unidad"]) &&
+							isset($data[0]["Unidad"][0]) &&
+							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
+						) {
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+							if (isset($row_rs_stmt['MONTO'])) {
+								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
+							} else {
+								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+							}
+						} else {
+							$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+						}
+						//**********************************************************************************************************************/
+						//* Recuperando las multas del vehiculo
+						//**********************************************************************************************************************/
+						if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][0]) and isset($data[0]["Unidad"][0]['ID_Placa'])) {
+							$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($data[0]["Unidad"][0]['ID_Placa'], $data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+						}
+						if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][1]) and isset($data[0]["Unidad"][1]['ID_Placa'])) {
+							$data[0]["Unidad"][1]['Multas1'] = $this->getDatosMulta($data[0]["Unidad"][1]['ID_Placa'], $data[0]["Unidad"][1]['ID_Placa_Antes_Replaqueo']);
+						}
+						$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
+						$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramiteExpediente(['PE', 'CO', 'CL', 'CM', 'CC', 'CS', 'CU'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
+						$tipo = $this->getCategoriaEspecilizadaCarga($data[0]["Id_Tipo_Categoria"]);
+						if (count($tipo) > 0) {
+							$data[0]["Tipo_Categoria_Especilizada"] = $tipo[0]['value'];
+							$data[0]["Desc_Categoria_Especilizada"] = $tipo[0]['text'];
+						}
+					} else {
+						$data[0]["Link"] = $_SESSION["appcfg_Dominio_Raiz"] . ":172/api_rep.php?action=get-PDFCertificado&Certificado=" . $data[0]["CertificadoEncriptado"];
+						$data[0]["Vista"] = file_get_contents("vistas/certificado_pasajero.html");
+						$data[0]["Unidad"] = $this->getUnidadExpediente($_POST["RAM"], $_POST["idConcesion"]);
+						//**********************************************************************************************************************/
+						//* Recuperando Bandera Sobre Si Pago el Cambio de Placa o No
+						//**********************************************************************************************************************/
+						if (
+							isset($data[0]) &&
+							isset($data[0]["Unidad"]) &&
+							isset($data[0]["Unidad"][0]) &&
+							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
+						) {
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+							if (isset($row_rs_stmt['MONTO'])) {
+								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
+							} else {
+								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+							}
+						} else {
+							$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
+						}
+						//**********************************************************************************************************************/
+						//* Recuperando las multas del vehiculo
+						//**********************************************************************************************************************/
+						if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][0]) and isset($data[0]["Unidad"][0]['ID_Placa'])) {
+							$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($data[0]["Unidad"][0]['ID_Placa'], $data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+						}
+						if (isset($data[0]["Unidad"]) and isset($data[0]["Unidad"][1]) and isset($data[0]["Unidad"][1]['ID_Placa'])) {
+							$data[0]["Unidad"][1]['Multas1'] = $this->getDatosMulta($data[0]["Unidad"][1]['ID_Placa'], $data[0]["Unidad"][1]['ID_Placa_Antes_Replaqueo']);
+						}
+						$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
+						$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramitePreforma(['PE', 'CO', 'CL', 'CM', 'CC', 'CS', 'CU'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
+					}
+				}
+			}
+			$datos[1] = $data;
+		}
+		echo json_encode($datos);
+	}
+
 	protected function getUsuarioAsigna()
 	{
 		//**************************************************************************//
@@ -3076,6 +3678,9 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
+	protected function validarEnExpediente($ID_Placa, $ID_Placa_Antes_Replaqueo, $Concesion, $RAM=''): mixed{
+		return array();
+	}
 	//**************************************************************************************/
 	//*  Valida que la placa no este asignada a una concesion que este con tramites        */
 	//*  pendientes en preforma al igual valida que la concesion no este con               */
@@ -3119,7 +3724,7 @@ require_once("../qr/qrlib.php");
 				)
 				)
 				or
-				(
+				(:MODALIDAD_INGRESO = 'U' AND
 				S.ID_Formulario_Solicitud = :RAM1 AND
 				S.Estado_Formulario in ('IDE-1','IDE-7') AND
 				S.ID_Formulario_Solicitud = A.ID_Formulario_Solicitud AND 
@@ -3386,7 +3991,7 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
-	protected function saveSolicitante($Concesion, $Apoderado, $Solicitante, $row_ciudad, $RAM)
+	protected function saveSolicitante($Concesion, $Apoderado, $Solicitante, $row_ciudad, $RAM,$UsuarioAsigna)
 	{
 		$HASH = hash('SHA512', '%^4#09+-~@%&zfg' . $RAM . date('m/d/Y h:i:s a', time()), false);
 		$query = "INSERT INTO [IHTT_PREFORMA].[dbo].[TB_Solicitante] 
@@ -3480,8 +4085,8 @@ require_once("../qr/qrlib.php");
 			":Usuario_Cancelacion" => '',
 			":Presentacion_Documentos" => $Apoderado['Tipo_Presentacion'],
 			":Etapa_Preforma" => 1,
-			":Usuario_Acepta" => $_SESSION["user_name"], //$row_usuario_asigna[0]["Nombre_Usuario"], 
-			":Codigo_Usuario_Acepta" => $_SESSION["ID_Usuario"], //$row_usuario_asigna[0]["Codigo_Usuario"],
+			":Usuario_Acepta" => $UsuarioAsigna[0]["Nombre_Usuario"], 
+			":Codigo_Usuario_Acepta" => $UsuarioAsigna[0]["Codigo_Usuario"],
 			":Tipo_Solicitud" => $Concesion['esCarga'] = true ? 'CARGA' : 'PASAJEROS',
 			":Entrega_Ubicacion" => $Apoderado['Lugar_Entrega']
 		);
@@ -3524,11 +4129,10 @@ require_once("../qr/qrlib.php");
 
 	protected function saveUnidad($RAM, $Unidad, $Concesion, $Estado)
 	{
-
 		IF (isset($_POST['Concesion']['Permiso_Especial']) AND $_POST['Concesion']['Permiso_Especial'] == "") {
 			$PERMISO_ESPECIAL = "";
-			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
-			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
+			$PERMISO_EXPLOTACION = $Concesion['Permiso_Explotacion'];
+			$CERTIFICADO_OPERACION = $Concesion['Certificado'];
 		} ELSE {
 			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
 			$PERMISO_EXPLOTACION = "";
@@ -3618,6 +4222,97 @@ require_once("../qr/qrlib.php");
 		return $this->insert($query, $parametros);
 	}
 
+	protected function saveUnidadExpediente($RAM, $Unidad, $Concesion, $tabla)
+	{
+
+		IF (isset($_POST['Concesion']['Permiso_Especial']) AND $_POST['Concesion']['Permiso_Especial'] == "") {
+			$PERMISO_ESPECIAL = "";
+			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
+			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
+		} ELSE {
+			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
+			$PERMISO_EXPLOTACION = "";
+			$CERTIFICADO_OPERACION = "";
+		}
+
+		$query = "INSERT INTO " . $tabla ." (
+		ID_Solicitud,
+		RTN_Propietario,
+		Nombre_Propietario,
+		ID_Placa,
+		ID_Marca,
+		Anio,
+		Modelo,
+		Tipo_Vehiculo,
+		ID_Color,
+		Motor,
+		Chasis,
+		VIN,
+		Combustible,
+		Alto,
+		Ancho,
+		Largo,
+		Capacidad_Carga,
+		Peso_Unidad,
+		Numero_Explotacion,
+		Numero_Certificado,
+		Numero_PermisoEspecial,
+		ID_Placa_Antes_Replaqueo,
+		Sistema_Usuario,
+		Sistema_Fecha)
+		VALUES(
+		:ID_Solicitud,
+		:RTN_Propietario,
+		:Nombre_Propietario,
+		:ID_Placa,
+		:ID_Marca,
+		:Anio,
+		:Modelo,
+		:Tipo_Vehiculo,
+		:ID_Color,
+		:Motor,
+		:Chasis,
+		:VIN,
+		:Combustible,
+		:Alto,
+		:Ancho,
+		:Largo,
+		:Capacidad_Carga,
+		:Peso_Unidad,
+		:Numero_Explotacion,
+		:Numero_Certificado,
+		:Numero_PermisoEspecial,
+		:ID_Placa_Antes_Replaqueo,
+		:Sistema_Usuario,
+		SYSDATETIME())";
+		$parametros = array(
+			":ID_Solicitud" => $RAM,
+			":RTN_Propietario" => $Unidad['RTN_Propietario'],
+			":Nombre_Propietario" => strtoupper($Unidad['Nombre_Propietario']),
+			":ID_Placa" => strtoupper($Unidad['Placa']),
+			":ID_Marca" => $Unidad['Marca'],
+			":Anio" => $Unidad['Anio'],
+			":Modelo" => strtoupper($Unidad['Modelo']),
+			":Tipo_Vehiculo" => strtoupper($Unidad['Tipo']),
+			":ID_Color" => $Unidad['Color'],
+			":Motor" => strtoupper($Unidad['Motor']),
+			":Chasis" => strtoupper($Unidad['Serie']),
+			":VIN" => strtoupper($Unidad['VIN']),
+			":Combustible" => strtoupper($Unidad['Combustible']),
+			":Alto" =>  floatval($Unidad['Alto']),
+			":Ancho" => floatval($Unidad['Ancho']),
+			":Largo" => floatval($Unidad['Largo']),
+			":Capacidad_Carga" => floatval($Unidad['Capacidad']),
+			":Peso_Unidad" => 0,
+			":Numero_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
+			":Numero_Certificado" => strtoupper($CERTIFICADO_OPERACION),
+			":Numero_PermisoEspecial" => strtoupper(string: $PERMISO_ESPECIAL),
+			":ID_Placa_Antes_Replaqueo" => strtoupper($Unidad['ID_Placa_Antes_Replaqueo']),
+			":Sistema_Usuario" => $_SESSION["user_name"]
+		);
+		return $this->insert($query, $parametros);
+	}
+
 	protected function saveTramites($RAM, $Tramites)
 	{
 		if (isset($_POST["echo"])) {
@@ -3696,11 +4391,85 @@ require_once("../qr/qrlib.php");
 			}
 		}
 		if (!isset($_POST["echo"])) {
+			return $isOk;
+		} else {
 			if ($isOk[0] != false) {
-				return $isOk;
+				if ($contadorInserts > 0) {
+					$this->db->commit();
+				}
+				echo json_encode($isOk);
 			} else {
 				echo json_encode(array("error" => 7001, "errorhead" => 'ADVERTENCIA', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES TEMPORALES AL MOMENTO DE SALVAR EL TRAMITE EN PREFORMA'));
 			}
+		}
+	}
+
+	protected function saveTramitesExpediente($RAM, $Tramites)
+	{
+		if (isset($_POST["echo"])) {
+			$this->db->beginTransaction();
+		}
+
+		IF (isset($_POST['Concesion']['Permiso_Especial']) AND $_POST['Concesion']['Permiso_Especial'] == "") {
+			$PERMISO_ESPECIAL = "";
+			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
+			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
+		} ELSE {
+			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
+			$PERMISO_EXPLOTACION = "";
+			$CERTIFICADO_OPERACION = "";
+		}
+
+		$contadorInserts = 0;
+		$isOk = array();
+		$isOk[0] = false;
+		$contador = count($_POST["Tramites"]);
+		$query = "INSERT INTO [IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] (
+		ID_Solicitud,
+		ID_Tramite, 
+		Certificado_Operacion,
+        Permiso_Explotacion,
+        N_Permiso_Especial,
+		SistemaUsuario,
+        estaAprobado,
+        estaRevisado,
+        estafijado,
+		insertadaEnExpediente,
+      	SistemaFecha) 
+		VALUES(
+		:ID_Solicitud,
+		:ID_Tramite,
+		:Certificado_Operacion, 
+		:Permiso_Explotacion,
+		:N_Permiso_Especial,
+		:Sistema_Usuario,
+		0,
+		0,
+		0,
+		1,
+		SYSDATETIME())";
+		for ($i = 0; $i < $contador; $i++) {
+			$parametros = array(
+				":ID_Solicitud" => $RAM,
+				":ID_Tramite" => $Tramites[$i]['Codigo'],
+				":Certificado_Operacion" => strtoupper($CERTIFICADO_OPERACION),
+				":Permiso_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
+				":N_Permiso_Especial" => strtoupper($PERMISO_ESPECIAL),
+				":Sistema_Usuario" => $_SESSION["user_name"]
+			);
+			$isOk[$i] = ['ID' => $this->insert($query, $parametros), 'ID_Compuesto' => $Tramites[$i]['ID_Compuesto']];
+			if ($isOk[$i]['ID'] == false) {
+				$this->db->rollback();
+				unset($isOk);
+				$isOk = array();
+				$isOk[0] = false;
+				break;
+			} else {
+				$contadorInserts++;
+			}
+		}
+		if (!isset($_POST["echo"])) {
+			return $isOk;
 		} else {
 			if ($isOk[0] != false) {
 				if ($contadorInserts > 0) {
@@ -3831,15 +4600,11 @@ require_once("../qr/qrlib.php");
 	//****************************************************************************************************************** */
 	protected function updateSolicitante($Concesion, $Apoderado, $Solicitante, $row_ciudad, $RAM)
 	{
-		$HASH = hash('SHA512', '%^4#09+-~@%&zfg' . $RAM . date('m/d/Y h:i:s a', time()), false);
-	
 		$query = "UPDATE [IHTT_PREFORMA].[dbo].[TB_Solicitante]
 		SET 
 			Es_Renovacion_Automatica = :Es_Renovacion_Automatica,
 			Originado_En_Ventanilla = :Originado_En_Ventanilla,
 			Usuario_Creacion = :Usuario_Creacion,
-			Codigo_Ciudad = :Codigo_Ciudad,
-			ID_Formulario_Solicitud_Encrypted = :ID_Formulario_Solicitud_Encrypted,
 			Nombre_Solicitante = :Nombre_Solicitante,
 			ID_Tipo_Solicitante = :ID_Tipo_Solicitante,
 			RTN_Solicitante = :RTN_Solicitante,
@@ -3857,12 +4622,11 @@ require_once("../qr/qrlib.php");
 			Fecha_Cancelacion = :Fecha_Cancelacion,
 			Observaciones = :Observaciones,
 			Usuario_Cancelacion = :Usuario_Cancelacion,
-			Sistema_Fecha = SYSDATETIME(),
 			Presentacion_Documentos = :Presentacion_Documentos,
 			Etapa_Preforma = :Etapa_Preforma,
-			Fecha_Aceptacion = SYSDATETIME(),
 			Tipo_Solicitud = :Tipo_Solicitud,
-			Entrega_Ubicacion = :Entrega_Ubicacion
+			Entrega_Ubicacion = :Entrega_Ubicacion,
+			Sistema_Fecha = SYSDATETIME()
 		WHERE 
 			ID_Formulario_Solicitud = :ID_Formulario_Solicitud";
 
@@ -3870,9 +4634,6 @@ require_once("../qr/qrlib.php");
 			":Es_Renovacion_Automatica" => $_SESSION["Es_Renovacion_Automatica"],
 			":Originado_En_Ventanilla" => $_SESSION["Originado_En_Ventanilla"],
 			":Usuario_Creacion" => $_SESSION["user_name"],
-			":Codigo_Ciudad" => $row_ciudad[0]['Codigo_Ciudad'],
-			":ID_Formulario_Solicitud" => $RAM,
-			":ID_Formulario_Solicitud_Encrypted" => $HASH,
 			":Nombre_Solicitante" => strtoupper($Solicitante['Nombre']),
 			":ID_Tipo_Solicitante" => $Solicitante['Tipo_Solicitante'],
 			":RTN_Solicitante" => $Solicitante['RTN'],
@@ -3893,13 +4654,45 @@ require_once("../qr/qrlib.php");
 			":Presentacion_Documentos" => $Apoderado['Tipo_Presentacion'],
 			":Etapa_Preforma" => 1,
 			":Tipo_Solicitud" => $Concesion['esCarga'] = true ? 'CARGA' : 'PASAJEROS',
-			":Entrega_Ubicacion" => $Apoderado['Lugar_Entrega']
+			":Entrega_Ubicacion" => $Apoderado['Lugar_Entrega'],
+			":ID_Formulario_Solicitud" => $RAM
 		);
+		
 
-		$result = $this->update($query, $parametros); 
+		return $this->update($query, $parametros); 
 
-		$isOk = ['ID_Solicitante' => $RAM, 'HASH' => $HASH]; 
-		return $isOk;
+	}
+
+	protected function updateSolicitanteExpediente($Solicitante)
+	{	
+		$query = "UPDATE [IHTT_DB].[dbo].[TB_Solicitante]
+		SET  
+		 [NombreSolicitante] = :NombreSolicitante
+		,[NombreEmpresa] = :NombreEmpresa
+		,[RTNSolicitante] = :RTNSolicitante
+		,[CodigoSolicitanteTipo] = :CodigoSolicitanteTipo
+		,[IDSolicitante] = :IDSolicitante
+		,[Direccion] = :Direccion
+		,[Telefono] = :Telefono
+		,[Email] = :Email
+		,[Aldea] = :Aldea
+		,[SistemaUsuario] = :SistemaUsuario
+		,[SistemaFecha] = SYSDATETIME()		
+		WHERE 
+			[ID_Solicitante] = :ID_Solicitante";
+		$parametros = array(
+			":NombreSolicitante" => strtoupper($Solicitante['Nombre']),
+			":NombreEmpresa" => strtoupper($Solicitante['Denominacion']),
+			":RTNSolicitante" => $Solicitante['RTN'],
+			":CodigoSolicitanteTipo" => $Solicitante['Tipo_Solicitante'],			
+			":IDSolicitante" => substr($Solicitante['RTN'],0,13),			
+			":Direccion" => strtoupper($Solicitante['Domicilio']),
+			":Telefono" => $Solicitante['Telefono'],
+			":Email" => $Solicitante['Email'],
+			":Aldea" => $Solicitante['Aldea'],
+			":SistemaUsuario" => $_SESSION['user_name'],
+			":ID_Solicitante" => $Solicitante['RTN']);
+		return $this->update($query, $parametros); 
 	}
 
 	protected function updateApoderado($RAM, $Apoderado)
@@ -3909,33 +4702,57 @@ require_once("../qr/qrlib.php");
 		SET 
 			Nombre_Apoderado_Legal = :Nombre_Apoderado_Legal,
 			Ident_Apoderado_Legal = :Ident_Apoderado_Legal,
-			ID_Colegiacion = :ID_Colegiacion,
 			Direccion_Apoderado_Legal = :Direccion_Apoderado_Legal,
 			Telefono_Apoderado_Legal = :Telefono_Apoderado_Legal,
 			Email_Apoderado_Legal = :Email_Apoderado_Legal,
 			Sistema_Fecha = SYSDATETIME()
 		WHERE 
 		ID_Formulario_Solicitud = :ID_Formulario_Solicitud AND 
-     	Ident_Apoderado_Legal = :Ident_Apoderado_Legal"; 
+     	ID_Colegiacion = :ID_Colegiacion"; 
 
 		$parametros = array(
-			":ID_Formulario_Solicitud" => $RAM,
 			":Nombre_Apoderado_Legal" => strtoupper($Apoderado['Nombre']),
-			":Ident_Apoderado_Legal" => $Apoderado['RTN'],
-			":ID_Colegiacion" => $Apoderado['Numero_Colegiacion'],
+			":Ident_Apoderado_Legal" => substr($Apoderado['RTN'],0,13),
 			":Direccion_Apoderado_Legal" => strtoupper($Apoderado['Direccion']),
 			":Telefono_Apoderado_Legal" => $Apoderado['Telefono'],
-			":Email_Apoderado_Legal" => strtoupper($Apoderado['Email'])
+			":Email_Apoderado_Legal" => strtoupper($Apoderado['Email']),
+			":ID_Formulario_Solicitud" => $RAM,
+			":ID_Colegiacion" => $Apoderado['Numero_Colegiacion']
 		);
 
 		
 		return $this->update($query, $parametros);
 	}
 
-	protected function updateUnidad($RAM, $Unidad, $Concesion, $Estado)
+	protected function updateApoderadoExpediente($Apoderado)
+	{
+		$query = "UPDATE [IHTT_DB].[dbo].[TB_Apoderado_Legal]
+		SET 
+			Nombre_Apoderado_Legal = :Nombre_Apoderado_Legal,
+			Identidad = :Identidad,
+			Direccion = :Direccion,
+			Telefono = :Telefono,
+			Email = :Email,
+			SistemaUsuario = :SistemaUsuario,
+			SistemaFecha = SYSDATETIME()
+		WHERE 
+		ID_ColegiacionAPL = :ID_ColegiacionAPL"; 
+		$parametros = array(
+			":Nombre_Apoderado_Legal" => strtoupper($Apoderado['Nombre']),
+			":Identidad" => substr($Apoderado['RTN'],0,13),
+			":Direccion" => strtoupper($Apoderado['Direccion']),
+			":Telefono" => $Apoderado['Telefono'],
+			":Email" => strtoupper($Apoderado['Email']),
+			":SistemaUsuario" => $_SESSION['user_name'],
+			":ID_ColegiacionAPL" => $Apoderado['Numero_Colegiacion']);
+		return $this->update($query, $parametros);
+	}
+
+
+	protected function updateUnidad($Unidad, $Concesion, $Estado)
 	{
 
-		IF (isset($_POST['Concesion']['Permiso_Especial']) AND $_POST['Concesion']['Permiso_Especial'] == "") {
+		IF (isset($Concesion['Permiso_Especial']) AND $Concesion['Permiso_Especial'] == "") {
 			$PERMISO_ESPECIAL = "";
 			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
 			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
@@ -4003,6 +4820,334 @@ require_once("../qr/qrlib.php");
 		return $this->update($query, $parametros);
 	}
 
+	protected function updateUnidadExpediente($Unidad, $Concesion, $tabla)
+	{
+
+		IF (isset($Concesion['Permiso_Especial']) AND $Concesion['Permiso_Especial'] == "") {
+			$PERMISO_ESPECIAL = "";
+			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
+			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
+		} ELSE {
+			$PERMISO_ESPECIAL = $_POST['Concesion']['Permiso_Especial'];
+			$PERMISO_EXPLOTACION = "";
+			$CERTIFICADO_OPERACION = "";
+		} 
+		//* Consulta SQL para actualizar el vehículo
+		$query = "UPDATE " . $tabla . " SET RTN_Propietario = :RTN_Propietario,
+			Nombre_Propietario = :Nombre_Propietario,
+			ID_Placa = :ID_Placa,
+			ID_Marca = :ID_Marca,
+			Anio = :Anio,
+			Modelo = :Modelo,
+			Tipo_Vehiculo = :Tipo_Vehiculo,
+			ID_Color = :ID_Color,
+			Motor = :Motor,
+			Chasis = :Chasis,
+			VIN = :VIN,
+			Combustible = :Combustible,
+			Alto = :Alto,
+			Ancho = :Ancho,
+			Largo = :Largo,
+			Capacidad_Carga = :Capacidad_Carga,
+			Peso_Unidad = 0,  
+			Numero_Explotacion = :Permiso_Explotacion,
+			Numero_Certificado = :Certificado_Operacion,
+			Numero_PermisoEspecial = :Permiso_Especial,
+			ID_Placa_Antes_Replaqueo = :ID_Placa_Antes_Replaqueo,
+			Sistema_Fecha = SYSDATETIME(),
+			Sistema_Usuario = :Sistema_Usuario
+		WHERE 
+			ID = :ID";  
+		$parametros = array(
+			":RTN_Propietario" => $Unidad['RTN_Propietario'],
+			":Nombre_Propietario" => strtoupper($Unidad['Nombre_Propietario']),
+			":ID_Placa" => strtoupper($Unidad['Placa']),
+			":ID_Marca" => $Unidad['Marca'],
+			":Anio" => $Unidad['Anio'],
+			":Modelo" => strtoupper($Unidad['Modelo']),
+			":Tipo_Vehiculo" => strtoupper($Unidad['Tipo']),
+			":ID_Color" => $Unidad['Color'],
+			":Motor" => strtoupper($Unidad['Motor']),
+			":Chasis" => strtoupper($Unidad['Serie']),
+			":VIN" => strtoupper($Unidad['VIN']),
+			":Combustible" => strtoupper($Unidad['Combustible']),
+			":Alto" => floatval($Unidad['Alto']),
+			":Ancho" => floatval($Unidad['Ancho']),
+			":Largo" => floatval($Unidad['Largo']),
+			":Capacidad_Carga" => floatval($Unidad['Capacidad']),
+			":Permiso_Explotacion" => strtoupper($PERMISO_EXPLOTACION),
+			":Certificado_Operacion" => strtoupper($CERTIFICADO_OPERACION),
+			":Permiso_Especial" => strtoupper($PERMISO_ESPECIAL),
+			":ID_Placa_Antes_Replaqueo" => strtoupper($Unidad['ID_Placa_Antes_Replaqueo']),
+			":Sistema_Usuario" => $_SESSION["user_name"],
+			":ID" => intval($Unidad['ID_Unidad'])
+		);
+		// Ejecutar la actualización (esto usa la función insert, que también puede manejar updates)
+		return $this->update($query, $parametros);
+	}
+
+
+
+	//*******************************************************************************************************************/
+	//* Funcion para Actualizar la preforma
+	//*******************************************************************************************************************/
+	protected function updateExpediente()
+	{
+		// BANDERA DE ERROR
+		$ERROR = false;
+		// Start a transaction
+		$this->db->beginTransaction();
+		//*******************************************************************************************************************/
+		//* Inicio Decodificando los json recibidos
+		//*******************************************************************************************************************/
+		$_POST["Concesion"] = json_decode($_POST["Concesion"], true);
+		$_POST["Apoderado"] = json_decode($_POST["Apoderado"], true);
+		$_POST["Solicitante"] = json_decode($_POST["Solicitante"], true);
+		$_POST["Unidad"] = json_decode($_POST["Unidad"], true);
+		//*******************************************************************************************************************/
+		// Final Decodificando los json recibidos
+		//*******************************************************************************************************************/
+		//*******************************************************************************************************************/
+		// Inicio Si es Cambio de Unidad
+		//*******************************************************************************************************************/
+		if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
+			$_POST["Unidad1"] = json_decode($_POST["Unidad1"], true);
+			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
+			$responseValidarMultas1 = $this->getDatosMulta($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo']);
+			if ($_POST["Concesion"]['esCertificado'] == True) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);
+			}
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				//* Validar en expediente
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			}
+		} else {
+			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);
+			}			
+
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				//* Validar en expediente
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'],  $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			}
+		}
+		
+		$RAM['nuevo_numero'] = $_POST["Concesion"]['RAM'];
+		//*******************************************************************************************************************/
+		//* Validando si hay errores
+		//*******************************************************************************************************************/
+		if (
+			$RAM == false or
+			((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
+			((isset($responseValidarMultas)    and isset($responseValidarMultas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+			((isset($responseValidarMultas1)   and isset($responseValidarMultas1[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			((isset($responseValidarPreforma)  and isset($responseValidarPreforma[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+		) {
+			$this->db->rollBack();
+			echo json_encode([
+				'ERROR'  =>  true,
+				'RAM'  =>  $RAM,
+				'Ciudad'      =>  isset($responseValidarCiudad) ? $responseValidarCiudad : '',
+				'Usuario'     =>  isset($responseValidarUsuario) ? $responseValidarUsuario : '',
+				'Placas'      =>  $responseValidarPlacas,
+				'Multas'      =>  $responseValidarMultas,
+				'Multas1'     =>  isset($responseValidarMultas1) ? $responseValidarMultas1 : '',
+				'Preforma'   =>   isset($responseValidarPreforma) ? $responseValidarPreforma : ''
+			]);
+		} else {
+			$isOKSolicitante = $this->updateSolicitanteExpediente( $_POST["Solicitante"]);
+			if ($isOKSolicitante == false) {
+				$this->db->rollBack();
+				echo json_encode(array("error" => 4000, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR EL SOLICITANTE'));
+			} else {
+				$isOKApoderado = $this->updateApoderadoExpediente( $_POST["Apoderado"]);
+				if ($isOKApoderado == false) {
+					$this->db->rollBack();
+					echo json_encode(array("error" => 4001, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR EL APODERADO'));
+				} else {
+					$isOKUnidad = $this->updateUnidadExpediente( $_POST["Unidad"], $_POST["Concesion"],'TB_Solicitud_Vehiculo_Actual');
+					if ($isOKUnidad == false) {
+						$this->db->rollBack();
+						echo json_encode(array("error" => 4002, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD'));
+					} else {
+						if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
+							if ($_POST["Unidad1"]['ID_Unidad'] !== '' && $_POST["Unidad1"]['ID_Unidad'] !== null) {
+								$isOKUnidad1 = $this->updateUnidadExpediente( $_POST["Unidad1"], $_POST["Concesion"], 'TB_Solicitud_Vehiculo_Entra');
+							} else {
+								$isOKUnidad1 = $this->saveUnidadExpediente($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'TB_Solicitud_Vehiculo_Entra');
+							}
+							if ($isOKUnidad1 == false) {
+								$this->db->rollBack();
+								echo json_encode(array("error" => 4003, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD 1'));
+								$ERROR = true;
+							} else {
+								$this->db->commit();
+								//$this->db->rollBack();
+								echo json_encode(
+									[
+										'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
+										'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
+										'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
+										'Unidad1'        =>  isset($isOKUnidad1) ? $isOKUnidad1 : false
+									]
+								);
+							}
+						} else {
+							$this->db->commit();
+							//$this->db->rollBack();
+							echo json_encode(
+								[
+									'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
+									'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
+									'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
+								]
+							);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	//*******************************************************************************************************************/
+	//* Funcion para salvar la preforma
+	//*******************************************************************************************************************/
+	protected function saveExpediente()	{
+		// BANDERA DE ERROR
+		$ERROR = false;
+		// Start a transaction
+		$this->db->beginTransaction();
+		//*******************************************************************************************************************/
+		//* Inicio Decodificando los json recibidos
+		//*******************************************************************************************************************/
+		$_POST["Concesion"] = json_decode($_POST["Concesion"], true);
+		$_POST["Apoderado"] = json_decode($_POST["Apoderado"], true);
+		$_POST["Solicitante"] = json_decode($_POST["Solicitante"], true);
+		$_POST["Tramites"] = json_decode($_POST["Tramites"], true);
+		$_POST["Unidad"] = json_decode($_POST["Unidad"], true);
+		//*******************************************************************************************************************/
+		// Final Decodificando los json recibidos
+		//*******************************************************************************************************************/
+		//*******************************************************************************************************************/
+		// Inicio Si es Cambio de Unidad
+		//*******************************************************************************************************************/
+		if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
+			$_POST["Unidad1"] = json_decode($_POST["Unidad1"], true);
+			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
+			$responseValidarMultas1 = $this->getDatosMulta($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo']);
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);
+			}
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad1"]['Placa'], $_POST["Unidad1"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);
+			}
+		} else {
+
+			$responseValidarMultas = $this->getDatosMulta($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo']);
+
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']);				
+			} else {
+				$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial']);				
+			}		
+
+			if ($_POST["Concesion"]['esCertificado'] == true) {
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM']);
+			} else {
+				$responseValidarPreforma = $this->validarEnExpediente($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Permiso_Especial'],$_POST["Concesion"]['RAM']);					
+			}						
+		}
+		$RAM['nuevo_numero'] = $_POST["Concesion"]['RAM'];
+		//*******************************************************************************************************************/
+		//* Aqui se crean estas dos variable solo para que no de error en las siguientes lineas
+		//*******************************************************************************************************************/
+		$responseValidarUsuario = true;
+		$responseValidarCiudad = true;
+		if (
+			$RAM == false or
+			((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or
+			((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or
+			((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
+			((isset($responseValidarMultas)    and isset($responseValidarMultas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+			((isset($responseValidarMultas1)   and isset($responseValidarMultas1[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			((isset($responseValidarPreforma)  and isset($responseValidarPreforma[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+		) {
+			$this->db->rollBack();
+			echo json_encode([
+				'ERROR'  =>  true,
+				'RAM'  =>  $RAM,
+				'Ciudad'      =>  isset($responseValidarCiudad) ? $responseValidarCiudad : '',
+				'Usuario'     =>  isset($responseValidarUsuario) ? $responseValidarUsuario : '',
+				'Placas'      =>  $responseValidarPlacas,
+				'Multas'      =>  $responseValidarMultas,
+				'Multas1'     =>  isset($responseValidarMultas1) ? $responseValidarMultas1 : '',
+				'Preforma'   =>   isset($responseValidarPreforma) ? $responseValidarPreforma : ''
+			]);
+		} else {
+			$isOKSolicitante = $this->updateSolicitanteExpediente( $_POST["Solicitante"]);
+			if ($isOKSolicitante == false) {
+				$this->db->rollBack();
+				echo json_encode(array("error" => 4000, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR EL SOLICITANTE'));
+			} else {
+				$isOKApoderado = $this->updateApoderadoExpediente( $_POST["Apoderado"]);
+				if ($isOKApoderado == false) {
+					$this->db->rollBack();
+					echo json_encode(array("error" => 4001, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR EL APODERADO'));
+				} else {
+					$isOKUnidad = $this->saveUnidadExpediente($RAM['nuevo_numero'], $_POST["Unidad"], $_POST["Concesion"], 'TB_Solicitud_Vehiculo_Actual');
+					if ($isOKUnidad == false) {
+						$this->db->rollBack();
+						echo json_encode(array("error" => 4002, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR LA UNIDAD'));
+					} else {
+						if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
+							$isOKUnidad1 = $this->saveUnidadExpediente($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'TB_Solicitud_Vehiculo_Entra');
+							if ($isOKUnidad1 == false) {
+								$this->db->rollBack();
+								echo json_encode(array("error" => 4003, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR LA UNIDAD 1'));
+								$ERROR = true;
+							}
+						}
+						if ($ERROR == false) {
+							$isOKTramites = $this->saveTramitesExpediente($RAM['nuevo_numero'], $_POST["Tramites"]);
+							if ($isOKTramites[0] == false) {
+								echo json_encode(array("error" => 4004, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO SALVAR LOS TRAMITES'));
+							} else {
+								$this->db->commit();
+								//$this->db->rollBack();
+								echo json_encode(
+									[
+										'RAM'  =>  $RAM['nuevo_numero'],
+										'Usuario_Asigna' =>  isset($responseValidarUsuario) ? $responseValidarUsuario : false,
+										'Ciudad'         =>  isset($responseValidarCiudad)  ? $responseValidarCiudad : false,
+										'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
+										'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
+										'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
+										'Unidad1'        =>  isset($isOKUnidad1) ? $isOKUnidad1 : false,
+										'Bitacora'       =>  isset($isOKBitacora) ? $isOKBitacora : false,
+										'Tramites'       =>  isset($isOKTramites) ? $isOKTramites : false,
+										'Estado'         =>  ['Estado' => $this->appcfg_estado_inicial,'Desc_Estado' => $this->appcfg_estado_inicial_descripcion]
+									]
+								);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	//*******************************************************************************************************************/
 	//* Funcion para Actualizar la preforma
 	//*******************************************************************************************************************/
@@ -4093,29 +5238,21 @@ require_once("../qr/qrlib.php");
 				'Preforma'   =>   isset($responseValidarPreforma) ? $responseValidarPreforma : ''
 			]);
 		} else {
-			if ($_POST["Concesion"]['RAM'] == '') {
-				$isOKSolicitante = $this->updateSolicitante($_POST["Concesion"], $_POST["Apoderado"], $_POST["Solicitante"], $responseValidarCiudad, $RAM['nuevo_numero']);
-			} else {
-				$isOKSolicitante = $_POST["Solicitante"]['ID_Solicitante'];
-			}
+			$isOKSolicitante = $this->updateSolicitante($_POST["Concesion"], $_POST["Apoderado"], $_POST["Solicitante"], $responseValidarCiudad, $RAM['nuevo_numero']);
 			if ($isOKSolicitante == false) {
 				$this->db->rollBack();
 				echo json_encode(array("error" => 4000, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR EL SOLICITANTE'));
 			} else {
-				if ($_POST["Concesion"]['RAM'] == '') {
-					$isOKApoderado = $this->updateApoderado($RAM['nuevo_numero'], $_POST["Apoderado"]);
-				} else {
-					$isOKApoderado = $_POST["Apoderado"]['ID_Apoderado'];
-				}
+				$isOKApoderado = $this->updateApoderado($RAM['nuevo_numero'], $_POST["Apoderado"]);
 				if ($isOKApoderado == false) {
 					$this->db->rollBack();
 					echo json_encode(array("error" => 4001, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR EL APODERADO'));
 				} else {
 					$isOKUnidad = $_POST["Unidad"]['ID_Unidad'];
 					if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
-						$isOKUnidad = $this->updateUnidad($RAM['nuevo_numero'], $_POST["Unidad"], $_POST["Concesion"], 'SALE');
+						$isOKUnidad = $this->updateUnidad( $_POST["Unidad"], $_POST["Concesion"], 'SALE');
 					} else {
-						$isOKUnidad = $this->updateUnidad($RAM['nuevo_numero'], $_POST["Unidad"], $_POST["Concesion"], 'NORMAL');
+						$isOKUnidad = $this->updateUnidad( $_POST["Unidad"], $_POST["Concesion"], 'NORMAL');
 					}
 					if ($isOKUnidad == false) {
 						$this->db->rollBack();
@@ -4253,7 +5390,7 @@ require_once("../qr/qrlib.php");
 			]);
 		} else {
 			if ($_POST["Concesion"]['RAM'] == '') {
-				$isOKSolicitante = $this->saveSolicitante($_POST["Concesion"], $_POST["Apoderado"], $_POST["Solicitante"], $responseValidarCiudad, $RAM['nuevo_numero']);
+				$isOKSolicitante = $this->saveSolicitante($_POST["Concesion"], $_POST["Apoderado"], $_POST["Solicitante"], $responseValidarCiudad, $RAM['nuevo_numero'],$responseValidarUsuario);
 			} else {
 				$isOKSolicitante = $_POST["Solicitante"]['ID_Solicitante'];
 			}
@@ -4320,6 +5457,7 @@ require_once("../qr/qrlib.php");
 												'Unidad1'        =>  isset($isOKUnidad1) ? $isOKUnidad1 : false,
 												'Bitacora'       =>  isset($isOKBitacora) ? $isOKBitacora : false,
 												'Tramites'       =>  isset($isOKTramites) ? $isOKTramites : false,
+												'Estado'         =>  ['Estado' => $this->appcfg_estado_inicial,'Desc_Estado' => $this->appcfg_estado_inicial_descripcion]
 											]
 										);
 									}
@@ -6041,7 +7179,7 @@ if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
 		$appcfg_smtp_server,
 		$appcfg_smtp_port,
 		$appcfg_smtp_user,
-		$appcfg_smtp_password);
+		$appcfg_smtp_password,
+		$appcfg_estado_inicial,
+		$appcfg_estado_inicial_descripcion);
 }
-
-https://satt2.transporte.gob.hn:293/api_rep.php?action=get-PDFComprobante&Solicitud=ff59d187c38b13b562a50194420a15eee44df2f27105d1e48f0363dc8323816fafe325f8ae8c82b303371933e0b9505141ef117e0716f3895f7457d57a6592f2&fls=RAM-20250228-000000059&Nombre_Usuario=ORDO%C3%91EZ%20BARAHONA%20CARLOS%20RIDEL&Cod_Usuario=cordonez&Originano_En_Ventanilla=1&ID_Usuario=1059&user_name=ccaballero

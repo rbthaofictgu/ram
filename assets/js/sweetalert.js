@@ -31,10 +31,15 @@ function fSweetAlertEventNormal(title, msg, type,  html = '', width=1400,errorco
         width: width, 
         confirmButtonText: textBotton,
         confirmButtonColor: "#3085d6",
+        allowOutsideClick: false,
+        allowEscapeKey: false,        
       }).then((result) => {
         if (result.isConfirmed) {
+          console.log(funcion,'funcion before llamar en fSweetAlertEventNormal');
           if (typeof funcion === 'function') {
+            console.log(funcion,'funcion inside llamar en fSweetAlertEventNormal');
             funcion();
+            console.log(funcion,'funcion after llamar en fSweetAlertEventNormal');
           }
         }
       });
@@ -56,6 +61,8 @@ function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400
       icon: type,
       confirmButtonText: textBotton,
       confirmButtonColor: "#3085d6",
+      allowOutsideClick: false,
+      allowEscapeKey: false,      
     }).then((result) => {
       if (result.isConfirmed) {
         //Si se paso un evento real no un string
@@ -77,6 +84,8 @@ function fSweetAlertEventSelect(event='',title, msg, type, html = '', width=1400
       width: width, 
       confirmButtonText: textBotton,
       confirmButtonColor: "#3085d6",
+      allowOutsideClick: false,
+      allowEscapeKey: false,      
     }).then((result) => {
       if (result.isConfirmed) {
         //Si se paso un evento real no un string

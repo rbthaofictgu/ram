@@ -1,653 +1,1901 @@
-//*********************************************************************************************************************/
-//** Final Function para Establecer los Codigos de los Tramites                                                       **/
-//*********************************************************************************************************************/
-//*********************************************************************************************************/
-//* Inicio: Creando objeto de concesion desde Datos de Preformas
-//*********************************************************************************************************/
-function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
-    var index = 0;
-    var Concesion = "";
-    var Concesion_Encriptada;
-    var Permiso_Explotacion_Encriptado;
-    var esCarga;
-    var esCertificado;
-    var Placa = "";
-    var Permiso_Explotacion = "";
-    var ID_Formulario_Solicitud = "";
-    var TramitesPreforma = Array();
-    var index = 1;
-    var Unidad1 = "";
-    //*********************************************************************************************************/
-    //* Inicio: Recorriendo arreglo de concesiones y tramites
-    //*********************************************************************************************************/
-    Tramites.forEach((row) => {
-      //*********************************************************************************************************/
-      //* La primera vez que entra llena la variable Concesion
-      //*********************************************************************************************************/
-      if (index == 1) {
-        if (row["N_Permiso_Explotacion"] != "") {
-          Concesion = row["N_Certificado"];
-          Concesion_Encriptada = row["CertificadoEncriptado"];
-          Permiso_Explotacion = row["N_Permiso_Explotacion"];
-          Permiso_Explotacion_Encriptado = row["Permiso_Explotacion_Encriptado"];
-        } else {
-          Concesion = row["N_Certificado"];
-          Concesion_Encriptada = row["PermisoEspecialEncriptado"];
-          Permiso_Explotacion = "";
-          Permiso_Explotacion_Encriptado = "";
-        }
-      }
-  
-      if (Concesion == row["N_Certificado"]) {
-        esCarga = Boolean(row["esCarga"]);
-        esCertificado = Boolean(row["esCertificado"]);
-        Placa = row["ID_Placa"];
-        var Cantidad_Vencimientos = 1;
-        var Fecha_Expiracion_Nueva = "";
-        var Fecha_Expiracion = "";
-        if (
-          row["ID_CHECK"] == "IHTTTRA-02_CLATRA-01_R_PE" &&
-          row["Vencimientos"] != false
-        ) {
-          Fecha_Expiracion = row["Fecha_Expiracion_Explotacion"];
-          Cantidad_Vencimientos =
-            row["Vencimientos"]["renper-explotacion-cantidad"];
-          Fecha_Expiracion_Nueva =
-            row["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
-        } else {
-          if (
-            (row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_CO" ||
-              row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_PS") &&
-            row["Vencimientos"] != false
-          ) {
-            Fecha_Expiracion = row["Fecha_Expiracion"];
-            Cantidad_Vencimientos = row["Vencimientos"]["rencon-cantidad"];
-            Fecha_Expiracion_Nueva =
-              row["Vencimientos"]["Nueva_Fecha_Expiracion"];
-          }
-        }
-  
-        ID_Formulario_Solicitud = row["ID_Formulario_Solicitud"];
-        TramitesPreforma.push({
-          ID: row["ID"],
-          ID_Compuesto: row["ID_CHECK"],
-          Codigo: row["ID_Tramite"],
-          descripcion: row["DESC_Tipo_Tramite"] + " " + row["DESC_Clase_Tramite"],
-          ID_Tramite: row["ID_Tramite"],
-          Monto: row["Monto"],
-          Total_A_Pagar: parseFloat(
-            parseFloat(row["Monto"]).toFixed(2) * Cantidad_Vencimientos
-          ).toFixed(2),
-          Cantidad_Vencimientos: Cantidad_Vencimientos,
-          Fecha_Expiracion: Fecha_Expiracion,
-          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
-          ID_Categoria: row["ID_Tipo_Categoria"],
-          ID_Tipo_Servicio: row["ID_TIpo_Servicio"],
-          ID_Modalidad: row["ID_Modalidad"],
-          ID_Clase_Servico: row["ID_Clase_Servicio"],
-        });
-        //*************************************************************/
-        //* Si trae Unidad 1
-        //*************************************************************/
-        Unidad1 = Unidades[Concesion]?.[1] ?? "";
-        if (Tramites.length == index) {
-          currentConcesionIndex = updateCollection(Concesion);
-          concesionNumber[currentConcesionIndex] = {
-            esCarga: esCarga,
-            esCertificado: esCertificado,
-            Concesion_Encriptada: Concesion_Encriptada,
-            Concesion: Concesion,
-            Permiso_Explotacion_Encriptado: Permiso_Explotacion_Encriptado,
-            Permiso_Explotacion: Permiso_Explotacion,
-            ID_Expediente: "",
-            ID_Solicitud: "",
-            ID_Formulario_Solicitud: ID_Formulario_Solicitud,
-            CodigoAvisoCobro: "",
-            ID_Resolucion: "",
-            Placa: Placa,
-            Unidad: Unidades[Concesion]?.[0] ?? "",
-            Unidad1: Unidad1,
-            Tramites: TramitesPreforma,
-          };
-          //***********************************************************************/
-          //* Agregando concesion pura */
-          //***********************************************************************/
-          addElementToAutoComplete(Concesion, Concesion);
-          //***********************************************************************/
-          //* Agregando concesion con permiso de explotacion */
-          //***********************************************************************/
-          if (Permiso_Explotacion != "") {
-            addElementToAutoComplete(
-              Concesion,
-              Permiso_Explotacion + " => " + Concesion
-            );
-          }
-          //***********************************************************************/
-          //* Agregando placa actual asociada a concesion */
-          //***********************************************************************/
-          if (Unidades[Concesion]?.[0]?.ID_Placa != null) {
-            addElementToAutoComplete(
-              Concesion,
-              Unidades[Concesion][0].ID_Placa + " => " + Concesion
-            );
-          }
-          //***********************************************************************/
-          //* Agregando placa Anterior Asociada a concesion */
-          //***********************************************************************/
-          if (
-            Unidades[Concesion]?.[0]?.ID_Placa_Antes_Replaqueo != null &&
-            Unidades[Concesion]?.[0]?.ID_Placa != null &&
-            Unidades[Concesion][0].ID_Placa_Antes_Replaqueo !==
-            Unidades[Concesion][0].ID_Placa
-          ) {
-            addElementToAutoComplete(
-              Concesion,
-              Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + " => " + Concesion
-            );
-          }
-          if (Unidad1 != "" && Unidad1.ID_Placa != "undefined") {
-            //***********************************************************************/
-            //* Agregando placa actual asociada a concesion */
-            //***********************************************************************/
-            addElementToAutoComplete(
-              Concesion,
-              Unidad1.ID_Placa + " => " + Concesion
-            );
-            //***********************************************************************/
-            //* Agregando placa Anterior Asociada a concesion */
-            //***********************************************************************/
-            if (
-              Unidad1?.ID_Placa_Antes_Replaqueo != null &&
-              Unidad1?.ID_Placa != null &&
-              Unidad1.ID_Placa_Antes_Replaqueo !== Unidad1.ID_Placa
-            ) {
-              addElementToAutoComplete(
-                Concesion,
-                Unidad1.ID_Placa_Antes_Replaqueo + " => " + Concesion
-              );
-            }
-            //***********************************************************************/
-          }
-        }
-      } else {
-        //*************************************************************/
-        //* Si trae Unidad 1
-        //*************************************************************/
-        Unidad1 = Unidades[Concesion]?.[1] ?? "";
-        //**********************************************************************************************************************/
-        //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
-        //**********************************************************************************************************************/
-        currentConcesionIndex = updateCollection(Concesion);
-        concesionNumber[currentConcesionIndex] = {
-          esCarga: esCarga,
-          esCertificado: esCertificado,
-          Concesion_Encriptada: Concesion_Encriptada,
-          Concesion: Concesion,
-          Permiso_Explotacion_Encriptado: Permiso_Explotacion_Encriptado,
-          Permiso_Explotacion: Permiso_Explotacion,
-          ID_Expediente: "",
-          ID_Solicitud: "",
-          ID_Formulario_Solicitud: ID_Formulario_Solicitud,
-          CodigoAvisoCobro: "",
-          ID_Resolucion: "",
-          Placa: Placa,
-          Unidad: Unidades[Concesion]?.[0] ?? "",
-          Unidad1: Unidad1,
-          Tramites: TramitesPreforma,
-        };
-        //***********************************************************************/
-        //* Agregando concesion pura */
-        //***********************************************************************/
-        addElementToAutoComplete(Concesion, Concesion);
-        //***********************************************************************/
-        //* Agregando concesion con permiso de explotacion */
-        //***********************************************************************/
-        if (Permiso_Explotacion != "") {
-          addElementToAutoComplete(
-            Concesion,
-            Permiso_Explotacion + " => " + Concesion
-          );
-        }
-        //***********************************************************************/
-        //* Agregando placa actual asociada a concesion */
-        //***********************************************************************/
-        if (Unidades[Concesion]?.[0]?.ID_Placa != null) {
-          addElementToAutoComplete(
-            Concesion,
-            Unidades[Concesion][0].ID_Placa + " => " + Concesion
-          );
-        }
-        //***********************************************************************/
-        //* Agregando placa Anterior Asociada a concesion */
-        //***********************************************************************/
-        if (
-          Unidades[Concesion]?.[0]?.ID_Placa_Antes_Replaqueo != null &&
-          Unidades[Concesion]?.[0]?.ID_Placa != null &&
-          Unidades[Concesion][0].ID_Placa_Antes_Replaqueo !==
-          Unidades[Concesion][0].ID_Placa
-        ) {
-          addElementToAutoComplete(
-            Concesion,
-            Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + " => " + Concesion
-          );
-        }
-        if (Unidad1 != "" && Unidad1.ID_Placa != "undefined") {
-          //***********************************************************************/
-          //* Agregando placa actual asociada a concesion */
-          //***********************************************************************/
-          addElementToAutoComplete(
-            Concesion,
-            Unidad1.ID_Placa + " => " + Concesion
-          );
-          //***********************************************************************/
-          //* Agregando placa Anterior Asociada a concesion */
-          //***********************************************************************/
-          if (
-            Unidad1?.ID_Placa_Antes_Replaqueo != null &&
-            Unidad1?.ID_Placa != null &&
-            Unidad1.ID_Placa_Antes_Replaqueo !== Unidad1.ID_Placa
-          ) {
-            addElementToAutoComplete(
-              Concesion,
-              Unidad1.ID_Placa_Antes_Replaqueo + " => " + Concesion
-            );
-          }
-          //***********************************************************************/
-        }
-  
-        if (row["N_Permiso_Especial"] == "") {
-          Concesion = row["N_Certificado"];
-          Concesion_Encriptada = row["CertificadoEncriptado"];
-          Permiso_Explotacion = row["Permiso_Explotacion"];
-          Permiso_Explotacion_Encriptado = row["Permiso_Explotacion_Encriptado"];
-        } else {
-          Concesion = row["N_Permiso_Especial"];
-          Concesion_Encriptada = row["PermisoEspecialEncriptado"];
-          Permiso_Explotacion = "";
-        }
-  
-        //**********************************************************************************************************************/
-        //*Agregando la concesión al arreglo de indice de concesiones y recuperando el indice de la concesion                  */
-        //**********************************************************************************************************************/
-        /*         if (row['ID_Placa1'] != undefined && row['ID_Placa1'] != '' && row['ID_Placa1'] != null) {
-            Placa = row['ID_Placa'] + '->' + row['ID_Placa1'];
-          } else {
-            Placa = row['ID_Placa'];
-          } */
-  
-        Placa = row["ID_Placa"];
-        let Cantidad_Vencimientos = 1;
-        let Fecha_Expiracion_Nueva = "";
-        let Fecha_Expiracion = "";
-        if (
-          row["ID_CHECK"] == "IHTTTRA-02_CLATRA-01_R_PE" &&
-          row["Vencimientos"] != false
-        ) {
-          Fecha_Expiracion = row["Fecha_Expiracion_Explotacion"];
-          Cantidad_Vencimientos =
-            row["Vencimientos"]["renper-explotacion-cantidad"];
-          Fecha_Expiracion_Nueva =
-            row["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
-        } else {
-          if (
-            (row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_CO" ||
-              row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_PS") &&
-            row["Vencimientos"] != false
-          ) {
-            Fecha_Expiracion = row["Fecha_Expiracion"];
-            Cantidad_Vencimientos = row["Vencimientos"]["rencon-cantidad"];
-            Fecha_Expiracion_Nueva =
-              row["Vencimientos"]["Nueva_Fecha_Expiracion"];
-          }
-        }
-  
-        ID_Formulario_Solicitud = row["ID_Formulario_Solicitud"];
-        TramitesPreforma = [];
-        TramitesPreforma.push({
-          ID: row["ID"],
-          ID_Compuesto: row["ID_CHECK"],
-          Codigo: row["ID_Tramite"],
-          descripcion: row["DESC_Tipo_Tramite"] + " " + row["DESC_Clase_Tramite"],
-          ID_Tramite: row["ID_Tramite"],
-          Monto: row["Monto"],
-          Total_A_Pagar: parseFloat(
-            parseFloat(row["Monto"]).toFixed(2) * Cantidad_Vencimientos
-          ).toFixed(2),
-          Cantidad_Vencimientos: Cantidad_Vencimientos,
-          Fecha_Expiracion: Fecha_Expiracion,
-          Fecha_Expiracion_Nueva: Fecha_Expiracion_Nueva,
-          ID_Categoria: row["ID_Tipo_Categoria"],
-          ID_Tipo_Servicio: row["ID_TIpo_Servicio"],
-          ID_Modalidad: row["ID_Modalidad"],
-          ID_Clase_Servico: row["ID_Clase_Servicio"],
-        });
-        //*************************************************************/
-        //* Si trae Unidad 1
-        //*************************************************************/
-        Unidad1 = Unidades[Concesion]?.[1] ?? "";
-        if (Tramites.length == index) {
-          currentConcesionIndex = updateCollection(Concesion);
-          concesionNumber[currentConcesionIndex] = {
-            esCarga: esCarga,
-            esCertificado: esCertificado,
-            Concesion_Encriptada: Concesion_Encriptada,
-            Concesion: Concesion,
-            Permiso_Explotacion_Encriptado: Permiso_Explotacion_Encriptado,
-            Permiso_Explotacion: Permiso_Explotacion,
-            ID_Expediente: "",
-            ID_Solicitud: "",
-            ID_Formulario_Solicitud: ID_Formulario_Solicitud,
-            CodigoAvisoCobro: "",
-            ID_Resolucion: "",
-            Placa: Placa,
-            Unidad: Unidades[Concesion]?.[0] ?? "",
-            Unidad1: Unidad1,
-            Tramites: TramitesPreforma,
-          };
-          //***********************************************************************/
-          //* Agregando concesion pura */
-          //***********************************************************************/
-          addElementToAutoComplete(Concesion, Concesion);
-          //***********************************************************************/
-          //* Agregando concesion con permiso de explotacion */
-          //***********************************************************************/
-          if (Permiso_Explotacion != "") {
-            addElementToAutoComplete(
-              Concesion,
-              Permiso_Explotacion + " => " + Concesion
-            );
-          }
-          //***********************************************************************/
-          //* Agregando placa actual asociada a concesion */
-          //***********************************************************************/
-          if (Unidades[Concesion]?.[0]?.ID_Placa != null) {
-            addElementToAutoComplete(
-              Concesion,
-              Unidades[Concesion][0].ID_Placa + " => " + Concesion
-            );
-          }
-          //***********************************************************************/
-          //* Agregando placa Anterior Asociada a concesion */
-          //***********************************************************************/
-          if (
-            Unidades[Concesion]?.[0]?.ID_Placa_Antes_Replaqueo != null &&
-            Unidades[Concesion]?.[0]?.ID_Placa != null &&
-            Unidades[Concesion][0].ID_Placa_Antes_Replaqueo !==
-            Unidades[Concesion][0].ID_Placa
-          ) {
-            addElementToAutoComplete(
-              Concesion,
-              Unidades[Concesion][0].ID_Placa_Antes_Replaqueo + " => " + Concesion
-            );
-          }
-          if (Unidad1 != "" && Unidad1.ID_Placa != "undefined") {
-            //***********************************************************************/
-            //* Agregando placa actual asociada a concesion */
-            //***********************************************************************/
-            addElementToAutoComplete(
-              Concesion,
-              Unidad1.ID_Placa + " => " + Concesion
-            );
-            //***********************************************************************/
-            //* Agregando placa Anterior Asociada a concesion */
-            //***********************************************************************/
-            if (
-              Unidad1?.ID_Placa_Antes_Replaqueo != null &&
-              Unidad1?.ID_Placa != null &&
-              Unidad1.ID_Placa_Antes_Replaqueo !== Unidad1.ID_Placa
-            ) {
-              addElementToAutoComplete(
-                Concesion,
-                Unidad1.ID_Placa_Antes_Replaqueo + " => " + Concesion
-              );
-            }
-            //***********************************************************************/
-          }
-        }
-      }
-      index++;
-    });
-    //**********************************************************************************************************************/
-    //* Llamando a funcion que habilita el AutoComplete                                                                    */
-    //**********************************************************************************************************************/
-    fAutoComplete();
-  }
+{
+	"7": {
+		"CO-CNE-1081-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71070",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB4044",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2002",
+				"10": "CLASSIC XL",
+				"11": "UNDEFINED",
+				"12": "IDC-210 => AMARILLO MARRON",
+				"13": "06R0650206",
+				"14": "1FUJAHCG62LG28912",
+				"15": "SALE",
+				"16": "2025-02-28 08:43:45.957",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJAHCG62LG28912",
+				"19": "GASOLINA",
+				"20": "2.30",
+				"21": "2.40",
+				"22": "2.30",
+				"23": "12000.00",
+				"24": ".00",
+				"25": "AAM3002",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71070",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB4044",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2002",
+				"Modelo": "CLASSIC XL",
+				"Tipo_Vehiculo": "UNDEFINED",
+				"Color": "IDC-210 => AMARILLO MARRON",
+				"Motor": "06R0650206",
+				"Chasis": "1FUJAHCG62LG28912",
+				"Estado": "SALE",
+				"Sistema_Fecha": "2025-02-28 08:43:45.957",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJAHCG62LG28912",
+				"Combustible": "GASOLINA",
+				"Alto": "2.30",
+				"Ancho": "2.40",
+				"Largo": "2.30",
+				"Capacidad_Carga": "12000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM3002",
+				"ID_Memo": "false"
+			},
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71084",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB4047",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2002",
+				"10": "CENTURY CLASS 120",
+				"11": "CABEZAL",
+				"12": "IDC-1156 => PLATA/NEGRO",
+				"13": "06R0677961",
+				"14": "1FUJBBCG52LK29187",
+				"15": "ENTRA",
+				"16": "2025-02-28 08:43:45.957",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJBBCG52LK29187",
+				"19": "GASOLINA",
+				"20": "2.40",
+				"21": "2.50",
+				"22": "2.30",
+				"23": "15000.00",
+				"24": ".00",
+				"25": "AAM2792",
+				"26": "IHTT-CON-2463-25",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71084",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB4047",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2002",
+				"Modelo": "CENTURY CLASS 120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-1156 => PLATA/NEGRO",
+				"Motor": "06R0677961",
+				"Chasis": "1FUJBBCG52LK29187",
+				"Estado": "ENTRA",
+				"Sistema_Fecha": "2025-02-28 08:43:45.957",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJBBCG52LK29187",
+				"Combustible": "GASOLINA",
+				"Alto": "2.40",
+				"Ancho": "2.50",
+				"Largo": "2.30",
+				"Capacidad_Carga": "15000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM2792",
+				"ID_Memo": "IHTT-CON-2463-25"
+			}
+		],
+		"CO-CNE-1083-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71074",
+				"5": "02091981008641",
+				"6": "LEIVA PUERTO, MARCO ANTONIO",
+				"7": "TCB4123",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2003",
+				"10": "FLD_120",
+				"11": "CABEZAL",
+				"12": "IDC-1166 => AZULROJONE",
+				"13": "06R0701550",
+				"14": "1FUJA6CG23LK33547",
+				"15": "NORMAL",
+				"16": "2025-02-28 08:20:02.507",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJA6CG23LK33547",
+				"19": "GASOLINA",
+				"20": "3.70",
+				"21": "3.40",
+				"22": "2.70",
+				"23": "15000.00",
+				"24": ".00",
+				"25": "AAI9625",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71074",
+				"RTN_Propietario": "02091981008641",
+				"Nombre_Propietario": "LEIVA PUERTO, MARCO ANTONIO",
+				"ID_Placa": "TCB4123",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2003",
+				"Modelo": "FLD_120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-1166 => AZULROJONE",
+				"Motor": "06R0701550",
+				"Chasis": "1FUJA6CG23LK33547",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-02-28 08:20:02.507",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJA6CG23LK33547",
+				"Combustible": "GASOLINA",
+				"Alto": "3.70",
+				"Ancho": "3.40",
+				"Largo": "2.70",
+				"Capacidad_Carga": "15000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAI9625",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1084-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71085",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB4012",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2003",
+				"10": "COLUMBIA",
+				"11": "CABEZAL",
+				"12": "IDC-322 =>  ROJO BEIGE",
+				"13": "06R0715018",
+				"14": "1FUJA6CG23LK34486",
+				"15": "SALE",
+				"16": "2025-02-28 08:52:17.927",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJA6CG23LK34486",
+				"19": "DIESEL",
+				"20": "2.00",
+				"21": "2.50",
+				"22": "12.00",
+				"23": "13000.00",
+				"24": ".00",
+				"25": "AAM2469",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71085",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB4012",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2003",
+				"Modelo": "COLUMBIA",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-322 =>  ROJO BEIGE",
+				"Motor": "06R0715018",
+				"Chasis": "1FUJA6CG23LK34486",
+				"Estado": "SALE",
+				"Sistema_Fecha": "2025-02-28 08:52:17.927",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJA6CG23LK34486",
+				"Combustible": "DIESEL",
+				"Alto": "2.00",
+				"Ancho": "2.50",
+				"Largo": "12.00",
+				"Capacidad_Carga": "13000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM2469",
+				"ID_Memo": "false"
+			},
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71086",
+				"5": "08019003256994",
+				"6": "CENTRO DE TRANSPORTES SA",
+				"7": "TCB4015",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "1999",
+				"10": "FLD120",
+				"11": "CABEZAL",
+				"12": "IDC-322 =>  ROJO BEIGE",
+				"13": "06R0482742",
+				"14": "1FUPCSZB7XLB90079",
+				"15": "ENTRA",
+				"16": "2025-02-28 08:52:17.943",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUPCSZB7XLB90079",
+				"19": "DIESEL",
+				"20": "2.00",
+				"21": "2.80",
+				"22": "12.00",
+				"23": "15000.00",
+				"24": ".00",
+				"25": "AAI7351",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71086",
+				"RTN_Propietario": "08019003256994",
+				"Nombre_Propietario": "CENTRO DE TRANSPORTES SA",
+				"ID_Placa": "TCB4015",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "1999",
+				"Modelo": "FLD120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-322 =>  ROJO BEIGE",
+				"Motor": "06R0482742",
+				"Chasis": "1FUPCSZB7XLB90079",
+				"Estado": "ENTRA",
+				"Sistema_Fecha": "2025-02-28 08:52:17.943",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUPCSZB7XLB90079",
+				"Combustible": "DIESEL",
+				"Alto": "2.00",
+				"Ancho": "2.80",
+				"Largo": "12.00",
+				"Capacidad_Carga": "15000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAI7351",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1086-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71081",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB4045",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2003",
+				"10": "CLASSIC XL",
+				"11": "CABEZAL",
+				"12": "IDC-359 => S/C",
+				"13": "06R0710741",
+				"14": "1FUJAPCG33DL01760",
+				"15": "NORMAL",
+				"16": "2025-02-28 08:29:14.850",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJAPCG33DL01760",
+				"19": "DIESEL",
+				"20": "2.30",
+				"21": "2.30",
+				"22": "2.50",
+				"23": "14000.00",
+				"24": ".00",
+				"25": "AAS7216",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71081",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB4045",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2003",
+				"Modelo": "CLASSIC XL",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-359 => S/C",
+				"Motor": "06R0710741",
+				"Chasis": "1FUJAPCG33DL01760",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-02-28 08:29:14.850",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJAPCG33DL01760",
+				"Combustible": "DIESEL",
+				"Alto": "2.30",
+				"Ancho": "2.30",
+				"Largo": "2.50",
+				"Capacidad_Carga": "14000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAS7216",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1087-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71071",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB4135",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2001",
+				"10": "FLD120",
+				"11": "CABEZAL",
+				"12": "IDC-838 => AMAROLLO",
+				"13": "06R0602732",
+				"14": "1FUJAPCG81LH74477",
+				"15": "NORMAL",
+				"16": "2025-02-28 08:17:10.427",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJAPCG81LH74477",
+				"19": "DIESEL",
+				"20": "3.90",
+				"21": "2.30",
+				"22": "13.00",
+				"23": "12000.00",
+				"24": ".00",
+				"25": "AAM3003",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71071",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB4135",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2001",
+				"Modelo": "FLD120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-838 => AMAROLLO",
+				"Motor": "06R0602732",
+				"Chasis": "1FUJAPCG81LH74477",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-02-28 08:17:10.427",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJAPCG81LH74477",
+				"Combustible": "DIESEL",
+				"Alto": "3.90",
+				"Ancho": "2.30",
+				"Largo": "13.00",
+				"Capacidad_Carga": "12000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM3003",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1089-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71106",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCH2023",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2000",
+				"10": "CLASSIC XL",
+				"11": "CABEZAL",
+				"12": "IDC-472 => AMARILLO/GRIS",
+				"13": "06R0578290",
+				"14": "1FUPCSEB9YLH17031",
+				"15": "NORMAL",
+				"16": "2025-03-03 11:44:24.760",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUPCSEB9YLH17031",
+				"19": "DIESEL",
+				"20": "3.40",
+				"21": "3.50",
+				"22": "12.00",
+				"23": "13000.00",
+				"24": ".00",
+				"25": "AAM2474",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71106",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCH2023",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2000",
+				"Modelo": "CLASSIC XL",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-472 => AMARILLO/GRIS",
+				"Motor": "06R0578290",
+				"Chasis": "1FUPCSEB9YLH17031",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-03-03 11:44:24.760",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUPCSEB9YLH17031",
+				"Combustible": "DIESEL",
+				"Alto": "3.40",
+				"Ancho": "3.50",
+				"Largo": "12.00",
+				"Capacidad_Carga": "13000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM2474",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1092-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71083",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCH2024",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2001",
+				"10": "COLUMBIA",
+				"11": "CABEZAL",
+				"12": "IDC-945 => AMRILLO",
+				"13": "06R0601314",
+				"14": "1FUJA6CG61LH60880",
+				"15": "NORMAL",
+				"16": "2025-02-28 08:33:30.100",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJA6CG61LH60880",
+				"19": "GASOLINA",
+				"20": "2.30",
+				"21": "3.40",
+				"22": "3.30",
+				"23": "19000.00",
+				"24": ".00",
+				"25": "AAM3289",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71083",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCH2024",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2001",
+				"Modelo": "COLUMBIA",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-945 => AMRILLO",
+				"Motor": "06R0601314",
+				"Chasis": "1FUJA6CG61LH60880",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-02-28 08:33:30.100",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJA6CG61LH60880",
+				"Combustible": "GASOLINA",
+				"Alto": "2.30",
+				"Ancho": "3.40",
+				"Largo": "3.30",
+				"Capacidad_Carga": "19000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM3289",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1093-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71078",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB4143",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2002",
+				"10": "CENTURY CLASS 120",
+				"11": "CABEZAL",
+				"12": "IDC-787 => AMARILLO NEGRO GRIS",
+				"13": "06R0676418",
+				"14": "1FUJBBCG32LJ79941",
+				"15": "NORMAL",
+				"16": "2025-02-28 08:25:06.397",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJBBCG32LJ79941",
+				"19": "DIESEL",
+				"20": "2.40",
+				"21": "3.20",
+				"22": "2.30",
+				"23": "15000.00",
+				"24": ".00",
+				"25": "AAS7261",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71078",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB4143",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2002",
+				"Modelo": "CENTURY CLASS 120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-787 => AMARILLO NEGRO GRIS",
+				"Motor": "06R0676418",
+				"Chasis": "1FUJBBCG32LJ79941",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-02-28 08:25:06.397",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJBBCG32LJ79941",
+				"Combustible": "DIESEL",
+				"Alto": "2.40",
+				"Ancho": "3.20",
+				"Largo": "2.30",
+				"Capacidad_Carga": "15000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAS7261",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1095-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71079",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCH2022",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2001",
+				"10": "FLD120",
+				"11": "CABEZAL",
+				"12": "IDC-286 => ZAPOTE",
+				"13": "06R0605074",
+				"14": "1FUJAHCG91LF14840",
+				"15": "NORMAL",
+				"16": "2025-02-28 08:26:55.660",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJAHCG91LF14840",
+				"19": "DIESEL",
+				"20": "2.30",
+				"21": "3.40",
+				"22": "3.30",
+				"23": "19000.00",
+				"24": ".00",
+				"25": "AAS7232",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71079",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCH2022",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2001",
+				"Modelo": "FLD120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-286 => ZAPOTE",
+				"Motor": "06R0605074",
+				"Chasis": "1FUJAHCG91LF14840",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-02-28 08:26:55.660",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJAHCG91LF14840",
+				"Combustible": "DIESEL",
+				"Alto": "2.30",
+				"Ancho": "3.40",
+				"Largo": "3.30",
+				"Capacidad_Carga": "19000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAS7232",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1368-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71082",
+				"5": "08019995315690",
+				"6": "JOSE LAMAS S R L",
+				"7": "TRB8251",
+				"8": "MV-472 => HYUNDAI",
+				"9": "1995",
+				"10": "COUNTY SUPER",
+				"11": "UNDEFINED",
+				"12": "IDC-683 => AZUL BLANCO Y ROJO",
+				"13": "NOAPLICA",
+				"14": "3H3X492S1ST007473",
+				"15": "SALE",
+				"16": "2025-03-03 08:25:45.850",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "3H3X492S1ST007473",
+				"19": "NOAPLICA",
+				"20": "2.30",
+				"21": "2.30",
+				"22": "12.00",
+				"23": "14000.00",
+				"24": ".00",
+				"25": "RB7038",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71082",
+				"RTN_Propietario": "08019995315690",
+				"Nombre_Propietario": "JOSE LAMAS S R L",
+				"ID_Placa": "TRB8251",
+				"Marca": "MV-472 => HYUNDAI",
+				"Anio": "1995",
+				"Modelo": "COUNTY SUPER",
+				"Tipo_Vehiculo": "UNDEFINED",
+				"Color": "IDC-683 => AZUL BLANCO Y ROJO",
+				"Motor": "NOAPLICA",
+				"Chasis": "3H3X492S1ST007473",
+				"Estado": "SALE",
+				"Sistema_Fecha": "2025-03-03 08:25:45.850",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "3H3X492S1ST007473",
+				"Combustible": "NOAPLICA",
+				"Alto": "2.30",
+				"Ancho": "2.30",
+				"Largo": "12.00",
+				"Capacidad_Carga": "14000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RB7038",
+				"ID_Memo": "false"
+			},
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71105",
+				"5": "08019995315690",
+				"6": "JOSE LAMAS S R L",
+				"7": "TRB8252",
+				"8": "MV-472 => HYUNDAI",
+				"9": "1995",
+				"10": "COUNTY SUPER",
+				"11": "CHASIS",
+				"12": "IDC-625 => ANARANJADO Y BLANCO",
+				"13": "NOAPLICA",
+				"14": "3H3X492S3ST007426",
+				"15": "ENTRA",
+				"16": "2025-03-03 08:25:45.850",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "3H3X492S3ST007426",
+				"19": "NOAPLICA",
+				"20": "2.30",
+				"21": "2.40",
+				"22": "2.30",
+				"23": "12000.00",
+				"24": ".00",
+				"25": "RB7035",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71105",
+				"RTN_Propietario": "08019995315690",
+				"Nombre_Propietario": "JOSE LAMAS S R L",
+				"ID_Placa": "TRB8252",
+				"Marca": "MV-472 => HYUNDAI",
+				"Anio": "1995",
+				"Modelo": "COUNTY SUPER",
+				"Tipo_Vehiculo": "CHASIS",
+				"Color": "IDC-625 => ANARANJADO Y BLANCO",
+				"Motor": "NOAPLICA",
+				"Chasis": "3H3X492S3ST007426",
+				"Estado": "ENTRA",
+				"Sistema_Fecha": "2025-03-03 08:25:45.850",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "3H3X492S3ST007426",
+				"Combustible": "NOAPLICA",
+				"Alto": "2.30",
+				"Ancho": "2.40",
+				"Largo": "2.30",
+				"Capacidad_Carga": "12000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RB7035",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1370-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71075",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCH2021",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2003",
+				"10": "FLD120",
+				"11": "CABEZAL",
+				"12": "IDC-786 => J Y L",
+				"13": "06R0699977",
+				"14": "1FUJAPCG23DL01524",
+				"15": "NORMAL",
+				"16": "2025-02-28 08:22:21.473",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJAPCG23DL01524",
+				"19": "DIESEL",
+				"20": "2.30",
+				"21": "2.40",
+				"22": "2.30",
+				"23": "1300.00",
+				"24": ".00",
+				"25": "AAM3099",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71075",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCH2021",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2003",
+				"Modelo": "FLD120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-786 => J Y L",
+				"Motor": "06R0699977",
+				"Chasis": "1FUJAPCG23DL01524",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-02-28 08:22:21.473",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJAPCG23DL01524",
+				"Combustible": "DIESEL",
+				"Alto": "2.30",
+				"Ancho": "2.40",
+				"Largo": "2.30",
+				"Capacidad_Carga": "1300.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM3099",
+				"ID_Memo": "false"
+			}
+		],
+		"CO-CNE-1372-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71076",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB3924",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2005",
+				"10": "CENTURY CLASS 120",
+				"11": "CABEZAL",
+				"12": "IDC-58 => OCRE",
+				"13": "06R0807340",
+				"14": "1FUJBBCG75LN22612",
+				"15": "SALE",
+				"16": "2025-02-28 08:24:06.897",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJBBCG75LN22612",
+				"19": "DIESEL",
+				"20": "2.40",
+				"21": "3.40",
+				"22": "2.30",
+				"23": "13000.00",
+				"24": ".00",
+				"25": "AAM3098",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71076",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB3924",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2005",
+				"Modelo": "CENTURY CLASS 120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-58 => OCRE",
+				"Motor": "06R0807340",
+				"Chasis": "1FUJBBCG75LN22612",
+				"Estado": "SALE",
+				"Sistema_Fecha": "2025-02-28 08:24:06.897",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJBBCG75LN22612",
+				"Combustible": "DIESEL",
+				"Alto": "2.40",
+				"Ancho": "3.40",
+				"Largo": "2.30",
+				"Capacidad_Carga": "13000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM3098",
+				"ID_Memo": "false"
+			},
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71077",
+				"5": "08019010280190",
+				"6": "ARREND LEASING S A",
+				"7": "TCB3925",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2017",
+				"10": "CL120COLUMBIA",
+				"11": "CABEZAL",
+				"12": "IDC-1127 => ALUMINIO NEGRO",
+				"13": "79932690",
+				"14": "3AKJA6BG8HDJD7113",
+				"15": "ENTRA",
+				"16": "2025-02-28 08:24:06.897",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "3AKJA6BG8HDJD7113",
+				"19": "DIESEL",
+				"20": "3.40",
+				"21": "3.30",
+				"22": "3.50",
+				"23": "14000.00",
+				"24": ".00",
+				"25": "AAR6857",
+				"26": "IHTT-CON-2461-25",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71077",
+				"RTN_Propietario": "08019010280190",
+				"Nombre_Propietario": "ARREND LEASING S A",
+				"ID_Placa": "TCB3925",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2017",
+				"Modelo": "CL120COLUMBIA",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-1127 => ALUMINIO NEGRO",
+				"Motor": "79932690",
+				"Chasis": "3AKJA6BG8HDJD7113",
+				"Estado": "ENTRA",
+				"Sistema_Fecha": "2025-02-28 08:24:06.897",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "3AKJA6BG8HDJD7113",
+				"Combustible": "DIESEL",
+				"Alto": "3.40",
+				"Ancho": "3.30",
+				"Largo": "3.50",
+				"Capacidad_Carga": "14000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAR6857",
+				"ID_Memo": "IHTT-CON-2461-25"
+			}
+		],
+		"CO-CNE-1373-19": [
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71072",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB2875",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2004",
+				"10": "COLUMBIA",
+				"11": "UNDEFINED",
+				"12": "IDC-50 => CAFE",
+				"13": "06R0762886",
+				"14": "1FUJA6CKX4LM31038",
+				"15": "NORMAL",
+				"16": "2025-03-03 11:42:08.103",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJA6CKX4LM31038",
+				"19": "DIESEL",
+				"20": "2.30",
+				"21": "2.60",
+				"22": "12.00",
+				"23": "12000.00",
+				"24": ".00",
+				"25": "AAM2868",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71072",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB2875",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2004",
+				"Modelo": "COLUMBIA",
+				"Tipo_Vehiculo": "UNDEFINED",
+				"Color": "IDC-50 => CAFE",
+				"Motor": "06R0762886",
+				"Chasis": "1FUJA6CKX4LM31038",
+				"Estado": "NORMAL",
+				"Sistema_Fecha": "2025-03-03 11:42:08.103",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJA6CKX4LM31038",
+				"Combustible": "DIESEL",
+				"Alto": "2.30",
+				"Ancho": "2.60",
+				"Largo": "12.00",
+				"Capacidad_Carga": "12000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM2868",
+				"ID_Memo": "false"
+			},
+			{
+				"1": "STPC",
+				"2": "T3",
+				"3": "RAM-20250228-000000059",
+				"4": "71073",
+				"5": "05019014622587",
+				"6": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"7": "TCB2876",
+				"8": "MV-314 => FREIGHTLINER",
+				"9": "2004",
+				"10": "CENTURY CLASS 120",
+				"11": "CABEZAL",
+				"12": "IDC-210 => AMARILLO MARRON",
+				"13": "06R0749776",
+				"14": "1FUJBBCK34LM68583",
+				"15": "ENTRA",
+				"16": "2025-02-28 08:18:13.647",
+				"17": "PE-CNE-560-19                                     ",
+				"18": "1FUJBBCK34LM68583",
+				"19": "DIESEL",
+				"20": "3.00",
+				"21": "3.90",
+				"22": "13.00",
+				"23": "14000.00",
+				"24": ".00",
+				"25": "AAM3441",
+				"26": "false",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "T3",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000059",
+				"ID": "71073",
+				"RTN_Propietario": "05019014622587",
+				"Nombre_Propietario": "SERVICIOS DE TRANSPORTES S A DE C V",
+				"ID_Placa": "TCB2876",
+				"Marca": "MV-314 => FREIGHTLINER",
+				"Anio": "2004",
+				"Modelo": "CENTURY CLASS 120",
+				"Tipo_Vehiculo": "CABEZAL",
+				"Color": "IDC-210 => AMARILLO MARRON",
+				"Motor": "06R0749776",
+				"Chasis": "1FUJBBCK34LM68583",
+				"Estado": "ENTRA",
+				"Sistema_Fecha": "2025-02-28 08:18:13.647",
+				"Permiso_Explotacion": "PE-CNE-560-19                                     ",
+				"VIN": "1FUJBBCK34LM68583",
+				"Combustible": "DIESEL",
+				"Alto": "3.00",
+				"Ancho": "3.90",
+				"Largo": "13.00",
+				"Capacidad_Carga": "14000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "AAM3441",
+				"ID_Memo": "false"
+			}
+		]
+	}
+}
 
-  //**************************************************************************************/
-//* Cargando la información por default que debe usar el formulario
-//**************************************************************************************/
-function f_DataOmision() {
-    //*****************************************************************************************/
-    //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-    //*****************************************************************************************/
-    loading(true, currentstep);
-    //*****************************************************************************************/
-    //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-    //*****************************************************************************************/
-    var datos;
-    var response;
-    // Get the URL parameters from the current page
-    const urlParams = new URLSearchParams(window.location.search);
-    // Get a specific parameter by name
-    const RAM = urlParams.get("RAM"); // Número de RAM
-    if (RAM != null) {
-      document.getElementById("RAM-ROTULO").innerHTML =
-        "<strong>" + RAM + "</strong>";
-      document.getElementById("RAM-ROTULO").style = "display:inline-block;";
-      document.getElementById("RAM").value = RAM;
-    } else {
-      document.getElementById("RAM-ROTULO").style = "display:none;";
-      document.getElementById("RAM").value = "";
-    }
-    // URL del Punto de Acceso a la API
-    const url = $appcfg_Dominio + "Api_Ram.php";
-    //  Fetch options
-    // const options = {
-    //   method: 'POST',
-    //   body: fd,
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    // };
-    let fd = new FormData(document.forms.form1);
-    //Adjuntando el action al FormData
-    fd.append("action", "get-datosporomision");
-    fd.append("RAM", RAM);
-    // Fetch options
-    const options = {
-      method: "POST",
-      body: fd,
-    };
-    // Hace la solicitud fetch con un timeout de 2 minutos
-    fetchWithTimeout(url, options, 120000)
-      .then((response) => response.json())
-      .then(function (datos) {
-        if (
-          document
-            .getElementById("Ciudad")
-            .value.toUpperCase()
-            .substring(0, 11) != "TEGUCIGALPA"
-        ) {
-          document.getElementById("cargadocs").style = "display:flex";
-        }
-        if (typeof datos[0] != "undefined") {
-  
-          if (typeof datos[2] != "undefined") {
-  
-            if (datos[2].length > 0) {
-              fLlenarSelect("Departamentos", datos[2], -1, false, {
-                text: "SELECCIONE UN DEPARTAMENTO",
-                value: "-1",
-              });
-              fLlenarSelect("Municipios", [], -1, false, {
-                text: "SELECCIONE UN MUNICIPIO",
-                value: "-1",
-              });
-              fLlenarSelect("Aldeas", [], -1, false, {
-                text: "SELECCIONE UNA ALDEA",
-                value: "-1",
-              });
-            }
-          }
-  
-          if (
-            typeof datos[3] != "undefined" &&
-            typeof datos[3][0] != "undefined"
-          ) {
-            //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
-            document.getElementById("nomapoderado").value =
-              datos[3][0]["Nombre_Apoderado_Legal"];
-            document.getElementById("colapoderado").value =
-              datos[3][0]["ID_Colegiacion"];
-            document.getElementById("identidadapod").value =
-              datos[3][0]["Ident_Apoderado_Legal"];
-            document.getElementById("dirapoderado").value =
-              datos[3][0]["Direccion_Apoderado_Legal"];
-            document.getElementById("telapoderado").value =
-              datos[3][0]["Telefono_Apoderado_Legal"];
-            document.getElementById("emailapoderado").value =
-              datos[3][0]["Email_Apoderado_Legal"];
-            document.getElementById("ID_Apoderado").value = datos[3][0]["ID"];
-  
-            if (datos[4].length > 0) {
-              fLlenarSelect("Departamentos", datos[11], datos[4][0]["ID_Departamento"], false, {
-                text: "SELECCIONE UN DEPARTAMENTO",
-                value: "-1",
-              });
-              fLlenarSelect("Municipios", datos[10], datos[4][0]["ID_Municipio"], false, {
-                text: "SELECCIONE UN MUNICIPIO",
-                value: "-1",
-              });
-              fLlenarSelect("Aldeas", datos[9], datos[4][0]["ID_Aldea"], false, {
-                text: "SELECCIONE UNA ALDEA",
-                value: "-1",
-              });
-            }
-  
-            //*******************************************************************************************************************/
-            //* Si el elemento 12 existe quiero decir que ya esta convertido a Expediente la FLS
-            //*******************************************************************************************************************/
-            if (datos?.[12]) {
-              document.getElementById("ID_Expediente").value = datos[12];
-              document.getElementById("ID_Solicitud").value = datos[12];
-            } else {
-              document.getElementById("ID_Expediente").value = '';
-              document.getElementById("ID_Solicitud").value = '';
-            }
-  
-            fLlenarSelect(
-              "entregadocs",
-              datos[1],
-              datos[4][0]["Entrega_Ubicacion"],
-              false,
-              {
-                text: "SELECCIONE UN LUGAR DE ENTREGA",
-                value: "-1",
-              }
-            );
-  
-            document.getElementById("tipopresentacion").value = datos[4][0]["Presentacion_Documentos"];
-            //* Moviendo campos de base de datos a datos de pantalla Solicitante
-            if (typeof datos[4] != "undefined") {
-              document.getElementById("rtnsoli").value =
-                datos[4][0]["RTN_Solicitante"];
-              document.getElementById("nomsoli").value =
-                datos[4][0]["Nombre_Solicitante"];
-              document.getElementById("denominacionsoli").value =
-                datos[4][0]["Denominacion_Social"];
-              document.getElementById("domiciliosoli").value =
-                datos[4][0]["Domicilo_Solicitante"];
-              document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + datos[4][0]["DESC_Estado"];
-              document.getElementById("telsoli").value =
-                datos[4][0]["Telefono_Solicitante"];
-              document.getElementById("emailsoli").value =
-                datos[4][0]["Email_Solicitante"];
-              document.getElementById("tiposolicitante").value =
-                datos[4][0]["ID_Tipo_Solicitante"];
-              document.getElementById("Departamentos").value =
-                datos[4][0]["ID_Departamento"];
-              document.getElementById("ID_Solicitante").value = datos[4][0]["ID"];
-              document.getElementById("ID_Estado_RAM").value =
-                datos[4][0]["Estado_Formulario"];
-  
-            }
-            //***************************************************************************/
-            //* Armando Objeto de Concesiones Salvadas en Preforma
-            //***************************************************************************/
-            if (typeof datos[5] != "undefined") {
-              guardarConcesionSalvadaPreforma(datos[5], datos[7]);
-            }
-            //***************************************************************************/
-            //* Estableciento el Link del Expediente Cargado para Trabajarlo
-            //***************************************************************************/
-            if (typeof datos[8] != "undefined" && datos[8] != false) {
-              document.getElementById("fileUploaded").style.display = "block";
-              document
-                .getElementById("fileUploadedLink")
-                .setAttribute("href", $appcfg_Dominio + datos[8]);
-            } else {
-              document.getElementById("fileUploaded").style.display = "none";
-            }
-            //***************************************************************************/
-            //* Marcar requicitos
-            //***************************************************************************/
-            fMarcarRequicitos();
-          } else {
-            if (datos[1].length > 0) {
-              fLlenarSelect("entregadocs", datos[1], null, false, {
-                text: "SELECCIONE UN LUGAR DE ENTREGA",
-                value: "-1",
-              });
-            }
-          }
-        } else {
-          if (typeof datos.error != "undefined") {
-            fSweetAlertEventNormal(
-              datos.errorhead,
-              datos.error + "- " + datos.errormsg,
-              "error"
-            );
-          } else {
-            fSweetAlertEventNormal(
-              "INFORMACIÓN",
-              "ALGO RARO PASO, INTENTELO DE NUEVO SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
-              "error"
-            );
-          }
-        }
-        //*****************************************************************************************/
-        //* INICIO: Despliega la información del stepper content y oculta el gif de procesando    */
-        //*****************************************************************************************/
-        loading(false, currentstep);
-        if (concesionNumber.length < 1) {
-          document.getElementById("input-prefetch").style.display = "none";
-          document.getElementById("toggle-icon").style.display = "none";
-          document.getElementById("rightDiv").style.display = "none";
-        } else {
-          document.getElementById("input-prefetch").style.display = "block";
-          document.getElementById("toggle-icon").style.display = "block";
-          document.getElementById("rightDiv").style.display = "flex";
-        }
-        startCelebration();
-        inicialitarTomSelect();
-        //*****************************************************************************************/
-        //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
-        //*****************************************************************************************/
-      })
-      .catch((error) => {
-        //*****************************************************************************************/
-        //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-        //*****************************************************************************************/
-        loading(false, currentstep);
-        //*****************************************************************************************/
-        //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-        //*****************************************************************************************/
-        console.log("error f_DataOmision() " + error);
-        fSweetAlertEventNormal(
-          "OPPS",
-          "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-          "error"
-        );
-      });
-  }
-  
+{
+	"7": {
+		"CO-CGR-1444-19": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "11566",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC3642",
+				"8": "MV-111 => BUDC",
+				"9": "1980",
+				"10": "CUELLO DE GANZO",
+				"11": "REMOLQUE",
+				"12": "IDC-380 => AMARILLO/AZUL",
+				"13": "NOAPLICA",
+				"14": "190341L",
+				"15": "2025-02-28 11:07:34.503",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "NOAPLICA",
+				"19": "NOAPLICA",
+				"20": "2.30",
+				"21": "2.30",
+				"22": "2.30",
+				"23": "12000.00",
+				"24": ".00",
+				"25": "RC1394",
+				"26": "ENTRA",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "11566",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC3642",
+				"Marca": "MV-111 => BUDC",
+				"Anio": "1980",
+				"Modelo": "CUELLO DE GANZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-380 => AMARILLO/AZUL",
+				"Motor": "NOAPLICA",
+				"Chasis": "190341L",
+				"Sistema_Fecha": "2025-02-28 11:07:34.503",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "NOAPLICA",
+				"Combustible": "NOAPLICA",
+				"Alto": "2.30",
+				"Ancho": "2.30",
+				"Largo": "2.30",
+				"Capacidad_Carga": "12000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC1394",
+				"ESTADO": "ENTRA"
+			},
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53938",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC3640",
+				"8": "MV-1131 => LOADCRAFT",
+				"9": "1987",
+				"10": "",
+				"11": "UNDEFINED",
+				"12": "IDC-200 => AMARILLO Y ROJO",
+				"13": "NOAPLICA",
+				"14": "1LDE40200HB876493",
+				"15": "2025-02-28 11:07:34.503",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1LDE40200HB876493",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "30000.00",
+				"24": ".00",
+				"25": "RC3633",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53938",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC3640",
+				"Marca": "MV-1131 => LOADCRAFT",
+				"Anio": "1987",
+				"Modelo": "",
+				"Tipo_Vehiculo": "UNDEFINED",
+				"Color": "IDC-200 => AMARILLO Y ROJO",
+				"Motor": "NOAPLICA",
+				"Chasis": "1LDE40200HB876493",
+				"Sistema_Fecha": "2025-02-28 11:07:34.503",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1LDE40200HB876493",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "30000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC3633",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1509-19": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53935",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRA9179",
+				"8": "MV-09 => ALLI",
+				"9": "1984",
+				"10": "",
+				"11": "REMOLQUE",
+				"12": "IDC-84 => ALUMINIO",
+				"13": "NOAPLICA",
+				"14": "1LDE40206EB845602",
+				"15": "2025-02-28 10:19:13.177",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1LDE40206EB845602",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "30000.00",
+				"24": ".00",
+				"25": "RC3938",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53935",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRA9179",
+				"Marca": "MV-09 => ALLI",
+				"Anio": "1984",
+				"Modelo": "",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-84 => ALUMINIO",
+				"Motor": "NOAPLICA",
+				"Chasis": "1LDE40206EB845602",
+				"Sistema_Fecha": "2025-02-28 10:19:13.177",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1LDE40206EB845602",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "30000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC3938",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1519-19": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53941",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC3822",
+				"8": "MV-1522 => BANANA_SUPLY",
+				"9": "1990",
+				"10": "",
+				"11": "REMOLQUE",
+				"12": "IDC-303 => ALUMINIUM",
+				"13": "NOAPLICA",
+				"14": "1HZF44205L1013921",
+				"15": "2025-02-28 10:26:53.113",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1HZF44205L1013921",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RA9251",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53941",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC3822",
+				"Marca": "MV-1522 => BANANA_SUPLY",
+				"Anio": "1990",
+				"Modelo": "",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-303 => ALUMINIUM",
+				"Motor": "NOAPLICA",
+				"Chasis": "1HZF44205L1013921",
+				"Sistema_Fecha": "2025-02-28 10:26:53.113",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1HZF44205L1013921",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RA9251",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1526-19": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53936",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRA9354",
+				"8": "MV-870 => STRICK",
+				"9": "1993",
+				"10": "CUELLO DE GANZO",
+				"11": "REMOLQUE",
+				"12": "IDC-900 => AMIRILLO",
+				"13": "NOAPLICA",
+				"14": "1S12GC408PB677287",
+				"15": "2025-02-28 10:31:36.393",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1S12GC408PB677287",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "9.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RB7929",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53936",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRA9354",
+				"Marca": "MV-870 => STRICK",
+				"Anio": "1993",
+				"Modelo": "CUELLO DE GANZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-900 => AMIRILLO",
+				"Motor": "NOAPLICA",
+				"Chasis": "1S12GC408PB677287",
+				"Sistema_Fecha": "2025-02-28 10:31:36.393",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1S12GC408PB677287",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "9.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RB7929",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1663-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53944",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC7919",
+				"8": "MV-10 => ALLIED",
+				"9": "1984",
+				"10": "CORREDIZO",
+				"11": "REMOLQUE",
+				"12": "IDC-929 => AMARANARA",
+				"13": "NOAPLICA",
+				"14": "CP728260",
+				"15": "2025-02-28 10:25:21.237",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "CP728260",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RC1211",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53944",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC7919",
+				"Marca": "MV-10 => ALLIED",
+				"Anio": "1984",
+				"Modelo": "CORREDIZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-929 => AMARANARA",
+				"Motor": "NOAPLICA",
+				"Chasis": "CP728260",
+				"Sistema_Fecha": "2025-02-28 10:25:21.237",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "CP728260",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC1211",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1778-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53942",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC4731",
+				"8": "MV-472 => HYUNDAI",
+				"9": "1986",
+				"10": "",
+				"11": "REMOLQUE",
+				"12": "IDC-322 =>  ROJO BEIGE",
+				"13": "NOAPLICA",
+				"14": "145C412S5GL007314",
+				"15": "2025-02-28 10:21:50.627",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "145C412S5GL007314",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "9.00",
+				"23": "30000.00",
+				"24": ".00",
+				"25": "RC3943",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53942",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC4731",
+				"Marca": "MV-472 => HYUNDAI",
+				"Anio": "1986",
+				"Modelo": "",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-322 =>  ROJO BEIGE",
+				"Motor": "NOAPLICA",
+				"Chasis": "145C412S5GL007314",
+				"Sistema_Fecha": "2025-02-28 10:21:50.627",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "145C412S5GL007314",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "9.00",
+				"Capacidad_Carga": "30000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC3943",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1786-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53931",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRA8558",
+				"8": "MV-870 => STRICK",
+				"9": "1986",
+				"10": "",
+				"11": "REMOLQUE",
+				"12": "IDC-418 => BLAN/AZUL",
+				"13": "NOAPLICA",
+				"14": "1S12SC236FC652165",
+				"15": "2025-02-28 10:33:57.597",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1S12SC236FC652165",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "3.80",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RB3506",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53931",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRA8558",
+				"Marca": "MV-870 => STRICK",
+				"Anio": "1986",
+				"Modelo": "",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-418 => BLAN/AZUL",
+				"Motor": "NOAPLICA",
+				"Chasis": "1S12SC236FC652165",
+				"Sistema_Fecha": "2025-02-28 10:33:57.597",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1S12SC236FC652165",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "3.80",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RB3506",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1789-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53940",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC3643",
+				"8": "MV-1381 => ALFAB",
+				"9": "1985",
+				"10": "CUELLO DE GANZO",
+				"11": "REMOLQUE",
+				"12": "IDC-606 => AMARIILO CON AZUL",
+				"13": "NOAPLICA",
+				"14": "148CS4027FA001800",
+				"15": "2025-02-28 10:47:20.690",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "148CS4027FA001800",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RB7918",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53940",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC3643",
+				"Marca": "MV-1381 => ALFAB",
+				"Anio": "1985",
+				"Modelo": "CUELLO DE GANZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-606 => AMARIILO CON AZUL",
+				"Motor": "NOAPLICA",
+				"Chasis": "148CS4027FA001800",
+				"Sistema_Fecha": "2025-02-28 10:47:20.690",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "148CS4027FA001800",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RB7918",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1791-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53934",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRA9168",
+				"8": "MV-870 => STRICK",
+				"9": "1993",
+				"10": "CUELLO DE GANZO",
+				"11": "REMOLQUE",
+				"12": "IDC-1014 => AZUL OSC, MICA ME",
+				"13": "NOAPLICA",
+				"14": "1S12GC409PB676567",
+				"15": "2025-02-28 10:32:52.720",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1S12GC409PB676567",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RB7922",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53934",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRA9168",
+				"Marca": "MV-870 => STRICK",
+				"Anio": "1993",
+				"Modelo": "CUELLO DE GANZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-1014 => AZUL OSC, MICA ME",
+				"Motor": "NOAPLICA",
+				"Chasis": "1S12GC409PB676567",
+				"Sistema_Fecha": "2025-02-28 10:32:52.720",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1S12GC409PB676567",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RB7922",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-1792-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53932",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRA8575",
+				"8": "MV-870 => STRICK",
+				"9": "1993",
+				"10": "CUELLO DE GANZO",
+				"11": "REMOLQUE",
+				"12": "IDC-528 => BLANC/NEGR",
+				"13": "NOAPLICA",
+				"14": "1S12GC403PB677231",
+				"15": "2025-02-28 10:34:50.330",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1S12GC403PB677231",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RB7926",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53932",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRA8575",
+				"Marca": "MV-870 => STRICK",
+				"Anio": "1993",
+				"Modelo": "CUELLO DE GANZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-528 => BLANC/NEGR",
+				"Motor": "NOAPLICA",
+				"Chasis": "1S12GC403PB677231",
+				"Sistema_Fecha": "2025-02-28 10:34:50.330",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1S12GC403PB677231",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RB7926",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-2297-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53937",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRA9695",
+				"8": "MV-1268 => TRAILMOBILE",
+				"9": "1977",
+				"10": "CUELLO DE GANZO",
+				"11": "REMOLQUE",
+				"12": "IDC-225 => AMARILLO Y BLANCO",
+				"13": "NOAPLICA",
+				"14": "S34356",
+				"15": "2025-02-28 10:29:14.753",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "S34356",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RC1412",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53937",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRA9695",
+				"Marca": "MV-1268 => TRAILMOBILE",
+				"Anio": "1977",
+				"Modelo": "CUELLO DE GANZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-225 => AMARILLO Y BLANCO",
+				"Motor": "NOAPLICA",
+				"Chasis": "S34356",
+				"Sistema_Fecha": "2025-02-28 10:29:14.753",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "S34356",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC1412",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-2300-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53943",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC7783",
+				"8": "MV-1131 => LOADCRAFT",
+				"9": "1984",
+				"10": "",
+				"11": "REMOLQUE",
+				"12": "IDC-1054 => AZUL BLANCO AMARILLO",
+				"13": "NOAPLICA",
+				"14": "1LDE40205EB840410",
+				"15": "2025-02-28 10:46:25.050",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1LDE40205EB840410",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "9.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RC5353",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53943",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC7783",
+				"Marca": "MV-1131 => LOADCRAFT",
+				"Anio": "1984",
+				"Modelo": "",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-1054 => AZUL BLANCO AMARILLO",
+				"Motor": "NOAPLICA",
+				"Chasis": "1LDE40205EB840410",
+				"Sistema_Fecha": "2025-02-28 10:46:25.050",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1LDE40205EB840410",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "9.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC5353",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-2309-20": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53933",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRA9045",
+				"8": "MV-870 => STRICK",
+				"9": "1994",
+				"10": "",
+				"11": "REMOLQUE",
+				"12": "IDC-290 => ALUMINIO",
+				"13": "1S12E95305E383956",
+				"14": "1S12E9530SE383956",
+				"15": "2025-02-28 10:24:22.767",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1S12E9530SE383956",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RC2022",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53933",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRA9045",
+				"Marca": "MV-870 => STRICK",
+				"Anio": "1994",
+				"Modelo": "",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-290 => ALUMINIO",
+				"Motor": "1S12E95305E383956",
+				"Chasis": "1S12E9530SE383956",
+				"Sistema_Fecha": "2025-02-28 10:24:22.767",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1S12E9530SE383956",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC2022",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-902-19": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53939",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC3641",
+				"8": "MV-472 => HYUNDAI",
+				"9": "1998",
+				"10": "SIN MODELO",
+				"11": "REMOLQUE",
+				"12": "IDC-310 => AMARI/NEGR",
+				"13": "NOAPLICA",
+				"14": "3H3C532S4WT063468",
+				"15": "2025-02-28 10:30:18.283",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "3H3C532S4WT063468",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "2.40",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RC8788",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53939",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC3641",
+				"Marca": "MV-472 => HYUNDAI",
+				"Anio": "1998",
+				"Modelo": "SIN MODELO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-310 => AMARI/NEGR",
+				"Motor": "NOAPLICA",
+				"Chasis": "3H3C532S4WT063468",
+				"Sistema_Fecha": "2025-02-28 10:30:18.283",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "3H3C532S4WT063468",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "2.40",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC8788",
+				"ESTADO": "NORMAL"
+			}
+		],
+		"CO-CGR-919-19": [
+			{
+				"1": "STPC",
+				"2": "S2",
+				"3": "RAM-20250228-000000060",
+				"4": "53945",
+				"5": "05019007076184",
+				"6": "EXA SA DE CV",
+				"7": "TRC7927",
+				"8": "MV-1214 => TITAN",
+				"9": "1985",
+				"10": "CUELLO DE GANZO",
+				"11": "REMOLQUE",
+				"12": "IDC-578 => AZUL OSCURO MICA MET",
+				"13": "NOAPLICA",
+				"14": "1652C4120FB004476",
+				"15": "2025-02-28 10:44:39.440",
+				"16": "",
+				"17": "PE-CNE-16-18                                      ",
+				"18": "1652C4120FB004476",
+				"19": "NOAPLICA",
+				"20": "3.20",
+				"21": "3.80",
+				"22": "7.00",
+				"23": "7000.00",
+				"24": ".00",
+				"25": "RC8789",
+				"26": "NORMAL",
+				"Clase Servicio": "STPC",
+				"DESC_Tipo_Vehiculo": "S2",
+				"ID_Formulario_Solicitud": "RAM-20250228-000000060",
+				"ID": "53945",
+				"RTN_Propietario": "05019007076184",
+				"Nombre_Propietario": "EXA SA DE CV",
+				"ID_Placa": "TRC7927",
+				"Marca": "MV-1214 => TITAN",
+				"Anio": "1985",
+				"Modelo": "CUELLO DE GANZO",
+				"Tipo_Vehiculo": "REMOLQUE",
+				"Color": "IDC-578 => AZUL OSCURO MICA MET",
+				"Motor": "NOAPLICA",
+				"Chasis": "1652C4120FB004476",
+				"Sistema_Fecha": "2025-02-28 10:44:39.440",
+				"Numero_PermisoEspecial": "",
+				"Permiso_Explotacion": "PE-CNE-16-18                                      ",
+				"VIN": "1652C4120FB004476",
+				"Combustible": "NOAPLICA",
+				"Alto": "3.20",
+				"Ancho": "3.80",
+				"Largo": "7.00",
+				"Capacidad_Carga": "7000.00",
+				"Peso_Unidad": ".00",
+				"ID_Placa_Antes_Replaqueo": "RC8789",
+				"ESTADO": "NORMAL"
+			}
+		]
+	}
+}

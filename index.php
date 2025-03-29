@@ -3,6 +3,8 @@
 session_start();
 //*configuración del sistema
 include_once('configuracion/configuracion.php');
+//*configuración del las variables globales del sistema
+include_once('configuracion/configuracion_js.php');
 if (!isset($_SESSION['url']) && !isset($_SESSION['user_name'])) {
   if ($appcfg_Dominio == (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]") {
     $appcfg_page_url =  (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]" . "index.php";
@@ -25,8 +27,6 @@ if (!isset($_SESSION["Es_Renovacion_Automatica"])) {
 if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   $_SESSION["Originado_En_Ventanilla"] = true;
 }
-//*configuración del las variables globales del sistema
-include_once('configuracion/configuracion_js.php');
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="auto">
@@ -71,7 +71,6 @@ include_once('configuracion/configuracion_js.php');
   <input type="hidden" id="ID_Solicitud" value="">
   <input type="hidden" id="ID_Resolucion" value="">
   <input type="hidden" id="ID_AvisoCobro" value="">
-  <input type="hidden" id="ID_Solicitud" value="">
   <input type="hidden" id="ID_Solicitante" value="">
   <input type="hidden" id="ID_Apoderado" value="">
   <input type="hidden" id="ID_Unidad" value="">
@@ -967,7 +966,7 @@ include_once('configuracion/configuracion_js.php');
                   </div>
                   <div class="row">
                     <div class="col-12">
-                      <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel">TIPO DE CONCESION:</span> <span id="concesion1_concesion"></span></h6>
+                      <h6 style="text-align: center; font-weight: bold;"><span id="concesionlabel1">TIPO DE CONCESION:</span> <span id="concesion1_concesion"></span></h6>
                     </div>
                   </div>
                   <div class="row unbordered-row">
@@ -1384,10 +1383,10 @@ include_once('configuracion/configuracion_js.php');
             </div>
         </div>
             <div class="row">
-            <div class="col justify-content-center">
+            <div class="col">
               <button id="btnprevious2" type="button" class="btn btn-success btn-sm btn-previous-form"><i class="fa-solid fa-arrow-left"></i> Anterior (F2)</button>
             </div>
-            <div class="col justify-content-center">
+            <div class="col">
               <button id="btnnext2" type="button" class="btn btn-primary btn-sm btn-sm btn-next-form"><i class="fa-solid fa-arrow-right"></i> Siguiente (F10)</button>
             </div>
           </div>

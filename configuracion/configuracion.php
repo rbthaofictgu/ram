@@ -4,7 +4,6 @@
 //************************************************************************/
 ?>
 <?php header('Content-Type: text/html; charset=utf-8');?>
-
 <?php
 require_once('/var/www/rbarrientos/ram/device_type.php');
 // *************************************************************************************************/
@@ -40,6 +39,27 @@ if(isset($_SESSION["usuario"])){
 }else{
 	$usuario='USUARIO';
 }
+// ***********************************************************************************/
+//* Estado Inicial Por Omisión
+// ***********************************************************************************/	
+$appcfg_estado_inicial = 'IDE-7';
+$appcfg_estado_inicial_descripcion = 'EN VENTANILLA';
+// ***********************************************************************************/
+//* Version del Sistema
+// ***********************************************************************************/	
+$appcfg_software_version = 'VERSION 3.0.100 RTBM';
+// ***********************************************************************************/
+//* fecha de Cambio de Version, utilizada como fecha de referencia de cambio de versión 
+//* y como fecha de partida para definir cuando aun se considera una version reciente
+// ***********************************************************************************/	
+$appcfg_software_version_fecha_inicio = '2025/03/27';
+// ***********************************************************************************/
+//* Días máximos que sera considerada reciente la nueva version
+//***********************************************************************************/	
+$appcfg_software_dias_version_reciente = 30;
+//***********************************************************************************/
+//* Inicio-> version del Sistema
+//***********************************************************************************/	
 //$appcfg_icono_de_importante = '<i class="fas fa-exclamation-triangle gobierno2"></i>  ';
 //$appcfg_icono_de_importante = '<i class="fas fa-star gobierno2"></i>  ';
 $appcfg_icono_de_importante = '<i class="fas fa-exclamation-circle gobierno1"></i>  ';
@@ -221,4 +241,5 @@ $appcfg_smtp_port = 465;
 $appcfg_smtp_server = "122.8.183.193"; 
 $appcfg_smtp_user = "notificacionessecretariageneral@transporte.gob.hn"; 
 $appcfg_smtp_password = "Ihtt2024"; 
+$appcfg_placas = ["RA","TB","TC","TE","TP","TT","TR","EA","SJ","TB"];
 ?>

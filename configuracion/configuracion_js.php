@@ -1,6 +1,6 @@
 <!--//? PAGINA DE CONFIGURACION DE VARIABLES GENERALES DEL SISTEMA. -->
 <script>
-var $appcfg_Dominio = '<?php echo $appcfg_Dominio;?>';
+var $appcfg_Dominio  = '<?php echo $appcfg_Dominio;?>';
 var $appcfg_Dominio_Corto = '<?php echo $appcfg_Dominio_Corto;?>';
 var $appcfg_Dominio_Puerto = '<?php echo $appcfg_Dominio_Puerto;?>';
 var $appcfg_Dominio_Raiz = '<?php echo $appcfg_Dominio_Raiz;?>';
@@ -12,4 +12,7 @@ var $appcfg_pocision_toast = { x: 20,  y: 100  };
 var $appcfg_pocision_toast = { x: 20,  y: 100  };
 var $appcfg_max_field_on_net = '<?php echo $appcfg_max_field_on_net;?>';
 var $appcfg_icono_de_importante  = '<?php echo $appcfg_icono_de_importante;?>';
+var $appcfg_software_version  = '<?php echo $appcfg_software_version;?>';
+var $appcfg_estado_inicial  = '<?php echo $appcfg_estado_inicial;?>';
+var $appcfg_placas = <?php echo json_encode($appcfg_placas); ?>;
 </script>
