@@ -1,48 +1,50 @@
+var usuario = document.getElementById("ID_Usuario");
 
-var setUnSetEvent1 = localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value);
-setUnSetEvent1 = JSON.parse(setUnSetEvent1); //
-if (setUnSetEvent1 == null) {
-   localStorage.setItem('setUnSetEvent' + document.getElementById("ID_Usuario").value, JSON.stringify({ 'setUnSetEvent': 'add' }));
+if (usuario) {
+   var userId = document.getElementById("ID_Usuario")?.value || '';
+   var setUnSetEvent1 = localStorage.getItem('setUnSetEvent' + userId);
+   setUnSetEvent1 = JSON.parse(setUnSetEvent1); //
+   if (setUnSetEvent1 == null) {
+      localStorage.setItem('setUnSetEvent' + document.getElementById("ID_Usuario").value, JSON.stringify({ 'setUnSetEvent': 'add' }));
+   }
 }
-
-
 // document.addEventListener("DOMContentLoaded", function () {
 //* Página actual, comenzamos en la página 1
-let currentPage = 1;
+var currentPage = 1;
 //* Número de filas por página 
-let rowsPerPage = 10;
-let pageNumerClick = 0;
+var rowsPerPage = 10;
+var pageNumerClick = 0;
 //* Variable global para almacenar las filas de los tramites
-let filasTramites = [];
-let crearFilaTramites = [];
-let getBtndesabilitado = '';
+var filasTramites = [];
+var crearFilaTramites = [];
+var getBtndesabilitado = '';
 //*para almacenar el tamaño de los tramites
 var tamaño_Tramite = 0;
 //*se almacenan el arreglo de los id de cada una de las filas de localStorage.
-let arregloFilaOculta = [];
+var arregloFilaOculta = [];
 //*obtiene los datos de la tabla para utilizarlos en la funcion
 //*mostrarAgregar_fila() que se encarga de desplegar los tramites si las filas de estos estan almacenadas en localstorage
-let datosMostra = {}
+var datosMostra = {}
 //*contiene el arreglo de los id almacendos en localstoreage de las filas ocultas
 var getFilaOculta = [];
-let vistaHabilitada = false;
+var vistaHabilitada = false;
 //*Guardamos  una copia de todas las concesiones almacenadas antes de ser eliminadas para comprara con las que quedaron despiues de eiliminar.
-let ConcesionNumberAntesEliminar = [];
+var ConcesionNumberAntesEliminar = [];
 //*creamos una copia del contenedor de los botones para poder utilizarlo en la funcion btnVerTramites().
-let copiDivClear = '';
-let suma = 0;
+var copiDivClear = '';
+var suma = 0;
 //*definiendo los roles permitidos
 var rol = [7, 9];
 var modulo = '';
 //*rol que tiene el usuario logiado.
-let rolUser = [7];
+var rolUser = [7];
 //*variable para obtener el ram en que se esta trabajando.
 var ramElement = document.getElementById("RAM");
 var ram = ramElement ? ramElement.value ?? 'RAM' : 'RAM';
 //*creamos una copia de el contenedor de las filagas agregadas para poder utilizar en otra funcion.
 var divAgregar = '';
-let arregloDiv = [];
-let btnVer = false;
+var arregloDiv = [];
+var btnVer = false;
 //*titulos variables 
 var lengTramites = 0;
 //*estados para mostarar cambio de unidad link
@@ -57,6 +59,12 @@ var tituloGlobal = '';
 const encabezadoExclui = new Set(['Tramites', 'Unidad', 'Unidad1', 'ID_Memo', 'Concesion_Encriptada', 'esCarga', 'esCertificado', 'Permiso_Explotacion_Encriptado']);
 //*para saber el estado de la RAM actual.
 var estadoRam = document.getElementById("ID_Estado_RAM").value;
+if (estadoRam) {
+   console.log('Estado RAM si existe:', estadoRam);
+} else {
+   console.log('Estado RAM no existe:', estadoRam);
+}
+
 
 //*************************************************************/
 //*INICIO:Funcion encargada de filtrar la data de ConcesionNumber;
@@ -271,12 +279,18 @@ function TablaBusquedaInterna(titulo = '', encabezado, contenedorId) {
    //* su texto y lo enviamos al contenedor
 
    //?NOTA:."some()" si alguno cumple conla condicion.
-   headerRow.appendChild(th1).innerHTML = ((rolUser.some(role => rol.includes(role))) ? `<div class="form-check">
+   headerRow.appendChild(th1).innerHTML = ((rolUser.some(role => rol.includes(role))) ? ( (esEditable() != false)? `<div class="form-check">
          <input class="form-check-input" type="checkbox" onclick="seleccionarTodos();" value="" id="check_trash_all"> 
          <label class="form-check-label" for="flexCheckDefault">
             &nbsp;&nbsp;#
          </label>
-         </div>` : '#');
+         </div>`
+         :  
+         `<div class="form-check">
+         <label class="form-check-label" for="flexCheckDefault">
+            &nbsp;&nbsp;#
+         </label>
+         </div>`) : '#');
    th1.style.width = "auto";
 
    //*recorremos en arreglo que contiene el encabezado de la tabla.
@@ -412,27 +426,33 @@ function clearSearchFiled(tableContainer, tbody) {
       renderPagination(currentPage, rowsPerPage, document.querySelector('#pagination-nav'))
    };
 
-   const btn_trash = document.createElement('button');
-   if (rolUser.some(role => rol.includes(role))) {
-      //*el tipo de boton
-      btn_trash.type = 'button';
-      //*añadiendo el texto al boton
-      btn_trash.textContent = 'BORRAR';
-      //*añadiendo las clases del boton y estilos
-      btn_trash.className = 'btn btn-danger  mx-2 btn-sm ml-auto'
 
-      btn_trash.onclick = () => {
-         trash_Consession(filtrarDataConcesionNumber());
-      };
+   if (esEditable() != false) {
+      console.log('esEditable', esEditable());
+      const btn_trash = document.createElement('button');
+      if (rolUser.some(role => rol.includes(role))) {
+         //*el tipo de boton
+         btn_trash.type = 'button';
+         //*añadiendo el texto al boton
+         btn_trash.textContent = 'BORRAR';
+         //*añadiendo las clases del boton y estilos
+         btn_trash.className = 'btn btn-danger  mx-2 btn-sm ml-auto'
 
-      // //*pasando boton a divTrash
-      divClear1.appendChild(btn_trash);
-      //tableContainer.appendChild(divClear);
-      //*Función onclick
+         btn_trash.onclick = () => {
+            trash_Consession(filtrarDataConcesionNumber());
+         };
+
+         // //*pasando boton a divTrash
+         divClear1.appendChild(btn_trash);
+         //tableContainer.appendChild(divClear);
+         //*Función onclick
+      }
+   } else {
+      console.log('no es editable', esEditable());
    }
 
    btnVerTramites();
-   btnVerTramitesFijos();
+   // btnVerTramitesFijos();
    btnStyle();
 
    tableContainer.appendChild(divClear1);
@@ -727,17 +747,18 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
 
    let datos = [];
    paginatedData.forEach((fila, index) => {
+      console.log(fila, 'fila');
       //*creamos la fila de el body
       const row = document.createElement('tr');
       row.id = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
       // console.log(row.id, 'row.id');
       //*creamos la columna y añadimos el numero de fila para despues añadir al elemnto de fila
-      row.appendChild(document.createElement('td')).innerHTML = ((rolUser.some(role => rol.includes(role))) ? `<div div class="form-check" >
+      row.appendChild(document.createElement('td')).innerHTML = ((rolUser.some(role => rol.includes(role))) ? ((esEditable() != false)? `<div div class="form-check" >
          <input onclick="event.stopPropagation();" class="form-check-input check_trash" type="checkbox" data-originalrow="${index}" data-concesion="${fila['Concesion']}" value="${index}" id="id_trash_${row.id}">
             <label id="indice_row_${startIndex + index}" class="form-check-label" for="flexCheckDefault">
                &nbsp;&nbsp; ${startIndex + index + 1}
             </label>
-         </div>`  : startIndex + index + 1);
+         </div>`: startIndex + index + 1 ) : startIndex + index + 1);
 
       if (rolUser.some(role => rol.includes(role))) {
          //********************************************/
@@ -761,6 +782,8 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
             if (td !== null) {
                td.style.cursor = 'pointer';
                //*GENERANDO LINK DE LOS
+
+               console.log(fila['esCarga'], fila['esCertificado'], fila['Concesion_Encriptada'], fila['Permiso_Explotacion_Encriptado'], 'datossssssss');
                let linksConcesion = tipoConcesion(fila['esCarga'], fila['esCertificado'], fila['Concesion_Encriptada'], fila['Permiso_Explotacion_Encriptado']);
                //*validamos si el texto pertenece a la placa para asignar funcion
                if (key == 'Placa') {
@@ -774,7 +797,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                   if (key == 'Concesion') {
                      tamaño_Tramite = fila['Tramites'].length;
                      if (estadosValidos.includes(estadoRam) || fila['ID_Expediente']) {
-                        linkConcesiones(td, linksConcesion['rutapermisoexplotacion'], value, tamaño_Tramite, index, tipoConsesion = 'C');
+                        linkConcesiones(td, linksConcesion['rutacertificado'], value, tamaño_Tramite, index, tipoConsesion = 'C');
                      } else {
                         var spanConcesion = document.createElement('span');
                         spanConcesion.id = 'numero_concesion_' + index;
@@ -785,7 +808,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                            spanConcesion.addEventListener("mouseenter", onmouseenterAccion);
                         }
                         var spanTramite = document.createElement('span');
-                        spanTramite.id = `tamañoTramite${index + recalculandoPaginacion(pageNumerClick)} `;
+                        spanTramite.id = `tamañoTramite${index + recalculandoPaginacion(pageNumerClick)}`;
                         spanTramite.style.cssText = "display: inline-block; border-radius: 15%; background-color: rgb(17, 88, 99); color: white; padding: 3px;";
                         spanTramite.innerHTML = tamaño_Tramite;
                         td.appendChild(document.createTextNode("\u00A0")); // Agrega un espacio
@@ -829,9 +852,8 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
          //*asignamos la manito a la fila
          spanAccion.className = 'end';
          spanAccion.style.cursor = 'pointer';
-         spanAccion.innerHTML = `<i i id = "est_const"  class="fa-duotone fa-solid fa-pen" ></i > `;
+         spanAccion.innerHTML = `<i id = "est_const"  class="fa-duotone fa-solid fa-pen" ></i > `;
          spanAccion.onclick = function (event) {
-            // https://satt2.transporte.gob.hn:285/ram/index.php?RAM=RAM-2024-000000086
             event.stopPropagation();
             Swal.fire({
                title: `¿MODIFICAR LA CONCESION: ${fila['Concesion']}?`,
@@ -1057,11 +1079,13 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
 
       //*indice de las nuevas filas creadas. //'M_CL'
       if (rolUser.some(role => rol.includes(role))) {
-         if ((tramite['ID_Compuesto'].split("_")[2] === 'R') || (tramite['ID_Compuesto'].split("_")[3] === 'CL')) {
+         if ((tramite['ID_Compuesto'].split("_")[2] === 'R') || (tramite['ID_Compuesto'].split("_")[3] === 'CL') || (esEditable()== false)) {
             td_trash.innerHTML = '';
             td_trash.style.cursor = 'none';
          } else {
-            td_trash.innerHTML = `<span span > <i class="fa-solid fa-trash deleteTramite"></i></span > `;
+       
+               td_trash.innerHTML = `<span span > <i class="fa-solid fa-trash deleteTramite"></i></span > `;
+            
          }
       } else {
          td_trash.innerHTML = ``;
@@ -1082,7 +1106,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                e.preventDefault();
                Swal.fire({
                   title: '¿ESTÁ SEGURO?',
-                  text: '¿QUIERE ELIMINAR ESTE TRAMITE?',
+                  html: `¿QUIERE ELIMINAR EL TRAMITE DE <strong>${tramite['descripcion']}</strong> DE LA CONCESIÓN <strong>${Concesion}</strong>?`,
                   icon: 'warning',
                   showCancelButton: true,
                   confirmButtonText: 'SÍ, ELIMINAR',
@@ -1100,7 +1124,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                      tamaño_Tramite = data_tramites.length;
                      // console.log(tamaño_Tramite, 'tama');
                      // let cambioTamañoT = document.getElementById(`tamañoTramite${ indexFilaConcesio } `).textContent;
-                     document.getElementById(`tamañoTramite${indiceNuevo} `).textContent = tamaño_Tramite - 1;
+                     document.getElementById(`tamañoTramite${indiceNuevo}`).textContent = tamaño_Tramite - 1;
                      // document.getElementById(`tamañoTramite${ indexFilaConcesio } `).textContent = tamaño_Tramite;
                   }
                });
@@ -1124,10 +1148,11 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                tdSub.className = (key === 'Monto') ? 'text-nowrap table-secondary' : 'text-nowrap table-secondary';
                //*si es cambio de MODIFICACIÓN CAMBIO DE UNIDAD el tramite.
                if (tramite['descripcion'] == 'MODIFICACIÓN CAMBIO DE UNIDAD') {
-                  var estadoRam = document.getElementById("ID_Estado_RAM").value;
+                  // var estadoRam = document.getElementById("ID_Estado_RAM").value;
+                  // console.log(estadoRam, 'estadoRam');
                   // const estadosValidosModificacionUnidad = ['IDE-1', 'IDE-2'];
                   //*siel parametro se manda y hay cambio de unidad se muestra las constancias.
-                  if (estadosValidosModificacionUnidad.includes(estadoRam)) {
+                  if (estadosValidosModificacionUnidad.includes((estadoRam) ? estadoRam : '')) {
                      //*se muestra texto si no es url o el cambio de unidad
                      const link = document.createElement('a');
                      link.style.textDecoration = 'none';
@@ -1220,7 +1245,7 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
    tamaño_Tramite = data_tramites.length;
    const link = document.createElement('a');
    if (tipo == 'C') {
-      link.innerHTML = value + ` <span span id = "tamañoTramite${index}" style = "display: inline-block; border-radius: 15%; background-color:rgb(31, 109, 121); color: white; padding: 3px 7px; font-size: 10px;" > ${tamaño_Tramite}</span > `;
+      link.innerHTML = value + `<span id="tamañoTramite${index}" style = "display: inline-block; border-radius: 15%; background-color:rgb(31, 109, 121); color: white; padding: 3px 7px; font-size: 10px;"> ${tamaño_Tramite}</span > `;
    } else {
       link.innerHTML = value;
    }
@@ -1273,8 +1298,8 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
 //*funcion que se necarga de crear la tabla de la revision del vehiculo
 //**********************************************************************/
 function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
-   // console.log(unidad, 'unidad span');
-   // console.log(unidad1, 'unidad1 span');
+   console.log(unidad, 'unidad span');
+   console.log(unidad1, 'unidad1 span');
    var texto = '';
    //console.log(unidad1,unidad,value);
    if (unidad1 != undefined && unidad1 != '' && unidad1 != null) {
@@ -1704,7 +1729,7 @@ function mostrarAlerta(tipoAccion, idConcesiones, filas, originalRows) {
    } else {
       Swal.fire({
          title: '¿ESTÁ SEGURO?',
-         text: '¿QUIERE ELIMINAR LAS CONCESIONES?',
+         html: `¿QUIERE ELIMINAR ESTA CONCESIÓN <strong>${idConcesiones}</strong>?`,
          icon: 'warning',
          showCancelButton: true,
          confirmButtonText: 'SÍ, ELIMINAR',
@@ -1964,13 +1989,14 @@ function eliminar(idConcesiones, idRows, originalRows, Monto = 0) {
 //*funcion encargada de actulaizar las iconos de la constancia de la placas si hay cambio de unidad.
 //**************************************************************************************************/
 function actualizarContenido(span, index, unidad1) {
+   // console.log('unidad1*******',unidad1['ID_Memo'], 'memo' );
    //*si el indix es 2 es cambio de unidad y ID_Memo false que no tiene constancias generada.
-   if (index === 2 && unidad1 != undefined && unidad1 != null && (unidad1['ID_Memo'] === false || unidad1['ID_Memo'] === 'false')) {
-      span.innerHTML = `< i id = "est_const" class="fas fa-cog" ></ > `;
-      //*si el indix es 1 es cambio de unidad y ID_Memo tiene datos si tiene constancia entonces la visualizamos
+   if (index === 2 && unidad1 != undefined && unidad1 != 'undefined' && unidad1 != null && (unidad1['ID_Memo'] === false || unidad1['ID_Memo'] === 'false')) {
+      span.innerHTML = `<i id="est_const" class="fas fa-cog"></i>`;
+      //*si el indix es 2 es cambio de unidad y ID_Memo tiene datos si tiene constancia entonces la visualizamos
    } else if (index === 2 && unidad1 != undefined && unidad1 != null && (unidad1['ID_Memo'] !== false || unidad1['ID_Memo'] !== 'false')) {
       //* En caso de que 'ID_Memo' no sea false y tenga un ID_Memo.
-      span.innerHTML = `< i id = "est_const" class="fas fa-file-pdf" ></ > `;
+      span.innerHTML = `<i id="est_const" class="fas fa-file-pdf"></i>`;
    }
 }
 //***************************************************************************************/
@@ -2005,16 +2031,18 @@ function constancia(placa, ID_Memo, unidad1, idConcesion) {
 //*cambio de unidad y placa distinta 
 //**************************************
 function generarConstancia(unidad1, idConcesion) {
+   var Chasis = unidad1['Chasis'];
+   var Marca = unidad1['Marca'].split('=>');
+   console.log(Marca, 'marca');
    //*globales.
    var ID_Usuario = document.getElementById("ID_Usuario").value;
    var User_Name = document.getElementById("User_Name").value;
-
    var form_data = new FormData();
    form_data.append("action", "save-ingreso-constancias");
    form_data.append("Referencia", document.getElementById("RAM").value); //$('#numpreforma').val()
    form_data.append("Placa_Entra", unidad1['ID_Placa']);
-   form_data.append("Marca_Entra", unidad1['ID_Marca']);
-   form_data.append("Tipo_Entra", unidad1['Desc_Marca']);
+   form_data.append("Marca_Entra", Marca[0].trim());
+   form_data.append("Tipo_Entra", Marca[1].trim());
    form_data.append("Anio_Entra", unidad1['Anio']);
    form_data.append("Motor_Entra", unidad1['Motor']);
    form_data.append("Chasis_Entra", unidad1['Chasis']);
@@ -2033,35 +2061,38 @@ function generarConstancia(unidad1, idConcesion) {
       type: 'post',
       success: function (dataserver) {
          Memo = dataserver.ID_Memo;
+         console.log(dataserver, 'dataserver');
          if (dataserver.status == 2) {
-            fSweetAlertEventNormal(
-               "NO SE SALVO LA CONSTANCIA",
-               "La sesión actual a expirado favor inice sesión nuevamente",
-               "warning"
-            );
+            Swal.fire({
+               title: '!NO SE SALVO LA CONSTANCIA¡',
+               text: 'La sesión actual a expirado favor inice sesión nuevamente',
+               icon: 'warning',
+               confirmButtonText: 'OK',
+            })
          } else {
             if (dataserver.status == 3) {
                Swal.fire({
-                  title: "NO SE SALVO LA CONSTANCIA",
-                  text: "Ya habia sido emitida una constancia para el CHASIS NO. <b>" + document.getElementById('Chasis').firstChild.data + '</b> en la fecha ' + dataserver.Sistema_Fecha + ' con el número de memo ' + dataserver.ID_Memo,
-                  icon: "warning",
-                  html: true,
-                  showCancelButton: false,
-                  closeOnConfirm: true,
-                  showLoaderOnConfirm: true,
-                  confirmButtonColor: "#DD6B55",
-                  confirmButtonText: "VER CONSTANCIA EMITIDA PREVIAMENTE"
-               }, function () {
-                  verConstancia(dataserver.ID_Memo);
+                  title: 'NO SE SALVO LA CONSTANCIA',
+                  html: 'Ya habia sido emitida una constancia para el CHASIS NO. <b>' + Chasis + '</b> en la fecha ' + dataserver.Sistema_Fecha + ' con el número de memo ' + dataserver.ID_Memo,
+                  icon: 'warning',
+                  showCancelButton: true,
+                  // confirmButtonColor: "#DD6B55",
+                  confirmButtonText: 'VER CONSTANCIA EMITIDA PREVIAMENTE',
+                  cancelButtonText: 'CANCELAR',
+               }).then((result) => {
+                  //* Si confirma que está seguro de agregar la concesión, llamamos la función para agregarla.
+                  if (result.isConfirmed) {
+                     verConstancia(dataserver.ID_Memo);
+                  }
                });
             } else {
                $link = $appcfg_Dominio_Raiz + ':288/PDF_Constancia.php?ID_Memo=' + dataserver.ID_Memo + '&FSL=' + document.getElementById("RAM").value;
-               //*llamando a la funcion cambiar link para modificar si ya esta generada la constancia.
+               //*llamando a la funcion cambiar link para modificar si ya esta generada la constancia.y modificar id_memo de false
 
                cambiarLink(dataserver.ID_Memo, idConcesion); // Llama a la función adicional
                Swal.fire({
                   title: "CONTANCIA SALVADA SATISFACTORIAMENTE",
-                  text: "CONSTANCIA GENERADA CORRECTAMENTE CON EL NUMERO DE MEMO " + dataserver.ID_Memo,
+                  html: "CONSTANCIA GENERADA CORRECTAMENTE CON EL NUMERO DE MEMO " + dataserver.ID_Memo,
                   icon: "success",  // Cambié 'type' por 'icon' que es la nueva convención en SweetAlert2
                   showCancelButton: false,
                   closeOnConfirm: true,
@@ -2124,22 +2155,19 @@ function verConstancia(MEMO) {
 //*genra certificado dependiendo de las concesiones.
 //**************************************************/
 function tipoConcesion(esCarga, esCertificado, Concesion_Encriptada, Permiso_Explotacion_Encriptado) {
-   //  console.log(esCarga, esCertificado, Concesion_Encriptada, Permiso_Explotacion_Encriptado);
+   //   console.log(esCarga, esCertificado, Concesion_Encriptada, Permiso_Explotacion_Encriptado, 'dentro para armar link');
    const dominio = `${$appcfg_Dominio_Raiz}:172/api_rep.php?action=`;
-
    let link = {};  //* Usamos un objeto en lugar de un arreglo
 
    //* Es Renovación de Certificado
    if (esCertificado) {
       // console.log('esCertficado');
-
       if (esCarga) { // CARGA
          const rutacertificado = `${dominio}get-PDFCertificado-Carga&Certificado=${Concesion_Encriptada}`;
          const rutapermisoexplotacion = `${dominio}get-PDFPermisoExp-Carga&Permiso=${Permiso_Explotacion_Encriptado}`;
          link['rutacertificado'] = rutacertificado;
          link['rutapermisoexplotacion'] = rutapermisoexplotacion;
-
-      } else { // Otro caso (PAS)
+      } else { // Otro caso (PES)
          const rutacertificado = `${dominio}get-PDFCertificado&Certificado=${Concesion_Encriptada}`;
          const rutapermisoexplotacion = `${dominio}get-PDFPermisoExp-Pas&Permiso=${Permiso_Explotacion_Encriptado}`;
          link['rutacertificado'] = rutacertificado;

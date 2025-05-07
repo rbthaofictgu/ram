@@ -3,7 +3,7 @@ header('Content-type: UTF-8');
 /* validando que paso por la pantalla de login */
 session_start();
 if (!isset($_SESSION['user_name'])) { //tipo
-	header("location: ../index.php?msg=Favor inicie sesión para poder ingresar al sistema"); 
+	header("location: ../../../index.php?msg=Favor inicie sesión para poder ingresar al sistema"); 
 	exit();
 }
 ?>

@@ -1,0 +1,174 @@
+<link href="../assets/css/styles.css" rel="stylesheet">
+<table>
+    <thead>
+        <tr>
+            <th colspan="4"><h3 style="align-content: center;">PERMISO EXPLOTACIÓN:  <span id="concesion_perexp">PE-CNE-5421-20</span></h3></th>
+        </tr>
+        <tr>
+            <th colspan="4"><h2 style="align-content: center;">CERTIFICADO DE OPERACIÓN: <span id="concesion_perexp">CO-CNE-10231-20</span></h2></th>
+        </tr>    
+        <tr>
+            <th colspan="4"><h3 style="align-content: center;">FECHA DE EXPIRACION: <span id="concesion_fecven">22/05/2026</span></h3></th>
+        </tr>            
+    </thead>
+    <tbody>
+        <tr class="bordered-row-grey">
+            <td colspan="4"><strong style="font-size: 16px;">1. DATOS DEL CONCESIONARIO</strong></td>
+        </tr>
+        <tr class="bordered-row">
+            <td class="width-25">1.1 Concesionario</td>
+            <td colspan="3" class="width-75"><span id="concesion_concesionario">RONALD THAOFIC BARRIENTOS MEJIA</span></td>
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">1.2 Afiliado/Socio </td>
+            <td colspan="3" class="width-75"><span id="concesion_afiliado">NO APLICA</span></td>
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">1.3 RTN Concesionario</td>
+            <td colspan="3" class="width-75"><span id="concesion_rtn">0401197300890</span></td>
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">1.4 Fecha Expedición</td>
+            <td class="width-25"><span id="concesion_fecexp">23/07/2024 </span></td>
+            <td class="width-25">1.5 Resolución</td>
+            <td class="width-25"><span id="concesion_resolucion">PCDTT-IHTT-T-007568-2024</span></td>            
+        </tr>    
+        <tr class="bordered-row-grey">
+            <td colspan="4"><strong style="font-size: 16px;">2. CARACTERISTICAS DEL VEHICULO</strong></td>
+        </tr>
+        <tr class="bordered-row">
+            <td class="width-25">2.1 VIN</td>
+            <td class="width-25">
+                <div class="form-group"></div>
+                    <input pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm test-controls" id="vin" minlength="6" maxlength="17">
+                    <div title="El vin no puede ser menor de 6 caracteres ni mayor a 17"  id="vinerror" style="visibility:hidden" class="errorlabel">
+                        Placa invalida, favor corrija.
+                    </div>
+                </div>
+            </td>
+            <td class="width-25">2.2 Placa</td>
+            <td class="width-25">
+                <div class="form-group">
+                    <input pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm test-controls" id="placa" minlength="7" maxlength="7"></td>            
+                    <div title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres"  id="placalabelerror" style="visibility:hidden" class="errorlabel">
+                      Placa invalida, favor corrija.
+                    </div>
+                </div>                
+            </td>
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">2.3 Serie</td>
+            <td class="width-25">
+                <div class="form-group"></div>
+                    <input pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm test-controls" id="vin" minlength="6" maxlength="17">
+                    <div title="La serie no puede ser menor de 6 caracteres ni mayor a 17"  id="serieerror" style="visibility:hidden" class="errorlabel">
+                        Serie invalida, favor corrija.
+                    </div>
+                </div>
+            </td>
+            <td class="width-25">2.4 Motor </td>
+            <td class="width-25">
+                <div class="form-group"></div>
+                    <input pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm test-controls" id="motor" minlength="6" maxlength="17">
+                    <div title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17"  id="motorerror" style="visibility:hidden" class="errorlabel">
+                        Motor invalido, favor corrija.
+                    </div>
+                </div>
+            </td>            
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">2.5 Marca </td>
+            <td class="width-25">
+                <select data-valor="0"  id="marca" class="form-control form-control-sm test-select" style="width: 100%;">
+                </select>
+            </td>
+            <td class="width-25">2.6 Color</td>
+            <td class="width-25">
+                <select data-valor="0"  id="marca" class="form-control form-control-sm test-select" style="width: 100%;">
+                </select>
+            </td>            
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">2.7 Año</td>
+            <td class="width-25">
+                <select data-valor="0"  id="anio" class="form-control form-control-sm test-select" style="width: 100%;">
+                </select>
+            </td>
+            <td class="width-25">2.8 Tipo</td>
+            <td class="width-25">
+                <div class="form-group"></div>
+                    <span id="concesion_tipo">T3</span>
+                </div>
+            </td>            
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">2.9 Certificado Anterior</td>
+            <td class="width-25"><span id="concesion_cerantdgt">20135699</span></td>
+            <td class="width-25">2.10 Número de Registro DGT </td>
+            <td class="width-25"><span id="concesion_numregdgt">N/A</span></td>            
+        </tr>    
+        <tr class="bordered-row-grey">
+            <td colspan="4" style="font-size: 16px; text-align: center;"><strong>NUMERO DE REGISTRO: <span id="numeroregistro"></span></strong></td>
+        </tr>
+        <tr class="bordered-row-grey">
+            <td colspan="4" style="font-size: 16px;"><strong>3. DATOS DEL SERVICIO</strong></td>
+        </tr>
+        <tr>
+            <td class="width-25">3.1 Categoría</td>
+            <td colspan="3" class="width-75"><span id="concesion_concesionario">RONALD THAOFIC BARRIENTOS MEJIA</span></td>
+        </tr>
+        <tr>
+            <th colspan="4"></th>
+        </tr>
+        <tr class="bordered-row-grey">
+            <td colspan="4" style="font-size: 16px;"><h1><strong>EXTRAS</strong></h1></td>
+       </tr>
+       <tr class="bordered-row">
+        <td class="width-25">E.1 Combustible</td>
+        <td class="width-25">
+            <select data-valor="0"  id="combustible" class="form-control form-control-sm test-select" style="width: 100%;">
+            </select>
+        </td>
+        <td class="width-25">E.2 Capacidad en Kg</td>
+        <td class="width-25">
+            <div class="form-group"></div>
+                <input pattern="^[0-9.]{3,10}$" class="form-control form-control-sm test-controls" id="capacidad" minlength="6" maxlength="17">
+                <div title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres"  id="capacidaderror" style="visibility:hidden" class="errorlabel">
+                    Capacidad de la unidad invalida, favor corrija.
+                </div>
+            </div>            
+        </td>            
+        </tr>    
+        <tr class="bordered-row">
+            <td class="width-25">E.3 Alto</td>
+            <td class="width-25">
+                <div class="form-group"></div>
+                    <input pattern="^[0-9.]{1,5}$" class="form-control form-control-sm test-controls" id="alto" minlength="6" maxlength="17">
+                    <div title="Alto del unidad no puede tener menos de 1 caracteres ni más de 5"  id="altoerror" style="visibility:hidden" class="errorlabel">
+                        Alto de la unidad invalido, favor corrija.
+                    </div>
+                </div>
+            </td>
+            <td class="width-25">E.4 Largo</td>
+            <td class="width-25">
+                <div class="form-group"></div>
+                    <input pattern="^[0-9.]{1,5}$" class="form-control form-control-sm test-controls" id="largo" minlength="6" maxlength="17">
+                    <div title="Largo de la unidad no puede tener menos de 1 caracteres ni más de 5"  id="largoerror" style="visibility:hidden" class="errorlabel">
+                        Largo de la unidad invalido, favor corrija.
+                    </div>
+                </div>
+            </td>            
+        </tr>    
+        <tr class="bordered-row-grey">
+            <td class="width-25">E.5 Ancho</td>
+            <td colspan="3" class="width-25">
+                <div class="form-group"></div>
+                    <input pattern="^[0-9.]{1,5}$" class="form-control form-control-sm test-controls" id="ancho" minlength="6" maxlength="17">
+                    <div title="El ancho de la unidad no puede tener menos de 1 caracteres ni más de 5"  id="anchoerror" style="visibility:hidden" class="errorlabel">
+                        Ancho de la unidad invalido, favor corrija.
+                    </div>
+                </div>
+            </td>
+       </tr>
+    </tbody>    
+</table>

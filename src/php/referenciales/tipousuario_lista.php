@@ -2,7 +2,7 @@
 /* validando que paso por la pantalla de login */
 session_start();
 if (!isset($_SESSION['user_name'])) {
-	header("location: ../index.php?msg=Favor inicie sesión para poder ingresar al sistema"); exit();
+	header("location: ../../../index.php?msg=Favor inicie sesión para poder ingresar al sistema"); exit();
 }
 ?>
 <?php require_once('../../utils/tipo_dispositivo.php'); ?>

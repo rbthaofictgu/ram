@@ -1,6 +1,7 @@
 <script>
 //* funcion encargada de abrirl el modal y eleiminar las variables de session
 $(document).ready(function() {
+   console.log('en encabezado')
    // Desplegando la forma modal	
 
    $('#modal').click(function() {
@@ -31,7 +32,7 @@ $(document).ready(function() {
 
 ///* funcion encargada de validar el usuario y contraseña en el archivo de api_login 
 function desbloquear() {
-   // console.log('desbloqueado function 1');
+   console.log('desbloqueado function 1');
 
    const usuario = document.getElementById('txt_usuario_desbloqueo').value;
    const clave = document.getElementById('txt_clave_desbloqueo').value;
@@ -85,7 +86,7 @@ function f_validarajax(dataUser) {
    
    $.ajax({
       type: "POST",
-      url: 'https://satt2.transporte.gob.hn:285/ram/validarajax.php',
+      url: $appcfg_Dominio + 'validarajax.php',
       data: {
          'txt_usuario': dataUser.usuario,
          'txt_clave': dataUser.session_key,

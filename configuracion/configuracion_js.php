@@ -9,7 +9,6 @@ var $appcfg_milisegundos_toast = '<?php echo $appcfg_milisegundos_toast;?>';
 var $appcfg_icono_toast = '<?php echo $appcfg_icono_toast;?>';
 var $appcfg_background_toast = {background: "linear-gradient(to right, #88cfe0, #f5e0db)",};
 var $appcfg_pocision_toast = { x: 20,  y: 100  };
-var $appcfg_pocision_toast = { x: 20,  y: 100  };
 var $appcfg_max_field_on_net = '<?php echo $appcfg_max_field_on_net;?>';
 var $appcfg_icono_de_importante  = '<?php echo $appcfg_icono_de_importante;?>';
 var $appcfg_software_version  = '<?php echo $appcfg_software_version;?>';

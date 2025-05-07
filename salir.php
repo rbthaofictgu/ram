@@ -15,10 +15,7 @@ function salir($dominio)
   unset($_SESSION["imgperfil"]);
   unset($_SESSION["imgperfil"]);
   session_destroy();
-  // $urlServer variable de direccion global
-  header("Location: " .  $dominio);
-  //  header("Location: " . "https://satt2.transporte.gob.hn:285/");
-  // exit();
+  header("Location: " .  $dominio . 'inicio.php');
 }
 //* ejecucion de la funcion */
 salir($appcfg_Dominio);

@@ -1,10 +1,8 @@
 const idInput = document.getElementById('input-prefetch');
 const input = document.querySelector('.input-container input');
 const icon = document.getElementById('toggle-icon');
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]')
+const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
 const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl))
-
-
 //*************************************************************************************************************************/
 //** INICIO: permite que el input se despliegue al precionar el icono de la lupa y que se seleccione el contenido si hay
 //*************************************************************************************************************************/
@@ -164,11 +162,12 @@ inputPrefetch.addEventListener("focus", function () {
 });
 
 
-document
-  .getElementById('exampleDataList')
-  .addEventListener('change', function (event) {
+var exampleDataList = document.getElementById('exampleDataList');
+if (exampleDataList){
+   exampleDataList.addEventListener('change', function (event) {
     console.log('Valor cambiado:', this.value);
     verificar_existencia_dato(this.value, event);
     console.log('Valor cambiado:', event.target.value);
     verificar_existencia_dato(event.target.value, event);
   });
+}

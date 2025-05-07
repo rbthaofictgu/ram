@@ -73,28 +73,29 @@ dropdown-item:focus,
 }
 
 .pagination {
-  --bs-pagination-padding-x: 0.65rem !important;
-  --bs-pagination-padding-y: 0.155rem !important;
-  --bs-pagination-font-size: 1rem;
-  --bs-pagination-color: var(--bs-link-color);
-  --bs-pagination-bg: var(--bs-body-bg);
-  --bs-pagination-border-width: var(--bs-border-width);
-  --bs-pagination-border-color: var(--bs-border-color);
-  --bs-pagination-border-radius: var(--bs-border-radius);
-  --bs-pagination-hover-color: var(--bs-link-hover-color);
-  --bs-pagination-hover-bg: var(--bs-tertiary-bg);
-  --bs-pagination-hover-border-color: var(--bs-border-color);
-  --bs-pagination-focus-color: var(--bs-link-hover-color);
-  --bs-pagination-focus-bg: var(--bs-secondary-bg);
-  --bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-  --bs-pagination-active-color: #fff;
-  --bs-pagination-active-bg: #0d6efd;
-  --bs-pagination-active-border-color: #0d6efd;
-  --bs-pagination-disabled-color: var(--bs-secondary-color);
-  --bs-pagination-disabled-bg: var(--bs-secondary-bg);
-  --bs-pagination-disabled-border-color: var(--bs-border-color);
-  list-style: none;
+	--bs-pagination-padding-x: 0.65rem !important;
+	--bs-pagination-padding-y: 0.155rem !important;
+	--bs-pagination-font-size: 1rem;
+	--bs-pagination-color: var(--bs-link-color);
+	--bs-pagination-bg: var(--bs-body-bg);
+	--bs-pagination-border-width: var(--bs-border-width);
+	--bs-pagination-border-color: var(--bs-border-color);
+	--bs-pagination-border-radius: var(--bs-border-radius);
+	--bs-pagination-hover-color: var(--bs-link-hover-color);
+	--bs-pagination-hover-bg: var(--bs-tertiary-bg);
+	--bs-pagination-hover-border-color: var(--bs-border-color);
+	--bs-pagination-focus-color: var(--bs-link-hover-color);
+	--bs-pagination-focus-bg: var(--bs-secondary-bg);
+	--bs-pagination-focus-box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+	--bs-pagination-active-color: #fff;
+	--bs-pagination-active-bg: #0d6efd;
+	--bs-pagination-active-border-color: #0d6efd;
+	--bs-pagination-disabled-color: var(--bs-secondary-color);
+	--bs-pagination-disabled-bg: var(--bs-secondary-bg);
+	--bs-pagination-disabled-border-color: var(--bs-border-color);
+	list-style: none;
 }
+
 .navbar {
 	--bs-navbar-padding-x: 0;
 	--bs-navbar-padding-y: 0rem;
@@ -234,7 +235,7 @@ li {
 }
 
 .logo_bg {
-	background-image: url("../images/logos/logorectangular.jpg");
+	background-image: url("../images/logofoot.png");
 	background-repeat: no-repeat;
 	background-size: cover;
 	background-position: center;
@@ -1125,7 +1126,12 @@ body {
 
 .menu {
 	background-color: var(--bs-gobierno1);
-	color: var(--bs-gobierno2);
+	/* color: var(--bs-gobierno2); */
+	color:white;
+}
+
+.link-body-emphasis{
+	color: white !important;
 }
 
 .bottom {
@@ -1212,6 +1218,10 @@ body {
 	border: 5px solid #BDADB5;
 	font-variant: small-caps;
 	font-weight: 500;
+}
+
+.light {
+	color: #ADBDAD;
 }
 
 .btn-light:hover {
@@ -1665,18 +1675,21 @@ body {
 
 .scroll-div {
 	position: fixed;
-    top: 185px; /* Ajusta según sea necesario */
-    left: 15; /* Pegado a la izquierda */
-    background-color: #ffffff;
-    padding: 20px;
-    border: 2px solid var(--bs-gobierno1);
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	width: 635px;
+	top: 185px;
+	/* Ajusta según sea necesario */
+	left: 15;
+	/* Pegado a la izquierda */
+	background-color: #ffffff;
+	padding: 20px;
+	border: 2px solid var(--bs-gobierno1);
+	border-radius: 8px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* Styling for the  showtramites button*/
 .showtramites {
- display: none;
+	display: none;
 }
 
 /* Styling for the div */
@@ -1690,13 +1703,23 @@ body {
 	/* Centers vertically */
 }
 
-#rightDiv45 {
+#rightDivTR {
 	width: 40px;
 	height: 30px;
 	position: fixed;
 	right: 10;
 	top: 45%;
 	transform: translateY(-45%);
+	/* Centers vertically */
+}
+
+#rightDivPR {
+	width: 40px;
+	height: 30px;
+	position: fixed;
+	right: 10;
+	top: 40%;
+	transform: translateY(-40%);
 	/* Centers vertically */
 }
 
@@ -2061,15 +2084,17 @@ a {
 	/* table-layout: fixed; */
 	/* Forzar un ancho fijo para todas las columnas */
 }
+
 .tableObjeto {
-	 width: 100% !important; 
+	width: 100% !important;
 	/* Las tablas deben ocupar todo el ancho del contenedor */
-	 table-layout: fixed !important; 
-	
+	table-layout: fixed !important;
+
 }
+
 .tableObjeto .filas-tramite td {
-    width: 100%;
-	 table-layout: fixed !important; 
+	width: 100%;
+	table-layout: fixed !important;
 }
 
 
@@ -2079,8 +2104,10 @@ a {
 	padding: 5px;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	 text-align: center;       /* Centra horizontalmente */
-   vertical-align: middle;   /* Centra verticalmente */
+	text-align: center;
+	/* Centra horizontalmente */
+	vertical-align: middle;
+	/* Centra verticalmente */
 }
 
 
@@ -2125,55 +2152,72 @@ a {
 }
 
 .dolar-span {
-    display: inline-flex;
-    width: auto;
-    height: 31px;
-    border-radius: 8px;
-    border: 2px solid #e05a5a; /* Rojo */
-    background-color: #d43b3b; /* Rojo más oscuro */
-    padding: 2px 6px;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    color: white;
+	display: inline-flex;
+	width: auto;
+	height: 33px;
+	border-radius: 8px;
+	border: 2px solid #e05a5a;
+	/* Rojo */
+	background-color: #d43b3b;
+	/* Rojo más oscuro */
+	padding: 2px 9px;
+	text-align: center;
+	justify-content: center;
+	align-items: center;
+	transition: all 0.3s ease;
+	cursor: pointer;
+	position: relative;
+	color: white;
+}
+
+.dolar-span-text {
+	color: #e05a5a;
 }
 
 /* Cambios cuando se pasa el cursor */
 .dolar-span:hover {
-    border-color: #b82f2f; /* Rojo más oscuro */
-    background-color: #f08080; /* Rojo claro */
+	border-color: #b82f2f;
+	/* Rojo más oscuro */
+	background-color: #f08080;
+	/* Rojo claro */
 }
 
 /* Muestra el tooltip cuando el cursor está sobre el span */
 .dolar-span:hover::after {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Personalización del tooltip */
-.dolar-span::after {
-    content: attr(title);
-    position: absolute;
-    bottom: 122%;
-    left: 50%;
-    transform: translateX(-50%);
-    background-color: #d43b3b; /* Rojo */
-    color: white;
-    padding: 6px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    opacity: 0;
-    visibility: hidden;
-    white-space: nowrap;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+	opacity: 1;
+	visibility: visible;
 }
 
 
 /* //*cuando esta activo el pago se mostrara en verde */
 /* Estilo cuando se pasa el cursor sobre el span */
+.dolar-span-activo {
+	display: inline-flex;
+	width: auto;
+	height: 33px;
+	border-radius: 8px;
+	border: 2px solid #5fcc9b;
+	background-color: #30b376;
+	padding: 2px 9px;
+	text-align: center;
+	justify-content: center;
+	align-items: center;
+	transition: all 0.3s ease;
+	cursor: pointer;
+	position: relative;
+	color: white;
+}
+
+.dolar-span-activo-text {
+	color: #30b376;
+}
+
+/* Cambios cuando se pasa el cursor */
+.dolar-span-activo:hover {
+	border-color: #198754;
+	background-color: #a1f8d1;
+	/* color:black; */
+}
 
 /* Muestra el tooltip cuando el cursor está sobre el span */
 .dolar-span-activo:hover::after {
@@ -2183,29 +2227,11 @@ a {
 	/* Lo hace visible */
 }
 
-.dolar-span-activo {
-    display: inline-flex;
-    width: auto;
-    height: 32px;
-    border-radius: 8px;
-    border: 2px solid #5fcc9b;
-    background-color: #30b376;
-    padding: 2px 6px;
-    text-align: center;
-    justify-content: center;
-    align-items: center;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    position: relative;
-    color: white;
+.fondoAccion {
+	background-color: rgb(240, 234, 234);
+	margin: 0px;
+	padding: opx;
 }
-
-/* Cambios cuando se pasa el cursor */
-.dolar-span-activo:hover {
-    border-color: #198754;
-    background-color: #D1E7DD;
-}
-
 
 /* Estilo cuando se pasa el cursor sobre el span */
 
@@ -2275,52 +2301,86 @@ a {
 }
 
 /* Tooltip en verde solo cuando el span tiene la clase tooltip-verde */
-.tooltip-verde + .tooltip > .tooltip-inner {
+.tooltip-verde+.tooltip>.tooltip-inner {
 	background-color: #198754 !important;
 }
 
-.tooltip-verde + .tooltip > .tooltip-arrow::before {
+.tooltip-verde+.tooltip>.tooltip-arrow::before {
 	background-color: #198754 !important;
 }
 
-.cancelar{
-	color:#DC3545 !important;
+.cancelar {
+	color: #dd411a !important;
 	/* Color más oscuro para el icono */
 }
 
-.inadmitido{
+.cancelar:hover {
+	color: #a02405 !important;
+	/* Color más oscuro para el icono */
+}
+
+
+.inadmitido {
 	color: #FFC107 !important;
 	/* Color más oscuro para el icono con la clase fa-ban */
 }
 
-.cancelar:hover{
-	color: #812932 !important;
-	/* Color más oscuro para el icono */
-}
 
-.inadmitido:hover{
+.inadmitido:hover {
 	color: #836c29 !important;
 	/* Color más oscuro para el icono con la clase fa-ban */
 }
+
+.compartiendo {
+	color: #007bff !important;
+	/* Azul primario */
+	text-align: center;
+}
+
+.compartiendo:hover {
+	color: #0056b3 !important;
+	/* Azul más oscuro al pasar el mouse */
+	text-align: center;
+}
+
+.noCompartido {
+	color: #6c757d !important;
+	/* Gris neutral */
+	text-align: center;
+}
+
+.noCompartido:hover {
+	color: #343a40 !important;
+	/* Gris más oscuro al pasar el mouse */
+	text-align: center;
+}
+
 .toastify {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+	display: flex !important;
+	visibility: visible !important;
+	opacity: 1 !important;
 }
+
 .full-width {
-    width: 100% !important;  /* Make it take full width */
-    max-width: 1000px; /* Optional: Limit width */
-    margin: auto;
-    text-align: center;
-    justify-content: center;
+	width: 100% !important;
+	/* Make it take full width */
+	max-width: 1000px;
+	/* Optional: Limit width */
+	margin: auto;
+	text-align: center;
+	justify-content: center;
 }
+
 .thirth-width {
-    width: 100% !important;  /* Make it take full width */
-    max-width: 600px; /* Optional: Limit width */
-    margin: auto;
-    text-align: center;
-    justify-content: center;
+	width: 100% !important;
+	/* Make it take full width */
+	max-width: 600px;
+	/* Optional: Limit width */
+	margin: auto;
+	text-align: center;
+	justify-content: center;
 }
+
 .fade-out {
 	opacity: 0;
 	transition: opacity 5.00s ease;
@@ -2328,27 +2388,41 @@ a {
 
 @keyframes highlight {
 	0% {
-	  font-size: 18px; /* Original size */
-	  color: rgb(160, 158, 158);    /* Original color */
+		font-size: 18px;
+		/* Original size */
+		color: rgb(160, 158, 158);
+		/* Original color */
 	}
+
 	10% {
-	  font-size: 24px; /* Enlarged size */
-	  color: rgb(132, 174, 236);      /* Changed color */
+		font-size: 24px;
+		/* Enlarged size */
+		color: rgb(132, 174, 236);
+		/* Changed color */
 	}
+
 	50% {
-		font-size: 22px; /* Enlarged size */
-		color: rgb(132, 174, 236);      /* Changed color */
-	  }
+		font-size: 22px;
+		/* Enlarged size */
+		color: rgb(132, 174, 236);
+		/* Changed color */
+	}
+
 	90% {
-	  font-size: 18px; /* Keep the enlarged size */
-	  color: rgb(10, 10, 10);      /* Keep the changed color */
+		font-size: 18px;
+		/* Keep the enlarged size */
+		color: rgb(10, 10, 10);
+		/* Keep the changed color */
 	}
+
 	100% {
-	  font-size: 1.5rem; /* Return to original size */
-	  color: var(--bs-gobierno1);    /* Return to original color */
+		font-size: 1.5rem;
+		/* Return to original size */
+		color: var(--bs-gobierno1);
+		/* Return to original color */
 	}
-  }
-  
+}
+
 .animate-highlight {
 	animation: highlight 12s forwards;
 }
@@ -2356,71 +2430,89 @@ a {
 /* Efecto de resaltado: cambio de color de fondo y escalado */
 @keyframes highlightEffect {
 	0% {
-	  transform: scale(1);
-	  background-color: transparent;
+		transform: scale(1);
+		background-color: transparent;
 	}
+
 	25% {
-	  transform: scale(1.1);
-	  background-color: #ffeb3b; /* un amarillo suave */
+		transform: scale(1.1);
+		background-color: #ffeb3b;
+		/* un amarillo suave */
 	}
+
 	50% {
-	  transform: scale(1.1);
-	  background-color: #ffc107; /* un tono un poco más intenso */
+		transform: scale(1.1);
+		background-color: #ffc107;
+		/* un tono un poco más intenso */
 	}
+
 	75% {
-	  transform: scale(1.05);
-	  background-color: #ffeb3b;
+		transform: scale(1.05);
+		background-color: #ffeb3b;
 	}
+
 	100% {
-	  transform: scale(1);
-	  background-color: transparent;
+		transform: scale(1);
+		background-color: transparent;
 	}
 }
 
 @keyframes highlightEffectGris {
 	0% {
-	  transform: scale(1);
-	  background-color: transparent;
+		transform: scale(1);
+		background-color: transparent;
 	}
+
 	25% {
-	  transform: scale(1.1);
-	  background-color: #d3c8ca; /* un amarillo suave */
+		transform: scale(1.1);
+		background-color: #d3c8ca;
+		/* un amarillo suave */
 	}
+
 	50% {
-	  transform: scale(1.1);
-	  background-color: #9e9797; /* un tono un poco más intenso */
+		transform: scale(1.1);
+		background-color: #9e9797;
+		/* un tono un poco más intenso */
 	}
+
 	75% {
-	  transform: scale(1.05);
-	  background-color: #464040;
+		transform: scale(1.05);
+		background-color: #464040;
 	}
+
 	100% {
-	  transform: scale(1);
-	  background-color: transparent;
+		transform: scale(1);
+		background-color: transparent;
 	}
 }
 
 
 @keyframes highlightEffectRed {
 	0% {
-	  transform: scale(1);
-	  background-color: transparent;
+		transform: scale(1);
+		background-color: transparent;
 	}
+
 	25% {
-	  transform: scale(1.1);
-	  background-color: #f9607c; /* un amarillo suave */
+		transform: scale(1.1);
+		background-color: #f9607c;
+		/* un amarillo suave */
 	}
+
 	50% {
-	  transform: scale(1.1);
-	  background-color: #ed434c; /* un tono un poco más intenso */
+		transform: scale(1.1);
+		background-color: #ed434c;
+		/* un tono un poco más intenso */
 	}
+
 	75% {
-	  transform: scale(1.05);
-	  background-color: #e62626;
+		transform: scale(1.05);
+		background-color: #e62626;
 	}
+
 	100% {
-	  transform: scale(1);
-	  background-color: transparent;
+		transform: scale(1);
+		background-color: transparent;
 	}
 }
 
@@ -2438,12 +2530,13 @@ a {
 
 
 .animate__delay-3s {
-animation-delay: 3s;
+	animation-delay: 3s;
 }
+
 .animate__delay-6s {
-animation-delay: 6s;
+	animation-delay: 6s;
 }
-  
+
 .particle {
 	position: fixed;
 	font-size: 2.5rem;
@@ -2452,21 +2545,32 @@ animation-delay: 6s;
 	z-index: 1000;
 	opacity: 1;
 }
+
 @keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.2); }
-    100% { transform: scale(1); }
+	0% {
+		transform: scale(1);
+	}
+
+	50% {
+		transform: scale(1.2);
+	}
+
+	100% {
+		transform: scale(1);
+	}
 }
 
 .pulse-icon {
-    display: inline-block;
-    animation: pulse 1.5s ease-in-out infinite;
+	display: inline-block;
+	animation: pulse 1.5s ease-in-out infinite;
 }
+
 /* Sidebar */
 .sidebar {
 	width: 40%;
 	min-width: 250px;
-	overflow-y: auto; /* Scrollable */
+	overflow-y: auto;
+	/* Scrollable */
 	transition: width 0.3s ease-in-out;
 }
 
@@ -2494,4 +2598,49 @@ animation-delay: 6s;
 	padding: 10px 15px;
 	border: none;
 	cursor: pointer;
+}
+
+
+:root {
+	--bs-gobierno1: #88cfe0;
+	--bs-gobierno1-hover: #6bb6cc;
+	/* un poco más oscuro */
+	--bs-gobierno2: #949699;
+	--bs-gobierno3: #db473c;
+	--bs-gobierno3-hover: #c03e35;
+	/* un poco más oscuro */
+}
+
+.badge {
+	display: inline-block;
+	padding: 0.35em 0.75em;
+	border-radius: 0.5em;
+	font-size: 0.85em;
+	font-weight: 600;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: 1.2;
+	transition: background-color 0.3s, color 0.3s;
+}
+
+/* SI */
+.badge-si {
+	background-color: var(--bs-gobierno1);
+	color: #fff;
+	border: 1px solid var(--bs-gobierno1);
+}
+
+.badge-si:hover {
+	background-color: var(--bs-gobierno1-hover);
+}
+
+/* NO */
+.badge-no {
+	background-color: var(--bs-gobierno3);
+	color: #fff;
+	border: 1px solid var(--bs-gobierno3);
+}
+
+.badge-no:hover {
+	background-color: var(--bs-gobierno3-hover);
 }

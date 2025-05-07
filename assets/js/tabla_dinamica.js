@@ -1,27 +1,26 @@
-//*indica el numero de pagina donde empieza la paginacion
-let currentPage = 1;
-//*la cnatidad de elemento por pagina
-const rowsPerPage = 10;
+var currentPage = 1;
+var rowsPerPage = 10;
+var estadoInicial = '' //* Puedes establecer el estado 
+var descripcionInicial = '';
+var agregar = '';
+var estadosSistem = ['IDE-1', 'IDE-2', 'IDE-3', 'IDE-4', 'IDE-5', 'IDE-6'];
+var descripcionEstado=['EN PROCESO','EN VENTANILLA','CANCELADO','FINALIZADO','INADMISION','REQUERIDO'];
+var usuario = (document.getElementById('id_user').value).toUpperCase();
 
-let estadoInicial = '' //* Puedes establecer el estado 
-let descripcionInicial = '';
-// //*inicializamos el estdo y la descripcion por default
-// let ultimoEstadoSeleccionado = 'IDE-7';
-// let ultimoDescripSeleccionado = 'VENTANILLA';
-
-//* Inicializa el tooltip de Bootstrap
-const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-const tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+//*esConsulta puede ser true (modo consulta) o false (modo estados);
+var esConsultas = document.getElementById('esConsulta').value;
 //*********************************************************************************************/
 //* INICIO: funcion que me permite actualizar el estado y la descripcion segun btn de estados
 //*********************************************************************************************/
 //se ejecuta en estado_btn.js;
-function actualizarEstado(estado, descripcion) {
+function actualizarEstado(estado, descripcion, agregar) {
    //*para que cuando cambie de estado se posicione en la pagina 1 
    currentPage = 1;
-   console.log(currentPage, 'currentPage se actualizo ');
+   // console.log(currentPage, 'currentPage se actualizo ');
    ultimoEstadoSeleccionado = estado;
    ultimoDescripSeleccionado = descripcion;
+   ultimoagregado = agregar;
+   console.log(agregar, 'agregar en actualizarEstado');
 }
 //*********************************************************************************************/
 //* FINAL: funcion que me permite actualizar el estado y la descripcion segun btn de estados
@@ -30,24 +29,72 @@ function actualizarEstado(estado, descripcion) {
 //***********************************************************************/
 //*INICIO: Funcion encargda de traer la informacion de la base de datos
 //************************************************************* ********/
-function vista_data(estado = '', descripcion = '',num) {
+var pagados = '';
+//*********************************************************************/
+//*INICIO: Funcion encargada de mostrar las ram que estan pagadas 
+//*********************************************************************/
+function ramPagada() {
+   var elemento = document.getElementById('idPagado');
+   pagados = elemento.getAttribute('data-pagado');
 
-   console.log(ultimoEstadoSeleccionado, 'ultimoEstadoSeleccionado');
-   console.log(estado, 'estado');
-   console.log(currentPage, 'currentPage despues ');
-    console.log(num, 'num ');
+   if (pagados === 'ramsPagadas') {
+      // Cambiar a "no pagadas"
+      elemento.setAttribute('data-pagado', 'RamsSinPagos');
+      elemento.classList.remove('btn-light');
+      elemento.classList.add('btn-success');
+
+      vista_data('', '', ultimoagregado);
+   } else {
+      // Cambiar a "pagadas"
+      elemento.setAttribute('data-pagado', 'ramsPagadas');
+      elemento.classList.remove('btn-success');
+      elemento.classList.add('btn-light');
+      vista_data('', '', ultimoagregado);
+   }
+}
+//*********************************************************************/
+//*FINAL: Funcion encargada de mostrar las ram que estan pagadas 
+//*********************************************************************/
+
+function vista_data(estado = '', descripcion = '', agregar, num) {
+
+   //*******************************************************************************/
+   //*INICO: oculta el boton de agregar para los estados que son diferente a IDE-7;
+   //*******************************************************************************/
+
+   var elemento = document.getElementById('idAgregar');
+
+
+   if (agregar !== '1' || esConsultas == true) {
+      elemento.style.display = 'none';
+      console.log('agregar no está habilitado', agregar);
+   } else {
+      elemento.style.display = 'inline';
+      console.log('agregar', agregar);
+   }
+
+   //*******************************************************************************/
+   //*INICO: oculta el boton de agregar para los estados que son diferente a IDE-7;
+   //*******************************************************************************/
+
    //*Campo de filtro con los datos de busqueda.
    let campo = document.getElementById('id_filtro_select').value;
    let datoBuscar = document.getElementById('id_input_filtro').value;
 
+   var url = '';
+   if (esConsultas == true) {
+      url = `${$appcfg_Dominio}/query_tabla_dinamica.php?estado=${(estado != '') ? estado : ultimoEstadoSeleccionado}&campo=${campo}&datoBuscar=${datoBuscar}&limit=${rowsPerPage}&page=${(num) ? num : currentPage}&pagados=${pagados}&esConsultas=${esConsultas}`;
+   } else {
+      url = `${$appcfg_Dominio}/query_tabla_dinamica.php?estado=${(estado != '') ? estado : ultimoEstadoSeleccionado}&campo=${campo}&datoBuscar=${datoBuscar}&limit=${rowsPerPage}&page=${(num) ? num : currentPage}&pagados=${pagados}`;
+   }
    //*obteniendo lo que se encuentra en tabla_container.
    const loadingIndicator = document.getElementById("tabla-container").innerHTML;
    //*colocando inagne de carga en tabla_container.
-   document.getElementById("tabla-container").innerHTML = '<center><img width="500px" height="500px" src="' + $appcfg_Dominio_Corto + 'ram/assets/images/hug.gif"></center>';
+   document.getElementById("tabla-container").innerHTML = '<center><img width="100px" height="100px" src="' + $appcfg_Dominio_Corto + 'ram/assets/images/loading-waiting.gif"></center>';
 
    //?nota:en estado si hay estado se envia si no se poner por defecto el ultimo estado seleccionado.
    //*peticion fetch que envia estado datoBuscar, limit, page
-   fetch(`${$appcfg_Dominio}/query_tabla_dinamica.php?estado=${(estado != '') ? estado : ultimoEstadoSeleccionado}&campo=${campo}&datoBuscar=${datoBuscar}&limit=${rowsPerPage}&page=${(num)? num:currentPage}`)
+   fetch(url)
       .then(response => {
          if (!response.ok) {
             throw new Error('Error en la solicitud');
@@ -55,7 +102,8 @@ function vista_data(estado = '', descripcion = '',num) {
          return response.json();
       })
       .then(data => {
-         // console.log(data, 'dataValores');
+         console.log(data, 'dataValores');
+
          //*mandando a tabala-container el elemento antes capturando en loadingIndicador.
          document.getElementById("tabla-container").innerHTML = loadingIndicator;
          //*si existe mendaje de error en blanco o del la consulta
@@ -73,7 +121,7 @@ function vista_data(estado = '', descripcion = '',num) {
                let title = "ERROR";
                let msg = data.error;
                let type = "error";
-               fSweetAlertEventNormal(title, msg, type, errorcode = 'success')
+               fSweetAlertEventNormal(title, msg, type, errorcode = 'Se encontro un problema al traer la informacion intente de nuevo y si persiste contacte a tecnologia.')
                console.log(msg);
             }
          } else {
@@ -105,46 +153,57 @@ function vista_data(estado = '', descripcion = '',num) {
 //****** ***************************************************************************************************/
 //* INICIO: funcion encargada de llenar el select de busqueda que envia el campo de busqueda en la tabla.
 //*********************************************************************************************************/
-function llenadoSelect(data) {
-   // console.log(data.dataSelect, 'llenadoselect');
-   //*instanciando el slect
-   const selectElement = document.getElementById('id_filtro_select');
-   //*obteniendo los datso con los que se llenara el select.
-   let datos = data.dataSelect;
-   // console.log(datos,'datos');
-   //*Limpiar el select antes de llenarlo (por si ya tiene opciones)
-   selectElement.innerHTML = '';
+// Obtener elementos
+var selectElement = document.getElementById('id_filtro_select');
+var inputElement = document.getElementById('id_input_filtro');
+// var valor = document.getElementById('id_input_filtro').value.toUpperCase();
 
-   //* Objeto con los valores(value) para mostrar en las opciones
-   const detalle = {
-      "SOLICITUD": "SOLICITUD",
-      "NOMBRE_SOLICITUD": "NOMBRE_SOLICITUD",
-      "RTN_SOLICITUD": "RTN_SOLICITUD",
-      "PLACA": "PLACA"
-   };
-   //*recorriendo la data 
-   datos.forEach((dato, index) => {
-      //?nota: "hasOwnProperty"=> nos permite verificar que datos es una propiedad del objeto 
+
+// Solo seleccionamos el input cuando el usuario haga clic directamente sobre él
+inputElement.addEventListener('click', () => {
+   inputElement.select();
+});
+
+// Esta es tu función ajustada para que el select funcione bien
+function llenadoSelect(data) {
+   const datos = data.dataSelect;
+   const valorAnterior = selectElement.value;
+
+   selectElement.innerHTML = ''; // Limpia el select
+   var detalle = {}
+   if (esConsultas == true) {
+      detalle = {
+         "SOLICITUD": "SOLICITUD",
+         "NOMBRE_SOLICITUD": "NOMBRE_SOLICITUD",
+         "RTN_SOLICITUD": "RTN_SOLICITUD",
+         "PLACA": "PLACA",
+         "USUARIO_CREACION": "USUARIO_CREACION",
+         "USUARIO_ACEPTA": "USUARIO_ACEPTA",
+      };
+   } else {
+      detalle = {
+         "SOLICITUD": "SOLICITUD",
+         "NOMBRE_SOLICITUD": "NOMBRE_SOLICITUD",
+         "RTN_SOLICITUD": "RTN_SOLICITUD",
+         "PLACA": "PLACA"
+      };
+   }
+
+   datos.forEach((dato) => {
       if (detalle.hasOwnProperty(dato)) {
-         //*cremao las option y las instanciamos en una variable.
          const option = document.createElement('option');
-         //* asignamos su valor
-         option.value = dato;
-         //* asignamos el texto a visualizar.
+         option.value = dato.toUpperCase();;
          option.textContent = detalle[dato];
-         //* Si es el primer elemento, se marca como seleccionado.
-         if (index === 0) {
+
+         if (dato === valorAnterior) {
             option.selected = true;
          }
-         //*se crean las opciones del select
+
          selectElement.appendChild(option);
-      } else {
-         //? warn=>en JavaScript se utiliza para mostrar un mensaje de advertencia en la consola del navegador.
-         //*si hay algun error lo envaimos
-         // console.warn(`El valor '${dato}' no tiene una descripción en 'detalle'.`);
       }
    });
 }
+
 //****** ***************************************************************************************************/
 //* FINAL: funcion encargada de llenar el select de busqueda que envia el campo de busqueda en la tabla.
 //*********************************************************************************************************/
@@ -153,9 +212,7 @@ function llenadoSelect(data) {
 //*INICIO: funcion que crea la tabla dinamica
 //*********************************************/
 function TablaDinamica(data, descripcion) {
-
    // console.log(data, 'data tabladinamica');
-
    //?nota:Object.values(obj): Esta parte del código obtiene un array con todos los valores del objeto obj.
    //? Por ejemplo, si tienes un objeto como { a: [], b: [], c: [] }, Object.values(obj) devolvería [[ ], [ ], [ ]].
    function verificarArraysVacios(obj) {
@@ -179,7 +236,13 @@ function TablaDinamica(data, descripcion) {
       //*creando el elemento donde etsara el titulo de l tabla
       const tableTitle = document.createElement('h4');
       //*enviando texto
-      tableTitle.textContent = `INFORMACIÓN DEL ESTADO ${descripcion}`;
+      if (esConsultas == true && descripcion === '*TODOS') {
+         tableTitle.innerHTML = `<strong>INFORMACIÓN ${descripcion}</strong>`;
+      } else {
+         if ((esConsultas == true || esConsultas == false) && descripcion !== '*TODOS') {
+            tableTitle.innerHTML = `<strong>INFORMACIÓN ESTADO ${descripcion}</strong>`;
+         }
+      }
       //*realizando estilo de el titulo
       tableTitle.className = 'titleTable';
       //*enviandotitulo an contenedor de la tabla
@@ -206,12 +269,15 @@ function TablaDinamica(data, descripcion) {
       //*creando la columna y asignando tento para el numero a la fila
       headerRow.appendChild(th1);
       //*recorriendo los datos del encabezado
-
+      encabezadoExcluye = ['estadoCompartido', 'USUARIO_ACEPTA', 'USUARIO_CREACION', 'AGREGRAR', 'COMPARTIDO', 'Aviso_Cobro', 'USUARIOS_COMPARTIDOS'];
       //  let dataOmicionEncabezado = dataNueva(data);
       data.encabezados.forEach(encabezado => {
-         if (encabezado !== 'ESTADO_Pago' && encabezado !== 'lINK_PAGO') {
+         // console.log(encabezado,'en....cabezado');
+         // if(encabezadoExcluye.includes(encabezado))
+         if (!(encabezadoExcluye.includes(encabezado))) { //&& encabezado !== 'lINK_PAGO'
             //*creando la columna del encabezado
             const th = document.createElement('th');
+            th.className = "text-start";
             th.style.textAlign = 'center';
             //*asignando data del encabezado
             th.textContent = encabezado;
@@ -220,7 +286,7 @@ function TablaDinamica(data, descripcion) {
          }
       });
 
-      if (descripcion == 'EN PROCESO') {
+      if (descripcion == 'EN PROCESO' || descripcion == 'EN VENTANILLA' || descripcion == 'FINALIZADO' || descripcion == 'CANCELADO' || descripcion == 'INADMISION' || descripcion == '*TODOS') {
          const th_accion = document.createElement('th');
          th_accion.style.textAlign = 'center';
          //*asignando data del encabezado
@@ -232,7 +298,7 @@ function TablaDinamica(data, descripcion) {
       thead.appendChild(headerRow);
 
       //!funcion encargada de renderizar el cuerpo de la tabla
-      renderTableRows(data.datos, tbody, data, descripcion);
+      renderTableRows(data.datos, tbody, data, descripcion, data);
       //*enviando el contenedor del encabezado y cuerpor al contenedor de la tabla
       table.appendChild(thead);
       table.appendChild(tbody);
@@ -262,11 +328,7 @@ function dataNueva(data) {
 
    console.log(data);
    //*Arreglo con la data a excluir
-   let dataExcluir = ["lINK_PAGO",
-      "ESTADO_Pago",
-
-   ];
-
+   let dataExcluir = ["lINK_PAGO", "ESTADO_Pago",];
    //*rrecorremos la data y asignamos
    const filtrarData = data.map(item => {
       //*creo una copia de de los elementos
@@ -298,7 +360,7 @@ function filtrado(data, tableContainer) {
    //*creando la propiedad del id del select
    filterContainer.id = 'filter-container';
    //*creando estilos de la tabla.
-   filterContainer.className = 'mb-3 col-6';
+   filterContainer.className = 'mb-3 col-4';
 
    //*creando el elemento select
    const filtro = document.createElement('select');
@@ -332,7 +394,7 @@ function filtrado(data, tableContainer) {
    //*creando contenedor del boton buscar
    const btnContainer = document.createElement('div');
    btnContainer.id = "idBtnConmtainer";
-   btnContainer.className = "col-6"
+   btnContainer.className = "col-8"
 
    //*creando el boton
    const idBtnBuscar = document.createElement('button');
@@ -340,19 +402,32 @@ function filtrado(data, tableContainer) {
    idBtnBuscar.id = 'idBtnBuscar';
    idBtnBuscar.className = 'btn btn-info';
    idBtnBuscar.textContent = 'Buscar';
+
+   const idBtnAgregar = document.createElement('button');
+   idBtnAgregar.id = 'idBtnAgregar';
+   idBtnAgregar.className = 'btn btn-success';
+   idBtnAgregar.innerHTML = `<i class="fa-solid fa-square-plus"></i> AGREGAR`;
+
    //*creando evento click del boton que llama a la funcion "filterTable"
    idBtnBuscar.onclick = () => {
       filterTable(data, filtro.value, idInputBuscar.value);
    };
 
+
    //*enviando los elementos a los contenedores
    filterContainer.appendChild(filtro);
    filterContainer.appendChild(idInputBuscar);
    btnContainer.appendChild(idBtnBuscar);
+   btnContainer.appendChild(idBtnAgregar);
    contenedorFiltro.appendChild(filterContainer);
    contenedorFiltro.appendChild(btnContainer);
+
    tableContainer.appendChild(contenedorFiltro);
 
+}
+
+function agregarRams() {
+   location.href = `${$appcfg_Dominio}ram.php`
 }
 //**********************************************/
 //*FINAL: encargada de filtar la información
@@ -362,8 +437,7 @@ function filtrado(data, tableContainer) {
 //*INICIO: funcion encargada de crear el body de la tabla
 //***********************************************************/
 function renderTableRows(data, tbody, todo, descripcion) {
-
-   // console.log('dataEn pago', todo);
+   // console.log(data, 'datassss.');
    tbody.innerHTML = ''; //*limpiando cuerpo de la tabla
    //*recorriendo datos 
    data.forEach((fila, index) => {
@@ -375,58 +449,60 @@ function renderTableRows(data, tbody, todo, descripcion) {
       tdn.textContent = (currentPage - 1) * rowsPerPage + index + 1;
       tdn.style.margin = '0px';
       row.appendChild(tdn)
-      // console.log(fila, 'fila');
+      // console.log(fila[8], 'fila');
+      //*para dividir los elementos del pago.
+      var dividirDatosPagos = [];
+      if (fila[8] !== null) {
+         dividirDatosPagos = fila[8].split("-");
+         //  console.log(dividirDatosPagos);
+      }
+      var activo = '';
+      var folioPago = '';
+      var url = '';
       //*recorriendo los datos
       fila.forEach((valor, colIndex) => {
-         //?nota:Fila[8,9] indica si esta poagado o no
-         let activo = (fila[9] = '') ? 2 : 'NO HAY PAGO';
-         let folioPago = (fila[8] = '') ? fila[8] : 'NO HAY PAGO';
+         activo = (dividirDatosPagos[1] != undefined) ? dividirDatosPagos[1] : 'NO ESTA ACTIVO';
+         folioPago = (dividirDatosPagos[0] != undefined) ? dividirDatosPagos[0] : 'NO HAY AVISO DE COBRO';
          //?nota:Fila[0] es el ram
-         let url = `${$appcfg_Dominio}Documentos/${fila[0]}/AvisodeCobro_${fila[0]}.pdf`
-         if (colIndex !== 8 && colIndex !== 9) {
+         // https://satt2.transporte.gob.hn:90/api_rep.php?ra=S&action=get-facturaPdf&nu=205463
+         url = `${$appcfg_Dominio_Raiz}:90/api_rep.php?ra=S&action=get-facturaPdf&nu=${fila[0]}`
+         // url = `${$appcfg_Dominio}Documentos/${fila[0]}/AvisodeCobro_${fila[0]}.pdf`
+         if (colIndex !== 8 && colIndex !== 9 && colIndex !== 10 && colIndex !== 11 && colIndex !== 12 && colIndex !== 13) {
             // console.log(activo, folioPago, 'activoFolioPago');
             //*creando la comulana de los datos 
             const td = document.createElement('td');
-            td.style.textAlign = 'center';
+            td.className = 'text-start'
+            td.style.textAlign = 'center text-center';
 
             if (colIndex == 7) {
-               td.innerHTML = ` 
-               <div style="display: flex; align-items: center; gap: 8px;">
-                  <span>${valor}</span> 
-                  
-                  ${activo === '2'
-                     ? `<a href="${url}" target="_blank" class="dolar-span-activo tooltip-verde" data-bs-toggle="tooltip" title="${folioPago}">
-                           <i class="fas fa-dollar-sign" style="font-size: 20px;"></i>
-                        </a>`
-                     : `<span class="dolar-span" data-bs-toggle="tooltip" title="${folioPago}">
-                           <i class="fas fa-dollar-sign" style="font-size: 20px;"></i>
-                        </span>`
-                  }
-               </div>
-            `;
-               // Inicializar tooltip de Bootstrap
+               td.innerHTML = `<span class="badge badge-no">NO</span>`;
+               actualizarBadge(valor, td); // Inicialmente muestra "NO"
                setTimeout(() => {
-                  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-                  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-                     return new bootstrap.Tooltip(tooltipTriggerEl);
-                  });
-               }, 100);
-
+                  actualizarBadge(valor, td); // Después de un tiempo, muestra "SI"
+               }, 2000);
             } else {
-               td.textContent = valor;
+               if (colIndex === 6) {
+                  const soloFecha = valor.split(" ")[0];
+                  td.textContent = soloFecha;
+               } else {
+                  td.textContent = valor;
+               }
             }
-
             //*asignando el valor del segundo elemento el onclick 
             if (colIndex === 0) {
                //* Cambia el cursor para indicar que es clickeable
                td.style.cursor = 'pointer';
                td.style.color = '#033b4b';
                td.style.textShadow = '3px 3px 5px rgba(5, 5, 5, 0.3)';
-
                //*evento onclick a la columna que me redirecciona.
                td.onclick = () => {
                   //* redireccionando y eviando RAM
-                  window.location.href = `${$appcfg_Dominio}index.php?RAM=${valor}`;
+                  if (esConsultas != true) {
+                     window.location.href = `${$appcfg_Dominio}ram.php?RAM=${valor}`;
+                  } else {
+                     //*link para cunado es solo consulta y no se puede modificar nada
+                     window.location.href = `${$appcfg_Dominio}ram.php?RAM=${valor}&consulta=true`;
+                  }
                };
             }
             //*enviando columna a las filas
@@ -439,50 +515,230 @@ function renderTableRows(data, tbody, todo, descripcion) {
          //*creamos una columna de la tabla
          const td_accion = document.createElement('td');  // Crea la celda principal para la acción
          td_accion.style.textAlign = 'center';  // Centra los íconos en la celda principal
+         td_accion.className = `fondoAccion `;
 
+         // Inicializar tooltip de Bootstrap
+         setTimeout(() => {
+            tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+               return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+         }, 100);
          //* Crea la fila de acción
          const row_accion = document.createElement('tr');
+         // row_accion.className = "fondoAccion";
          row_accion.style.textAlign = 'center';
 
-         //*Crea la celda para el primer ícono (ventana de cierre)
-         const td_cancelar = document.createElement('td');
-         // td_cancelar.style.fontSize = '30px'; // Cambia el tamaño del ícono
+         const td_dollar = document.createElement('td');
 
-         td_cancelar.innerHTML = `
+         //*creando el icono de cancelar
+         td_dollar.innerHTML = ` <div style="display: flex; align-items: center; gap: 5px;"> 
+                    ${activo === '2'
+               ? `<span class="text-center">
+                           <a href="${url}" target="_blank"  style="display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration:none">
+                              <i class="fas fa-dollar-sign dolar-span-activo tooltip-verde  text-center" data-bs-toggle="tooltip" title="${folioPago}" style="font-size: 23px;">
+                              </i>
+                              <span class="dolar-span-activo-text" style="font-size: 12px;"></span>
+                           <a/>   
+                           
+                        </span>`
+               : `<span style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+               <a href="${url}" target="_blank"  style="display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration:none">
+                           <i class="fas fa-dollar-sign dolar-span text-center"  data-bs-toggle="tooltip" title="${folioPago}" style="font-size: 23px;">
+                           </i>
+                           <span class="dolar-span-text " style="font-size: 12px;"></span>
+                        </span>
+                        <a/> 
+                        ` //${valor}
+
+            }
+                  </div>`;
+         // Inicializar tooltip de Bootstrap
+         setTimeout(() => {
+            tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+               return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+         }, 100);
+
+         //*Crea la celda para el primer ícono (ventana de cierre)
+
+         if (esConsultas != true) {
+            var td_cancelar = document.createElement('td');
+            // td_cancelar.style.fontSize = '30px'; // Cambia el tamaño del ícono
+
+            //*creando el icono de cancelar
+            td_cancelar.innerHTML = `
             <span onclick="fUpdateEstado('IDE-3','${fila[0]}')" 
-            class="accion-item" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-               <i class="fas fa-window-close cancelar" style="font-size: 30px;"></i>
+            class="accion-item " data-bs-toggle="tooltip" title="Boton para Cancelar solicitud" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+               <i class="fas fa-window-close cancelar" style="font-size: 35px;"></i>
                <span class="cancelar" style="font-size: 12px;">CANCELAR</span>
             </span>
-         `;
-
-         const td_prohibido = document.createElement('td');
-         td_prohibido.innerHTML = `
+            `;
+            //*creando el icono de inadmitido
+            var td_prohibido = document.createElement('td');
+            td_prohibido.innerHTML = `
             <span class="inadmitido" onclick="fUpdateEstado('IDE-4','${fila[0]}')" 
-            class="accion-item inadmitido" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
-               <i class="fas fa-ban inadmitido" style="font-size: 30px;"></i>
+            class="accion-item inadmitido" data-bs-toggle="tooltip" title="Boton para Inadmitir solicitud" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+               <i class="fas fa-ban inadmitido" style="font-size: 35px;"></i>
                <span class="inadmitido" style="font-size: 12px;">INADMITIDO</span>
             </span>
-         `;
+            `;
 
+         }
+         //*creando el icono de compartido
+         const td_compartido = document.createElement('td');
+         td_compartido.className = 'center'; // Centra los íconos en la celda principal
+         if (fila[9] && fila[12] != null) {
+            td_compartido.innerHTML = `
+            <span class="compartiendo text-center"  
+            class="accion-item compartiendo"  data-bs-toggle="tooltip" class="accion-item compartiendo"  data-bs-toggle="tooltip" title="${(fila[11] && fila[11] !== usuario)
+                  ? 'PERTENECE A: ' + fila[11].toUpperCase() +
+                  ' COMPARTIDO A: ' + fila[12]
+                  // .split(',')
+                  // .map(u => u.trim())
+                  // .filter(u => u !== usuario)
+                  // .join(', ')
+                  // .toUpperCase()
+                  : ''}"
+             style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <i class="fas fa-share-alt compartiendo" style="font-size: 24px;"></i>
+            <span class="compartiendo" style="font-size: 12px;">COMPARTIDO</span>
+            </span> `;
+         } else {
+            td_compartido.innerHTML = `
+            <span class="noCompartido text-center"  
+            class="accion-item noCompartido text-center" data-bs-toggle="tooltip" title="NO ESTA COMPARTIDA"  style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <i class="fas fa-share-alt noCompartido" style="font-size: 24px;"></i>
+            <span class="noCompartido text-center" style="font-size: 12px;">NO COMPARTIDO</span>
+            </span> `;
+         }
          //*Agregar las celdas a la fila de acción
-         row_accion.appendChild(td_cancelar);
-         row_accion.appendChild(td_prohibido);
+         row_accion.appendChild(td_dollar);
+
+         if (esConsultas != true) {
+            row_accion.appendChild(td_cancelar);
+            row_accion.appendChild(td_prohibido);
+         }
+         row_accion.appendChild(td_compartido);
 
          //*Agregar la fila de acción a la fila principal
          td_accion.appendChild(row_accion);
          row.appendChild(td_accion);
       }
-      // <span style="font-size: 0.25em;">CANCELADO</span>
+
+      //*Para que los iconos solo esten el en estado de PROCESO
+      if (descripcion == 'EN VENTANILLA' || descripcion == 'FINALIZADO' || descripcion == 'CANCELADO' || descripcion == 'INADMISION' || descripcion == '*TODOS') {
+         const td_accion = document.createElement('td');
+         td_accion.className = 'fondoAccion';
+         td_accion.style.textAlign = 'center';  // Centrado horizontal
+
+         const row_accion = document.createElement('tr');
+         row_accion.style.textAlign = 'center';  // Centrado horizontal
+
+         const td_dollar = document.createElement('td');
+         // td_cancelar.style.fontSize = '30px'; // Cambia el tamaño del ícono
+
+         //*creando el icono de cancelar
+         td_dollar.innerHTML = ` <div style="display: flex; align-items: center; gap: 5px;"> 
+                    ${activo === '2'
+               ? `<span class="text-center">
+                           <a href="${url}" target="_blank"  style="display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration:none">
+                              <i class="fas fa-dollar-sign dolar-span-activo tooltip-verde  text-center" data-bs-toggle="tooltip" title="${folioPago}" style="font-size: 23px;">
+                              </i>
+                              <span class="dolar-span-activo-text" style="font-size: 12px;"></span>
+                           <a/>   
+                           
+                        </span>`
+               : `<span style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+               <a href="${url}" target="_blank"  style="display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration:none">
+                           <i class="fas fa-dollar-sign dolar-span text-center"  data-bs-toggle="tooltip" title="${folioPago}" style="font-size: 23px;">
+                           </i>
+                           <span class="dolar-span-text " style="font-size: 12px;"></span>
+                        </span>
+                        <a/> 
+                        ` //${valor}
+            }
+                  </div>`;
+         // Inicializar tooltip de Bootstrap
+         setTimeout(() => {
+            tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+               return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+         }, 100);
+
+         const td_compartido = document.createElement('td');
+         td_compartido.className = 'center';
+         td_compartido.style.display = 'flex';
+         td_compartido.style.flexDirection = 'column';
+         td_compartido.style.alignItems = 'center';
+         td_compartido.style.justifyContent = 'center';  // Centrado vertical adicional si hace falta
+         td_compartido.classList.add('td-flex-center');
+
+         if (fila[9] && fila[12] != null) {
+            td_compartido.innerHTML = `
+         <span class="accion-item compartiendo" data-bs-toggle="tooltip" title="${(fila[10] && fila[10] !== usuario)
+                  ? 'PERTENECE A: ' + fila[10].toUpperCase() +
+                  ' COMPARTIDO A: ' + fila[12]
+                  // .split(',')
+                  // .map(u => u.trim())
+                  // .filter(u => u !== usuario)
+                  // .join(', ')
+                  // .toUpperCase()
+                  : ''}"
+            style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <i class="fas fa-share-alt compartiendo" style="font-size: 24px;"></i>
+            <span class="compartiendo" style="font-size: 12px;">COMPARTIDO</span>
+         </span>
+      `;
+         } else {
+            td_compartido.innerHTML = `
+         <span class="noCompartido accion-item noCompartido" data-bs-toggle="tooltip" title=""  style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+            <i class="fas fa-share-alt noCompartido" style="font-size: 24px;"></i>
+            <span class="noCompartido" style="font-size: 12px;">NO COMPARTIDO</span>
+         </span>
+      `;
+         }
+         row_accion.appendChild(td_dollar);
+         console.log('esConsultas dentro de proceso', esConsultas);
+
+         row_accion.appendChild(td_compartido);
+         td_accion.appendChild(row_accion);
+
+         row.appendChild(td_accion);
+         // Tooltips
+         setTimeout(() => {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+         }, 100);
+      }
 
       //*enviando filas a las columnas
       tbody.appendChild(row);
-
    });
 }
 //*********************************************************/
 //*FINAL: funcion encargada de crear el body de la tabla
 //*********************************************************/
+
+// td.innerHTML = `<span id="miBadge" class="badge">NO</span>`;
+
+
+function actualizarBadge(valor, td) {
+   let badge = td.querySelector('.badge');
+   if (!badge) return; // Previene errores si no existe el span
+
+   if (valor === "Sí" || valor === "SI") {
+      badge.textContent = "SI";
+      badge.classList.remove("badge-no");
+      badge.classList.add("badge-si");
+   } else {
+      badge.textContent = "NO";
+      badge.classList.remove("badge-si");
+      badge.classList.add("badge-no");
+   }
+}
 
 //**********************************************************************************************/
 //*INICIO: funcion encargada de cambiar los estado de la solicitud por cancelado o inadmitido
@@ -492,7 +748,7 @@ function fUpdateEstado(estado, ram, echo) {
    //*confirmamos si el usuario esta seguro de hacer el cambio de estado coon un alerte.
    Swal.fire({
       title: `CONFIRMACIÓN`,
-      text: '¿ESTA SEGURO DE CAMBIAR EL ESTADO DE LA SOLICITUD?',
+      html: `¿ESTA SEGURO DE CAMBIAR EL ESTADO DE LA SOLICITUD  <strong>${ram}</strong>?`,
       icon: 'info',
       showCancelButton: true,
       confirmButtonText: 'SÍ',
@@ -512,7 +768,7 @@ function fUpdateEstadoFetch(estado, ram, echo) {
    let fd = new FormData(document.forms.form1);
 
    //*La URL del API que estás utilizando
-   let url = `${$appcfg_Dominio} Api_Ram.php`;
+   let url = `${$appcfg_Dominio}Api_Ram.php`;
 
    //* Agregar parámetros adicionales al FormData
    fd.append("action", "update-estado-preforma");
@@ -595,115 +851,106 @@ function filterTable(data, field, value) {
 //*INICIO: funcion encargada de realizar la Paginacion de la tabla.
 //*****************************************************************/
 function createPagination(totalRows) {
-   //*creando el elemento que contiene la paginacion
+   // Crear el contenedor de la paginación
    const paginationContainer = document.createElement('nav');
-   //*asignando los atributos
    paginationContainer.setAttribute('aria-label', 'Page navigation example');
-   //*creando el elemneto ul de la paginación
+
+   // Contenedor <ul> para los botones
    const pagination = document.createElement('ul');
-   //*asignando las clases
-   pagination.className = 'pagination';
-   // console.log(totalRows, 'totalRows');
-   //*claculando el numero total de paginas para la paginación
-   totalPages = Math.ceil(totalRows / rowsPerPage);
-   //*creando el elemento li de la pahginación
+   pagination.className = 'pagination justify-content-start'; // ← alineado a la izquierda
+
+   // Convertir a número y calcular total de páginas
+   const total = parseInt(totalRows);
+   const totalPages = Math.ceil(total / rowsPerPage);
+
+   // Verificar si se necesita paginación
+   if (totalPages <= 1) {
+      return document.createElement('div');
+   }
+
+   // Botón "Anterior"
    const prevItem = document.createElement('li');
-   //*ayuda a actualizar segun en la pagian en la que nos encontremos
-   prevItem.className = `page - item ${currentPage === 1 ? 'disabled' : ''} `;
-   //*creando el elemento a de la pagiancion 
+   prevItem.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
    const prevLink = document.createElement('a');
-   //*asignando las clases
    prevLink.className = 'page-link';
-   //*preveniendo el refresh
    prevLink.href = '#';
-   //*colocando texto
-   prevLink.textContent = 'Previous';
-   //*creando evento click
+   prevLink.textContent = 'Anterior';
    prevLink.onclick = (e) => {
-      //*previniendo el refresh
       e.preventDefault();
-      //*condion para saber si hay una pagina anterior
       if (currentPage > 1) {
          currentPage--;
-         //*llama nuevamente a la funcion vista_data.
-         vista_data();
+         vista_data('', '', agregar);
       }
    };
-   //*asignanmos los link a su contenedor
    prevItem.appendChild(prevLink);
-   //*y asignamos el contenedor al contenedor de la
    pagination.appendChild(prevItem);
 
-   //*calculando un rango de paginas donde comenzara
-   const startPage = Math.max(1, currentPage - 1);
-   //*donde finalizara la paginación
-   const endPage = Math.min(totalPages, startPage + 4);
+   // Páginas visibles (máximo 5 botones)
+   const maxVisiblePages = 5;
+   let startPage = Math.max(1, currentPage - 2);
+   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
-   //*recorriendo segun numeor de pagians
+   // Ajustar si estamos al final
+   if ((endPage - startPage) < (maxVisiblePages - 1)) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+   }
+
    for (let page = startPage; page <= endPage; page++) {
-      //*creando elemeto li de la paginación
       const pageItem = document.createElement('li');
-      //*añadiendo clases para saber si esta activado o no
-      pageItem.className = `page - item ${currentPage === page ? 'active' : ''} `;
-      //*crear elemento a de pagiancion
+      pageItem.className = `page-item ${currentPage === page ? 'active' : ''}`;
       const pageLink = document.createElement('a');
-      //*añadiendo clases de elemento a
       pageLink.className = 'page-link';
       pageLink.href = '#';
       pageLink.textContent = page;
       pageLink.onclick = (e) => {
          e.preventDefault();
-         //*asignando el numero de pagian siguiente
          currentPage = page;
-         //*llamando la función
-         vista_data();
+         vista_data('', '', agregar);
       };
-      //*enviuando los elementos a sus contenedores
       pageItem.appendChild(pageLink);
       pagination.appendChild(pageItem);
    }
 
-   //*creando el elemento li
+   // Botón "Siguiente"
    const nextItem = document.createElement('li');
-   //*añadiendo las clases
-   nextItem.className = `page - item ${currentPage === totalPages ? 'disabled' : ''} `;
-   //*creando el elemneto a de la paginación
+   nextItem.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
    const nextLink = document.createElement('a');
-   //*creando las clases
    nextLink.className = 'page-link';
-   //*evitando el refresh
    nextLink.href = '#';
-   //*colocando el texto
-   nextLink.textContent = 'Next';
-   //*creando el efecto click al boton siguiente
+   nextLink.textContent = 'Siguiente';
    nextLink.onclick = (e) => {
-      //*evitando el refresh
       e.preventDefault();
-
       if (currentPage < totalPages) {
          currentPage++;
-         vista_data();
+         vista_data('', '', agregar);
       }
    };
-   //*enviando a los contenedores
    nextItem.appendChild(nextLink);
    pagination.appendChild(nextItem);
 
    paginationContainer.appendChild(pagination);
    return paginationContainer;
-
 }
+
+
 //*****************************************************************/
 //*FINAL: funcion encargada de realizar la Paginacion de la tabla.
 //*****************************************************************/
 //***********************************************************/
 //*INICIO:funcion encargada de limpiar el input
 //***********************************************************/
+
+
 function limpiar() {
    document.getElementById('id_input_filtro').value = '';
-   vista_data(estadoInicial, descripcionInicial);
 
+   const select = document.getElementById('id_filtro_select');
+   select.selectedIndex = 0; // Esto selecciona la primera opción
+
+   vista_data(estadoInicial, descripcionInicial, agregar);
+   pagados = '';
 }
+
 //***********************************************************/
 //*FINAL:funcion encargada de limpiar el input
 //***********************************************************/
@@ -713,16 +960,25 @@ window.onload = function () {
       let elemento = document.getElementById("buttonContainer");
       let infoEstado = JSON.parse(elemento?.getAttribute('data-info'));
 
-      infoEstado.forEach((element, index) => {
-         if (index == 0) {
-            estadoInicial = element[0];
-            descripcionInicial = element[1];
-         }
-      })
+      if (infoEstado != null) {
+         infoEstado.forEach((element, index) => {
+            if (index == 0) {
+               console.log(element, 'element');
+               estadoInicial = element[0];
+               descripcionInicial = element[1];
+               agregar = element[2];
+            }
+         })
 
-      actualizarEstado(estadoInicial, descripcionInicial);
-      //* Llama a la función vista_data con los parámetros deseados
-      vista_data(estadoInicial, descripcionInicial);
+         ultimoagregado = agregar;
+         // console.log(ultimoagregado, 'ultimo');
+
+         actualizarEstado(estadoInicial, descripcionInicial, agregar);
+         //* Llama a la función vista_data con los parámetros deseados
+         vista_data(estadoInicial, descripcionInicial, agregar);
+
+      }
+
    }, 1000);
 };
 

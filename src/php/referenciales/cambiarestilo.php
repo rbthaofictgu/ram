@@ -369,7 +369,7 @@ if (isset($_GET['msg']) and $_GET['msg'] <> "")  {
                      </button>
 
 
-                     <?php if ( $Environment == 'DEV') { ?>
+                     <?php if ($Environment == 'DEV') { ?>
 
                      <button type="button" class="btn btn-secondary" id="cmd_retornar" name="cmd_retornar"
                         onclick="window.location='cambiarestilo.php'">
@@ -758,7 +758,7 @@ if (isset($_GET['msg']) and $_GET['msg'] <> "")  {
 
    <?php 
 	$clase_footer_content = 'footer_content';
-	require_once('../default_footer_content.php'); 
+	// require_once('../default_footer_content.php'); 
 	require_once('../../../pie.php'); 
 ?>
    <script>
@@ -844,7 +844,7 @@ if (isset($_GET['msg']) and $_GET['msg'] <> "")  {
       $(texto).css('background-color', texto.value);
    }
    </script>
-   <?PHP require_once('../pie_js.php'); ?>
+   <!-- <?PHP require_once('../pie_js.php'); ?> -->
    <?PHP require_once('../modal_pie.php'); ?>
    <?PHP require_once('../timer_logout.php'); ?>
    <?PHP require_once('../modal_encabezado.php'); ?>

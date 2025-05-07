@@ -1,10 +1,8 @@
 <?php
-
 //* archivo de configuracion de las variables globales
 require_once('configuracion/configuracion.php');
 //*archivo de configuracion de la base de datos
 require_once('../config/conexion.php');
-
 //* creando el query
 $query_rs_estado = "SELECT 
        [ID],
@@ -17,7 +15,6 @@ $query_rs_estado = "SELECT
   FROM [IHTT_PREFORMA].[dbo].[TB_Estados]
  WHERE [Estado] = 1
  ORDER BY [Orden]";
-
 try {
    //*preparando query
    $dataQuery = $db->prepare($query_rs_estado);
@@ -41,10 +38,9 @@ try {
    ];
    //* enviando arreglo
    echo json_encode($estados);
-   //code...
 } catch (\Throwable $th) {
    //*capturando error
-   echo "Error en la consulta de query_rs_estado :" . $e->getMessage();
+   echo "Error en la consulta de query_rs_estado :" . $th->getMessage();
 }
 
 ?>

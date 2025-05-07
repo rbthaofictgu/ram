@@ -5,7 +5,7 @@ if (!isset($_SESSION['user_name'])) { //tipo
 	$appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 	$_SESSION['url'] = $appcfg_page_url;
 	$_SESSION['flashmsg'] = "Favor inicie sesión para poder ingresar al sistema";
-	header("location: ../inicio.php");
+	header("location: ../../../index.php");
 	exit();
 }
 ?>
