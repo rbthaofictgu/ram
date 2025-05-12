@@ -1,19 +1,5 @@
 <?php
 session_start();
-//******************************************************************/
-//* Es Renovacion Automatica
-//******************************************************************/
-if (!isset($_SESSION["Es_Renovacion_Automatica"])) {
-    $_SESSION["Es_Renovacion_Automatica"] = true;
-}
-  
-//******************************************************************/
-//* Es originado en ventanilla
-//******************************************************************/
-if (!isset($_SESSION["Originado_En_Ventanilla"])) {
-    $_SESSION["Originado_En_Ventanilla"] = true;
-}
-  
 //* archivo de configuracion de las variables globales
 require_once('configuracion/configuracion.php');
 //* archivo de configuracion de la base de datos
@@ -91,7 +77,7 @@ if ($infoRamPagadas == 'ramsPagadas') {
 if ($esConsultas == '1' and $idEstado == '*TODOS') {
     $condicionWhere = "WHERE es.estado = 1";
 } else {
-    $condicionWhere = "WHERE soli.Estado_Formulario = :idEstado2 AND es.estado = 1 AND soli.Es_Renovacion_Automatica=" . $_SESSION["Es_Renovacion_Automatica"];
+    $condicionWhere = "WHERE soli.Estado_Formulario = :idEstado2 AND es.estado = 1 AND soli.Es_Renovacion_Automatica=1";
 }
 
 if ($campo == 'v.ID_Placa' || $campo == 'v.ID_Placa_Antes_Replaqueo') {
@@ -130,7 +116,7 @@ if ($campo == 'v.ID_Placa' || $campo == 'v.ID_Placa_Antes_Replaqueo') {
                 [IHTT_PREFORMA].[dbo].[TB_Vehiculo] v 
                 ON v.ID_Formulario_Solicitud = soli.ID_Formulario_Solicitud 
                 AND (v.Certificado_Operacion = sol.N_Certificado 
-                    OR v.Certificado_Operacion = sol.N_Permiso_Especial)
+                    OR v.Permiso_Especial = sol.N_Permiso_Especial)
             JOIN 
                 [IHTT_PREFORMA].[dbo].[TB_Estados] AS e
                 ON soli.Estado_Formulario = e.ID_Estado
@@ -363,7 +349,7 @@ try {
         if ($esConsultas == '1' and $idEstado == '*TODOS') {
             $condicionWherePag = "WHERE es.estado = 1";
         } else {
-            $condicionWherePag = "WHERE  soli.Estado_Formulario = :idEstado  AND es.estado = 1 AND soli.Es_Renovacion_Automatica=". $_SESSION["Es_Renovacion_Automatica"];
+            $condicionWherePag = "WHERE  soli.Estado_Formulario = :idEstado  AND es.estado = 1 AND soli.Es_Renovacion_Automatica=1";
         }
 
         $totalQuery = "SELECT COUNT(DISTINCT soli.ID_Formulario_Solicitud) AS cantidad
@@ -380,7 +366,7 @@ try {
                             ON comp.ID_Formulario_Solicitud = soli.ID_Formulario_Solicitud
                         LEFT JOIN [IHTT_PREFORMA].[dbo].[TB_Vehiculo] AS v 
                             ON v.ID_Formulario_Solicitud = soli.ID_Formulario_Solicitud
-                            AND (v.Certificado_Operacion = sol.N_Certificado OR v.Certificado_Operacion = sol.N_Permiso_Especial)
+                            AND (v.Certificado_Operacion = sol.N_Certificado OR v.Permiso_Especial = sol.N_Permiso_Especial)
                             $condicionWherePag
                             ";
         //*aqui enviamos  completamos el segundo query si esisten los elementos

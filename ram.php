@@ -1,52 +1,43 @@
 <?php
+//*********************************************************************/
 //* PÁGINA PRINCIPAL DEL SISTEMA
+//*********************************************************************/
 session_start();
+//*********************************************************************/
 //*configuración del sistema
+//*********************************************************************/
 include_once('configuracion/configuracion.php');
+//*********************************************************************/
 //*configuración del las variables globales del sistema
+//*********************************************************************/
 include_once('configuracion/configuracion_js.php');
-if (!isset($_SESSION['url']) && !isset($_SESSION['user_name'])) {
-  if ($appcfg_Dominio == (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]") {
-    $appcfg_page_url =  (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]" . "ram.php";
-  } else {
-    $appcfg_page_url =  (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-  }
-
-   session_start();
-   if (!isset($_SESSION['user_name'])) { //tipo
-      $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-      $_SESSION['url'] = $appcfg_page_url;
-      $_SESSION['flashmsg'] = "Favor inicie sesión para poder ingresar al sistema";
-      header("location:inicio.php");
-      exit();
-   }
-
-   include_once('validar_roles.php');
-   if (!array_intersect(['DIGITADOR_VENTANILLA_RA','OFICIAL_JURIDICO_RA','SUPERVISOR_RA'], $_SESSION["ROLESXUSUARIORAM"])) {
-      $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-      $_SESSION['url'] = $appcfg_page_url;
-      $_SESSION['flashmsg'] = "No tiene permisos para acceder a esta pantalla (INGRESO DE RAM'S)";
-      header("location:inicio.php");
-      exit();
-   }
-} else {
-  $appcfg_page_url = '';
-}
-
+//*********************************************************************/
+//* Esta variable sirve para que todos los programas ubiquen el codigo
+//* include_once('validar_roles.php'); 
+//* Ejemplos de los valores que puede llevar nivel
+//* ''
+//* '../'
+//* '../../'
+//* '../../../'
+//*********************************************************************/
+$nivel_validar_roles='';
+$roles_autorizados = ['SA','DIGITADOR_VENTANILLA_RA','OFICIAL_JURIDICO_RA','SUPERVISOR_RA'];
+//*********************************************************************/
+//* Validaciones de seguridad
+//*********************************************************************/
+include_once('validar_seguridad.php');
 //******************************************************************/
 //* Es Renovacion Automatica
 //******************************************************************/
 if (!isset($_SESSION["Es_Renovacion_Automatica"])) {
   $_SESSION["Es_Renovacion_Automatica"] = true;
 }
-
 //******************************************************************/
 //* Es originado en ventanilla
 //******************************************************************/
 if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   $_SESSION["Originado_En_Ventanilla"] = true;
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="auto">
@@ -97,11 +88,34 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <input type="hidden" id="esEditable" value="false">
   <input type="hidden" id="esCompartible" value="false">
   <input type="hidden" id="CodigoAvisoCobro" value="0">
-  
-  
-
+  <input type="hidden" id="esUsuarioPropietario" value="false">
+  <input type="hidden" id="AvisoCobroEstado" value="">  
   <?php $idUsuario = isset($_SESSION['ID_Usuario']) ? htmlspecialchars($_SESSION['ID_Usuario'], ENT_QUOTES, 'UTF-8') : ''; ?>
   <input value="<?php echo $idUsuario; ?>" type="hidden" id="ID_Usuario">
+  <?php $User_Name = isset($_SESSION['user_name']) ? htmlspecialchars($_SESSION['user_name'], ENT_QUOTES, 'UTF-8') : ''; ?>
+  <input value="<?php echo $User_Name; ?>" type="hidden" id="User_Name">
+  <?php $Ciudad = isset($_SESSION['ciudad']) ? htmlspecialchars($_SESSION['ciudad'], ENT_QUOTES, 'UTF-8') : ''; ?>
+  <input value="<?php echo $Ciudad; ?>" type="hidden" id="Ciudad">
+
+  <!-- Cargar el sonido -->
+  <audio id="celebrationSound" muted="false" autoplay="false">
+    <source src="assets/sounds/397353_plasterbrain_tada-fanfare-g.mp3" type="audio/wav">
+  </audio>
+
+    <div class="container-fluid bg-white shadow-sm">
+
+    <!-- ******************************************************* -->
+    <!-- Inicio de Modal de Concesiones Salvadas -->
+    <!-- ******************************************************* -->
+    <div class="modal fade modal-xl" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title fs-5" id="exampleModalLabel"></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
             <div id="tabla-container" class="container-fluid">
               <div id="idRowInput" class="row">
               </div>
@@ -114,6 +128,9 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
         </div>
       </div>
     </div>
+    <!-- ******************************************************* -->
+    <!-- Final de Modal de Concesiones Salvadas -->
+    <!-- ******************************************************* -->
     <!-- ******************************************************* -->
     <!-- Final de Modal de Concesiones Salvadas -->
     <!-- ******************************************************* -->
@@ -209,14 +226,21 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <div class="row">
 
       <div class="col-6">
-        <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA&nbsp;&nbsp;&nbsp;<span id="rotulo"></span>
+        <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA&nbsp;&nbsp;&nbsp;
+         <a style="display:none" id="avisocobro" href="#" target="_blank"><i id="avisocobroicon" class="fas fa-dollar-sign"></i></a>
+         &nbsp;
+         <i style="display:none" id="share" class="fas fa-share-alt text_primary"></i>
+         &nbsp;
+         <i style="display:none" id="editable" class="fas fa-eye text_secondary"></i>
+         &nbsp;
+          <span id="rotulo"></span>
           <button style="display:none;" id="RAM-ROTULO" type="button" class="btn btn-outline-<?php echo $appcfg_clase; ?> btn-sm animate__animated animate__backInUp animate__delay-3s"></button>
         </h6>
       </div>
 
       <div class="col-2">
         <div class="input-container">
-          <input autocomplete="off" type="text" class="form-control input-prefetch" id="input-prefetch" placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20">
+          <input  size="30" maxlength="25"  autocomplete="off" type="text" class="form-control input-prefetch" id="input-prefetch" placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20">
           <i class="fas fa-search-location" id="toggle-icon"></i>
         </div>
       </div>
@@ -1102,7 +1126,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
                     </div>
 
                     <div class="col-md-3 bordered-row">
-                      <strong id="concesion1_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<span title="Placa anterior del vehiculo" class="gobierno3" style="display: none; font: weight 400px;" id="concesion1_placaanterior"></span></strong></strong>
+                      <strong id="concesion1_placalabel">2.2 Placa <strong>&nbsp;&nbsp;<span title="Placa anterior del vehiculo" class="gobierno3" style="display: none; font: weight 800px;" id="concesion1_placaanterior"></span></strong></strong>
                     </div>
 
                     <div class="col-md-3 bordered-row">
@@ -1630,7 +1654,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <!-- Tom Select JS -->
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
-  <script type="text/javascript" src="<?php echo $appcfg_Dominio; ?>assets/js/select2Inicializar,js"></script>
+  <script type="text/javascript" src="<?php echo $appcfg_Dominio; ?>assets/js/select2Inicializar.js"></script>
   <script>
     function toggleSidebar() {
       let sidebar = document.getElementById("sidebar");

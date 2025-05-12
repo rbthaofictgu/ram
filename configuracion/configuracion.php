@@ -5,6 +5,9 @@
 ?>
 <?php header('Content-Type: text/html; charset=utf-8'); ?>
 <?php
+$roles_sistema_menu=['SUPERVISOR_VENTANILLA_RA','SUPER_ADMINISTRADOR','SUPERVISOR_RA','SA'];
+//*registrar
+$roles_sistema_ingreso=['OFICIAL_JURIDICO_RA','DIGITADOR_VENTANILLA_RA'];
 // *************************************************************************************************/
 // *Definiendo la zona horaria en que operara el sistema
 // ************************************************************************************************/	
@@ -28,15 +31,16 @@ if (!empty($_SERVER['REMOTE_ADDR'])) {
 // ***********************************************************************************/	
 $host = gethostname();
 //*url completa
-if (!isset($_GET['refUrl'])) {
+if (!isset($_SESSION['refUrl'])) {
 	$appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 } else {
-	$appcfg_page_url = $_GET['refUrl'];
+	$appcfg_page_url = $_SESSION['refUrl'];
 }
+
 if (isset($_SESSION["user_name"])) {
 	$usuario = $_SESSION["user_name"];
 } else {
-	$usuario = 'USUARIO';
+	$usuario = 'LOGIN';
 }
 // ***********************************************************************************/
 //* Estado Inicial Por Omisión
@@ -49,9 +53,6 @@ $tituloIngreso = 'INGRESO DE RENOVACIONES AUTOMATICAS';
 $todos_los_roles=['OFICIAL_JURIDICO_RA','DIGITADOR_VENTANILLA_RA','IMPRESIONES_RA','SUPERVISOR_RA','SUPERVISOR_VENTANILLA_RA','SUPER_ADMINISTRADOR'];
 //* aplica para LAS PAGINAS ASIGIENTES : ASIGNAR ESTADOS, COMPARTIR,ROLES,ROLES X USUARIOS
 $roles_sistema_menu=['SUPERVISOR_RA','SUPERVISOR_VENTANILLA_RA'];
-
-
-
 // ***********************************************************************************/
 //* Version del Sistema
 // ***********************************************************************************/	

@@ -1,30 +1,29 @@
 <?php
-/* validando que paso por la pantalla de login */
+//* Arrancando session
 session_start();
-// if (!isset($_SESSION['user_name'])) { //tipo
-//    $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-//    $_SESSION['url'] = $appcfg_page_url;
-//    $_SESSION['flashmsg'] = "Favor inicie sesión para poder ingresar al sistema";
-//    header("location:inicio.php");
-//    exit();
-// }
 
-// include_once('validar_roles.php');
+//*********************************************************************/
+//* Esta variable sirve para que todos los programas ubiquen el codigo
+//* include_once('validar_roles.php'); 
+//* Ejemplos de los valores que puede llevar nivel
+//* ''
+//* '../'
+//* '../../'
+//* '../../../'
+//*********************************************************************/
+// $nivel_validar_roles = '';
+// $roles_autorizados = ['OFICIAL_JURIDICO_RA','DIGITADOR_VENTANILLA_RA','IMPRESIONES_RA,SUPERVISOR_RA','SUPERVISOR_VENTANILLA_RA','SUPERVISOR_Administrador','SA'];
+//*********************************************************************/
+//* Validaciones de seguridad
+//*********************************************************************/
+// include_once('validar_seguridad.php');
 
-// if (!array_intersect(['OFICIAL_JURIDICO_RA','DIGITADOR_VENTANILLA_RA','IMPRESIONES_RA','SUPERVISOR_RA','SUPERVISOR_VENTANILLA_RA','SUPER_ADMINISTRADOR'], $_SESSION["ROLESXUSUARIORAM"])) {
-//    $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-//    $_SESSION['url'] = $appcfg_page_url;
-//    $_SESSION['flashmsg'] = "No tiene permisos para acceder a esta pantalla (INICIO)";
-//     header("location: inicio.php");
-//    exit();
-// }
 //*configuración del sistema
 include_once('configuracion/configuracion.php');
 //*configuración del las variables globales del sistema
 include_once('configuracion/configuracion_js.php');
 ?>
 <!DOCTYPE html>
-
 <head>
    <?php
    include_once('encabezado.php');

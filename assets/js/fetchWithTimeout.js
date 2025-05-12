@@ -1,4 +1,4 @@
-function fetchWithTimeout(url, options, timeout = 120000) {
+async function fetchWithTimeout(url, options, timeout = 120000) {
     return new Promise((resolve, reject) => {
       const controller = new AbortController();
       const signal = controller.signal;

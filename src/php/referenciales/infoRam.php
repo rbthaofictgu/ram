@@ -2,22 +2,21 @@
 /* validando que paso por la pantalla de login */
 if (isset($esConsulta) == false) {
    session_start();
-   if (!isset($_SESSION['user_name'])) { //tipo
-      $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-      $_SESSION['url'] = $appcfg_page_url;
-      $_SESSION['flashmsg'] = "Favor inicie sesión para poder ingresar al sistema";
-      header("location:../../../inicio.php");
-      exit();
-   }
-
-   include_once('../../../validar_roles.php');
-   if (!array_intersect(['SUPERVISOR_RA', 'OFICIAL_JURIDICO_RA','SUPERVISOR_VENTANILLA_RA','DIGITADOR_VENTANILLA_RA'], $_SESSION["ROLESXUSUARIORAM"])) {
-      $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-      $_SESSION['url'] = $appcfg_page_url;
-      $_SESSION['flashmsg'] = "No tiene permisos para acceder a esta pantalla (INGRESO DE RAM'S)";
-      header("location:../../../inicio.php");
-      exit();
-   }
+   //*********************************************************************/
+   //* Esta variable sirve para que todos los programas ubiquen el codigo
+   //* include_once('validar_roles.php'); 
+   //* Ejemplos de los valores que puede llevar nivel
+   //* ''
+   //* '../'
+   //* '../../'
+   //* '../../../'
+   //*********************************************************************/
+   $nivel_validar_roles = '../../../';
+   $roles_autorizados = ['SA', 'DIGITADOR_VENTANILLA_RA', 'OFICIAL_JURIDICO_RA', 'SUPERVISOR_RA'];
+   //*********************************************************************/
+   //* Validaciones de seguridad
+   //*********************************************************************/
+   include_once('../../../validar_seguridad.php');
 }
 //*configuración del sistema
 include_once('../../../configuracion/configuracion.php');
@@ -25,11 +24,13 @@ include_once('../../../configuracion/configuracion.php');
 include_once('../../../configuracion/configuracion_js.php');
 ?>
 <!DOCTYPE html>
+
 <head>
    <?php
    include_once('../../../encabezado.php');
    ?>
 </head>
+
 <body>
    <header>
       <?php include_once('../../../menu.php') ?>
@@ -83,11 +84,11 @@ include_once('../../../configuracion/configuracion_js.php');
                   <!-- LIMPIAR -->
                </button>
                <!-- <i  class="fa-solid fa-square-plus"></i> -->
-             
-                  <button id="idAgregar" data-info1="IDE-7" class="btn btn-success" title="Boton para Agregar una solicitud" onclick="agregarRams();">
-                     <i class="fa-solid fa-plus fs-5"></i> NUEVO
-                  </button>
-            
+
+               <button id="idAgregar" data-info1="IDE-7" class="btn btn-success" title="Boton para Agregar una solicitud" onclick="agregarRams();">
+                  <i class="fa-solid fa-plus fs-5"></i> NUEVO
+               </button>
+
 
                <button id="idPagado" data-pagado="ramsPagadas" class="btn btn-light" title="Boton para filtrar pagados" onclick="ramPagada()">
                   <i class="fa-solid fa-dollar-sign"></i>

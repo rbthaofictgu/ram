@@ -5,33 +5,22 @@ session_start();
 include_once('configuracion/configuracion.php');
 //*configuración del las variables globales del sistema
 include_once('configuracion/configuracion_js.php');
-if (!isset($_SESSION['url']) && !isset($_SESSION['user_name'])) {
-  if ($appcfg_Dominio == (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]") {
-    $appcfg_page_url =  (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]" . "ram.php";
-  } else {
-    $appcfg_page_url =  (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-  }
 
-  session_start();
-  if (!isset($_SESSION['user_name'])) { //tipo
-    $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-    $_SESSION['url'] = $appcfg_page_url;
-    $_SESSION['flashmsg'] = "Favor inicie sesión para poder ingresar al sistema";
-    header("location:inicio.php");
-    exit();
-  }
-
-  include_once('validar_roles.php');
-  if (!array_intersect(['DIGITADOR_VENTANILLA_RA', 'OFICIAL_JURIDICO_RA', 'SUPERVISOR_RA'], $_SESSION["ROLESXUSUARIORAM"])) {
-    $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-    $_SESSION['url'] = $appcfg_page_url;
-    $_SESSION['flashmsg'] = "No tiene permisos para acceder a esta pantalla (INGRESO DE RAM'S)";
-    header("location:inicio.php");
-    exit();
-  }
-} else {
-  $appcfg_page_url = '';
-}
+//*********************************************************************/
+//* Esta variable sirve para que todos los programas ubiquen el codigo
+//* include_once('validar_roles.php'); 
+//* Ejemplos de los valores que puede llevar nivel
+//* ''
+//* '../'
+//* '../../'
+//* '../../../'
+//*********************************************************************/
+$nivel_validar_roles='';
+$roles_autorizados = ['SA','DIGITADOR_VENTANILLA_RA','OFICIAL_JURIDICO_RA','SUPERVISOR_RA'];
+//*********************************************************************/
+//* Validaciones de seguridad
+//*********************************************************************/
+include_once('validar_seguridad.php');
 
 //******************************************************************/
 // Es Renovacion Automatica

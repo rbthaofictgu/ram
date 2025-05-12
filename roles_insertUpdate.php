@@ -108,12 +108,13 @@ try {
         echo json_encode(['success' => 'Rol actualizado correctamente.']);
     } else {
         $stmtInsert = $db->prepare("INSERT INTO [IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Roles]
-                   (codigo, descripcion,   estaActivo, fecha_creacion, usuario_creacion, ip_creacion, host_creacion)
-            VALUES (:codigo, :descripcion, :estaActivo, SYSDATETIME() , :usuario, :ip, :host)");
+            (codigo, descripcion, estaActivo,fecha_creacion, usuario_creacion, ip_creacion, host_creacion)
+            VALUES (:codigo, :descripcion, :estaActivo,GETDATE(), :usuario, :ip, :host)");
         $stmtInsert->execute([
             ':codigo' => $codigo,
             ':descripcion' => $descripcion,
             ':estaActivo' => $estaActivo,
+            // ':fecha' => $fecha,
             ':usuario' => $usuario,
             ':ip' => $ip,
             ':host' => $host

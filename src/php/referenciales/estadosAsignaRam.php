@@ -2,23 +2,23 @@
 
 /* validando que paso por la pantalla de login */
 session_start();
-if (!isset($_SESSION['user_name'])) { //tipo
-   $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-   $_SESSION['url'] = $appcfg_page_url;
-   $_SESSION['flashmsg'] = "Favor inicie sesión para poder ingresar al sistema";
-   header("location: ../../../inicio.php");
-   exit();
-}
 
-include_once('../../../validar_roles.php');
+//*********************************************************************/
+//* Esta variable sirve para que todos los programas ubiquen el codigo
+//* include_once('validar_roles.php'); 
+//* Ejemplos de los valores que puede llevar nivel
+//* ''
+//* '../'
+//* '../../'
+//* '../../../'
+//*********************************************************************/
+$nivel_validar_roles = '../../../';
+$roles_autorizados = ['SUPERVISOR_RA','SUPERVISOR_VENTANILLA_RA','SA'];
+//*********************************************************************/
+//* Validaciones de seguridad
+//*********************************************************************/
+include_once('../../../validar_seguridad.php');
 
-if (!array_intersect(['SUPERVISOR_RA', 'SUPERVISOR_VENTANILLA_RA'], $_SESSION["ROLESXUSUARIORAM"])) {
-   $appcfg_page_url = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-   $_SESSION['url'] = $appcfg_page_url;
-   $_SESSION['flashmsg'] = "No tiene permisos para acceder a esta pantalla (COMPARTIR RAMS)";
-   header("location: ../../../inicio.php");
-   exit();
-}
 ?>
 
 <!-- //* archivo de conexion a la base de datos -->
