@@ -996,9 +996,9 @@ require_once("../qr/qrlib.php");
             FROM [IHTT_GDL].[dbo].[TB_Resolucion] 
             where YEAR(FechaResolucion) = :Year and len(ID_Resolucion) = 24
             order by substring(ID_Resolucion,14,6) desc";
-            $siguiente = (intval($this->selectOne($query, Array(':Year' => date('Y')))) + 1);
+            $siguiente = $this->selectOne($query, Array(':Year' => date('Y')));
             if ($siguiente!= false) {
-                $numero_resolucion = '000000' . $siguiente;
+                $numero_resolucion = '000000' . $siguiente['siguiente_resolucion'];
                 $numero_resolucion = substr($numero_resolucion,-6);
                 return  'PCDTT-IHTT-T-'. $numero_resolucion . '-'. date('Y');
             }
@@ -2761,7 +2761,7 @@ require_once("../qr/qrlib.php");
                                     'ConcesionesEncryptada' => $PDFResolucionApi['ConcesionesEncryptada'],
                                     'ConcesionesNumero' => $PDFResolucionApi['ConcesionesNumero'],
                                     'Concesion' => str_replace('@@__CONCESIONES__@@',$miString = implode(',', $PDFResolucionApi['ConcesionesNumero']),$PDFResolucionApi['botoncertificado']),));
-                                    //$this->db->rollBack();
+                                    //*$this->db->rollBack();
                                     $this->db->commit();
                                 } else {
                                     $this->db->rollBack();

@@ -1,4 +1,3 @@
-<script src="<?php echo $appcfg_Dominio_Corto;?>tools/select2/js/select2.full.min.js"></script>
 <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="<?php echo $appcfg_Dominio_Corto;?>tools/bootstrap-5.3.2/site/static/docs/5.3/assets/js/validate-forms.js"></script>
 <script src="<?php echo $appcfg_Dominio;?>assets/js/fetchWithTimeout.js"></script>

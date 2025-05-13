@@ -2819,26 +2819,14 @@ require_once("../qr/qrlib.php");
 	protected function file_contents($path)
 	{
 		try {
-			IF ($path == 'https://satt.transporte.gob.hn:184/api/Unidad/ConsultarDatosIP/HAM1094'){
-				$url = $path;
-				$curl = curl_init();
-				curl_setopt($curl, CURLOPT_URL, $url);
-				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($curl, CURLOPT_HEADER, false);
-				$str = curl_exec($curl);
-				curl_close($curl);				
-				//*echo 'str curl ==> ' . $str . '<== curl str';
-			} else {
-				//*$str = @file_get_contents($path);
-				$url = $path;
-				$curl = curl_init();
-				curl_setopt($curl, CURLOPT_URL, $url);
-				curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-				curl_setopt($curl, CURLOPT_HEADER, false);
-				$str = curl_exec($curl);
-				curl_close($curl);				
-				//*echo 'str crul ==> ' . $str . '<==curl str';
-			}
+			//*$str = @file_get_contents($path);
+			$url = $path;
+			$curl = curl_init();
+			curl_setopt($curl, CURLOPT_URL, $url);
+			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+			curl_setopt($curl, CURLOPT_HEADER, false);
+			$str = curl_exec($curl);
+			curl_close($curl);				
 			//print('str '. $path . ' '.$str);die();
 			if ($str === FALSE) {
 				//$txt = date('Y m d h:i:s') . ';  ERROR CATCH 408 LLAMANDO; ' . $path . ";Cannot access to read contents. Favor ingrese el tramite de replaqueo y los datos del vehiculo manualmente, SI APLICA";
@@ -2870,7 +2858,8 @@ require_once("../qr/qrlib.php");
 		//*http://10.1.220.1:5000/consulta/placa?
 		//*:184/api/Unidad/ConsultarDatosIP/
 		//*$vehiculo = json_decode($this->file_contents("http://10.1.220.1:5000/consulta/placa?placa=" . strtoupper($placa)));
-		$vehiculo = json_decode($this->file_contents($_SESSION["appcfg_Dominio_Raiz"] . ":184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
+		//*$vehiculo = json_decode($this->file_contents($_SESSION["appcfg_Dominio_Raiz"] . ":184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
+		$vehiculo = json_decode($this->file_contents("192.168.100.217:184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
 		//*Recuperando el codigo de la marca del vehiculo
 		if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
 			$marca = $this->getMarcaByDesc($vehiculo->cargaUtil->marca);
@@ -2980,16 +2969,16 @@ require_once("../qr/qrlib.php");
 	//*****************************************************************************************/
 	protected function getDatosMulta($placa, $placa_anterior,$rtn_concesionario='false',$rtn_propietario='false'): mixed
 	{
-		if ($placa_anterior == null) {
+		if ($placa_anterior == null or $placa_anterior == '') {
 			$placa_anterior = 'XX';
 		}
 		if ($rtn_concesionario != 'false' or $rtn_propietario != 'false') {
-			if ($rtn_concesionario != $rtn_propietario) {
+			if (trim($rtn_concesionario) != trim($rtn_propietario)) {
 				$query = "SELECT MUL.Multa,Avi.CodigoAvisoCobro,MUL.Fecha,MUL.Propietario,MUL.Identidad_RTN,MUL.Certificado,MUL.Placa,convert(numeric(10,2), MUL.Total) as Total 
 				FROM [IHTT_MULTAS].[dbo].[V_Multas_IHTT_DGT] MUL,[IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] Avi
 				left outer join [IHTT_Webservice].[dbo].[TB_ArregloEnc] Enc on Avi.CodigoAvisoCobro  = Enc.ID_Aviso
 				WHERE MUL.ID_Estado='1' AND MUL.Multa = avi.ID_Solicitud and 
-				(MUL.Placa= :Placa_Actual or MUL.Placa= :Placa_Anterior or SUBSTRING(REPLACE(REPLACE(Mul.Identidad_RTN,' ',''),'-',''),1,13) = :Identidad_RTN or SUBSTRING(REPLACE(REPLACE(Mul.Identidad_RTN,' ',''),'-',''),1,13) = :Identidad_RTN1 or Avi.RTNConcesionario = :RTNConcesionario or Avi.RTNConcesionario = :RTNConcesionario) and
+				(MUL.Placa= :Placa_Actual or MUL.Placa= :Placa_Anterior or SUBSTRING(REPLACE(REPLACE(Mul.Identidad_RTN,' ',''),'-',''),1,13) = :Identidad_RTN or SUBSTRING(REPLACE(REPLACE(Mul.Identidad_RTN,' ',''),'-',''),1,13) = :Identidad_RTN1 or Avi.RTNConcesionario = :RTNConcesionario or Avi.RTNConcesionario = :RTNConcesionario1) and
 				(
 				(
 				select count(*) from [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] Encx where Encx.AvisoCobroEstado = 1 and
@@ -3104,9 +3093,13 @@ require_once("../qr/qrlib.php");
 						$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = false;
 						if ($vehiculo->cargaUtil->placa != $vehiculo->cargaUtil->placaAnterior) {
 							//**********************************************************************************************************************/
-							// Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
+							//* Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
 							//**********************************************************************************************************************/
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
+							//**********************************************************************************************************************/
+							//* Según la abogada Cinthia se debe buscar el aviso de cobro por la placa vieja no por la nueva
+							//**********************************************************************************************************************/							
+							//*$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 								$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3186,7 +3179,7 @@ require_once("../qr/qrlib.php");
 								//**********************************************************************************************************************/
 								// Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
 								//**********************************************************************************************************************/
-								$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
+								$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
 								if (isset($row_rs_stmt['MONTO'])) {
 									$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 									$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3255,7 +3248,7 @@ require_once("../qr/qrlib.php");
 									//**********************************************************************************************************************/
 									// Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
 									//**********************************************************************************************************************/
-									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
+									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
 									if (isset($row_rs_stmt['MONTO'])) {
 										$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 										$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3317,7 +3310,7 @@ require_once("../qr/qrlib.php");
 									//**********************************************************************************************************************/
 									// Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
 									//**********************************************************************************************************************/
-									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
+									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
 									if (isset($row_rs_stmt['MONTO'])) {
 										$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 										$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3412,7 +3405,7 @@ require_once("../qr/qrlib.php");
 					isset($data[0]["Unidad"][0]) &&
 					Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 				) {
-					$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+					$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
 					if (isset($row_rs_stmt['MONTO'])) {
 						$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 					} else {
@@ -3451,7 +3444,7 @@ require_once("../qr/qrlib.php");
 						isset($data[0]["Unidad"][0]) &&
 						Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 					) {
-						$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+						$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
 						if (isset($row_rs_stmt['MONTO'])) {
 							$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 						} else {
@@ -3490,7 +3483,7 @@ require_once("../qr/qrlib.php");
 							isset($data[0]["Unidad"][0]) &&
 							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 						) {
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 							} else {
@@ -3528,7 +3521,7 @@ require_once("../qr/qrlib.php");
 							isset($data[0]["Unidad"][0]) &&
 							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 						) {
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 							} else {

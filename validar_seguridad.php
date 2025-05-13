@@ -9,7 +9,7 @@ if (!isset($_SESSION['user_name'])) {
   include_once($nivel_validar_roles . 'validar_roles.php');
   if (!estaAutorizado($roles_autorizados, $_SESSION["ROLESXUSUARIORAM"])) {
     $_SESSION['flashmsg'] = "No tiene permisos para acceder a esta pantalla (INGRESO DE RAM'S)";
-    header("location:inicio.php");
+    header("location:' .  $nivel_validar_roles .' inicio.php");
     exit();
   }
 }

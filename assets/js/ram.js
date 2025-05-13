@@ -548,7 +548,7 @@ function fGetInputs() {
   inputs.forEach((input) => {
     //var idIgnore = input.getAttribute('data-validar-salvar');
     //if (input.disabled == false && idIgnore!=false) {
-    if (input.disabled == false) {
+    if (input.disabled == false && input.readonly == false) {
       // Creando un nuevo evento 'change'
       var event = new Event("change", {
         bubbles: true,
@@ -582,7 +582,8 @@ function fGetInputsSelect() {
   // Iterando entre los inputs para despachar el evento change y validar la data de cada input
   var index = 0;
   inputs.forEach((input) => {
-    if (input.disabled == false) {
+
+    if (input.disabled == false && input.readonly == false) {
       let parts = input.id.split("_");
       if (
         (parts[0].slice(-1) == 1 && esCambioDeVehiculo == true) ||
@@ -996,7 +997,7 @@ function createMallaDinicamente(
   fields,
   cols = {},
   maxfield = 999,
-  clases = []
+  clases = [],
 ) {
   var $html = '<div class="row">';
   header.forEach((field, fieldIndex) => {
@@ -1176,7 +1177,7 @@ function f_DataOmision() {
             document.getElementById("AvisoCobroEstado").value = datos[4][0]['AvisoCobroEstado'];
             console.log(datos[4][0]['AvisoCobroEstado'],'datos[4][0][\'AvisoCobroEstado\']');
             document.getElementById("avisocobro").style.display = "inline";   
-            document.getElementById("avisocobro").href = "https://satt2.transporte.gob.hn:90/api_rep.php?ra=S&action=get-facturaPdf&nu="+datos[4][0]["CodigoAvisoCobro"];   
+            document.getElementById("avisocobro").href =  $appcfg_Dominio_Raiz + ":90/api_rep.php?ra=S&action=get-facturaPdf&nu="+datos[4][0]["CodigoAvisoCobro"];   
             document.getElementById("avisocobro").setAttribute('title','Número de Aviso de Cobro: ' + datos[4][0]["CodigoAvisoCobro"]);     
             //*******************************************************************************************************************/
             if (Number(datos[4][0]['AvisoCobroEstado']) != 2) {
@@ -1278,10 +1279,9 @@ function f_DataOmision() {
         }
 
         } else {
-          console.log(9152,'9152');
-          document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + 'EN VENTANILLA';
+
           if (typeof datos[15] != "undefined" && datos[15] != false) {
-            document.getElementById("idEstado").textContent = datos[15].Desc_Estado;
+            document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + ' ' + datos[15].Desc_Estado;
           }
 
           if (datos[1].length > 0) {
@@ -2287,6 +2287,7 @@ function f_RenderConcesion(datos) {
     document.getElementById("concesionlabel").innerHTML =
       datos[1][0]["Tipo_Concesion"];
   }
+
   claseDeServicio = datos[1][0]["ID_Clase_Servico"];
 
   if (claseDeServicio == "STPP" || claseDeServicio == "STPC") {
@@ -2310,7 +2311,7 @@ function f_RenderConcesion(datos) {
       esCarga = true;
     } else {
       esCarga = false;
-    }
+   }
     document.getElementById("Concesion_Encriptada").value = datos[1][0]["PermisoEspecialEncriptado:"];
     document.getElementById("Permiso_Explotacion").value = "";
     document.getElementById("Permiso_Explotacion_Encriptado").value = "";
@@ -2395,7 +2396,7 @@ function f_RenderConcesion(datos) {
     document.getElementById("estaPagadoElCambiodePlaca").value = datos[1][0]["Unidad"][0]["estaPagadoElCambiodePlaca"];
     if ( Boolean(datos[1][0]["Unidad"][0]["estaPagadoElCambiodePlaca"]) == false) {
       document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").checked = true;
-      document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = true;
+      //*document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = true;
       document.getElementById("concesion_tramite_placa_CL").style = "display:flex;text-transform: uppercase;";
       document.getElementById("concesion_tramite_placa_CL").value = datos[1][0]["Unidad"][0]["ID_Placa"];
       document.getElementById("concesion_tramite_placa_CL").setAttribute("readonly", true);
@@ -2558,6 +2559,51 @@ function f_RenderConcesion(datos) {
   f_RenderConcesionTramites();
 }
 
+function hideAltoAnchoLargo() {
+  if (claseDeServicio == "STPP" || claseDeServicio == "STPC") {
+    if (claseDeServicio == "STPP") {
+      var el = document.getElementById('alto');
+      if (el) {el.setAttribute('readonly',true);}
+      el = document.getElementById('ancho');
+      if (el) {el.setAttribute('readonly',true);}
+      el = document.getElementById('largo');
+      if (el) {el.setAttribute('readonly',true);}
+      el = document.getElementById('alto1');
+      if (el) {el.setAttribute('readonly',true);}
+      el = document.getElementById('ancho1');
+      if (el) {el.setAttribute('readonly',true);}
+      el = document.getElementById('largo1');      
+      if (el) {el.setAttribute('readonly',true);}
+      el = document.getElementById('rowalto');      
+      if (el) {el.style = 'display:none';}      
+      el = document.getElementById('rowalto1');      
+      if (el) {el.style = 'display:none';}  
+      el = document.getElementById('rowancho');      
+      if (el) {el.style = 'display:none';}                      
+      el = document.getElementById('rowancho1');      
+      if (el) {el.style = 'display:none';}                            
+      document.getElementById('capacidadenlabel').innerHTML = 'Pasajeros';
+      document.getElementById('capacidad1enlabel').innerHTML = 'Pasajeros';
+    }
+  } else {
+    if (claseDeServicio == "STEP") {
+      var el = document.getElementById('alto');
+      if (el) {el.remove();}
+      el = document.getElementById('ancho');
+      if (el) {el.remove();}
+      el = document.getElementById('largo');
+      if (el) {el.remove();}
+      el = document.getElementById('alto1');
+      if (el) {el.remove();}
+      el = document.getElementById('ancho1');
+      if (el) {el.remove();}
+      el = document.getElementById('largo1');      
+      if (el) {el.remove();}
+      document.getElementById('capacidadenlabel').textContent = 'Pasajeros';
+      document.getElementById('capacidad1enlabel').textContent = 'Pasajeros';
+    }
+  }
+}
 //*********************************************************************************************************************/
 //** Inicio Function Carga Los Datos de la Unidad1 y Presenta la Pantalla con dicha información
 //*********************************************************************************************************************/
@@ -2735,7 +2781,9 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 //***************************************************************************************/
                 document.getElementById("btnCambiarUnidad").style.display = "none";
                 document.getElementById("concesion_tramites").value = "";
+                console.log(100);
                 f_RenderConcesion(datos);
+                console.log(200);
                 seRecuperoVehiculoDesdeIP = 0;
                 //****************************************************************************************************/
                 //*Enviando Toast de Exito en Recuperación la Información de la Concesión
@@ -2856,6 +2904,9 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 //* Inicializar tomselect                                                                            */
                 //****************************************************************************************************/
                 inicialitarTomSelect();
+                console.log(300);
+                hideAltoAnchoLargo();
+                console.log(400);
               }
             }
           }
@@ -3110,6 +3161,7 @@ function fEditarConcesion(idConcesion) {
             disabledEdit();
             lockFormElements();   
           }
+
           //*****************************************************************************************/
           //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
           //*****************************************************************************************/
@@ -3117,6 +3169,7 @@ function fEditarConcesion(idConcesion) {
           //*****************************************************************************************/
           //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
           //*****************************************************************************************/
+          hideAltoAnchoLargo();
         }
       } else {
         fLimpiarPantalla();
@@ -3269,7 +3322,7 @@ function f_RenderConcesionPreforma(datos) {
     if (document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").checked == true) {
 
       if ( Boolean(document.getElementById("estaPagadoElCambiodePlaca").value) == false) {
-        document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = true;
+        //*document.getElementById("IHTTTRA-03_CLATRA-15_M_CL").disabled = true;
         document.getElementById("concesion_tramite_placa_CL").removeAttribute("readonly");
         requiereCambioDePlaca = false;
       } else {
@@ -3278,7 +3331,7 @@ function f_RenderConcesionPreforma(datos) {
       document.getElementById("concesion_tramite_placa_CL").style = "display:flex;text-transform: uppercase;";
       document.getElementById("concesion_tramite_placa_CL").value =  datos[1][0]["Unidad"][0]["ID_Placa"];
       if (requiereCambioDePlaca == true) {
-        document.getElementById("concesion_tramite_placa_CL").setAttribute("readonly", true);
+        //*document.getElementById("concesion_tramite_placa_CL").setAttribute("readonly", true);
         esCambioDePlaca = true;
       } else {
         esCambioDePlaca = false;
@@ -4830,38 +4883,25 @@ btnSalvarConcesion.addEventListener("click", function (event) {
           "LOS PRIMEROS DOS DIGITOS DE LA PLACA <strong>("+ inputPlaca.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>'
       );
       } else {
-        const inputPlaca1 = document.getElementById('concesion1_placa');
-        var valorPlaca1 = inputPlaca1 ? inputPlaca1.value.toUpperCase() : '';      
-        valorPlaca1 = valorPlaca1.toUpperCase();
-        if (esCambioDeVehiculo == true && $appcfg_placas.includes(valorPlaca1.substring(0,2))==false) {
+        //**********************************************************************************************************/
+        //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
+        //**********************************************************************************************************/
+        setFocus = false;
+        isSaving = true;
+        fGetInputs();
+        isSaving = false;
+        setFocus = true;
+        const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
+        if (sum == 0) {
+          salvarConcesion();
+        } else {
           fSweetAlertEventSelect(
             event,
-            "ERROR SALVANDO",
-            '',
-            "error",
-            "LOS PRIMEROS DOS DIGITOS DE LA PLACA ENTRANTE <strong>("+ inputPlaca1.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br> <strong>" + $appcfg_placas.join(' , ') + '</strong>'
+            "ERRORES",
+            "SE HAN DETECTADO ERROR(ES) DE DATOS EN LA PANTALLA FAVOR CORRIJA Y VUELVA A INTENTAR SALVAR",
+            "error"
           );
-        } else {
-          //**********************************************************************************************************/
-          //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
-          //**********************************************************************************************************/
-          setFocus = false;
-          isSaving = true;
-          fGetInputs();
-          isSaving = false;
-          setFocus = true;
-          const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
-          if (sum == 0) {
-            salvarConcesion();
-          } else {
-            fSweetAlertEventSelect(
-              event,
-              "ERRORES",
-              "SE HAN DETECTADO ERROR(ES) DE DATOS EN LA PANTALLA FAVOR CORRIJA Y VUELVA A INTENTAR SALVAR",
-              "error"
-            );
-          }
-        }  
+        }
       }
     } else {
       fSweetAlertEventSelect(
@@ -5500,7 +5540,7 @@ function fHiddenShowTramites(
     ],
     ["M"]: ["IHTTTRA-03_CLATRA-08_M_CU"],
     ["M_CU"]: [
-      "IHTTTRA-03_CLATRA-15_M_CL",
+      //*"IHTTTRA-03_CLATRA-15_M_CL",
       "IHTTTRA-03_CLATRA-17_M_CM",
       "IHTTTRA-03_CLATRA-18_M_CC",
       "IHTTTRA-03_CLATRA-19_M_CS",
@@ -5983,178 +6023,158 @@ function getVehiculoDesdeIPMoveDatos(vehiculo, Tipo_Tramite) {
 }
 
 async function getVehiculoDesdeIP(Obj) {
-  if (
-    (document.getElementById("concesion_tramite_placa_CU").value !== "" &&
-      document.getElementById("concesion_tramite_placa_CL").value !== "" &&
-      document.getElementById("concesion_tramite_placa_CL").value !==
-      document.getElementById("concesion_tramite_placa_CU").value) ||
-    (document.getElementById("concesion_tramite_placa_CL").value !== "" &&
-      document.getElementById("concesion_tramite_placa_CL").value !==
-      document.getElementById("concesion_placa").value) ||
-    (document.getElementById("concesion_tramite_placa_CU").value !== "" &&
-      document.getElementById("concesion_tramite_placa_CU").value !==
-      document.getElementById("concesion_placa").value)
-  ) {
-    try {
-      //*********************************************************************************************************************/
-      //* Si es Certificado Entra Aqui para obtener el CO y PE
-      //*********************************************************************************************************************/
-      if (esCertificado) {
-        var Concesion = document.getElementById(
-          "concesion_concesion"
-        ).innerHTML;
-      } else {
-        var Concesion = document.getElementById(
-          "concesion_concesion"
-        ).innerHTML;
-      }
-      // URL del Punto de Acceso a la API
-      const url = $appcfg_Dominio + "Api_Ram.php";
-      //  Fetch options
-      // const options = {
-      //   method: 'POST',
-      //   body: fd,
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      // };
-      let fd = new FormData(document.forms.form1);
-      //Adjuntando el action al FormData
-      fd.append("action", "get-vehiculo");
-      //Adjuntando el idApoderado al FormData
-      fd.append("ID_Placa", Obj.value);
-      fd.append("RAM", document.getElementById("RAM").value);
-      fd.append("Concesion", Concesion);
-      // Fetch options
-      const options = {
-        method: "POST",
-        body: fd,
-      };
+  try {
+    //*********************************************************************************************************************/
+    //* Si es Certificado Entra Aqui para obtener el CO y PE
+    //*********************************************************************************************************************/
+    if (esCertificado) {
+      var Concesion = document.getElementById(
+        "concesion_concesion"
+      ).innerHTML;
+    } else {
+      var Concesion = document.getElementById(
+        "concesion_concesion"
+      ).innerHTML;
+    }
+    // URL del Punto de Acceso a la API
+    const url = $appcfg_Dominio + "Api_Ram.php";
+    //  Fetch options
+    // const options = {
+    //   method: 'POST',
+    //   body: fd,
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    // };
+    let fd = new FormData(document.forms.form1);
+    //Adjuntando el action al FormData
+    fd.append("action", "get-vehiculo");
+    //Adjuntando el idApoderado al FormData
+    fd.append("ID_Placa", Obj.value);
+    fd.append("RAM", document.getElementById("RAM").value);
+    fd.append("Concesion", Concesion);
+    // Fetch options
+    const options = {
+      method: "POST",
+      body: fd,
+    };
 
-      const response = await fetchWithTimeout(url, options, 120000);
-      const vehiculo = await response.json();
+    const response = await fetchWithTimeout(url, options, 120000);
+    const vehiculo = await response.json();
 
-      if (!vehiculo.error) {
-        if (vehiculo?.codigo && vehiculo.codigo == 200) {
-          if (vehiculo.cargaUtil.estadoVehiculo == "NO BLOQUEADO") {
-            document.getElementById("concesion_vin").focus();
-            isVehiculeBlock = false;
-            sendToast(
-              "INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",
-              $appcfg_milisegundos_toast,
-              "",
-              true,
-              true,
-              "top",
-              "right",
-              true,
-              $appcfg_background_toast,
-              function () { },
-              "success",
-              $appcfg_pocision_toast,
-              $appcfg_icono_toast
+    if (!vehiculo.error) {
+      if (vehiculo?.codigo && vehiculo.codigo == 200) {
+        if (vehiculo.cargaUtil.estadoVehiculo == "NO BLOQUEADO") {
+          document.getElementById("concesion_vin").focus();
+          isVehiculeBlock = false;
+          sendToast(
+            "INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",
+            $appcfg_milisegundos_toast,
+            "",
+            true,
+            true,
+            "top",
+            "right",
+            true,
+            $appcfg_background_toast,
+            function () { },
+            "success",
+            $appcfg_pocision_toast,
+            $appcfg_icono_toast
+          );
+          var html = "";
+          if (vehiculo?.cargaUtil?.Multas?.[0]) {
+            html = mallaDinamica(
+              { titulo: "LISTADO DE MULTAS", name: "MULTAS" },
+              vehiculo.cargaUtil.Multas
             );
-            var html = "";
-            if (vehiculo?.cargaUtil?.Multas?.[0]) {
-              html = mallaDinamica(
-                { titulo: "LISTADO DE MULTAS", name: "MULTAS" },
-                vehiculo.cargaUtil.Multas
-              );
-            }
-            if (vehiculo?.cargaUtil?.Preformas?.[0]) {
-              html =
-                html +
-                mallaDinamica(
-                  {
-                    titulo: "LISTADO DE PREFORMAS PENDIENTES DE RESOLUCIÓN",
-                    name: "PREFORMAS",
-                  },
-                  vehiculo.cargaUtil.Preformas
-                );
-            }
-            if (vehiculo?.cargaUtil?.Placas?.[0]) {
-              html =
-                html +
-                mallaDinamica(
-                  {
-                    titulo:
-                      "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
-                    name: "PREFORMAS",
-                  },
-                  vehiculo.cargaUtil.Placas
-                );
-            }
-            if (html != "") {
-              const result = await fSweetAlertEventNormal(
-                "VALIDACIONES",
-                "LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE",
-                "error",
-                html
-              );
-            }
-            getVehiculoDesdeIPMoveDatos(vehiculo, Obj.id.split("_")[3]);
-            return true;
-          } else {
-            if (vehiculo.cargaUtil.estadoVehiculo == "BLOQUEADO") {
-              const result = await fSweetAlertEventNormal(
-                "BLOQUEADO",
-                "EL VEHICULO ESTA BLOQUEADO EN EL INSTITUTO DE LA PROPIEDAD",
-                "error"
-              );
-              isVehiculeBlock = true;
-            } else {
-              const result = await fSweetAlertEventNormal(
-                "ERROR",
-                "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-                "error"
-              );
-            }
           }
+          if (vehiculo?.cargaUtil?.Preformas?.[0]) {
+            html =
+              html +
+              mallaDinamica(
+                {
+                  titulo: "LISTADO DE PREFORMAS PENDIENTES DE RESOLUCIÓN",
+                  name: "PREFORMAS",
+                },
+                vehiculo.cargaUtil.Preformas
+              );
+          }
+          if (vehiculo?.cargaUtil?.Placas?.[0]) {
+            html =
+              html +
+              mallaDinamica(
+                {
+                  titulo:
+                    "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
+                  name: "PREFORMAS",
+                },
+                vehiculo.cargaUtil.Placas
+              );
+          }
+          if (html != "") {
+            const result = await fSweetAlertEventNormal(
+              "VALIDACIONES",
+              "LA UNIDAD TIENE MULTA(S) PENDIENTE(S) DE PAGO, FAVOR PAGAR LAS MULTAS PREVIO A INGRESAR EL TRAMITE",
+              "error",
+              html
+            );
+          }
+          getVehiculoDesdeIPMoveDatos(vehiculo, Obj.id.split("_")[3]);
           return true;
         } else {
-          if (
-            vehiculo?.codigo != null &&
-            (vehiculo.codigo === 407 || vehiculo.codigo === 408)
-          ) {
+          if (vehiculo.cargaUtil.estadoVehiculo == "BLOQUEADO") {
             const result = await fSweetAlertEventNormal(
-              "ADVERTENCIA",
-              "NO HEMOS PODIDO CONECTARNOS CON EL INSTITUTO DE LA PROPIEDAD, FAVOR INTENTENLO EN UN MOMENTO SI EL PROBLEMA PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
-              "warning"
+              "BLOQUEADO",
+              "EL VEHICULO ESTA BLOQUEADO EN EL INSTITUTO DE LA PROPIEDAD",
+              "error"
             );
+            isVehiculeBlock = true;
           } else {
             const result = await fSweetAlertEventNormal(
-              "INFORMACIÓN",
-              "EL VEHICULO NO HA SIDO ENCONTRADO EN LA BASE DE DATOS DEL IP",
-              "warning"
+              "ERROR",
+              "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
+              "error"
             );
           }
         }
         return true;
       } else {
-        const result = await fSweetAlertEventNormal(
-          vehiculo.errorhead,
-          vehiculo.error + "- " + vehiculo.errormsg,
-          "error"
-        );
-        return true;
+        if (
+          vehiculo?.codigo != null &&
+          (vehiculo.codigo === 407 || vehiculo.codigo === 408)
+        ) {
+          const result = await fSweetAlertEventNormal(
+            "ADVERTENCIA",
+            "NO HEMOS PODIDO CONECTARNOS CON EL INSTITUTO DE LA PROPIEDAD, FAVOR INTENTENLO EN UN MOMENTO SI EL PROBLEMA PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
+            "warning"
+          );
+        } else {
+          const result = await fSweetAlertEventNormal(
+            "INFORMACIÓN",
+            "EL VEHICULO NO HA SIDO ENCONTRADO EN LA BASE DE DATOS DEL IP",
+            "warning"
+          );
+        }
       }
-    } catch (error) {
-      console.log(
-        "catch error eliminando tramite en preforma fEliminarTramite" + error
-      );
-      const result = await fSweetAlertEventSelect(
-        "",
-        "ELIMINAR TRAMITE EN PREFORMA",
-        "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-        "warning"
+      return true;
+    } else {
+      const result = await fSweetAlertEventNormal(
+        vehiculo.errorhead,
+        vehiculo.error + "- " + vehiculo.errormsg,
+        "error"
       );
       return true;
     }
-  } else {
-    const result = await fSweetAlertEventNormal(
-      "ERROR EN PLACAS",
-      "LA PLACA NO PUEDE SER IGUAL A LA PLACA DEL TRAMITE DE CAMBIO DE PLACA o CAMBIO DE UNIDAD",
-      "error"
+  } catch (error) {
+    console.log(
+      "catch error eliminando tramite en preforma fEliminarTramite" + error
+    );
+    const result = await fSweetAlertEventSelect(
+      "",
+      "ELIMINAR TRAMITE EN PREFORMA",
+      "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
+      "warning"
     );
     return true;
   }

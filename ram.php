@@ -752,7 +752,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="marcas" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                        <select data-valor="0" id="marcas" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>
@@ -765,7 +765,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="colores" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                        <select data-valor="0" id="colores" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>
@@ -885,20 +885,20 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <strong id="capacidadlabel">E.2 Capacidad en Kg</strong>
+                        <strong id="capacidadlabel">E.2 Capacidad en <span id="capacidadenlabel">Kg</span></strong>
                       </div>
                     </div>
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{3,8}(\.\d{1,2})?$"
+                        <input title="La capacidad de la unidad no puede tener menos de 2 caracteres ni mas de 10 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
                           class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="17">
                       </div>
                     </div>
 
                   </div>
 
-                  <div class="row p-0m-0">
+                  <div id="rowalto" class="row p-0m-0">
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
                         <strong id="altolabel">E.3 Alto</strong>
@@ -922,7 +922,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
                     </div>
                   </div>
 
-                  <div class="row p-0m-0">
+                  <div  id="rowancho" class="row p-0m-0">
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
@@ -1175,7 +1175,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="marcas1" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                        <select data-valor="0" id="marcas1" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>
@@ -1188,7 +1188,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="colores1" class="form-control form-control-sm form-control-unbordered test-select" style="width: 100%;">
+                        <select data-valor="0" id="colores1" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>
@@ -1308,20 +1308,20 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <strong id="capacidad1label">E.2 Capacidad en Kg</strong>
+                        <strong id="capacidad1label">E.2 Capacidad en <span id="capacidad1enlabel">Kg</span></strong>
                       </div>
                     </div>
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{3,8}(\.\d{1,2})?$"
+                        <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
                           class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad1" minlength="6" maxlength="17">
                       </div>
                     </div>
 
                   </div>
 
-                  <div class="row p-0m-0">
+                  <div  id="rowalto1" class="row p-0m-0">
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
                         <strong id="alto1label">E.3 Alto</strong>
@@ -1345,7 +1345,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
                     </div>
                   </div>
 
-                  <div class="row p-0m-0">
+                  <div  id="rowancho1" class="row p-0m-0">
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
@@ -1654,6 +1654,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.bootstrap5.min.css" rel="stylesheet" />
   <!-- Tom Select JS -->
   <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+  <script src="<?php echo $appcfg_Dominio_Corto;?>tools/select2/js/select2.full.min.js"></script>
   <script type="text/javascript" src="<?php echo $appcfg_Dominio; ?>assets/js/select2Inicializar.js"></script>
   <script>
     function toggleSidebar() {
