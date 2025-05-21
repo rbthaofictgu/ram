@@ -752,7 +752,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="marcas" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
+                        <select data-valor="0" id="marcas" class="form-control form-control-sm form-control-unbordered test-select select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>
@@ -765,7 +765,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="colores" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
+                        <select data-valor="0" id="colores" class="form-control form-control-sm form-control-unbordered test-select select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>
@@ -1175,7 +1175,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="marcas1" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
+                        <select data-valor="0" id="marcas1" class="form-control form-control-sm form-control-unbordered test-select select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>
@@ -1188,7 +1188,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <select data-valor="0" id="colores1" class="form-control form-control-sm form-control-unbordered select2bs4" style="width: 100%;">
+                        <select data-valor="0" id="colores1" class="form-control form-control-sm form-control-unbordered test-select select2bs4" style="width: 100%;">
                         </select>
                       </div>
                     </div>

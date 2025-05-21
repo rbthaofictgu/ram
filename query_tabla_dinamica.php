@@ -10,32 +10,18 @@ $idEstado = $_GET['estado'] ?? 'IDE-1';
 $infoRamPagadas = $_GET['pagados'];
 $esConsultas = isset($_GET['esConsultas']) ? $_GET['esConsultas'] : '0';
 
-// echo json_encode($esConsultas).'</br>';
+$COMPARACION = [
+    'SOLICITUD' => 'soli.ID_Formulario_Solicitud',
+    'NOMBRE_SOLICITUD' => 'soli.Nombre_Solicitante',
+    'RTN_SOLICITUD' => 'soli.RTN_Solicitante',
+    'PLACA' => 'v.ID_Placa',
+    'PLACA1' => 'v.ID_Placa_Antes_Replaqueo'
+];
+
 if (isset($esConsultas) == '1') {
-    // $esConsultas = true;
-    // echo json_encode($esConsultas);
-    $COMPARACION = [
-        'SOLICITUD' => 'soli.ID_Formulario_Solicitud',
-        'NOMBRE_SOLICITUD' => 'soli.Nombre_Solicitante',
-        'RTN_SOLICITUD' => 'soli.RTN_Solicitante',
-        'PLACA' => 'v.ID_Placa',
-        'PLACA1' => 'v.ID_Placa_Antes_Replaqueo',
-        'USUARIO_CREACION' => 'soli.usuario_creacion',
-        'USUARIO_ACEPTA' => 'soli.Usuario_Acepta',
-    ];
-
-} else {
-    // $esConsultas = false;
-    // echo json_encode($esConsultas);
-    $COMPARACION = [
-        'SOLICITUD' => 'soli.ID_Formulario_Solicitud',
-        'NOMBRE_SOLICITUD' => 'soli.Nombre_Solicitante',
-        'RTN_SOLICITUD' => 'soli.RTN_Solicitante',
-        'PLACA' => 'v.ID_Placa',
-        'PLACA1' => 'v.ID_Placa_Antes_Replaqueo'
-    ];
+    $COMPARACION['USUARIO_CREACION'] = 'soli.usuario_creacion';
+    $COMPARACION['USUARIO_ACEPTA'] = 'soli.Usuario_Acepta';
 }
-
 
 //* asignando a valor1 el campo si hay si no por defecto se asigna el de solicitud "soli.ID_Formulario_Solicitud"
 $valor1 = $_GET['campo'] ?? 'soli.ID_Formulario_Solicitud';
@@ -70,7 +56,7 @@ $filtroAvisoCobro = '';
 $condicionWhere = '';
 if ($infoRamPagadas == 'ramsPagadas') {
     $joinsAdicionales .= " JOIN [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] AS AC 
-                           ON AC.ID_Solicitud = soli.ID_Formulario_Solicitud ";
+                            ON AC.ID_Solicitud = soli.ID_Formulario_Solicitud ";
     $filtroAvisoCobro .= " AND AC.AvisoCobroEstado = 2 ";
 }
 
@@ -89,13 +75,13 @@ if ($campo == 'v.ID_Placa' || $campo == 'v.ID_Placa_Antes_Replaqueo') {
                 v.ID_Placa_Antes_Replaqueo AS PLACA_REPLAQUEO,
                 soli.Estado_Formulario AS ESTADO,
                 soli.Sistema_Fecha AS FECHA,
+                soli.usuario_creacion as USUARIO_CREACION,
+				soli.Usuario_Acepta as USUARIO_ACEPTA,
                 soli.Es_Renovacion_Automatica AS RA,
                 (SELECT TOP 1 CONCAT(isnull(AC.CodigoAvisoCobro,0),'-',isnull(AC.AvisoCobroEstado,''))
                 FROM [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] AC
                 WHERE AC.ID_Solicitud = soli.ID_Formulario_Solicitud) AS Aviso_Cobro,
                 comp.estado AS COMPARTIDO,
-                soli.usuario_creacion as USUARIO_CREACION,
-				soli.Usuario_Acepta as USUARIO_ACEPTA,
                  (
                     SELECT STUFF((
                         SELECT ', ' + RC.Usuario_Comparte
@@ -144,13 +130,13 @@ if ($campo == 'v.ID_Placa' || $campo == 'v.ID_Placa_Antes_Replaqueo') {
                 WHERE c.Codigo_Ciudad = soli.Codigo_Ciudad) AS CIUDAD,
                 soli.Estado_Formulario AS ESTADO,
                 soli.Sistema_Fecha AS FECHA, 
+                soli.usuario_creacion as USUARIO_CREACION,
+				soli.Usuario_Acepta as USUARIO_ACEPTA,
                 soli.Es_Renovacion_Automatica AS RA,
                 (SELECT TOP 1 CONCAT(isnull(AC.CodigoAvisoCobro,0),'-',isnull(AC.AvisoCobroEstado,''))
                 FROM [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] AC
                 WHERE AC.ID_Solicitud = soli.ID_Formulario_Solicitud) AS Aviso_Cobro,
                 comp.estado AS COMPARTIDO,
-                soli.usuario_creacion as USUARIO_CREACION,
-				soli.Usuario_Acepta as USUARIO_ACEPTA,
                  (
     SELECT STUFF((
         SELECT ', ' + RC.Usuario_Comparte
@@ -191,27 +177,6 @@ if ($esConsultas !== '1') {
     } else {
         if ($idEstado == 'IDE-1') { //en proceso
             $query_rs_llamado .= " AND (soli.Usuario_Acepta=:usuario_acepta OR comp.Usuario_Comparte=:usuario_comparte)";
-        } else {
-            // if ($idEstado == 'IDE-2') { // finalizado
-            //     $query_rs_llamado .= " AND soli.Usuario_finalizado=:usuario_finaliza";
-            // } else {
-            if ($idEstado == 'IDE-3') { //cancelado
-                $query_rs_llamado .= " AND soli.Usuario_Cancelacion=:usuario_cancelacion";
-            } else {
-                if ($idEstado == 'IDE-4') { //inadmision
-                    $query_rs_llamado .= " AND soli.Usuario_Inadmision=:usuario_inadmitido";
-                } else {
-                    // if ($idEstado == 'IDE-5') { //requerido
-                    //     $query_rs_llamado .= " AND soli.Usuario_Requerido=:usuario_requerido";
-                    // } else {
-                    //     if ($idEstado == 'IDE-2') { //desestimiento
-                    //         $query_rs_llamado .= " AND soli.Usuario_Desestimiento=:usuario_desestimiento";
-                    //     } else {
-                    //     }
-                    // }
-                }
-            }
-            // }
         }
     }
 }
@@ -270,26 +235,6 @@ try {
             if ($idEstado == 'IDE-1') {
                 $stmt->bindParam(':usuario_acepta', $usuario_acepta);
                 $stmt->bindParam(':usuario_comparte', $usuario_comparte);
-            } else {
-                // if ($idEstado == 'IDE-2') {
-                //     $stmt->bindParam(':usuario_finaliza', $usuario_finaliza);
-                // } else {
-                if ($idEstado == 'IDE-3') {
-                    $stmt->bindParam(':usuario_cancelacion', $usuario_cancelacion);
-                } else {
-                    if ($idEstado == 'IDE-4') {
-                        $stmt->bindParam(':usuario_inadmitido', $usuario_inadmitido);
-                    } else {
-                        // if ($idEstado == 'IDE-5') {
-                        //     $stmt->bindParam(':usuario_requerido', $usuario_requerido);
-                        // } else {
-                        //         if ($idEstado == 'IDE-6') {
-                        //             $stmt->bindParam(':usuario_desestimiento', $usuario_desestimiento);
-                        //         }
-                        // }
-                    }
-                }
-                // }
             }
         }
     }
@@ -386,10 +331,6 @@ try {
                 $totalQuery .= " AND soli.Usuario_Creacion = :usuario_creacion ";
             } elseif ($idEstado == 'IDE-1') {
                 $totalQuery .= " AND (soli.Usuario_Acepta = :usuario_acepta OR comp.Usuario_Comparte = :usuario_comparte)";
-            } elseif ($idEstado == 'IDE-3') {
-                $totalQuery .= " AND soli.Usuario_Cancelacion = :usuario_cancelacion";
-            } elseif ($idEstado == 'IDE-4') {
-                $totalQuery .= " AND soli.Usuario_Inadmision = :usuario_inadmitido";
             }
         }
         //*preparandoc seguinda consulta
@@ -420,10 +361,6 @@ try {
             } elseif ($idEstado == 'IDE-1') {
                 $totalStmt->bindParam(':usuario_acepta', $usuario_acepta);
                 $totalStmt->bindParam(':usuario_comparte', $usuario_comparte);
-            } elseif ($idEstado == 'IDE-3') {
-                $totalStmt->bindParam(':usuario_cancelacion', $usuario_cancelacion);
-            } elseif ($idEstado == 'IDE-4') {
-                $totalStmt->bindParam(':usuario_inadmitido', $usuario_inadmitido);
             }
         }
         //*ejecutamos consulta.

@@ -12,10 +12,9 @@ include_once('../../../configuracion/configuracion.php');
 include_once('../../../configuracion/configuracion_js.php');
 ?>
 <!DOCTYPE html>
-
 <head>
    <?php
-   include_once('../../../encabezado.php');
+      include_once('../../../encabezado.php');
    ?>
 </head>
 

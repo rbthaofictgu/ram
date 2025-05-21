@@ -15,10 +15,7 @@ $roles_autorizados = ['OFICIAL_JURIDICO_RA','DIGITADOR_VENTANILLA_RA','IMPRESION
 //* Validaciones de seguridad
 //*********************************************************************/
 include_once('../../../validar_seguridad.php');
-
 $esConsulta = true;
 include "infoRam.php";
-
-
 ?>
 

@@ -4,6 +4,7 @@ include_once('validar_roles.php');
 // $roles_asignar_estados = ['SA', 'SUPERVISOR_VENTANILLA', 'SUPERVISOR_ADMINISTRADOR'];
 // $roles_compartir = ['SA', 'SUPERVISOR_VENTANILLA', 'SUPERVISOR_ADMINISTRADOR'];
 // $roles_roles = ['SA'];
+//   echo print_r($_SESSION["ROLESXUSUARIORAM"]);
 
 //*logo y nombre de la aplicacion
 $menu = '<div class="d-flex flex-column flex-md-row align-items-center border-bottom menu">
@@ -17,7 +18,7 @@ $menu .= '<nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">';
 //* CONSULTAS RAMS 
 if (isset($_SESSION['user_name'])) {
     //*MOSTRAR LA PARTE DE CONSULTA
-    $roles_autorizados = ['OFICIAL_JURIDICO_RA', 'DIGITADOR_VENTANILLA_RA', 'IMPRESIONES_RA,SUPERVISOR_RA', 'SUPERVISOR_VENTANILLA_RA', 'SUPERVISOR_ADMINISTRADOR', 'SA'];
+    $roles_autorizados = ['OFICIAL_JURIDICO_RA', 'DIGITADOR_VENTANILLA_RA', 'IMPRESIONES_RA', 'SUPERVISOR_RA', 'SUPERVISOR_VENTANILLA_RA', 'SUPERVISOR_ADMINISTRADOR', 'SA'];
     if (estaAutorizado($roles_autorizados, $_SESSION["ROLESXUSUARIORAM"])) {
         $menu .= '<a class="me-3 py-2 link-body-emphasis text-decoration-none" href="' . $appcfg_Dominio . 'src/php/referenciales/infoRamConsulta.php"><strong> <i class="fas fa-folder gobierno1"></i> CONSULTAS</strong></a>';
     }
@@ -47,16 +48,7 @@ if (!isset($_SESSION['user_name'])) {
     // Si no hay sesión iniciada, mostrar botón de login
     $menu .= '<li><a class="dropdown-item" onclick="openModalLogin();"><strong><i class="fa-solid fa-right-to-bracket gobierno1"></i> ' . $appcfg_login . '</strong></a></li>';
 } else {
-    //* Validar si usuario es (admino supervisor) o su rol está aceptado
-    // *Roles segun las acciones
-    // $roles_asignar = ['SA', 'DIGITADOR_VENTANILLA_RA', 'OFICIAL_JURIDICO_RA', 'SUPERVISOR_VENTANILLA_RA', 'SUPERVISOR_ADMINISTRADOR'];
-    // $roles_asignar_estados = ['SA', 'SUPERVISOR_VENTANILLA', 'SUPERVISOR_ADMINISTRADOR'];
-    // $roles_compartir = ['SA', 'SUPERVISOR_VENTANILLA', 'SUPERVISOR_ADMINISTRADOR'];
-    // $roles_roles = ['SA'];
-
-
     //*ASIGNAR ESTADOS
-    
     $roles_autorizados = ['SA', 'SUPERVISOR_VENTANILLA_RA', 'SUPERVISOR_RA'];
     if (estaAutorizado($roles_autorizados, $_SESSION["ROLESXUSUARIORAM"])) {
         $menu .= '<li><a class="dropdown-item" href="' . $appcfg_Dominio . 'src/php/referenciales/asignar_estados.php"><strong> <i class="fas fa-user-plus gobierno1"></i> ASIGNAR ESTADOS</strong></a></li>';
@@ -65,8 +57,16 @@ if (!isset($_SESSION['user_name'])) {
     if (estaAutorizado($roles_autorizados, $_SESSION["ROLESXUSUARIORAM"])) {
         $menu .= '<li><a class="dropdown-item" href="' . $appcfg_Dominio . 'src/php/referenciales/estadosAsignaRam.php"><strong> <i class="fas fa-share-alt gobierno1"></i> COMPARTIR</strong></a></li>';
     }
+
+    //*REASIGNAR RAM
+    if (estaAutorizado($roles_autorizados, $_SESSION["ROLESXUSUARIORAM"])) {
+        $menu .= '<li><a class="dropdown-item" href="https://satt.transporte.gob.hn:293/Reasignacion_FSL.php" target="_blank"><strong> 
+        <i class="fas fa-share gobierno1"></i> REASIGNACIÓN</strong></a></li>';
+    }
+
+    // https://satt.transporte.gob.hn:293/Reasignacion_FSL.php
     //*ROLES
-     $roles_autorizados = ['SA'];
+    $roles_autorizados = ['SA'];
     if (estaAutorizado($roles_autorizados, $_SESSION["ROLESXUSUARIORAM"])) {
         $menu .= '<li><a class="dropdown-item" href="' . $appcfg_Dominio . 'src/php/referenciales/roles.php"><strong> <i class="fas fa-user-shield"></i> ROLES</strong></a></li>';
     }

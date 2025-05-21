@@ -808,7 +808,7 @@ async function fEliminarTramite(
       body: fd,
     };
 
-    const response = await fetchWithTimeout(url, options, 300000);
+    const response = await fetchWithTimeout(url, options, 120000);
     const Datos = await response.json();
 
     if (typeof Datos.ERROR != "undefined") {
@@ -1110,211 +1110,231 @@ function f_DataOmision() {
     method: "POST",
     body: fd,
   };
-  // Hace la solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
-    .then((response) => response.json())
-    .then(function (datos) {
-      console.log(datos, "datos de la respuesta del servidor en f_DataOmision()");
-      cargadocs=false;
-      estanCargadocs=true;
-      if (document.getElementById("Ciudad").value.toUpperCase().substring(0, 11) != "TEGUCIGALPA") {
-        document.getElementById("cargadocs").style = "display:flex";
-        cargadocs=true;
-        estanCargadocs=false;
+
+$.ajax({
+  url: url,                          // La URL de destino
+  dataType: 'json',                   // Esperamos una respuesta JSON
+  timeout: 1200000,                   // 20 minutos (ajustar según sea necesario)
+  cache: false,                       // Deshabilitar caché
+  contentType: false,                 // Si estás enviando un FormData, deshabilitar el tipo de contenido
+  processData: false,                 // No procesar los datos si son FormData
+  data: fd,                           // Los datos que enviarás (FormData en este caso)
+  type: 'post',                       // Método HTTP POST
+  success: function(Datos) {
+    //*Aquí maneja la respuesta exitosa
+    console.log(datos, "datos de la respuesta del servidor en f_DataOmision()");
+    cargadocs=false;
+    estanCargadocs=true;
+    if (document.getElementById("Ciudad").value.toUpperCase().substring(0, 11) != "TEGUCIGALPA") {
+      document.getElementById("cargadocs").style = "display:flex";
+      cargadocs=true;
+      estanCargadocs=false;
+    }
+    if (typeof datos[0] != "undefined") {
+      if (typeof datos[2] != "undefined") {
+        if (datos[2].length > 0) {
+          fLlenarSelect("Departamentos", datos[2], -1, false, {
+            text: "SELECCIONE UN DEPARTAMENTO",
+            value: "-1",
+          });
+          fLlenarSelect("Municipios", [], -1, false, {
+            text: "SELECCIONE UN MUNICIPIO",
+            value: "-1",
+          });
+          fLlenarSelect("Aldeas", [], -1, false, {
+            text: "SELECCIONE UNA ALDEA",
+            value: "-1",
+          });
+        }
       }
-      if (typeof datos[0] != "undefined") {
-        if (typeof datos[2] != "undefined") {
-          if (datos[2].length > 0) {
-            fLlenarSelect("Departamentos", datos[2], -1, false, {
-              text: "SELECCIONE UN DEPARTAMENTO",
-              value: "-1",
-            });
-            fLlenarSelect("Municipios", [], -1, false, {
-              text: "SELECCIONE UN MUNICIPIO",
-              value: "-1",
-            });
-            fLlenarSelect("Aldeas", [], -1, false, {
-              text: "SELECCIONE UNA ALDEA",
-              value: "-1",
-            });
-          }
+      //*******************************************************************************************************************/
+      //*Si se recupero la información de apoderado ingresa a este if                                                     */
+      //*******************************************************************************************************************/
+      if (typeof datos[3] != "undefined" && typeof datos[3][0] != "undefined") {
+        //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
+        document.getElementById("nomapoderado").value =
+          datos[3][0]["Nombre_Apoderado_Legal"];
+        document.getElementById("colapoderado").value =
+          datos[3][0]["ID_Colegiacion"];
+        document.getElementById("identidadapod").value =
+          datos[3][0]["Ident_Apoderado_Legal"];
+        document.getElementById("dirapoderado").value =
+          datos[3][0]["Direccion_Apoderado_Legal"];
+        document.getElementById("telapoderado").value =
+          datos[3][0]["Telefono_Apoderado_Legal"];
+        document.getElementById("emailapoderado").value =
+          datos[3][0]["Email_Apoderado_Legal"];
+        document.getElementById("ID_Apoderado").value = datos[3][0]["ID"];
+        if (datos[4].length > 0) {
+          fLlenarSelect("Departamentos", datos[11], datos[4][0]["ID_Departamento"], false, {
+            text: "SELECCIONE UN DEPARTAMENTO",
+            value: "-1",
+          });
+          fLlenarSelect("Municipios", datos[10], datos[4][0]["ID_Municipio"], false, {
+            text: "SELECCIONE UN MUNICIPIO",
+            value: "-1",
+          });
+          fLlenarSelect("Aldeas", datos[9], datos[4][0]["ID_Aldea"], false, {
+            text: "SELECCIONE UNA ALDEA",
+            value: "-1",
+          });
         }
         //*******************************************************************************************************************/
-        //*Si se recupero la información de apoderado ingresa a este if                                                     */
+        //* Si el elemento 12 existe quiero decir que ya esta convertido a Expediente la FLS
         //*******************************************************************************************************************/
-        if (typeof datos[3] != "undefined" && typeof datos[3][0] != "undefined") {
-          //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
-          document.getElementById("nomapoderado").value =
-            datos[3][0]["Nombre_Apoderado_Legal"];
-          document.getElementById("colapoderado").value =
-            datos[3][0]["ID_Colegiacion"];
-          document.getElementById("identidadapod").value =
-            datos[3][0]["Ident_Apoderado_Legal"];
-          document.getElementById("dirapoderado").value =
-            datos[3][0]["Direccion_Apoderado_Legal"];
-          document.getElementById("telapoderado").value =
-            datos[3][0]["Telefono_Apoderado_Legal"];
-          document.getElementById("emailapoderado").value =
-            datos[3][0]["Email_Apoderado_Legal"];
-          document.getElementById("ID_Apoderado").value = datos[3][0]["ID"];
-          if (datos[4].length > 0) {
-            fLlenarSelect("Departamentos", datos[11], datos[4][0]["ID_Departamento"], false, {
-              text: "SELECCIONE UN DEPARTAMENTO",
-              value: "-1",
-            });
-            fLlenarSelect("Municipios", datos[10], datos[4][0]["ID_Municipio"], false, {
-              text: "SELECCIONE UN MUNICIPIO",
-              value: "-1",
-            });
-            fLlenarSelect("Aldeas", datos[9], datos[4][0]["ID_Aldea"], false, {
-              text: "SELECCIONE UNA ALDEA",
-              value: "-1",
-            });
+        if (datos?.[12]) {
+          document.getElementById("ID_Expediente").value = datos[12];
+          document.getElementById("ID_Solicitud").value = datos[12];
+          if (datos[4][0]["Usuario_Acepta"] != document.getElementById("User_Name").value) {
+            document.getElementById("esUsuarioPropietario").value = true;         
+            document.getElementById("btnnext4").style.display = "none";   
+            document.getElementById("share").style.display = "inline";   
+            document.getElementById("share").setAttribute('title','Asignado a: ' + datos[4][0]["Usuario_Acepta"]);     
           }
           //*******************************************************************************************************************/
-          //* Si el elemento 12 existe quiero decir que ya esta convertido a Expediente la FLS
+          //* Si el aviso de cobro ya no ha sido pagado se inahibilita el boton de siguiente(cerrar en pantalla 4)
           //*******************************************************************************************************************/
-          if (datos?.[12]) {
-            document.getElementById("ID_Expediente").value = datos[12];
-            document.getElementById("ID_Solicitud").value = datos[12];
-            if (datos[4][0]["Usuario_Acepta"] != document.getElementById("User_Name").value) {
-              document.getElementById("esUsuarioPropietario").value = true;         
-              document.getElementById("btnnext4").style.display = "none";   
-              document.getElementById("share").style.display = "inline";   
-              document.getElementById("share").setAttribute('title','Asignado a: ' + datos[4][0]["Usuario_Acepta"]);     
-            }
-            //*******************************************************************************************************************/
-            //* Si el aviso de cobro ya no ha sido pagado se inahibilita el boton de siguiente(cerrar en pantalla 4)
-            //*******************************************************************************************************************/
-            document.getElementById("CodigoAvisoCobro").value = datos[4][0]['CodigoAvisoCobro'];
-            document.getElementById("AvisoCobroEstado").value = datos[4][0]['AvisoCobroEstado'];
-            console.log(datos[4][0]['AvisoCobroEstado'],'datos[4][0][\'AvisoCobroEstado\']');
-            document.getElementById("avisocobro").style.display = "inline";   
-            document.getElementById("avisocobro").href =  $appcfg_Dominio_Raiz + ":90/api_rep.php?ra=S&action=get-facturaPdf&nu="+datos[4][0]["CodigoAvisoCobro"];   
-            document.getElementById("avisocobro").setAttribute('title','Número de Aviso de Cobro: ' + datos[4][0]["CodigoAvisoCobro"]);     
-            //*******************************************************************************************************************/
-            if (Number(datos[4][0]['AvisoCobroEstado']) != 2) {
-              document.getElementById("btnnext4").style.display = "none";
-              document.getElementById("avisocobroicon").classList.remove("text-success");
-              document.getElementById("avisocobroicon").classList.add("text-error");   
-            } else {
-              document.getElementById("avisocobroicon").classList.remove("text-error");
-              document.getElementById("avisocobroicon").classList.add("text-success");
-            }
+          document.getElementById("CodigoAvisoCobro").value = datos[4][0]['CodigoAvisoCobro'];
+          document.getElementById("AvisoCobroEstado").value = datos[4][0]['AvisoCobroEstado'];
+          console.log(datos[4][0]['AvisoCobroEstado'],'datos[4][0][\'AvisoCobroEstado\']');
+          document.getElementById("avisocobro").style.display = "inline";   
+          document.getElementById("avisocobro").href =  $appcfg_Dominio_Raiz + ":90/api_rep.php?ra=S&action=get-facturaPdf&nu="+datos[4][0]["CodigoAvisoCobro"];   
+          document.getElementById("avisocobro").setAttribute('title','Número de Aviso de Cobro: ' + datos[4][0]["CodigoAvisoCobro"]);     
+          //*******************************************************************************************************************/
+          if (Number(datos[4][0]['AvisoCobroEstado']) != 2) {
+            document.getElementById("btnnext4").style.display = "none";
+            document.getElementById("avisocobroicon").classList.remove("text-success");
+            document.getElementById("avisocobroicon").classList.add("text-error");   
           } else {
-            document.getElementById("ID_Expediente").value = '';
-            document.getElementById("ID_Solicitud").value = '';
-            if (datos[4][0]["Usuario_Creacion"] != document.getElementById("User_Name").value) {
-              document.getElementById("esUsuarioPropietario").value = true;         
-              document.getElementById("btnnext4").style.display = "none"; 
-              document.getElementById("share").style.display = "inline";     
-              document.getElementById("share").setAttribute('title','Creado por: ' + datos[4][0]["Usuario_Creacion"]);     
-            }            
+            document.getElementById("avisocobroicon").classList.remove("text-error");
+            document.getElementById("avisocobroicon").classList.add("text-success");
           }
-          fLlenarSelect(
-            "entregadocs",
-            datos[1],
-            datos[4][0]["Entrega_Ubicacion"],
-            false,
-            {
-              text: "SELECCIONE UN LUGAR DE ENTREGA",
-              value: "-1",
-            }
-          );
-          document.getElementById("tipopresentacion").value = datos[4][0]["Presentacion_Documentos"];
-          //* Moviendo campos de base de datos a datos de pantalla Solicitante
-          if (typeof datos[4] != "undefined") {
-            document.getElementById("rtnsoli").value =
-              datos[4][0]["RTN_Solicitante"];
-            document.getElementById("nomsoli").value =
-              datos[4][0]["Nombre_Solicitante"];
-            document.getElementById("denominacionsoli").value =
-              datos[4][0]["Denominacion_Social"];
-            document.getElementById("domiciliosoli").value =
-              datos[4][0]["Domicilo_Solicitante"];
-            document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + datos[4][0]["DESC_Estado"];
-            document.getElementById("telsoli").value =
-              datos[4][0]["Telefono_Solicitante"];
-            document.getElementById("emailsoli").value =
-              datos[4][0]["Email_Solicitante"];
-            document.getElementById("tiposolicitante").value = datos[4][0]["DESC_Solicitante"];
-            document.getElementById("tiposolicitante").setAttribute('data-id',datos[4][0]["ID_Tipo_Solicitante"]);
-            document.getElementById("Departamentos").value =
-              datos[4][0]["ID_Departamento"];
-            document.getElementById("ID_Solicitante").value = datos[4][0]["ID"];
-            document.getElementById("ID_Estado_RAM").value = datos[4][0]["Estado_Formulario"];
-            document.getElementById("esEditable").value = datos[4][0]["esEditable"];
-            //***********************************************************************************************************************/
-            //*Si esta en modo consulta no importa el estado en que se encuentre la solicitud siempre esta en modo editable = false
-            //***********************************************************************************************************************/
-            console.log(Boolean(Consulta),'Booleand Consulta Befero Set esEditable');
-            if (Boolean(Consulta) == true) { console.log('set esEditable when Consulta == 0');document.getElementById("esEditable").value = false;}
-            document.getElementById("esCompartible").value = datos[4][0]["esCompartible"];
-            if (esEditable() == false) {
-              console.log('esEditable == false');
-              disabledEdit();
-              lockFormElements();   
-            }
-          } 
-          //***************************************************************************/
-          //* Armando Objeto de Concesiones Salvadas en Preforma
-          //***************************************************************************/
-          if (typeof datos[5] != "undefined") {
-            guardarConcesionSalvadaPreforma(datos[5], datos[7]);
-          }
-          //***************************************************************************/
-          //* Estableciento el Link del Expediente Cargado para Trabajarlo
-          //***************************************************************************/
-          if (typeof datos[8] != "undefined" && datos[8] != false) {
-            document.getElementById("fileUploaded").style.display = "block";
-            document
-              .getElementById("fileUploadedLink")
-              .setAttribute("href", $appcfg_Dominio + datos[8]);
-          } else {
-            document.getElementById("fileUploaded").style.display = "none";
-          }
-          //***************************************************************************/
-          //* Marcar requicitos
-          //***************************************************************************/
-          if (typeof datos[6] != "undefined" && datos[6] != false) {
-            console.log(datos[6],'datos[6]');
-            console.log(typeof datos[6] != "undefined",'typeof datos[6] != "undefined"');
-            console.log(datos[6] != false,'datos[6] != false');
-            requicitosRecuperados = true;
-            fMarcarRequicitos();
-          } else {
-            requicitosRecuperados = false;
-          }
-
-          if (typeof datos[8] != "undefined" && datos[8] != false) {
-              estanCargadocs = true;
-          } else {
-            if (cargadocs==true) {
-              estanCargadocs = false;
-            } else {
-              estanCargadocs = true;
-            }
-        }
-
         } else {
-
-          if (typeof datos[15] != "undefined" && datos[15] != false) {
-            document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + ' ' + datos[15].Desc_Estado;
-          }
-
-          if (datos[1].length > 0) {
-            fLlenarSelect("entregadocs", datos[1], null, false, {
-              text: "SELECCIONE UN LUGAR DE ENTREGA",
-              value: "-1",
-            });
-          }
+          document.getElementById("ID_Expediente").value = '';
+          document.getElementById("ID_Solicitud").value = '';
+          if (datos[4][0]["Usuario_Creacion"] != document.getElementById("User_Name").value) {
+            document.getElementById("esUsuarioPropietario").value = true;         
+            document.getElementById("btnnext4").style.display = "none"; 
+            document.getElementById("share").style.display = "inline";     
+            document.getElementById("share").setAttribute('title','Creado por: ' + datos[4][0]["Usuario_Creacion"]);     
+          }            
         }
-      //***************************************************************************************************/
-      //* El de if (typeof datos[0] != "undefined") {
-      //***************************************************************************************************/
+        fLlenarSelect(
+          "entregadocs",
+          datos[1],
+          datos[4][0]["Entrega_Ubicacion"],
+          false,
+          {
+            text: "SELECCIONE UN LUGAR DE ENTREGA",
+            value: "-1",
+          }
+        );
+        document.getElementById("tipopresentacion").value = datos[4][0]["Presentacion_Documentos"];
+        //* Moviendo campos de base de datos a datos de pantalla Solicitante
+        if (typeof datos[4] != "undefined") {
+          document.getElementById("rtnsoli").value =
+            datos[4][0]["RTN_Solicitante"];
+          document.getElementById("nomsoli").value =
+            datos[4][0]["Nombre_Solicitante"];
+          document.getElementById("denominacionsoli").value =
+            datos[4][0]["Denominacion_Social"];
+          document.getElementById("domiciliosoli").value =
+            datos[4][0]["Domicilo_Solicitante"];
+          document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + datos[4][0]["DESC_Estado"];
+          document.getElementById("telsoli").value =
+            datos[4][0]["Telefono_Solicitante"];
+          document.getElementById("emailsoli").value =
+            datos[4][0]["Email_Solicitante"];
+          document.getElementById("tiposolicitante").value = datos[4][0]["DESC_Solicitante"];
+          document.getElementById("tiposolicitante").setAttribute('data-id',datos[4][0]["ID_Tipo_Solicitante"]);
+          document.getElementById("Departamentos").value =
+            datos[4][0]["ID_Departamento"];
+          document.getElementById("ID_Solicitante").value = datos[4][0]["ID"];
+          document.getElementById("ID_Estado_RAM").value = datos[4][0]["Estado_Formulario"];
+          document.getElementById("esEditable").value = datos[4][0]["esEditable"];
+          //***********************************************************************************************************************/
+          //*Si esta en modo consulta no importa el estado en que se encuentre la solicitud siempre esta en modo editable = false
+          //***********************************************************************************************************************/
+          console.log(Boolean(Consulta),'Booleand Consulta Befero Set esEditable');
+          if (Boolean(Consulta) == true) { console.log('set esEditable when Consulta == 0');document.getElementById("esEditable").value = false;}
+          document.getElementById("esCompartible").value = datos[4][0]["esCompartible"];
+          if (esEditable() == false) {
+            console.log('esEditable == false');
+            disabledEdit();
+            lockFormElements();   
+          }
+        } 
+        //***************************************************************************/
+        //* Armando Objeto de Concesiones Salvadas en Preforma
+        //***************************************************************************/
+        if (typeof datos[5] != "undefined") {
+          guardarConcesionSalvadaPreforma(datos[5], datos[7]);
+        }
+        //***************************************************************************/
+        //* Estableciento el Link del Expediente Cargado para Trabajarlo
+        //***************************************************************************/
+        if (typeof datos[8] != "undefined" && datos[8] != false) {
+          document.getElementById("fileUploaded").style.display = "block";
+          document
+            .getElementById("fileUploadedLink")
+            .setAttribute("href", $appcfg_Dominio + datos[8]);
+        } else {
+          document.getElementById("fileUploaded").style.display = "none";
+        }
+        //***************************************************************************/
+        //* Marcar requicitos
+        //***************************************************************************/
+        if (typeof datos[6] != "undefined" && datos[6] != false) {
+          console.log(datos[6],'datos[6]');
+          console.log(typeof datos[6] != "undefined",'typeof datos[6] != "undefined"');
+          console.log(datos[6] != false,'datos[6] != false');
+          requicitosRecuperados = true;
+          fMarcarRequicitos();
+        } else {
+          requicitosRecuperados = false;
+        }
+
+        if (typeof datos[8] != "undefined" && datos[8] != false) {
+            estanCargadocs = true;
+        } else {
+          if (cargadocs==true) {
+            estanCargadocs = false;
+          } else {
+            estanCargadocs = true;
+          }
+      }
+
       } else {
-        if (typeof datos.error != "undefined") {
-          if (datos.error == 1003) {
+
+        if (typeof datos[15] != "undefined" && datos[15] != false) {
+          document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + ' ' + datos[15].Desc_Estado;
+        }
+
+        if (datos[1].length > 0) {
+          fLlenarSelect("entregadocs", datos[1], null, false, {
+            text: "SELECCIONE UN LUGAR DE ENTREGA",
+            value: "-1",
+          });
+        }
+      }
+    //***************************************************************************************************/
+    //* El de if (typeof datos[0] != "undefined") {
+    //***************************************************************************************************/
+    } else {
+      if (typeof datos.error != "undefined") {
+        if (datos.error == 1003) {
+          fSweetAlertEventNormal(
+            datos.errorhead,
+            '',
+            'error',
+            datos.error + "- " + datos.errormsg,
+            undefined,
+            undefined,
+            undefined,
+            () => reLoadScreen('src/php/referenciales/infoRam.php'),
+          );
+        } else {
+          if (datos.error == 1100) {
             fSweetAlertEventNormal(
               datos.errorhead,
               '',
@@ -1323,78 +1343,60 @@ function f_DataOmision() {
               undefined,
               undefined,
               undefined,
-              () => reLoadScreen('src/php/referenciales/infoRam.php'),
+              openModalLogin,
             );
-          } else {
-            if (datos.error == 1100) {
-              fSweetAlertEventNormal(
-                datos.errorhead,
-                '',
-                'error',
-                datos.error + "- " + datos.errormsg,
-                undefined,
-                undefined,
-                undefined,
-                openModalLogin,
-              );
-            } else {            
-              fSweetAlertEventNormal(
-                datos.errorhead,
-                '',
-                'error',
-                datos.error + "- " + datos.errormsg
-              );
-            }
+          } else {            
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg
+            );
           }
-        } else {
-          fSweetAlertEventNormal(
-            "INFORMACIÓN",
-            "ALGO RARO PASO, INTENTELO DE NUEVO SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
-            "error"
-          );
         }
+      } else {
+        fSweetAlertEventNormal(
+          "INFORMACIÓN",
+          "ALGO RARO PASO, INTENTELO DE NUEVO SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
+          "error"
+        );
       }
-      //*****************************************************************************************/
-      //* INICIO: Despliega la información del stepper content y oculta el gif de procesando    */
-      //*****************************************************************************************/
-      loading(false, currentstep);
-      console.log(9153,'9153');
-      if (concesionNumber.length < 1) {
+    }
+    //*****************************************************************************************/
+    //* INICIO: Despliega la información del stepper content y oculta el gif de procesando    */
+    //*****************************************************************************************/
+    loading(false, currentstep);
+    console.log(9153,'9153');
+    if (concesionNumber.length < 1) {
+      document.getElementById("input-prefetch").style.display = "none";
+      document.getElementById("toggle-icon").style.display = "none";
+      document.getElementById("rightDiv").style.display = "none";
+      document.getElementById("rightDivPR").style.display = "none";
+    } else {
+      if (esEditable() == true) {
+        document.getElementById("input-prefetch").style.display = "block";
+        document.getElementById("toggle-icon").style.display = "block";
+      } else {
         document.getElementById("input-prefetch").style.display = "none";
         document.getElementById("toggle-icon").style.display = "none";
-        document.getElementById("rightDiv").style.display = "none";
-        document.getElementById("rightDivPR").style.display = "none";
-      } else {
-        if (esEditable() == true) {
-          document.getElementById("input-prefetch").style.display = "block";
-          document.getElementById("toggle-icon").style.display = "block";
-        } else {
-          document.getElementById("input-prefetch").style.display = "none";
-          document.getElementById("toggle-icon").style.display = "none";
-        }
-        document.getElementById("rightDiv").style.display = "flex";
-        document.getElementById("rightDivPR").style.display = "flex";
       }
-      console.log(9154,'9154');
-      //*****************************************************************************************/
-      //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
-      //*****************************************************************************************/
-    })
-    .catch((error) => {
-      //*****************************************************************************************/
-      //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-      //*****************************************************************************************/
-      loading(false, currentstep);
-      //*****************************************************************************************/
-      //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-      //*****************************************************************************************/
-      console.log("error f_DataOmision() " + error);
-      fSweetAlertEventNormal(
-        "OPPS",
-        "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-        "error"
-      );
-    });
+      document.getElementById("rightDiv").style.display = "flex";
+      document.getElementById("rightDivPR").style.display = "flex";
+    }
+    console.log(9154,'9154');
+    //*****************************************************************************************/
+    //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
+    //*****************************************************************************************/
+  },
+    error: function(xhr, status, error) {
+      // Manejo de errores, incluyendo timeout y status
+      console.log("Error:", xhr.responseText);
+      console.log("Status:", status);
+      console.log("Error details:", error);
+    }
+  });
+
+  
 }
 
 function fCerrarProcesoEnDB() {
@@ -1435,14 +1437,21 @@ function fCerrarProcesoEnDB() {
   const options = {
     method: "POST",
     body: fd,
+    timeout: 300000,
   };
-  
-  // Hacer al solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 1000000)
-    .then((response) => response.json())
-    .then(function (Datos) {
+
+  $.ajax({
+    url: url,                          // La URL de destino
+    dataType: 'json',                   // Esperamos una respuesta JSON
+    timeout: 1200000,                   // 20 minutos (ajustar según sea necesario)
+    cache: false,                       // Deshabilitar caché
+    contentType: false,                 // Si estás enviando un FormData, deshabilitar el tipo de contenido
+    processData: false,                 // No procesar los datos si son FormData
+    data: fd,                           // Los datos que enviarás (FormData en este caso)
+    type: 'post',                       // Método HTTP POST
+    success: function(Datos) {
       loading(false, currentstep);
-      if (typeof Datos.ERROR != "undefined" || typeof Datos.error != "undefined") {
+      if (Datos.ERROR || Datos.error) {
         fSweetAlertEventSelect(
           "",
           Datos.errorhead + '-' + Datos.errorhead,
@@ -1544,24 +1553,14 @@ function fCerrarProcesoEnDB() {
         }
         console.log(Datos.ConcesionesEncryptada);
       }
-    })
-    .catch((error) => {
-      //*****************************************************************************************/
-      //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-      //*****************************************************************************************/
-      loading(false, currentstep);
-      //*****************************************************************************************/
-      //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
-      //*****************************************************************************************/
-      console.log("catch error fCerrarProcesoEnDB en preforma" + error);
-      fSweetAlertEventSelect(
-        "",
-        "CERRANDO RAM",
-        "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
-        "warning"
-      );
-      return true;
-    });
+    },
+    error: function(xhr, status, error) {
+      // Manejo de errores, incluyendo timeout y status
+      console.log("Error:", xhr.responseText);
+      console.log("Status:", status);
+      console.log("Error details:", error);
+    }
+  });
 }
 
 //**************************************************************************************/
@@ -2058,7 +2057,7 @@ function f_FetchCallApoderado(idApoderado, event, idinput) {
   };
   isRecordGetted[currentstep] = idApoderado;
   // Hace la solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
+  fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (datos) {
       if (typeof datos.nombre_apoderado != "undefined") {
@@ -2183,7 +2182,7 @@ function f_FetchCallSolicitante(idSolicitante, event, idinput) {
     body: fd,
   };
   // Hacer al solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
+  fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (datos) {
       if (typeof datos[0] != "undefined") {
@@ -2749,7 +2748,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
     body: fd,
   };
   // Hacer al solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
+  fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (datos) {
       console.log(datos, "datos en f_FetchCallConcesion es la busqueda de la concepció previo a trabajarla e insertarla en prefomra");
@@ -3043,7 +3042,7 @@ function fEditarConcesion(idConcesion) {
     body: fd,
   };
   // Hace la solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
+  fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (datos) {
       if (datos?.[0] > 0) {
@@ -4537,7 +4536,7 @@ async function salvarRequicitos() {
         method: "POST",
         body: fd,
       };
-      const response = await fetchWithTimeout(url, options, 300000);
+      const response = await fetchWithTimeout(url, options, 120000);
       const Datos = await response.json();
       if (typeof Datos.ERROR != "undefined") {
         sendToast(
@@ -4646,7 +4645,7 @@ function salvarConcesion() {
     body: fd,
   };
   // Hacer al solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
+  fetchWithTimeout(url, options, 120000)
     .then((response) => response.json())
     .then(function (Datos) {
       //****************************************************************************************************/
@@ -5378,7 +5377,7 @@ async function addTramitePreforma(el) {
       method: "POST",
       body: fd,
     };
-    const response = await fetchWithTimeout(url, options, 300000);
+    const response = await fetchWithTimeout(url, options, 120000);
     const Datos = await response.json();
     if (Datos.error) {
       fSweetAlertEventNormal(
@@ -5993,7 +5992,7 @@ async function getVehiculoDesdeIP(Obj) {
       body: fd,
     };
 
-    const response = await fetchWithTimeout(url, options, 300000);
+    const response = await fetchWithTimeout(url, options, 120000);
     const vehiculo = await response.json();
 
     if (!vehiculo.error) {

@@ -4,10 +4,21 @@ var esConsulta = document.getElementById('esConsulta').value;
 //****************************************************************************/
 //* INICIO: Función para cargar los botones de los estados dinámicamente
 //****************************************************************************/
+// console.log('es consulta************', esConsulta);
+var url = ``;
+if (esConsulta != true) {
+   url = `${$appcfg_Dominio}/estados_sistemas_por_user.php`
+} else {
+   url = `${$appcfg_Dominio}/estados_sistema.php`
+}
 
 function cargarBotones() {
-   fetch(`${$appcfg_Dominio}/estados_sistemas_por_user.php`)
-      .then(response => response.json())
+   fetch(`${url}`, {
+      method: 'GET',
+      headers: {
+         'Authorization': 'Bearer token',
+      },
+   }).then(response => response.json())
       .then(data => {
          if (data.error) {
             if (data.error == 1100) {

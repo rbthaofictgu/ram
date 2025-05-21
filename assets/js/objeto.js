@@ -41,6 +41,7 @@ var rolUser = [7];
 //*variable para obtener el ram en que se esta trabajando.
 var ramElement = document.getElementById("RAM");
 var ram = ramElement ? ramElement.value ?? 'RAM' : 'RAM';
+
 //*creamos una copia de el contenedor de las filagas agregadas para poder utilizar en otra funcion.
 var divAgregar = '';
 var arregloDiv = [];
@@ -65,6 +66,17 @@ if (estadoRam) {
    console.log('Estado RAM no existe:', estadoRam);
 }
 
+//***********************************************************************/
+//*INICIO:funcion encargada de formatear el monto a mostrar
+//***********************************************************************/
+function montoFormateado(cantidad) {
+   let monto = cantidad;
+   let montoFormateado = monto.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+   return montoFormateado;
+}
+//***********************************************************************/
+//*FINAL:funcion encargada de formatear el monto a mostrar
+//***********************************************************************/
 
 //*************************************************************/
 //*INICIO:Funcion encargada de filtrar la data de ConcesionNumber;
@@ -169,9 +181,8 @@ function mostrarData(data, contenedorId = 'tabla-container', title = 'Titulo de 
    //* el array con elementos unicos pasara a ser el encabezado de la tabla.
    //?nota:  "Array.from()" convertir un objeto iterable(set o map), en un array 
    let encabezado = Array.from(uniqueKeys);
-
    //*ENCABEZADOS DEL MODAL
-   let titulo = ` ${tituloGlobal} (<span id="idLengConcesion">${respuesta['totalConcesion']}</span>) <i class="fa-solid fa-cube text-secondary"></i> ${respuesta['numRam']} <i class="fa-duotone fa-solid fa-folder-open text-secondary"></i> TRAMITES (<span id="idLengTramites">${respuesta['totalTramites']}</span>) <i class="fa-solid fa-money-bill-trend-up text-secondary"></i> TOTAL LPS. <span id="Total_A_Pagar">${respuesta['totalMonto'].toFixed(2)}</span>`;
+   let titulo = ` ${tituloGlobal} (<span id="idLengConcesion">${respuesta['totalConcesion']}</span>) <i class="fa-solid fa-cube text-secondary"></i> ${respuesta['numRam']} <i class="fa-duotone fa-solid fa-folder-open text-secondary"></i> TRAMITES (<span id="idLengTramites">${respuesta['totalTramites']}</span>) <i class="fa-solid fa-money-bill-trend-up text-secondary"></i> TOTAL LPS. <span id="Total_A_Pagar">${montoFormateado(respuesta['totalMonto'])}</span>`;
    //!llamamos a la fucnion TablaBusquedaInterna
 
    if (!data || data.length === 0) {
@@ -279,14 +290,14 @@ function TablaBusquedaInterna(titulo = '', encabezado, contenedorId) {
    //* su texto y lo enviamos al contenedor
 
    //?NOTA:."some()" si alguno cumple conla condicion.
-   headerRow.appendChild(th1).innerHTML = ((rolUser.some(role => rol.includes(role))) ? ( (esEditable() != false)? `<div class="form-check">
+   headerRow.appendChild(th1).innerHTML = ((rolUser.some(role => rol.includes(role))) ? ((esEditable() != false) ? `<div class="form-check">
          <input class="form-check-input" type="checkbox" onclick="seleccionarTodos();" value="" id="check_trash_all"> 
          <label class="form-check-label" for="flexCheckDefault">
             &nbsp;&nbsp;#
          </label>
          </div>`
-         :  
-         `<div class="form-check">
+      :
+      `<div class="form-check">
          <label class="form-check-label" for="flexCheckDefault">
             &nbsp;&nbsp;#
          </label>
@@ -753,12 +764,12 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
       row.id = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
       // console.log(row.id, 'row.id');
       //*creamos la columna y añadimos el numero de fila para despues añadir al elemnto de fila
-      row.appendChild(document.createElement('td')).innerHTML = ((rolUser.some(role => rol.includes(role))) ? ((esEditable() != false)? `<div div class="form-check" >
+      row.appendChild(document.createElement('td')).innerHTML = ((rolUser.some(role => rol.includes(role))) ? ((esEditable() != false) ? `<div div class="form-check" >
          <input onclick="event.stopPropagation();" class="form-check-input check_trash" type="checkbox" data-originalrow="${index}" data-concesion="${fila['Concesion']}" value="${index}" id="id_trash_${row.id}">
             <label id="indice_row_${startIndex + index}" class="form-check-label" for="flexCheckDefault">
                &nbsp;&nbsp; ${startIndex + index + 1}
             </label>
-         </div>`: startIndex + index + 1 ) : startIndex + index + 1);
+         </div>`: startIndex + index + 1) : startIndex + index + 1);
 
       if (rolUser.some(role => rol.includes(role))) {
          //********************************************/
@@ -932,7 +943,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                      divFila.style.display = 'none'; // Oculta la fila
                   }
                   idFilaAnterior = ('idRow' + (index + recalculandoPaginacion(pageNumerClick)));
-                  console.log(index + recalculandoPaginacion(pageNumerClick), 'ss');
+                  // console.log(index + recalculandoPaginacion(pageNumerClick), 'ss');
                   agregar_fila((index + recalculandoPaginacion(pageNumerClick)), idFilaAnterior, divFila, fila['Concesion'], fila['Unidad'], fila['Unidad1']);
                }
             }
@@ -1079,13 +1090,13 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
 
       //*indice de las nuevas filas creadas. //'M_CL'
       if (rolUser.some(role => rol.includes(role))) {
-         if ((tramite['ID_Compuesto'].split("_")[2] === 'R') || (tramite['ID_Compuesto'].split("_")[3] === 'CL') || (esEditable()== false)) {
+         if ((tramite['ID_Compuesto'].split("_")[2] === 'R') || (tramite['ID_Compuesto'].split("_")[3] === 'CL') || (esEditable() == false)) {
             td_trash.innerHTML = '';
             td_trash.style.cursor = 'none';
          } else {
-       
-               td_trash.innerHTML = `<span span > <i class="fa-solid fa-trash deleteTramite"></i></span > `;
-            
+
+            td_trash.innerHTML = `<span span > <i class="fa-solid fa-trash deleteTramite"></i></span > `;
+
          }
       } else {
          td_trash.innerHTML = ``;
@@ -1094,7 +1105,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
       row_agregada.appendChild(td_trash);
 
       // var indexLabel = parseInt(document.getElementById("indice_row_"  + String(indexRow)).textContent);
-      tdfila.innerHTML = `<span span id = "indice_row_tramite_${(indexTotal) - 1}_${ind}" > ${indexTotal}.${(ind + 1)}</span > `;
+      tdfila.innerHTML = `<span span id = "indice_row_tramite_${(indexTotal) - 1}_${ind}" > ${indexTotal}.${(ind + 1)}</span>`;
       row_agregada.appendChild(tdfila);
       let trashIcon = td_trash.querySelector('.deleteTramite');
       if (trashIcon) {
@@ -1182,7 +1193,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                            tdSub.style.padding = "0 50px";
                         }
                      } else {
-                        tdSub.textContent = tramite[key] // Asigna el valor o una cadena vacía si es undefined/null   
+                        tdSub.textContent = montoFormateado(tramite[key])// Asigna el valor o una cadena vacía si es undefined/null   
                      }
                   }
                }
@@ -1193,7 +1204,8 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
 
       const tdSubMonto = document.createElement('td');
       tdSubMonto.className = 'text-nowrap table-secondary text-end';
-      tdSubMonto.textContent = (tramite['Cantidad_Vencimientos'] * tramite['Monto']) + '.00';
+      // tdSubMonto.textContent = (tramite['Cantidad_Vencimientos'] * tramite['Monto']) + '.00';
+      tdSubMonto.textContent = montoFormateado(tramite['Cantidad_Vencimientos'] * tramite['Monto']);
       row_agregada.appendChild(tdSubMonto);
       filaAnterior.appendChild(row_agregada);
       //* Añadimos la fila al array de filas dinámicas
@@ -1218,7 +1230,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
 
    let tdTotal = document.createElement('td');
    tdTotal.className = 'text-nowrap  fw-bold text-end text-table';
-   addRoT.appendChild(tdTotal).innerHTML = ` Lps.  <span id="Total${indexTotal}"> ${suma.toFixed(2)}</span`
+   addRoT.appendChild(tdTotal).innerHTML = ` Lps.  <span id="Total${indexTotal}"> ${montoFormateado(suma)}</span`
 
    filaAnterior.appendChild(addRoT);
    div.appendChild(addRoT);
@@ -1294,6 +1306,7 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
    //*Añadir el enlace al <td>
    td.appendChild(link);
 }
+
 //***********************************************************************/
 //*funcion que se necarga de crear la tabla de la revision del vehiculo
 //**********************************************************************/
@@ -1437,6 +1450,9 @@ function dataNueva(data) {
 //******************************************************/
 //*funcion encargada de crear la paginacion de la tabla
 //*****************************************************/
+//******************************************************/
+//*funcion encargada de crear la paginacion de la tabla
+//*****************************************************/
 function renderPagination(currentPage, rowsPerPage, paginationContainer) {
    //*Limpiar la paginación existente
    paginationContainer.innerHTML = '';
@@ -1478,8 +1494,21 @@ function renderPagination(currentPage, rowsPerPage, paginationContainer) {
    prevButton.appendChild(prevLink);
    //*agragamos el boton a la paginacion
    paginationList.appendChild(prevButton);
-   //*se encarga de crera botones para cada página
-   for (let page = 1; page <= totalPages; page++) {
+
+   // Páginas visibles (máximo 5 botones)
+   const maxVisiblePages = 10;
+   let startPage = Math.max(1, currentPage - 2);
+   let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+   // Ajustar si estamos al final
+   if ((endPage - startPage) < (maxVisiblePages - 1)) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+   }
+
+
+   for (let page = startPage; page <= endPage; page++) {
+      //*se encarga de crera botones para cada página
+      // for (let page = 1; page <= totalPages; page++) {
       //*creamos el elemento li de cadabtn
       const pageItem = document.createElement('li');
       //*añadimos las clases
@@ -2009,23 +2038,23 @@ function constancia(placa, ID_Memo, unidad1, idConcesion) {
       $placabegin = placa.slice(0, 2);
    }
    //*arreglo de placas permitidas.
-   let $placas = ["TB", "TC", "TE", "TP", "TT", "TR"];
+   // let $placas = ["TB", "TC", "TE", "TP", "TT", "TR"];
 
    //* Verificar si $placabegin NO está en el array $placas
-   if (($placas.includes($placabegin))) {
-      //*id_memo si genero_contancia es true quiere decir que ya se genero y ponemos 
-      //*Memo global que tiene el id_memo que se creo al generar constancia si no es el que se pasa por parametro por que ya existe
-      //*Comprobamos si el ID_Memo es una cadena 'true' o un valor booleano true
-      if (ID_Memo === 'false' || ID_Memo === false) {
-         //* Llamar a la función generarConstancia
-         generarConstancia(unidad1, idConcesion);
-      } else {
-         //*Llamar a la función verConstancia pasando el valor de 'ID_Memo'
-         verConstancia(ID_Memo);
-      }
+   // if (($placas.includes($placabegin))) {
+   //*id_memo si genero_contancia es true quiere decir que ya se genero y ponemos 
+   //*Memo global que tiene el id_memo que se creo al generar constancia si no es el que se pasa por parametro por que ya existe
+   //*Comprobamos si el ID_Memo es una cadena 'true' o un valor booleano true
+   if (ID_Memo === 'false' || ID_Memo === false) {
+      //* Llamar a la función generarConstancia
+      generarConstancia(unidad1, idConcesion);
    } else {
-      alert('La placa no esta dentro de las placas permitidas que son:"TB", "TC", "TE", "TP", "TT", "TR",');
+      //*Llamar a la función verConstancia pasando el valor de 'ID_Memo'
+      verConstancia(ID_Memo);
    }
+   // } else {
+   //    alert('La placa no esta dentro de las placas permitidas que son:"TB", "TC", "TE", "TP", "TT", "TR",');
+   // }
 }
 //******************************************/
 //*cambio de unidad y placa distinta 
@@ -2035,6 +2064,8 @@ function generarConstancia(unidad1, idConcesion) {
    var Marca = unidad1['Marca'].split('=>');
    console.log(Marca, 'marca');
    //*globales.
+   // var ramElement = document.getElementById("RAM");
+   console.log(document.getElementById("RAM").value, 'ram dentro de generarConstancia');
    var ID_Usuario = document.getElementById("ID_Usuario").value;
    var User_Name = document.getElementById("User_Name").value;
    var form_data = new FormData();

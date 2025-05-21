@@ -4,7 +4,7 @@ var estadoInicial = '' //* Puedes establecer el estado
 var descripcionInicial = '';
 var agregar = '';
 var estadosSistem = ['IDE-1', 'IDE-2', 'IDE-3', 'IDE-4', 'IDE-5', 'IDE-6'];
-var descripcionEstado=['EN PROCESO','EN VENTANILLA','CANCELADO','FINALIZADO','INADMISION','REQUERIDO'];
+var descripcionEstado = ['EN PROCESO', 'EN VENTANILLA', 'CANCELADO', 'FINALIZADO', 'INADMISION', 'REQUERIDO'];
 var usuario = (document.getElementById('id_user').value).toUpperCase();
 
 //*esConsulta puede ser true (modo consulta) o false (modo estados);
@@ -20,7 +20,7 @@ function actualizarEstado(estado, descripcion, agregar) {
    ultimoEstadoSeleccionado = estado;
    ultimoDescripSeleccionado = descripcion;
    ultimoagregado = agregar;
-   console.log(agregar, 'agregar en actualizarEstado');
+   // console.log(agregar, 'agregar en actualizarEstado');
 }
 //*********************************************************************************************/
 //* FINAL: funcion que me permite actualizar el estado y la descripcion segun btn de estados
@@ -67,10 +67,10 @@ function vista_data(estado = '', descripcion = '', agregar, num) {
 
    if (agregar !== '1' || esConsultas == true) {
       elemento.style.display = 'none';
-      console.log('agregar no está habilitado', agregar);
+      // console.log('agregar no está habilitado', agregar);
    } else {
       elemento.style.display = 'inline';
-      console.log('agregar', agregar);
+      // console.log('agregar', agregar);
    }
 
    //*******************************************************************************/
@@ -269,7 +269,7 @@ function TablaDinamica(data, descripcion) {
       //*creando la columna y asignando tento para el numero a la fila
       headerRow.appendChild(th1);
       //*recorriendo los datos del encabezado
-      encabezadoExcluye = ['estadoCompartido', 'USUARIO_ACEPTA', 'USUARIO_CREACION', 'AGREGRAR', 'COMPARTIDO', 'Aviso_Cobro', 'USUARIOS_COMPARTIDOS'];
+      encabezadoExcluye = ['estadoCompartido', 'AGREGRAR', 'COMPARTIDO', 'Aviso_Cobro', 'USUARIOS_COMPARTIDOS'];
       //  let dataOmicionEncabezado = dataNueva(data);
       data.encabezados.forEach(encabezado => {
          // console.log(encabezado,'en....cabezado');
@@ -280,7 +280,7 @@ function TablaDinamica(data, descripcion) {
             th.className = "text-start";
             th.style.textAlign = 'center';
             //*asignando data del encabezado
-            th.textContent = encabezado;
+            th.textContent = (encabezado == 'USUARIO_CREACION') ? 'CREACIÓN' : (encabezado == 'USUARIO_ACEPTA') ? 'ACEPTA' : encabezado;
             //*enviando columnna de encabezado a fila de la tabla
             headerRow.appendChild(th);
          }
@@ -326,7 +326,7 @@ function TablaDinamica(data, descripcion) {
 
 function dataNueva(data) {
 
-   console.log(data);
+   // console.log(data);
    //*Arreglo con la data a excluir
    let dataExcluir = ["lINK_PAGO", "ESTADO_Pago",];
    //*rrecorremos la data y asignamos
@@ -437,7 +437,7 @@ function agregarRams() {
 //*INICIO: funcion encargada de crear el body de la tabla
 //***********************************************************/
 function renderTableRows(data, tbody, todo, descripcion) {
-   // console.log(data, 'datassss.');
+   console.log(data, 'datassss.');
    tbody.innerHTML = ''; //*limpiando cuerpo de la tabla
    //*recorriendo datos 
    data.forEach((fila, index) => {
@@ -452,8 +452,8 @@ function renderTableRows(data, tbody, todo, descripcion) {
       // console.log(fila[8], 'fila');
       //*para dividir los elementos del pago.
       var dividirDatosPagos = [];
-      if (fila[8] !== null) {
-         dividirDatosPagos = fila[8].split("-");
+      if (fila[10] !== null) {
+         dividirDatosPagos = fila[10].split("-");
          //  console.log(dividirDatosPagos);
       }
       var activo = '';
@@ -463,29 +463,31 @@ function renderTableRows(data, tbody, todo, descripcion) {
       fila.forEach((valor, colIndex) => {
          activo = (dividirDatosPagos[1] != undefined) ? dividirDatosPagos[1] : 'NO ESTA ACTIVO';
          folioPago = (dividirDatosPagos[0] != undefined) ? dividirDatosPagos[0] : 'NO HAY AVISO DE COBRO';
+          console.log(folioPago, 'folioPago');
          //?nota:Fila[0] es el ram
          // https://satt2.transporte.gob.hn:90/api_rep.php?ra=S&action=get-facturaPdf&nu=205463
-         url = `${$appcfg_Dominio_Raiz}:90/api_rep.php?ra=S&action=get-facturaPdf&nu=${fila[0]}`
+         url = `${$appcfg_Dominio_Raiz}:90/api_rep.php?ra=S&action=get-facturaPdf&nu=${folioPago}`
          // url = `${$appcfg_Dominio}Documentos/${fila[0]}/AvisodeCobro_${fila[0]}.pdf`
-         if (colIndex !== 8 && colIndex !== 9 && colIndex !== 10 && colIndex !== 11 && colIndex !== 12 && colIndex !== 13) {
+         if (colIndex !== 10 && colIndex !== 11 && colIndex !== 12) {
             // console.log(activo, folioPago, 'activoFolioPago');
             //*creando la comulana de los datos 
             const td = document.createElement('td');
             td.className = 'text-start'
             td.style.textAlign = 'center text-center';
 
-            if (colIndex == 7) {
-               td.innerHTML = `<span class="badge badge-no">NO</span>`;
-               actualizarBadge(valor, td); // Inicialmente muestra "NO"
-               setTimeout(() => {
-                  actualizarBadge(valor, td); // Después de un tiempo, muestra "SI"
-               }, 2000);
+            if (colIndex === 6) {
+               const soloFecha = valor.split(" ")[0];
+               td.textContent = soloFecha;
             } else {
-               if (colIndex === 6) {
-                  const soloFecha = valor.split(" ")[0];
-                  td.textContent = soloFecha;
+               if (colIndex == 9) {
+                  console.log(fila[9], 'fila[9]');
+                  td.innerHTML = `<span data-bs-toggle="tooltip"} class="badge badge-no">NO</span>`;
+                  actualizarBadge(valor, td); // Inicialmente muestra "NO"
+                  setTimeout(() => {
+                     actualizarBadge(valor, td); // Después de un tiempo, muestra "SI"
+                  }, 2000);
                } else {
-                  td.textContent = valor;
+                  td.textContent = (!valor || valor === 'null') ? '' : valor.toString().toUpperCase();
                }
             }
             //*asignando el valor del segundo elemento el onclick 
@@ -501,7 +503,7 @@ function renderTableRows(data, tbody, todo, descripcion) {
                      window.location.href = `${$appcfg_Dominio}ram.php?RAM=${valor}`;
                   } else {
                      //*link para cunado es solo consulta y no se puede modificar nada
-                     window.location.href = `${$appcfg_Dominio}ram.php?RAM=${valor}&consulta=true`;
+                     window.location.href = `${$appcfg_Dominio}ram.php?RAM=${valor}&Consulta=true`;
                   }
                };
             }
@@ -524,7 +526,7 @@ function renderTableRows(data, tbody, todo, descripcion) {
                return new bootstrap.Tooltip(tooltipTriggerEl);
             });
          }, 100);
-         //* Crea la fila de acción
+         //* Crea la fila de acciones
          const row_accion = document.createElement('tr');
          // row_accion.className = "fondoAccion";
          row_accion.style.textAlign = 'center';
@@ -589,17 +591,12 @@ function renderTableRows(data, tbody, todo, descripcion) {
          //*creando el icono de compartido
          const td_compartido = document.createElement('td');
          td_compartido.className = 'center'; // Centra los íconos en la celda principal
-         if (fila[9] && fila[12] != null) {
+         if (fila[9] && fila[11] != null) {
             td_compartido.innerHTML = `
             <span class="compartiendo text-center"  
-            class="accion-item compartiendo"  data-bs-toggle="tooltip" class="accion-item compartiendo"  data-bs-toggle="tooltip" title="${(fila[11] && fila[11] !== usuario)
-                  ? 'PERTENECE A: ' + fila[11].toUpperCase() +
+            class="accion-item compartiendo"  data-bs-toggle="tooltip" class="accion-item compartiendo"  data-bs-toggle="tooltip" title="${(fila[12] && fila[12] !== usuario)
+                  ? 'PERTENECE A: ' + fila[8].toUpperCase() +
                   ' COMPARTIDO A: ' + fila[12]
-                  // .split(',')
-                  // .map(u => u.trim())
-                  // .filter(u => u !== usuario)
-                  // .join(', ')
-                  // .toUpperCase()
                   : ''}"
              style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
             <i class="fas fa-share-alt compartiendo" style="font-size: 24px;"></i>
@@ -676,22 +673,18 @@ function renderTableRows(data, tbody, todo, descripcion) {
          td_compartido.style.justifyContent = 'center';  // Centrado vertical adicional si hace falta
          td_compartido.classList.add('td-flex-center');
 
-         if (fila[9] && fila[12] != null) {
+         if (fila[9] && fila[11] != null) {
             td_compartido.innerHTML = `
-         <span class="accion-item compartiendo" data-bs-toggle="tooltip" title="${(fila[10] && fila[10] !== usuario)
-                  ? 'PERTENECE A: ' + fila[10].toUpperCase() +
+            <span class="compartiendo text-center"  
+            class="accion-item compartiendo"  data-bs-toggle="tooltip" class="accion-item compartiendo"  data-bs-toggle="tooltip" title="${(fila[12] && fila[12] !== usuario)
+                  ? 'PERTENECE A: ' + fila[7].toUpperCase() +
                   ' COMPARTIDO A: ' + fila[12]
-                  // .split(',')
-                  // .map(u => u.trim())
-                  // .filter(u => u !== usuario)
-                  // .join(', ')
-                  // .toUpperCase()
                   : ''}"
-            style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
+             style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
             <i class="fas fa-share-alt compartiendo" style="font-size: 24px;"></i>
             <span class="compartiendo" style="font-size: 12px;">COMPARTIDO</span>
-         </span>
-      `;
+            </span> `;
+
          } else {
             td_compartido.innerHTML = `
          <span class="noCompartido accion-item noCompartido" data-bs-toggle="tooltip" title=""  style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
@@ -701,8 +694,6 @@ function renderTableRows(data, tbody, todo, descripcion) {
       `;
          }
          row_accion.appendChild(td_dollar);
-         console.log('esConsultas dentro de proceso', esConsultas);
-
          row_accion.appendChild(td_compartido);
          td_accion.appendChild(row_accion);
 
@@ -734,6 +725,7 @@ function actualizarBadge(valor, td) {
       badge.classList.remove("badge-no");
       badge.classList.add("badge-si");
    } else {
+
       badge.textContent = "NO";
       badge.classList.remove("badge-si");
       badge.classList.add("badge-no");
@@ -850,6 +842,7 @@ function filterTable(data, field, value) {
 //*****************************************************************/
 //*INICIO: funcion encargada de realizar la Paginacion de la tabla.
 //*****************************************************************/
+
 function createPagination(totalRows) {
    // Crear el contenedor de la paginación
    const paginationContainer = document.createElement('nav');
@@ -931,14 +924,6 @@ function createPagination(totalRows) {
    paginationContainer.appendChild(pagination);
    return paginationContainer;
 }
-
-
-//*****************************************************************/
-//*FINAL: funcion encargada de realizar la Paginacion de la tabla.
-//*****************************************************************/
-//***********************************************************/
-//*INICIO:funcion encargada de limpiar el input
-//***********************************************************/
 
 
 function limpiar() {
