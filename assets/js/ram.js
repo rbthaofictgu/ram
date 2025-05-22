@@ -1111,7 +1111,7 @@ function f_DataOmision() {
     body: fd,
   };
   // Hace la solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
+  fetchWithTimeout(url, options, 1000000)
     .then((response) => response.json())
     .then(function (datos) {
       console.log(datos, "datos de la respuesta del servidor en f_DataOmision()");

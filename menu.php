@@ -15,6 +15,10 @@ $menu = '<div class="d-flex flex-column flex-md-row align-items-center border-bo
 
 $menu .= '<nav class="d-inline-flex mt-2 mt-md-0 ms-md-auto">';
 
+If (!isset($_SESSION["ROLESXUSUARIORAM"])) {
+    $_SESSION["ROLESXUSUARIORAM"] = [];
+}
+
 //* CONSULTAS RAMS 
 if (isset($_SESSION['user_name'])) {
     //*MOSTRAR LA PARTE DE CONSULTA

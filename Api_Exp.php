@@ -1393,20 +1393,14 @@ require_once("../qr/qrlib.php");
 	//***********************************************************************************************
     protected function insertPlaca ($rs_id_rs_placa) {
         try {
-            $query = "SELECT [ID_Placa] FROM [IHTT_SGCERP].[dbo].[TB_Placa] WHERE ltrim(rtrim([ID_Placa])) = :ID_Placa;";
-            $datos = $this->selectOne($query,Array(':ID_Placa' => $rs_id_rs_placa));
-            if ($datos == false) {
-                $txt = date('Y m d h:i:s') . '	Usuario:' . $_SESSION['user_name']  .' insertPlaca.php catch if ($datos == false) { placa ' . $rs_id_rs_placa;
-                logErr($txt,'../logs/logs.txt');
-                return false;
+            $query = "SELECT [ID_Placa] FROM [IHTT_SGCERP].[dbo].[TB_Placa] WHERE ltrim(rtrim([ID_Placa])) = :ID_Placa";
+            $datos = $this->selectOne($query,Array(':ID_Placa' => trim($rs_id_rs_placa)));
+            if (!isset($datos['ID_Placa'])) {
+                $query = "INSERT INTO [IHTT_SGCERP].[dbo].[TB_Placa] ([ID_Placa],[ID_Tipo_Placa]) VALUES(:ID_Placa,'TP-02');";
+                return $this->insert($query,Array(':ID_Placa' => $rs_id_rs_placa));
             } else {
-                if (!isset($datos['ID_Placa'])) {
-                    $query = "INSERT INTO [IHTT_SGCERP].[dbo].[TB_Placa] ([ID_Placa],[ID_Tipo_Placa]) VALUES(:ID_Placa,'TP-02');";
-                    return $this->insert($query,Array(':ID_Placa' => $rs_id_rs_placa));
-                } else {
-                    return $rs_id_rs_placa;
-                }			
-            }		
+                return $rs_id_rs_placa;
+            }			
         } catch (\Throwable $th) {
             $txt = date('Y m d h:i:s') . '	Usuario:' . $_SESSION['user_name']  .' insertPlaca.php catch '. $query . ' ERROR ' . $th->getMessage();
             logErr($txt,'../logs/logs.txt');
@@ -2058,8 +2052,10 @@ require_once("../qr/qrlib.php");
                 $id_vehiculo = $record['ID_Vehiculo'];
             }
         }
+
         if ($es_renovacion_certificado == true || $es_renovacion_permisoespecial == true) {
             $Nueva_Fecha_Expiracion = date('Y-m-d',strtotime($record["Fecha_Expiracion"]));
+            $Nueva_Fecha_Expiracionx = $Nueva_Fecha_Expiracion;
             $hoyplus60 = date('Y-m-d', strtotime('+60 days'));
             while ($Nueva_Fecha_Expiracion <= $hoyplus60) {
                 if ($tipo_concesion == 'CER') {
@@ -2071,6 +2067,7 @@ require_once("../qr/qrlib.php");
         } else {
             $Nueva_Fecha_Expiracion = date('Y-m-d',strtotime($record["Fecha_Expiracion"]));
         }
+
         $respuestaupdateCertificado = $this->updateCertificado ( $es_renovacion_tipo_transporte, $tipo_concesion, $Data[0]['Certificado_Operacion'],
             $id_vehiculo, $Data[0]['ID_Expediente'], $Nueva_Fecha_Expiracion, $ID_Resolucion, $ID_ColegiacionAPL, 'rbarahona');
         if ($respuestaupdateCertificado == false) {
@@ -2078,6 +2075,7 @@ require_once("../qr/qrlib.php");
             logErr($txt,'../logs/logs.txt');
             return false;                                                        
         }
+        
         $respuestainsertBitacoraCambioTramites = $this->insertBitacoraCambioTramites ( substr($tramitepeticion,0,500), substr($tramitepeticion,0,200), $Data[0]['Certificado_Operacion'], $Data[0]['ID_Expediente'], $Data[0]['ID_Clase_Servico'], $Data[0]['Tipo_Documento'], $es_replaqueo);
         if ($respuestainsertBitacoraCambioTramites == false) {
             $txt = date('Y m d h:i:s') . '	' . ' if ($respuestainsertBitacoraCambioTramites == false) { ' . $Data[0]['Certificado_Operacion'] . ' error de data';
@@ -2130,10 +2128,11 @@ require_once("../qr/qrlib.php");
                 logErr($txt,'../logs/logs.txt');
                 return false;                                                        
             }
-        }          
+        } 
+
         if ($es_renovacion_explotacion == true) {
             if ($es_renovacion_tipo_transporte == 'CARGA') {
-                $rutapermisoexplotacion = $this->dominio_raiz  . ":172/PDFPermisoEspecialCarga_Mixto.php?modo=visualizacion&PermisoEspecial=".$record['Permiso_Explotacion_Encrypted'];
+                $rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Carga&Permiso=".$record['Permiso_Explotacion_Encrypted'];
             } else {
                 $rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Pas&Permiso=".$record['Permiso_Explotacion_Encrypted'];
             }
@@ -2143,6 +2142,7 @@ require_once("../qr/qrlib.php");
             $respuestaretornar['rutaexplotacion']=$rutapermisoexplotacion;
             $respuestaretornar['id_explotacion']=$record['Permiso_Explotacion'];
         }
+        
         if ($tipo_concesion == 'CER') {
             if ($nueva_unidad == true or $cambio_en_unidad == true or $es_renovacion_certificado == true or $cambio_placa == true) {
                 if ($es_renovacion_tipo_transporte == 'CARGA') {
@@ -2202,11 +2202,7 @@ require_once("../qr/qrlib.php");
         // msg variable para almacenar mensaje de error
         $msg = '';
         // Funcion que recupera los datos para insertar en el template
-        //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.1';
-        //*logErr($txt, '../logs/logs.txt');
         $CONCESIONES =  $this-> getSolicitudResolucionConcesiones($rs_id_rs_expediente);
-        //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.2';
-        //*logErr($txt, '../logs/logs.txt');
         $tramite = ''; // Initialize the variable to avoid undefined variable error
         $total_concesiones = is_array($CONCESIONES)?count($CONCESIONES):0;
         $contador=0;
@@ -2235,8 +2231,6 @@ require_once("../qr/qrlib.php");
             $es_renovacion_tipo_transporte = '';        
             // Funcion que recupera los datos para insertar en el template
             $row_rs_todos_los_registros =  $this->getSolicitudResolucion($rs_id_rs_expediente,$CONCESION['Concesion'],$rs_id_rs_template);
-            //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.3';
-            //*logErr($txt, '../logs/logs.txt');
             //* INICIO: Recuperando Vehiculos del tramite
             $vehiculoactual = '';
             $vehiculoentra = '';
@@ -2270,8 +2264,6 @@ require_once("../qr/qrlib.php");
             $nueva_unidad = false;                                                        
             // for para iterar en los registro recuperados
             foreach ($row_rs_todos_los_registros as $row_rs_expediente){
-                //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.4';
-                //*logErr($txt, '../logs/logs.txt');
                 // Si se recuperaron datos del expediente procesa
                 if ($row_rs_expediente['ID_Solicitud'] != ''){
                     $preforma = $row_rs_expediente['Preforma'];
@@ -2704,14 +2696,10 @@ require_once("../qr/qrlib.php");
             } else {
                 if ($contador > 0) {
                     $contador_concesiones++;
-                    //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.5';
-                    //*logErr($txt, '../logs/logs.txt');
                     $fProcesarConcesionesEnSGCERP = 
                     $this->fProcesarConcesionesEnSGCERP($es_renovacion_explotacion,$es_renovacion_certificado,$es_renovacion_permisoespecial,$cambio_placa,$cambio_en_unidad,
                     $nueva_unidad,$id_placa,$id_placa_antes_replaqueo,$es_renovacion_tipo_transporte,$tipo_concesion,$vehiculoentra,$vehiculoactual,$Data,$tramitepeticion,
                     $ID_Resolucion,$ID_ColegiacionAPL,$es_replaqueo,isset($detallevehiculoentra)?$detallevehiculoentra:'');
-                    //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.6';
-                    //*logErr($txt, '../logs/logs.txt');
                     if (is_array($fProcesarConcesionesEnSGCERP) == false and $fProcesarConcesionesEnSGCERP == false) {
                         $Error_Proceso = true;
                         break;
@@ -2739,8 +2727,6 @@ require_once("../qr/qrlib.php");
             }
             return $respuestaretornar;
         } 
-        //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.7';
-        //*logErr($txt, '../logs/logs.txt');
         //**********************************************************************************/
         //* Si se proceso bien todo genere pdf
         //**********************************************************************************/
@@ -2816,8 +2802,6 @@ require_once("../qr/qrlib.php");
                 $respuestaretornar['ConcesionesEncryptada'] = $ConcesionesEncryptada;
                 $respuestaretornar['ConcesionesNumero'] = $ConcesionesNumero;
                 $respuestaretornar['botoncertificado'] = $concesionesnumeros;
-                //*$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7.8';
-                //*logErr($txt, '../logs/logs.txt');
                 return $respuestaretornar;
                 //$respuestaretornar['id_vehiculo']=$id_vehiculo;
             } 
@@ -2829,50 +2813,84 @@ require_once("../qr/qrlib.php");
     //***********************************************************************************************
 	//* FINAL: Funcion principal de Generacion de Resolucion
 	//***********************************************************************************************    
+	//*******************************************************************************************************************/
+	//* Funcion para Crear Carpeta de RAM en Documentos
+	//*******************************************************************************************************************/
+	protected function crearCarpeta($RAM)
+	{
+		$mover = true;
+		try {
+			$directory = "Documentos/" . $RAM;
+			if (!is_dir($directory)) {
+				if (!mkdir($directory, 0777, true)) {
+					$response['msgLog'] = "Fallo la creación del directorio: $directory";
+					$response['msg'] = 'Algo inesperado sucedio creando el directorio';
+					$response['error'] = true;
+					$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . "Fallo la creación del directorio: $directory";
+					logErr($txt, '../logs/logs.txt');
+					$mover = false;
+					if (!isset($_POST["echo"])) {
+						return json_encode(array("error" => 11000, "errorhead" => "CREACIÓN DE DIRECTORIO", "errormsg" => 'NO SE PUEDE CREAR EL DIRECTORIO: ' . $directory));
+					} else {
+						echo json_encode(array("error" => 11000, "errorhead" => "CREACIÓN DE DIRECTORIO", "errormsg" => 'NO SE PUEDE CREAR EL DIRECTORIO: ' . $directory));
+					}
+				} else {
+					if (!isset($_POST["echo"])) {
+						return true;
+					} else {
+						echo true;
+					}
+				}
+			} else {
+                if (!isset($_POST["echo"])) {
+                    return true;
+                } else {
+                    echo true;
+                }
+            }
+		} catch (Exception $e) {
+			// Handle the exception
+			$response['msgLog'] = 'Caught Exception: ' .  $e->getMessage() . "\n";
+			$response['msg'] = 'Algo inesperado sucedio creando el directorio';
+			$response['error'] = false;
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . $e->getMessage() . "\n";
+			logErr($txt, '../logs/logs.txt');
+			if (!isset($_POST["echo"])) {
+				return json_encode(array("error" => 11001, "errorhead" => "CATCH MOVIMIENTO ARCHIVO CREACION DE DIRECTORIO", "errormsg" => 'ERROR DESCONOCIDO AL TRATAR DE CREAR DIRECTORIO: ' . $directory));
+			} else {
+				echo json_encode(array("error" => 11001, "errorhead" => "CATCH MOVIMIENTO ARCHIVO CREACION DE DIRECTORIO", "errormsg" => 'ERROR DESCONOCIDO AL TRATAR DE CREAR DIRECTORIO: ' . $directory));
+			}
+		}
+	}
+
     //***********************************************************************************************
 	//* INICIO: Funcion principal de cierre de RAM ya es Expediente
 	//***********************************************************************************************
 	protected function cerrarRAM($RAM){
         $this->db->beginTransaction();
-        $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 1';
-        logErr($txt, '../logs/logs.txt');
         //***********************************************************************************************
         //* Salvando La Bitacora y el Número de AutoMotivado
         //***********************************************************************************************
         $saveBitacoraNumeroAuto = $this->saveBitacoraNumeroAuto($RAM);
         if ($saveBitacoraNumeroAuto != false) {
-            $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 2';
-            logErr($txt, '../logs/logs.txt');
             //***********************************************************************************************
             //* Actualizando el Estado del RAM en Preforma
             //***********************************************************************************************
             $updateEstadoPreforma = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
             if (!isset($respuestaupdateEstadoPreforma['error'])) {
-                $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 3';
-                logErr($txt, '../logs/logs.txt');
                 $pdfAutoMotivadoIngresoApi = $this->pdfAutoMotivadoIngresoApi($RAM, $saveBitacoraNumeroAuto, $template=1);
                 if ($pdfAutoMotivadoIngresoApi != false) {
-                    $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 4';
-                    logErr($txt, '../logs/logs.txt');
                     //***********************************************************************************************
                     //* Recuperando el siguiente numero de resolucion
                     //***********************************************************************************************
                     $getSiguienteResolucion = $this->getSiguienteResolucion();
                     if ($getSiguienteResolucion != false) {
-                        $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 5';
-                        logErr($txt, '../logs/logs.txt');
                         $saveResolucion = $this->saveResolucion ($getSiguienteResolucion ,$_POST["RAM"],$_SESSION['ID_Usuario'],$_SESSION['user_name']);
                         if ($saveResolucion != false) {
-                            $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 6';
-                            logErr($txt, '../logs/logs.txt');
                             $saveBitacoraFirma = $this->saveBitacoraFirma($getSiguienteResolucion,   'RESOLUCION', $_SESSION["user_name"],  $pdfAutoMotivadoIngresoApi['llave_publica']);	
                             if ($saveBitacoraFirma != false) {
-                                $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 7';
-                                logErr($txt, '../logs/logs.txt');
                                 $PDFResolucionApi = $this->PDFResolucionApi($_POST["RAM"],$getSiguienteResolucion,$rs_id_rs_template=3,$cfg_institucion='INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE');
                                 if ($PDFResolucionApi != false) {
-                                    $txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'function cerrarRAM($RAM) 8';
-                                    logErr($txt, '../logs/logs.txt');
                                     echo json_encode(array("AutoIngreso" => $pdfAutoMotivadoIngresoApi['Boton'],
                                     "Resolucion" => $PDFResolucionApi['boton'],
                                     "Comprobante" => $PDFResolucionApi['botoncomprobante'],
@@ -2880,8 +2898,8 @@ require_once("../qr/qrlib.php");
                                     'ConcesionesEncryptada' => $PDFResolucionApi['ConcesionesEncryptada'],
                                     'ConcesionesNumero' => $PDFResolucionApi['ConcesionesNumero'],
                                     'Concesion' => str_replace('@@__CONCESIONES__@@',$miString = implode(',', $PDFResolucionApi['ConcesionesNumero']),$PDFResolucionApi['botoncertificado']),));
-                                    $this->db->rollBack();
-                                    //*$this->db->commit();
+                                    //*$this->db->rollBack();
+                                    $this->db->commit();
                                 } else {
                                     $this->db->rollBack();
                                     echo json_encode(array("error" => 6006, "errorhead" => 'GENERANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));

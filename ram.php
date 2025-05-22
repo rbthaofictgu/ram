@@ -736,7 +736,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="6" maxlength="17">
+                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-Z0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="4" maxlength="25">
                       </div>
                     </div>
 
@@ -1159,7 +1159,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_motor" minlength="6" maxlength="17">
+                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-Z0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_motor" minlength="4" maxlength="25">
                       </div>
                     </div>
 

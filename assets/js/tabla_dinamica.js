@@ -465,7 +465,7 @@ function renderTableRows(data, tbody, todo, descripcion) {
          folioPago = (dividirDatosPagos[0] != undefined) ? dividirDatosPagos[0] : 'NO HAY AVISO DE COBRO';
           console.log(folioPago, 'folioPago');
          //?nota:Fila[0] es el ram
-         // https://satt2.transporte.gob.hn:90/api_rep.php?ra=S&action=get-facturaPdf&nu=205463
+         
          url = `${$appcfg_Dominio_Raiz}:90/api_rep.php?ra=S&action=get-facturaPdf&nu=${folioPago}`
          // url = `${$appcfg_Dominio}Documentos/${fila[0]}/AvisodeCobro_${fila[0]}.pdf`
          if (colIndex !== 10 && colIndex !== 11 && colIndex !== 12) {
