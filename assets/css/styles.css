@@ -1694,31 +1694,31 @@ body {
 
 /* Styling for the div */
 #rightDiv {
-	width: 40px;
-	height: 30px;
+	width: 45px;
+	height: 45px;
 	position: fixed;
 	right: 10;
-	top: 50%;
+	top: 40%;
 	transform: translateY(-50%);
 	/* Centers vertically */
 }
 
 #rightDivTR {
-	width: 40px;
-	height: 30px;
+	width: 45px;
+	height: 45px;
 	position: fixed;
 	right: 10;
-	top: 45%;
+	top: 50%;
 	transform: translateY(-45%);
 	/* Centers vertically */
 }
 
 #rightDivPR {
-	width: 40px;
-	height: 30px;
+	width: 45px;
+	height: 45px;
 	position: fixed;
 	right: 10;
-	top: 40%;
+	top: 60%;
 	transform: translateY(-40%);
 	/* Centers vertically */
 }
@@ -2049,7 +2049,7 @@ a {
 }
 
 .progress .determinate {
-	/position: absolute;/ background-color: inherit;
+	position: absolute; background-color: inherit;
 	width: 100%;
 	height: 50px;
 	border-radius: 5px;
@@ -2127,7 +2127,7 @@ a {
 
 /* Cuando el campo se expanda */
 .input-prefetch.expanded {
-	width: 200px;
+	width: 300px;
 	/* Ancho del input cuando se expanda */
 	opacity: 1;
 	/* El input se vuelve visible */

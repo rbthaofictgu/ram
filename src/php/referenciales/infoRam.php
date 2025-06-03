@@ -74,6 +74,26 @@ include_once('../../../configuracion/configuracion_js.php');
                </div>
 
             </div>
+            <!-- Modal Bootstrap -->
+            <div class="modal fade" id="modalDescripcion" tabindex="-1" aria-labelledby="modalDescripcionLabel" aria-hidden="true">
+               <div class="modal-dialog modal-sm"> <!-- modal-sm lo hace pequeño -->
+                  <div class="modal-content">
+                     <div class="modal-header">
+                        <h5 class="modal-title" id="modalDescripcionLabel">Escribe una descripción</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                     </div>
+                     <div id="idBody" class="modal-body">
+                        <textarea id="descripcionInput" class="form-control" rows="4" style="text-transform: uppercase;"></textarea>
+                     </div>
+                     <div class="modal-footer">
+                        <button id="guardarDescripcion" class="btn btn-primary">CAMBIAR ESTADO</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">CERRAR</button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+
             <div id='botones' class="col-4">
                <!--  -->
                <button id="idInputBuscar" class="btn btn-primary" title="Boton para realizar la busqueda de solicitud" onclick="vista_data();">

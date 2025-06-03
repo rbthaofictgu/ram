@@ -59,17 +59,20 @@ var tituloGlobal = '';
 //*se excluyen los encabezados de la tabla de objeto.
 const encabezadoExclui = new Set(['Tramites', 'Unidad', 'Unidad1', 'ID_Memo', 'Concesion_Encriptada', 'esCarga', 'esCertificado', 'Permiso_Explotacion_Encriptado']);
 //*para saber el estado de la RAM actual.
+
 var estadoRam = document.getElementById("ID_Estado_RAM").value;
-if (estadoRam) {
-   console.log('Estado RAM si existe:', estadoRam);
-} else {
-   console.log('Estado RAM no existe:', estadoRam);
-}
+// var estadoRam=document.getElementById("idEstado").value;
+// if (estadoRam) {
+//    console.log('Estado RAM si existe:', estadoRam);
+// } else {
+//    console.log('Estado RAM noooo existe:', estadoRam);
+// }
 
 //***********************************************************************/
 //*INICIO:funcion encargada de formatear el monto a mostrar
 //***********************************************************************/
 function montoFormateado(cantidad) {
+   // console.log('cantidad', cantidad);
    let monto = cantidad;
    let montoFormateado = monto.toLocaleString('es-HN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
    return montoFormateado;
@@ -439,7 +442,7 @@ function clearSearchFiled(tableContainer, tbody) {
 
 
    if (esEditable() != false) {
-      console.log('esEditable', esEditable());
+      // console.log('esEditable', esEditable());
       const btn_trash = document.createElement('button');
       if (rolUser.some(role => rol.includes(role))) {
          //*el tipo de boton
@@ -459,7 +462,7 @@ function clearSearchFiled(tableContainer, tbody) {
          //*Función onclick
       }
    } else {
-      console.log('no es editable', esEditable());
+      // console.log('no es editable', esEditable());
    }
 
    btnVerTramites();
@@ -593,7 +596,7 @@ function vistaTramitesFijos() {
    if (vistaHabilitada == false) {
       document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-thumbtack-slash"></i>`;
       document.getElementById('idbtnVerTramites').disabled = true;
-      console.log('deshabilitado');
+      // console.log('deshabilitado');
 
       filtrarDataConcesionNumber().forEach((element, index) => {
          let trId = 'idRow' + (index + recalculandoPaginacion(pageNumerClick));
@@ -607,7 +610,7 @@ function vistaTramitesFijos() {
    } else {
       //*habilitando el boton de vista de tramites.
       document.getElementById('idbtnVerTramites').innerHTML = `<i class="fa-solid fa-thumbtack"></i>`;
-      console.log('habilitado');
+      // console.log('habilitado');
       document.getElementById('idbtnVerTramites').disabled = false;
       vistaHabilitada = false;
 
@@ -794,7 +797,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                td.style.cursor = 'pointer';
                //*GENERANDO LINK DE LOS
 
-               console.log(fila['esCarga'], fila['esCertificado'], fila['Concesion_Encriptada'], fila['Permiso_Explotacion_Encriptado'], 'datossssssss');
+               // console.log(fila['esCarga'], fila['esCertificado'], fila['Concesion_Encriptada'], fila['Permiso_Explotacion_Encriptado'], 'datossssssss');
                let linksConcesion = tipoConcesion(fila['esCarga'], fila['esCertificado'], fila['Concesion_Encriptada'], fila['Permiso_Explotacion_Encriptado']);
                //*validamos si el texto pertenece a la placa para asignar funcion
                if (key == 'Placa') {
@@ -899,7 +902,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
 
             //? nota: verificamos que sean distinto a un arreglo y objeto !(Array.isArray(value)) && !(value !== null && typeof value === 'object' )
 
-            console.log(value, 'value');
+            // console.log(value, 'value');
             //* verificamos si es un arreglo si es distinto se muestra en la fila
             if (!(Array.isArray(value)) && !(value !== null && typeof value === 'object') && !(key == 'ID_Memo')) {
                //*creamos las columnas
@@ -1111,7 +1114,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
       if (trashIcon) {
          trashIcon.addEventListener('click', (e) => {
             //*verificamos que tengamos mas de un elemento
-            console.log(tramitesValidos.length);
+            // console.log(tramitesValidos.length);
             if (TOTAL_TRAMITES_X_CONCESION[updateCollection(Concesion)] > 1) {
                //*e trashIconvitando que se recargue
                e.preventDefault();
@@ -1159,17 +1162,17 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                tdSub.className = (key === 'Monto') ? 'text-nowrap table-secondary' : 'text-nowrap table-secondary';
                //*si es cambio de MODIFICACIÓN CAMBIO DE UNIDAD el tramite.
                if (tramite['descripcion'] == 'MODIFICACIÓN CAMBIO DE UNIDAD') {
-                  // var estadoRam = document.getElementById("ID_Estado_RAM").value;
-                  // console.log(estadoRam, 'estadoRam');
+                  var estadoRam = document.getElementById("ID_Estado_RAM").value;
+                  console.log(estadoRam, 'estadoRam dentro de tramite modificacion de unidad');
                   // const estadosValidosModificacionUnidad = ['IDE-1', 'IDE-2'];
                   //*siel parametro se manda y hay cambio de unidad se muestra las constancias.
                   if (estadosValidosModificacionUnidad.includes((estadoRam) ? estadoRam : '')) {
                      //*se muestra texto si no es url o el cambio de unidad
                      const link = document.createElement('a');
                      link.style.textDecoration = 'none';
-                     link.innerHTML = (tramite[key] == 'MODIFICACIÓN CAMBIO DE UNIDAD') ? `<i i class="fa-sharp fa-solid fa-eye" ></i > ${tramite[key]} ` : tramite[key];
+                     link.innerHTML = (tramite[key] == 'MODIFICACIÓN CAMBIO DE UNIDAD') ? `<i class="fa-sharp fa-solid fa-eye" ></i> ${tramite[key]} ` : tramite[key];
                      link.target = "_blank";
-                     link.href = $appcfg_Dominio_Raiz + `: 140 / RenovacionesE / NuevoDictamenR.aspx ? Solicitud = ${ram} `
+                     link.href = $appcfg_Dominio_Raiz + `:140/RenovacionesE/NuevoDictamenR.aspx?Solicitud=${ram}`
                      tdSub.appendChild(link);
                   } else {
                      //*se muestra texto si no es url o el cambio de unidad
@@ -1311,8 +1314,8 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
 //*funcion que se necarga de crear la tabla de la revision del vehiculo
 //**********************************************************************/
 function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
-   console.log(unidad, 'unidad span');
-   console.log(unidad1, 'unidad1 span');
+   // console.log(unidad, 'unidad span');
+   // console.log(unidad1, 'unidad1 span');
    var texto = '';
    //console.log(unidad1,unidad,value);
    if (unidad1 != undefined && unidad1 != '' && unidad1 != null) {
@@ -2032,6 +2035,9 @@ function actualizarContenido(span, index, unidad1) {
 //*funcion encargada de decidir si se mira o se genera la constancia y evaluar la placa 
 //***************************************************************************************/
 function constancia(placa, ID_Memo, unidad1, idConcesion) {
+
+   console.log('FUNCION CONSTANCIA VERIFICA SI EXISTE ID_MEMO :', placa, 'PLACA', ID_Memo, 'ID_Memo', unidad1, ' unidad1', idConcesion, 'idConcesion');
+   console.log('SI idMemo es false o ID_Memo es false se genera constancia');
    let $placabegin = '';
    //* Obtener los primeros dos caracteres de la placa
    if (placa !== undefined && placa !== null) {
@@ -2060,6 +2066,11 @@ function constancia(placa, ID_Memo, unidad1, idConcesion) {
 //*cambio de unidad y placa distinta 
 //**************************************
 function generarConstancia(unidad1, idConcesion) {
+
+   console.log('generando contancia dentro funcion generarConstancia');
+   console.log('*****datos que se envian*****');
+
+
    var Chasis = unidad1['Chasis'];
    var Marca = unidad1['Marca'].split('=>');
    console.log(Marca, 'marca');
@@ -2072,8 +2083,8 @@ function generarConstancia(unidad1, idConcesion) {
    form_data.append("action", "save-ingreso-constancias");
    form_data.append("Referencia", document.getElementById("RAM").value); //$('#numpreforma').val()
    form_data.append("Placa_Entra", unidad1['ID_Placa']);
-   form_data.append("Marca_Entra", Marca[0].trim());
-   form_data.append("Tipo_Entra", Marca[1].trim());
+   form_data.append("Marca_Entra", Marca[1].trim());
+   form_data.append("Tipo_Entra", unidad1['Tipo_Vehiculo']);
    form_data.append("Anio_Entra", unidad1['Anio']);
    form_data.append("Motor_Entra", unidad1['Motor']);
    form_data.append("Chasis_Entra", unidad1['Chasis']);
@@ -2082,6 +2093,23 @@ function generarConstancia(unidad1, idConcesion) {
    form_data.append("Nombre_Solicitante", unidad1['Nombre_Propietario']);
    form_data.append("usuario", ID_Usuario);
    form_data.append("user_name", User_Name);
+
+   console.log(form_data, 'form_data');
+   // console.log('Id_usuario', document.getElementById("ID_Usuario").value);
+   // console.log('user_name', document.getElementById("User_Name").value);
+   // console.log('Referencia', document.getElementById("RAM").value);
+   // console.log('Placa_Entra', unidad1['ID_Placa']);
+   // console.log('Marca_Entra', Marca[0].trim());
+   // console.log('Tipo_Entra', Marca[1].trim());
+   // console.log('Anio_Entra', unidad1['Anio']);
+   // console.log('Motor_Entra', unidad1['Motor']);
+   // console.log('Chasis_Entra', unidad1['Chasis']);
+   // console.log('Vin_Entra', unidad1['VIN']);
+   // console.log('Identidad', unidad1['RTN_Propietario']);
+   // console.log('Nombre_Solicitante', unidad1['Nombre_Propietario']);
+   // console.log('usuario', ID_Usuario);
+   // console.log('user_name', User_Name);
+
    $.ajax({
       url: $appcfg_Dominio_Raiz + ':288/Api_Autos.php',
       dataType: 'json',
@@ -2119,7 +2147,7 @@ function generarConstancia(unidad1, idConcesion) {
             } else {
                $link = $appcfg_Dominio_Raiz + ':288/PDF_Constancia.php?ID_Memo=' + dataserver.ID_Memo + '&FSL=' + document.getElementById("RAM").value;
                //*llamando a la funcion cambiar link para modificar si ya esta generada la constancia.y modificar id_memo de false
-
+               console.log('link de la constancia', $link);
                cambiarLink(dataserver.ID_Memo, idConcesion); // Llama a la función adicional
                Swal.fire({
                   title: "CONTANCIA SALVADA SATISFACTORIAMENTE",
@@ -2130,6 +2158,7 @@ function generarConstancia(unidad1, idConcesion) {
                   confirmButtonText: "IMPRIMIR",
                   showLoaderOnConfirm: true
                }).then(function () {
+
                   window.open($link, '_blank'); // Abre el enlace
                });
             }
@@ -2177,10 +2206,15 @@ function modificarIdMemo(idConcesion, MEMO) {
 //*funcion encargada de ver la constancia.
 //******************************************/
 function verConstancia(MEMO) {
+
+
    // MEMO = 'IHTT-CON-1939-23';
    var numPreforma = document.getElementById("RAM").value//UNIDAD1['ID_Formulario_Solicitud']//$('#numpreforma').val(); // 
    var url = $appcfg_Dominio_Raiz + ':288/PDF_Constancia.php?ID_Memo=' + MEMO + '&FSL=' + numPreforma;
    window.open(url, '_blank'); // Abrir en una nueva ventana
+
+   console.log('dentro de la funcion ver constancia');
+   console.log('url constancia', url);
 }
 //**************************************************/
 //*genra certificado dependiendo de las concesiones.

@@ -1,4 +1,3 @@
-
 <?php
 setlocale(LC_ALL,"es_ES@euro","es_ES","esp" );
 //error_reporting(0);
@@ -120,7 +119,8 @@ require_once("../qr/qrlib.php");
 			} else if ($_POST["action"] == "update-estado-preforma") {
 				$_POST['idEstado'] = json_decode($_POST['idEstado']);
 				$_POST["RAM"] = json_decode($_POST["RAM"]);
-				$this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);	
+				$_POST["descripcion"] = json_decode($_POST["descripcion"]);
+				$this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado'],$_POST["descripcion"]);	
 			} else if ($_POST["action"] == "cerrar-preforma") {
 				$this->cerrarPreforma();					
 			} else {
@@ -761,14 +761,14 @@ require_once("../qr/qrlib.php");
 		//**Cuando ls fsl venga de Sps ubicar el expediente fisico en SPS, tomando la ciudad del FSL Codigo_Ciudad en      **/
 		//**[IHTT_PREFORMA].[dbo].[TB_Solicitud], hacer cambio aqui                                                        **/
 		//*******************************************************************************************************************/
-		$txt = date('Y m d h:i:s') . '	' . 'Api_Ram.php saveIhttDbExpedienteMovimiento Usuario: ' . $_SESSION['ID_Usuario'] . ' Ciudad: $row_ciudad[0][Codigo_Ciudad]' . $row_ciudad[0]['Codigo_Ciudad'];
+		$txt = date('Y m d h:i:s') . '	' . 'Api_Ram.php saveIhttDbExpedienteMovimiento Usuario: ' . $_SESSION['ID_Usuario'] . ' Ciudad: $row_ciudad[0][Codigo_Ciudad]' . $row_ciudad[0]['Codigo_Ciudad'] . ' Acronimo ' . $row_ciudad[0]['Acronimo'];
 		logErr($txt, '../logs/logs.txt');
 		
-		if ($row_ciudad[0]['Codigo_Ciudad'] == 'TEG') {
+		if ($row_ciudad[0]['Acronimo'] == 'TEG') {
 			$ID_AREA_VENTANILLA = 'IHTT08-02';
-		}else if ($row_ciudad[0]['Codigo_Ciudad'] == 'SPS') {
+		}else if ($row_ciudad[0]['Acronimo'] == 'SPS') {
 			$ID_AREA_VENTANILLA = 'IHTT08-04';
-		}else if ($row_ciudad[0]['Codigo_Ciudad'] == 'CHO') {
+		}else if ($row_ciudad[0]['Acronimo'] == 'CHO') {
 			$ID_AREA_VENTANILLA = 'IHTT08-06';
 		}else {
 			$ID_AREA_VENTANILLA = 'IHTT08-05';
@@ -816,7 +816,7 @@ require_once("../qr/qrlib.php");
 		if (!isset($respuestaPDFAvisodeCobroVentanillaApi['error'])) {
 			$respuestaGetEmpleado = $this->getEmpleado($respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta']);
 			if ($respuestaGetEmpleado != false) {
-				$respuestaupdateEstadoPreforma = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
+				$respuestaupdateEstadoPreforma = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado'],'');
 				if (!isset($respuestaupdateEstadoPreforma['error'])) {
 					$respuestasaveIhttDbSoliciante = $this->saveIhttDbSoliciante($_POST["RAM"],$respuestaPDFAvisodeCobroVentanillaApi['RTN_Solicitante']);
 					if ($respuestasaveIhttDbSoliciante != false) {
@@ -840,19 +840,26 @@ require_once("../qr/qrlib.php");
 														if ($respuestasaveIhttDbExpedienteMovimiento != false) {
 															$respuestasaveIhttDbExpedienteMovimientoInterno = $this->saveIhttDbExpedienteMovimientoInterno($_POST["RAM"],$respuestasaveIhttDbExpedienteMovimiento);
 															if ($respuestasaveIhttDbExpedienteMovimientoInterno != false) {
-																$respuesta['SOL'] =  $respuestaPDFAvisodeCobroVentanillaApi['formulario_encriptado'];
-																$respuesta['SOL2'] = $_POST["RAM"];
-																$respuesta['Cod_Usuario'] =  $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
-																$respuesta['Nombre_Usuario_Largo'] =  $respuestaGetEmpleado['0']['Apellidos'] . ' ' . $respuestaGetEmpleado['0']['Nombres'];
-																$respuesta['Nombre_Usuario'] = $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
-																$respuesta['url_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['url_aviso'];
-																$respuesta['numero_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['numero_aviso'];
-																$respuesta['msg'] =  $_POST["RAM"];
-																$respuesta['user_name'] =  $_SESSION["user_name"];
-																$respuesta['ID_Usuario'] = $_SESSION["ID_Usuario"];
-																$this->db->commit();																
-																echo json_encode($respuesta);
-																//*$this->db->rollBack();
+																try {
+																	$respuesta['SOL'] =  $respuestaPDFAvisodeCobroVentanillaApi['formulario_encriptado'];
+																	$respuesta['SOL2'] = $_POST["RAM"];
+																	$respuesta['Cod_Usuario'] =  $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
+																	$respuesta['Nombre_Usuario_Largo'] =  $respuestaGetEmpleado['0']['Apellidos'] . ' ' . $respuestaGetEmpleado['0']['Nombres'];
+																	$respuesta['Nombre_Usuario'] = $respuestaPDFAvisodeCobroVentanillaApi['usuario_acepta'];
+																	$respuesta['url_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['url_aviso'];
+																	$respuesta['numero_aviso'] = $respuestaPDFAvisodeCobroVentanillaApi['numero_aviso'];
+																	$respuesta['msg'] =  $_POST["RAM"];
+																	$respuesta['user_name'] =  $_SESSION["user_name"];
+																	$respuesta['ID_Usuario'] = $_SESSION["ID_Usuario"];
+																	//*$this->db->rollBack();																	
+																	$this->db->commit();																
+																	echo json_encode($respuesta);
+																} catch (Exception $e) {
+																	$this->db->rollBack();
+																	echo json_encode(array("error" => 7013, "errorhead" => 'CERRANDO SOLICITUD', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+																	$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'CIERRE CATCH: ' . $e->getMessage();
+																	logErr($txt, '../logs/logs.txt');
+																}   
 															} else {
 																$this->db->rollBack();
 																echo json_encode(array("error" => 7012, "errorhead" => "SALVANDO MOVIMIENTO INTERNO", "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES PARA SALVAR LA INFORMACIÓN'));
@@ -1238,14 +1245,18 @@ require_once("../qr/qrlib.php");
 	}
 	protected function getSolicitanteEXP()
 	{
-	  $q = "SELECT  ISNULL(ENC.CodigoAvisoCobro,0) AS CodigoAvisoCobro,ISNULL(ENC.AvisoCobroEstado,'') AS AvisoCobroEstado,
+	  $q = "SELECT  us.ID_Empleado,soli.Usuario_Creacion,soli.Usuario_Acepta,soli.Codigo_Usuario_Acepta,ISNULL(ENC.CodigoAvisoCobro,0) AS CodigoAvisoCobro,ISNULL(ENC.AvisoCobroEstado,'') AS AvisoCobroEstado,
 			es.DESC_Estado,sol.ID_Solicitante,sol.NombreSolicitante AS Nombre_Solicitante,	sol.NombreEmpresa AS Denominacion_Social,sol.CodigoSolicitanteTipo AS ID_Tipo_Solicitante,
 			sol.IDSolicitante, sol.RTNSolicitante AS RTN_Solicitante, sol.Direccion AS Domicilo_Solicitante, sol.Telefono AS Telefono_Solicitante,
-			sol.Email AS Email_Solicitante, sol.Observaciones, sol.Aldea AS ID_Aldea, sol.SistemaUsuario AS Usuario_Creacion, sol.SistemaFecha AS Sistema_Fecha,
+			sol.Email AS Email_Solicitante, sol.Observaciones, sol.Aldea AS ID_Aldea, sol.SistemaFecha AS Sistema_Fecha,
 			sol.Representante_Legal, sol.Socio, sol.ID_Profesion, sol.ID_Estado_Civil, soli.Entrega_Ubicacion, soli.Presentacion_Documentos
-			,es.esEditable,es.esCompartible,soli.Usuario_Acepta,soli.Codigo_Ciudad,ald.ID_Municipio, mn.ID_Departamento,st.[DESC_Solicitante],soli.[Estado_Formulario]
+			,es.esEditable,es.esCompartible,soli.Codigo_Ciudad,ald.ID_Municipio, mn.ID_Departamento,st.[DESC_Solicitante],soli.[Estado_Formulario],
+			ISNULL(aa.ID_AutoAdmision,'') AS ID_AutoAdmision,ISNULL(res.ID_Resolucion,'') AS ID_Resolucion,Soli.ID_Formulario_Solicitud,soli.ID_Formulario_Solicitud_Encrypted
 			FROM [IHTT_DB].[dbo].[TB_Solicitante] sol,[IHTT_PREFORMA].[dbo].[TB_Solicitante] soli  
-			left outer join [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] ENC on soli.ID_Formulario_Solicitud = ENC.ID_Solicitud,
+			left outer join [IHTT_GDL].[dbo].[TB_AutoAdmision] aa on soli.ID_Formulario_Solicitud = aa.ID_Solicitud
+			left outer join [IHTT_GDL].[dbo].[TB_Resolucion] res on soli.ID_Formulario_Solicitud = res.ID_Solicitud
+			left outer join [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] ENC on soli.ID_Formulario_Solicitud = ENC.ID_Solicitud
+			inner join [IHTT_USUARIOS].[dbo].[TB_Usuarios] us on soli.Usuario_Creacion = us.Usuario_Nombre,
 			[IHTT_SELD].[dbo].[TB_Aldea] ald,[IHTT_SELD].[dbo].[TB_Municipio] mn,[IHTT_Preforma].[dbo].[TB_Estados] es,
 			[IHTT_RENOVACIONES_AUTOMATICAS].[dbo].[TB_Estados_User] eu,[IHTT_PREFORMA].[dbo].[TB_Tipo_Solicitante] st
 			WHERE soli.ID_Formulario_Solicitud = :ID_Formulario_Solicitud and soli.[RTN_Solicitante] = sol.ID_Solicitante and
@@ -1728,85 +1739,88 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
-	protected function getLinkReportes($Expediente,$Automotivado,$Resolucion,$tipo_concesion,$es_renovacion_tipo_transporte):array
-	{
-        if ($tipo_concesion == 'CER') {
-			//*******************************************************************************************************************/
-			//* RUTA AVISO DE COBRO                                                                                            **/
-			//*******************************************************************************************************************/
-			if ($es_renovacion_tipo_transporte == 'CARGA') {
-				//$rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Carga&Permiso=".$Expediente['Permiso_Explotacion_Encrypted'];
-				$rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Carga&Preliminar=S";
-			} else {
-				//$rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Pas&Permiso=".$Expediente['Permiso_Explotacion_Encrypted'];
-				$rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Pas&Preliminar=S";
-			}
-			$respuestaretornar['msgexplotacion']='<strong>  IMPRIMIR PERMISO DE EXPLOTACIÓN NO.- ' . $Expediente['Permiso_Explotacion'] . '</strong>';
-			$respuestaretornar['botonexplotacion']='<a style="background-color: #F663BE; border-radius: 15px; border: solid 4px #09057B;" href="'.$rutapermisoexplotacion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgexplotacion'].'</a>';
-			$respuestaretornar['rutaexplotacion']=$rutapermisoexplotacion;
-			$respuestaretornar['id_explotacion']=$Expediente['Permiso_Explotacion'];
 
-			if ($es_renovacion_tipo_transporte == 'CARGA') {
-				//$rutacertificado = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFCertificado-Carga&Certificado=".$record['Concesion_Encrypted'];
-				$rutacertificado = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFCertificado-Carga&Preliminar=S";
-			} else {
-				//$rutacertificado = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFCertificado&Certificado=".$record['Concesion_Encrypted'];
-				$rutacertificado = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFCertificado&Preliminar=S";
+
+	protected function getLinkReportes($Datos,$Tramites):array
+	{
+        if ($Tramites[0]['ID_Clase_Servicio'] == 'STPC' || $Tramites[0]['ID_Clase_Servicio'] == 'STPP') {
+			//**********************************************************************************/
+			//* PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Expediente['ID_Solicitud'] . '  **/
+			//**********************************************************************************/
+			$rutaportada = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir_exp.php?action=get-Expediente&sol=". $Datos[0]['ID_Formulario_Solicitud'];
+			$respuestaretornar['msgportada']='<strong>  PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
+			$respuestaretornar['botonportada']='<a style="width:100%;background-color: #6DE0EFFF; border-radius: 15px; border: solid 4px #151414;" href="'.$rutaportada.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgportada'].'</a>';
+			$respuestaretornar['rutaportada']=$rutaportada;
+			//*******************************************************************************************************************/
+			//* RUTA COMPROBANTE DE INGRESO																				       **/
+			//*******************************************************************************************************************/
+			//*var urlcomprobante = $appcfg_Dominio_Raiz + ":293/api_rep.php?action=get-PDFComprobante&Solicitud="+Datos.SOL+"&fls="+Datos.SOL2+"&Nombre_Usuario=" +
+			//*Datos.Nombre_Usuario+"&Cod_Usuario="+Datos.Cod_Usuario+"&Originano_En_Ventanilla=1&ID_Usuario="+Datos.ID_Usuario+"&user_name="+Datos.user_name;		
+			$rutacomprobante = $this->dominio_raiz . ":293/api_rep.php?action=get-PDFComprobante&Solicitud=". $Datos[0]['ID_Formulario_Solicitud_Encrypted']."&Originano_En_Ventanilla=1&fls=".$Datos[0]['ID_Formulario_Solicitud']."&Nombre_Usuario=" .
+			$Datos[0]['Usuario_Acepta']."&Cod_Usuario=".$Datos[0]['Codigo_Usuario_Acepta'] . "&ID_Usuario=".$Datos[0]['ID_Empleado']."&user_name=".$Datos[0]['Usuario_Creacion'];
+			$respuestaretornar['msgcomprobante']='<strong>  COMPROBANTE DE INGRESO AL SICE DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
+			$respuestaretornar['botoncomprobante']='<a style="width:100%;background-color: #F163D3; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutacomprobante.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcomprobante'].'</a>';
+			$respuestaretornar['rutacomprobante']=$rutacomprobante;
+			//*******************************************************************************************************************/
+			//* RUTA AUTO INGRESO                                                                                              **/
+			//*******************************************************************************************************************/
+			if ($Datos[0]['ID_AutoAdmision'] > 0) {
+				$url_auto_motivado = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/AutoMotivado_' . $Datos[0]['ID_Formulario_Solicitud'] . '.pdf';   
+				$respuestaretornar['msgauto']='<strong>  AUTO DE INGRESO NÚMERO: ' . $Datos[0]['ID_AutoAdmision'] . '  </strong>';
+				$respuestaretornar['botonauto']='<a style="width:100%;background-color:  #F7942BFF; border-radius: 15px; border: solid 4px #33536f;" href="'. $url_auto_motivado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgauto'].'</a>';
+				$respuestaretornar['rutaauto']=$url_auto_motivado;
+				$respuestaretornar['numero_auto']=$Datos[0]['ID_AutoAdmision'];
+				//**********************************************************************************/
+				//* RESOLUCIOON CON NÚMERO: ' . $Resolucion . '  **/
+				//**********************************************************************************/
+				$url_resolucion = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/' .  $Datos[0]['ID_Resolucion'] . '.pdf';
+				$respuestaretornar['msgresolucion']='<strong>  RESOLUCION NÚMERO: ' . $Datos[0]['ID_Resolucion'] .  '  </strong>';
+				$respuestaretornar['botonresolucion']='<a style="width:100%;background-color: #D8E42D; border-radius: 15px; border: solid 4px #0E0E0D;" href="'.$url_resolucion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgresolucion'].'</a>';
+				$respuestaretornar['rutaresolucion']=$url_resolucion;
+				$respuestaretornar['id_resolucion']=$Datos[0]['ID_Resolucion'];
 			}
-			$respuestaretornar['msgcertificado']='<strong>  IMPRIMIR BORRADOR DE CERTIFICADO(S) DE OPERACIÓN REGISTRADOS EN EL RAM.- ' . $Expediente['ID_Solicitud'] . '</strong>';
-			$respuestaretornar['botoncertificado']='<a style="background-color: #4BEE56; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutacertificado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcertificado'].'</a>';
-			$respuestaretornar['rutacertificado']=$rutacertificado;
-        } else {
-            if ($es_renovacion_tipo_transporte == 'CARGA') {
-				//$rutacertificado = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoEsp-Carga&PermisoEspecial=".$record['Concesion_Encrypted'];
-				$rutacertificado = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoEsp-Carga&Preliminar=S";
+			//*******************************************************************************************************************/
+			//* RUTA CERTIFICADO/PERMISO ESPECIAL Y PERMISO DE EXPLOTACIÓN
+			//*******************************************************************************************************************/
+			if ($Tramites[0]['ID_Clase_Servicio'] == 'STPC') {
+				$rutapermisoexplotacion = $this->dominio_raiz  . ":172/PDFPermisoExplotacionCarga_Mixto.php?modo=visualizacion&Permiso=".$Datos[0]['ID_Formulario_Solicitud'];
+				$rutacertificado = $this->dominio_raiz  . ":172/PDFCertificadoCarga_Mixto.php?modo=visualizacion&Certificado=".$Datos[0]['ID_Formulario_Solicitud'];
 			} else {
-				//$rutacertificado = $this->dominio_raiz  .":172/api_rep.php?action=get-PDFPermisoEsp-Pas&PermisoEspecial=".$record['Concesion_Encrypted'];
-				$rutacertificado = $this->dominio_raiz  .":172/api_rep.php?action=get-PDFPermisoEsp-Pas&Preliminar=S";
+				$rutapermisoexplotacion = $this->dominio_raiz  . ":172/PDFPermisoExplotacionPasajero_Mixto.php?modo=visualizacion&Permiso=".$Datos[0]['ID_Formulario_Solicitud'];
+				$rutacertificado = $this->dominio_raiz  . ":172/PDFCertificadoPasajero_Mixto.php?modo=visualizacion&Certificado=".$Datos[0]['ID_Formulario_Solicitud'];
+			}
+			$respuestaretornar['msgcertificado']='<strong>  CERTIFICADO(S) DE OPERACIÓN REGISTRADO(S) DENTRO DEL RAM.- ' . $Datos[0]['ID_Formulario_Solicitud'] . '</strong>';
+			$respuestaretornar['botoncertificado']='<a style="width:100%;background-color: #4BEE56; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutacertificado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcertificado'].'</a>';
+			$respuestaretornar['rutacertificado']=$rutacertificado;
+			$respuestaretornar['msgexplotacion']='<strong>  PERMISO(S) DE EXPLOTACIÓN REGISTRADO(S) DENTRO DEL RAM.- ' . $Datos[0]['ID_Formulario_Solicitud'] . '</strong>';
+			$respuestaretornar['botonexplotacion']='<a style="width:100%;background-color: #BE0CBEFF; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutapermisoexplotacion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgexplotacion'].'</a>';
+			$respuestaretornar['rutaexplotacion']=$rutapermisoexplotacion;
+        } else {
+			if ($Tramites[0]['ID_Clase_Servicio'] == 'STEC') {
+				$rutacertificado = $this->dominio_raiz  . ":172/PDFPermisoEspecialCarga_Mixto.php?modo=visualizacion&PermisoEspecial=".$Datos[0]['ID_Formulario_Solicitud'];
+			} else {
+				$rutacertificado = $this->dominio_raiz  .":172/PDFPermisoEspecialPasajero_Mixto.php?modo=visualizacion&PermisoEspecial=".$Datos[0]['ID_Formulario_Solicitud'];
 			}
 			$respuestaretornar['errorcertificado']=false;
-			$respuestaretornar['msgcertificado']='<strong>  IMPRIMIR PERMISO(S) ESPECIAL(ES) REGISTRADOS EN EL RAM.-' . $Expediente['ID_Solicitud'] . '</strong>';
-			$respuestaretornar['botoncertificado']='<a style="background-color: #4BEE56; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutacertificado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcertificado'].'</a>';
-			$respuestaretornar['id_certificado']=$rutacertificado;
+			$respuestaretornar['msgcertificado']='<strong>  PERMISO(S) ESPECIAL(ES) REGISTRADO(S) DENTRO DEL RAM.-' . $Datos[0]['ID_Formulario_Solicitud'] . '</strong>';
+			$respuestaretornar['botoncertificado']='<a style="width:100%;background-color: #4BEE56; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutacertificado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcertificado'].'</a>';
         }		
+		//********************************************************************************************************************************************/
+		//* RUTA Expediente Escaenado
+		//********************************************************************************************************************************************/
+		$rutaexpediente = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/' . $Datos[0]['ID_Formulario_Solicitud'] . '.pdf';   
+		if (file_exists($rutaexpediente)) {
+			$respuestaretornar['msgexpediente']='<strong>  ARCHIVO PDF SUBIDO DE EXPEDIENTE NO.-: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
+			$respuestaretornar['botonexpediente']='<a style="width:100%;background-color: #B7DEEAFF; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutaexpediente.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgexpediente'].'</a>';
+			$respuestaretornar['rutaexpediente']=$rutaexpediente;
+		}
 		//********************************************************************************************************************************************/
 		//* RUTA AVISO DE COBRO                                                                                                                     **/
 		//********************************************************************************************************************************************/
-		//$url_aviso_cobro =   'Documentos/' . $Expediente['ID_Solicitud'] . '/AvisodeCobro_' . $Expediente['ID_Solicitud'] . '.pdf'; 
-		$rutaavisocobro  = $this->dominio_raiz . ':90/api_rep.php?ra=S&action=get-facturaPdf&nu=' . $Expediente['CodigoAvisoCobro'];   
-		$respuestaavisocobro['msgcomprobante']='<strong>  IMPRIMIR AVISO DE COBRO NO.-: ' . $Expediente['ID_Solicitud'] . '  </strong>';
-		$respuestaavisocobro['botoncomprobante']='<a style="background-color: #FB6C6CFF; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutaavisocobro.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcomprobante'].'</a>';
-		$respuestaravisocobro['rutacomprobante']=$rutaavisocobro;
-		//*******************************************************************************************************************/
-		//* RUTA COMPROBANTE DE INGRESO																				       **/
-		//*******************************************************************************************************************/
-		$rutacomprobante = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir.php?action=get-Solicitud-new&sol=". $Expediente['SOL_MD5'];
-		$respuestaretornar['msgcomprobante']='<strong>  IMPRIMIR COMPROBANTE DE INGRESO AL SICE DEL EXPEDIENTE/SOLICITUD: ' . $Expediente['ID_Solicitud'] . '  </strong>';
-		$respuestaretornar['botoncomprobante']='<a style="background-color: #F163D3; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutacomprobante.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcomprobante'].'</a>';
-		$respuestaretornar['rutacomprobante']=$rutacomprobante;
-		//**********************************************************************************/
-		//* PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Expediente['ID_Solicitud'] . '  **/
-		//**********************************************************************************/
-		$rutaportada = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir_exp.php?action=get-Expediente&sol=". $Expediente['ID_Solicitud'];
-		$respuestaretornar['msgportada']='<strong>  IMPRIMIR PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Expediente['ID_Solicitud'] . '  </strong>';
-		$respuestaretornar['botonportada']='<a style="background-color: #6DE0EFFF; border-radius: 15px; border: solid 4px #151414;" href="'.$rutaportada.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgportada'].'</a>';
-		$respuestaretornar['rutaportada']=$rutaportada;
-		//*******************************************************************************************************************/
-		//* RUTA AUTO INGRESO                                                                                              **/
-		//*******************************************************************************************************************/
-		$url_auto_motivado = 'Documentos/' . $Expediente['ID_Solicitud'] . '/AutoMotivado_' . $Expediente['ID_Solicitud'] . '.pdf';   
-		$respuestaretornar['msg']='<strong>  IMPRIMIR AUTO DE INGRESO CON EL NÚMERO: ' . $Automotivado . '  </strong>';
-		$respuestaretornar['Boton']='<a style="background-color:  #F7942BFF; border-radius: 15px; border: solid 4px #33536f;" href="'. $url_auto_motivado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msg'].'</a>';
-		$respuestaretornar['ruta']=$url_auto_motivado;
-		$respuestaretornar['numero_auto']=$Automotivado;
-		//**********************************************************************************/
-		//* RESOLUCIOON CON NÚMERO: ' . $Resolucion . '  **/
-		//**********************************************************************************/
-		$url_resolucion = 'Documentos/' . $Expediente['ID_Solicitud'] . '/' .  $Resolucion . '.pdf';
-		$respuestaretornar['msg']='<strong>  IMPRIMIR RESOLUCION CON NÚMERO: ' . $Resolucion .  '  </strong>';
-		$respuestaretornar['boton']='<a style="background-color: #D8E42D; border-radius: 15px; border: solid 4px #0E0E0D;" href="'.$url_resolucion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msg'].'</a>';
-		$respuestaretornar['ruta']=$url_resolucion;
-		$respuestaretornar['id_resolucion']=$Resolucion;
+		$rutaavisocobro  = $this->dominio_raiz . ':90/api_rep.php?ra=S&action=get-facturaPdf&nu=' . $Datos[0]['CodigoAvisoCobro'];   
+		$respuestaretornar['msgavisocobro']='<strong>  AVISO DE COBRO NO: ' . $Datos[0]['CodigoAvisoCobro'] . '  </strong>';
+		$respuestaretornar['botonavisocobro']='<a style="width:100%;background-color: #FB6C6CFF; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutaavisocobro.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgavisocobro'].'</a>';
+		$respuestaretornar['rutaavisocobro']=$rutaavisocobro;
 		return $respuestaretornar;
 	}
 
@@ -1853,9 +1867,7 @@ require_once("../qr/qrlib.php");
 							$datos[11] = $this->getDepartamentos();
 						}
 						$datos[12] = $_POST["RAM"];
-						//$datos[13] = $this->getNumeroAutomotivado();
-						//$datos[14] = $this->getNumeroResolucion();
-						//$datos[15] = $this->getLinkReportes($datos[4],$datos[13],$datos[14]);
+						$datos['Reportes'] = $this->getLinkReportes($datos[4],$datos[5]);
 						$datos[99] = 'getSolicitanteEXP() Recuperando Expediente';
 						echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 					} else {
@@ -2987,11 +2999,7 @@ require_once("../qr/qrlib.php");
 	/*****************************************************************************************/
 	protected function getDatosUnidadDesdeIP($placa)
 	{
-		//*http://10.1.220.1:5000/consulta/placa?
-		//*:184/api/Unidad/ConsultarDatosIP/
-		//*$vehiculo = json_decode($this->file_contents("http://10.1.220.1:5000/consulta/placa?placa=" . strtoupper($placa)));
-		//*$vehiculo = json_decode($this->file_contents($_SESSION["appcfg_Dominio_Raiz"] . ":184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
-		$vehiculo = json_decode($this->file_contents("192.168.100.217:184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
+		$vehiculo = json_decode($this->file_contents($_SESSION["appcfg_Dominio_Raiz"] . ":184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
 		//*Recuperando el codigo de la marca del vehiculo
 		if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
 			$marca = $this->getMarcaByDesc($vehiculo->cargaUtil->marca);
@@ -3019,6 +3027,35 @@ require_once("../qr/qrlib.php");
 				$vehiculo->cargaUtil->Preformas = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"], strval($_POST['RAM']),$_POST["modalidadDeEntrada"]??'');
 				$vehiculo->cargaUtil->Placas = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 			}
+		} else {
+			$vehiculo = json_decode($this->file_contents("192.168.100.217:184/api/Unidad/ConsultarDatosIP/" . strtoupper($placa)));
+			if (isset($vehiculo->codigo) == true && $vehiculo->codigo == 200) {
+				$marca = $this->getMarcaByDesc($vehiculo->cargaUtil->marca);
+				if (isset($marca[0]['error']) == true && $marca[0]['error'] == false) {
+					if (isset($marca) && isset($marca[1]) && isset($marca[1]['data']) && isset($marca[1]['data']['ID_Marca']) && $marca[1]['data']['ID_Marca'] != '') {
+						$vehiculo->cargaUtil->marcacodigo = $marca[1]['data']['ID_Marca'];
+					} else {
+						$vehiculo->cargaUtil->marcacodigo = '';
+					}
+				}
+				//Recuperando el codigo del color de vehiculo
+				$color = $this->getColorByDesc($vehiculo->cargaUtil->color);
+				if (isset($color[0]['error']) == true && $color[0]['error'] == false) {
+					if (isset($color) && isset($color[1]) && isset($color[1]['data']) && isset($color[1]['data']['ID_Marca']) && $color[1]['data']['ID_Color'] != '') {
+						$vehiculo->cargaUtil->colorcodigo = $color[1]['data']['ID_Color'];
+					} else {
+						$vehiculo->cargaUtil->colorcodigo = '';
+					}
+				}
+				//**********************************************************************************************************************/
+				// Recuperando las multas del vehiculo
+				//**********************************************************************************************************************/
+				if ($_POST["action"] == "get-vehiculo") {
+					$vehiculo->cargaUtil->Multas = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior,strval($vehiculo->cargaUtil->propietario->identificacion),false);
+					$vehiculo->cargaUtil->Preformas = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"], strval($_POST['RAM']),$_POST["modalidadDeEntrada"]??'');
+					$vehiculo->cargaUtil->Placas = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
+				}
+			}			
 		}
 		return $vehiculo;
 	}
@@ -4149,7 +4186,7 @@ require_once("../qr/qrlib.php");
 	//*******************************************************************************************************************/
 	//* Actualizando el registro de secuencia
 	//*******************************************************************************************************************/
-	protected function updateEstadoPreforma($RAM,$idEstado)
+	protected function updateEstadoPreforma($RAM,$idEstado,$descripcion)
 	{
 		if (isset($_POST["echo"])) {
 			$_POST["echo"] = json_decode($_POST["echo"]);
@@ -4176,8 +4213,8 @@ require_once("../qr/qrlib.php");
 					}
 				}	
 			}
-
-			$saveBitacoraOk = $this->saveBitacora($_POST["RAM"], $eventox , $etapax);
+		
+			$saveBitacoraOk = $this->saveBitacora($_POST["RAM"], $eventox , $etapax,$descripcion);
 			
 			if ($saveBitacoraOk != false) {
 				if (!isset($_POST["echo"])) {
@@ -4799,20 +4836,22 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
-	protected function saveBitacora($RAM, $Evento, $Etapa)
+	protected function saveBitacora($RAM, $Evento, $Etapa, $descripcion='')
 	{
-		//Insert a la tabla de Bitacora_Preforma
+		//*Insert a la tabla de Bitacora_Preforma
 		$query = "INSERT INTO [IHTT_PREFORMA].[dbo].[TB_Bitacora_Movimiento_Preformas] 
 		(
 		ID_Preforma,
 		Evento,
 		Etapa,
+		Observacion_Reasignacion,
 		Sistema_Usuario,
 		Sistema_Fecha) 
 		VALUES(
 		:ID_Preforma,
 		:Evento,
 		:Etapa,
+		:Observacion_Reasignacion,
 		:Sistema_Usuario,
 		SYSDATETIME()
 		)";
@@ -4820,6 +4859,7 @@ require_once("../qr/qrlib.php");
 			":ID_Preforma" => $RAM,
 			":Evento" => $Evento,
 			":Etapa" => $Etapa,
+			":Observacion_Reasignacion" => $descripcion,
 			":Sistema_Usuario" => $_SESSION["user_name"]
 		);
 		return $this->insert($query, $parametros);
@@ -5664,7 +5704,7 @@ require_once("../qr/qrlib.php");
 							} else {
 								$isOKBitacora = true;
 								if ($_POST["Concesion"]['RAM'] == '') {
-									$isOKBitacora = $this->saveBitacora($RAM['nuevo_numero'], 'INGRESO', 1);
+									$isOKBitacora = $this->saveBitacora($RAM['nuevo_numero'], 'INGRESO', 1,'');
 								}
 								if ($isOKBitacora == false) {
 									$this->db->rollBack();

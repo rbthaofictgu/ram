@@ -138,7 +138,7 @@ require_once("../qr/qrlib.php");
 			}
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) != 0) {
-				$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'API_RAM.PHP Error Select: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+				$txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'Api_Exp.PHP Error Select: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 				logErr($txt, '../logs/logs.txt');
 				return false;
 			} else {
@@ -146,7 +146,7 @@ require_once("../qr/qrlib.php");
 			}
 		} catch (PDOException $e) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch SELECT PDOException; ' . $e->getMessage() . ' QUERY ' . $q . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+			$txt = date('Y m d h:i:s') . 'Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch SELECT PDOException; ' . $e->getMessage() . ' QUERY ' . $q . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 			logErr($txt, '../logs/logs.txt');
 			return false; // O devolver un valor indicando error
 		}
@@ -164,7 +164,7 @@ require_once("../qr/qrlib.php");
 			}
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) != 0) {
-				$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'API_RAM.PHP Error Select: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+				$txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'Api_Exp.PHP Error Select: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 				logErr($txt, '../logs/logs.txt');
 				return false;
 			} else {
@@ -172,7 +172,7 @@ require_once("../qr/qrlib.php");
 			}
 		} catch (PDOException $e) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch SELECT PDOException; ' . $e->getMessage() . ' QUERY ' . $q . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+			$txt = date('Y m d h:i:s') . 'Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch SELECT PDOException; ' . $e->getMessage() . ' QUERY ' . $q . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 			logErr($txt, '../logs/logs.txt');
 			return false; // O devolver un valor indicando error
 		}
@@ -188,7 +188,7 @@ require_once("../qr/qrlib.php");
 			$stmt->execute($p);
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) != 0) {
-				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' UPDATE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' parametros: '  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+				$txt = date('Y m d h:i:s') . ';Api_Exp.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' UPDATE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' parametros: '  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 				logErr($txt, '../logs/logs.txt');
 				return false;
 			} else {
@@ -196,7 +196,7 @@ require_once("../qr/qrlib.php");
 			}
 		} catch (\Throwable $th) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch UPDATE PDOException; ' . $th->getMessage() . ' QUERY ' . $q  . ' parametros: ' .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+			$txt = date('Y m d h:i:s') . 'Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch UPDATE PDOException; ' . $th->getMessage() . ' QUERY ' . $q  . ' parametros: ' .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 			logErr($txt, '../logs/logs.txt');
 			return false;
 		}
@@ -211,7 +211,7 @@ require_once("../qr/qrlib.php");
 			$stmt->execute($p);
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) != 0) {
-				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' INSERT: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' parametros: ' .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+				$txt = date('Y m d h:i:s') . ';Api_Exp.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' INSERT: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' parametros: ' .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 				logErr($txt, '../logs/logs.txt');
 				return false;
 			} else {
@@ -221,7 +221,7 @@ require_once("../qr/qrlib.php");
 			}
 		} catch (\Throwable $th) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch INSERT PDOException; ' . $th->getMessage() . ' QUERY ' . $q  . ' parametros: ' .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
+			$txt = date('Y m d h:i:s') . 'Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch INSERT PDOException; ' . $th->getMessage() . ' QUERY ' . $q  . ' parametros: ' .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));
 			logErr($txt, '../logs/logs.txt');
 			return false;
 		}
@@ -237,7 +237,7 @@ require_once("../qr/qrlib.php");
 			$resp = $stmt->execute($p);
 			$res = $stmt->errorInfo();
 			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) != 0) {
-				$txt = date('Y m d h:i:s') . ';Api_Ram.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' DELETE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));;
+				$txt = date('Y m d h:i:s') . ';Api_Exp.php Usuario:; ' . $_SESSION['usuario'] . '; -- ' . ' DELETE: Error q; ' . $q . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3] . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));;
 				logErr($txt, '../logs/logs.txt');
 				return false;
 			} else {
@@ -245,7 +245,7 @@ require_once("../qr/qrlib.php");
 			}
 		} catch (\Throwable $th) {
 			// Capturar excepciones de PDO (error de base de datos)
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch DELETE PDOException; ' . $th->getMessage() . ' QUERY ' . $q . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));;
+			$txt = date('Y m d h:i:s') . 'Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch DELETE PDOException; ' . $th->getMessage() . ' QUERY ' . $q . ' Parametros'  .  implode(', ', array_map(fn($k, $v) => "$k=$v", array_keys($p), $p));;
 			logErr($txt, '../logs/logs.txt');
 			return false;
 		}
@@ -964,17 +964,22 @@ require_once("../qr/qrlib.php");
 	//* Inicio: Funcion principal de Generacion de AutoMotivado de Ingreso
 	//***********************************************************************************************    
     protected function saveBitacoraNumeroAuto ($RAM) {
+        //***********************************************************************************************
         //* Salvando bitacora de la firma del automotivado
         //***********************************************************************************************
-        $llave_publica = hash('SHA512','/I(h$T@t%&)' . $RAM . date("Y/m/d h:i:sa"),false);
-        $respuestasaveBitacoraFirma = $this->saveBitacoraFirma($RAM,'AUTOMOTIVADO',$_SESSION["user_name"],$llave_publica);	
-        if ($respuestasaveBitacoraFirma != false) {
+        $respuestasaveAutoMotivado = $this->saveAutoMotivado($RAM,$_SESSION["ID_Usuario"],$_SESSION["user_name"]);
+        if ($respuestasaveAutoMotivado != false) {
             //***********************************************************************************************			
             //* Salvando Automotivado 
             //***********************************************************************************************
-            return  $this->saveAutoMotivado($RAM,$_SESSION["ID_Usuario"],$_SESSION["user_name"]);
+            $llave_publica = hash('SHA512','/I(h$T@t%&)' . $RAM . date("Y/m/d h:i:sa"),false);
+            if ($this->saveBitacoraFirma($respuestasaveAutoMotivado,'AUTOMOTIVADO',$_SESSION["user_name"],$llave_publica) != false){
+                return $respuestasaveAutoMotivado; 
+            } else {
+                return false;
+            }
         } else {
-            $respuestasaveBitacoraFirma;
+            return $respuestasaveAutoMotivado;
         }
     }
     //***********************************************************************************************
@@ -1452,7 +1457,7 @@ require_once("../qr/qrlib.php");
                 $record = $respuestagetSiguienteVehiculo;
                 if ($tipo_transporte == 'CARGA') {
                     //******************************************************************************************/
-                    //Aramando QUERY para insertar registro [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga]
+                    //* Armando QUERY para insertar registro [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga]
                     //******************************************************************************************/					
                     $query = "INSERT INTO [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga]
                     ([ID_Vehiculo_Carga],[ID_Tipo_Vehiculo_Carga],[ID_Marca],[Motor],[VIN],[Ancho],[Alto],[Largo],[RTN_Propietario],[Nombre_Revicion],[ID_Color],[Anio],
@@ -2034,6 +2039,7 @@ require_once("../qr/qrlib.php");
                 }
             }
         }
+
         $respuestainsertCertificadoHistorico = $this->insertCertificadoHistorico ($Data[0]['Certificado_Operacion'],$es_renovacion_tipo_transporte,$tipo_concesion);
         if ($respuestainsertCertificadoHistorico == false) {
             $txt = date('Y m d h:i:s') . '	' . ' 9013-respuestainsertCertificadoHistorico  Certificado_Operacion ' . $Data[0]['Certificado_Operacion'] . ' error de data';
@@ -2097,7 +2103,9 @@ require_once("../qr/qrlib.php");
             logErr($txt,'../logs/logs.txt');
             return false;                                                        
         }
+
         if ($es_renovacion_explotacion == true){
+
             $respuestainsertPerExpHistorico = $this->insertPerExpHistorico ($Data[0]['Permiso_Explotacion'],$es_renovacion_tipo_transporte);
             if ($respuestainsertPerExpHistorico ==false) {
                 $txt = date('Y m d h:i:s') . '	' . ' 9017-if ($respuestainsertPerExpHistorico ==false) { ' . $Data[0]['Certificado_Operacion'] . ' error de data';
@@ -2115,12 +2123,14 @@ require_once("../qr/qrlib.php");
                 logErr($txt,'../logs/logs.txt');
                 return false;                                                        
             }
+
             $respuestainsertBitacoraCambioTramites = $this->insertBitacoraCambioTramites (substr($tramitepeticion,0,500), substr($tramitepeticion,0,200), $Data[0]['Permiso_Explotacion'], $Data[0]['ID_Expediente'], $Data[0]['ID_Clase_Servico'], $Data[0]['Tipo_Documento'], $es_replaqueo);
             if ($respuestainsertBitacoraCambioTramites == false) {
                 $txt = date('Y m d h:i:s') . '	' . ' 9019-if ($respuestainsertBitacoraCambioTramites == false) { ' . $Data[0]['Certificado_Operacion'] . ' error de data';
                 logErr($txt,'../logs/logs.txt');
                 return false;                                                        
             }
+
             $llave_publica = hash('SHA512','/I(h$T@t%&)' . 'PERMISO EXPLOTACIÓN' . $Data[0]['ID_Solicitud'] .date("Y/m/d h:i:sa"),false);
             $respuestasaveBitacoraFirma = $this->saveBitacoraFirma($Data[0]['Permiso_Explotacion'],'PERMISO EXPLOTACIÓN',$_SESSION["user_name"],$llave_publica);	                            
             if ($respuestasaveBitacoraFirma == false) {
@@ -2128,13 +2138,14 @@ require_once("../qr/qrlib.php");
                 logErr($txt,'../logs/logs.txt');
                 return false;                                                        
             }
+
         } 
 
         if ($es_renovacion_explotacion == true) {
             if ($es_renovacion_tipo_transporte == 'CARGA') {
-                $rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Carga&Permiso=".$record['Permiso_Explotacion_Encrypted'];
+                $rutapermisoexplotacion = $this->dominio_raiz  . ":172/PDFPermisoExplotacionCarga_Mixto.php?modo=visualizacion&Permiso=@@__CONCESIONES__@@";
             } else {
-                $rutapermisoexplotacion = $this->dominio_raiz  . ":172/api_rep.php?action=get-PDFPermisoExp-Pas&Permiso=".$record['Permiso_Explotacion_Encrypted'];
+                $rutapermisoexplotacion = $this->dominio_raiz  . ":172/PDFPermisoExplotacionPasajero_Mixto.php?modo=visualizacion&Permiso=@@__CONCESIONES__@@";
             }
             $respuestaretornar['errorexplotacion']=false;
             $respuestaretornar['msgexplotacion']='<strong>  IMPRIMIR PERMISO DE EXPLOTACIÓN NO.- ' . $record['Permiso_Explotacion'] . '</strong>';
@@ -2148,7 +2159,7 @@ require_once("../qr/qrlib.php");
                 if ($es_renovacion_tipo_transporte == 'CARGA') {
                     $rutacertificado = $this->dominio_raiz  . ":172/PDFCertificadoCarga_Mixto.php?modo=visualizacion&Certificado=@@__CONCESIONES__@@";
                 } else {
-                    $rutacertificado = $this->dominio_raiz  . ":172/PDFCertificadoPasajeros_Mixto.php?modo=visualizacion&Certificado=@@__CONCESIONES__@@";
+                    $rutacertificado = $this->dominio_raiz  . ":172/PDFCertificadoPasajero_Mixto.php?modo=visualizacion&Certificado=@@__CONCESIONES__@@";
                 }
                 $respuestaretornar['errorcertificado']=false;
                 $respuestaretornar['msgcertificado']='<strong>  IMPRIMIR BORRADOR DE CERTIFICADO(s)</strong>';
@@ -2826,7 +2837,7 @@ require_once("../qr/qrlib.php");
 					$response['msgLog'] = "Fallo la creación del directorio: $directory";
 					$response['msg'] = 'Algo inesperado sucedio creando el directorio';
 					$response['error'] = true;
-					$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . "Fallo la creación del directorio: $directory";
+					$txt = date('Y m d h:i:s') . 'Api_Exp.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . "Fallo la creación del directorio: $directory";
 					logErr($txt, '../logs/logs.txt');
 					$mover = false;
 					if (!isset($_POST["echo"])) {
@@ -2853,7 +2864,7 @@ require_once("../qr/qrlib.php");
 			$response['msgLog'] = 'Caught Exception: ' .  $e->getMessage() . "\n";
 			$response['msg'] = 'Algo inesperado sucedio creando el directorio';
 			$response['error'] = false;
-			$txt = date('Y m d h:i:s') . 'Api_Ram.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . $e->getMessage() . "\n";
+			$txt = date('Y m d h:i:s') . 'Api_Exp.php	crearCarpeta:; ' . $_SESSION['usuario'] . '; - Error ; ' . $e->getMessage() . "\n";
 			logErr($txt, '../logs/logs.txt');
 			if (!isset($_POST["echo"])) {
 				return json_encode(array("error" => 11001, "errorhead" => "CATCH MOVIMIENTO ARCHIVO CREACION DE DIRECTORIO", "errormsg" => 'ERROR DESCONOCIDO AL TRATAR DE CREAR DIRECTORIO: ' . $directory));
@@ -2891,15 +2902,21 @@ require_once("../qr/qrlib.php");
                             if ($saveBitacoraFirma != false) {
                                 $PDFResolucionApi = $this->PDFResolucionApi($_POST["RAM"],$getSiguienteResolucion,$rs_id_rs_template=3,$cfg_institucion='INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE');
                                 if ($PDFResolucionApi != false) {
-                                    echo json_encode(array("AutoIngreso" => $pdfAutoMotivadoIngresoApi['Boton'],
-                                    "Resolucion" => $PDFResolucionApi['boton'],
-                                    "Comprobante" => $PDFResolucionApi['botoncomprobante'],
-                                    "Portada" => $PDFResolucionApi['botonportada'],
-                                    'ConcesionesEncryptada' => $PDFResolucionApi['ConcesionesEncryptada'],
-                                    'ConcesionesNumero' => $PDFResolucionApi['ConcesionesNumero'],
-                                    'Concesion' => str_replace('@@__CONCESIONES__@@',$miString = implode(',', $PDFResolucionApi['ConcesionesNumero']),$PDFResolucionApi['botoncertificado']),));
-                                    //*$this->db->rollBack();
-                                    $this->db->commit();
+                                    try {
+                                        //*$this->db->rollBack();
+                                        $this->db->commit();
+                                        echo json_encode(array("AutoIngreso" => $pdfAutoMotivadoIngresoApi['Boton'],
+                                        "Resolucion" => $PDFResolucionApi['boton'],
+                                        "Comprobante" => $PDFResolucionApi['botoncomprobante'],
+                                        "Portada" => $PDFResolucionApi['botonportada'],
+                                        'ConcesionesExplotacion' => isset($PDFResolucionApi['botonexplotacion'])? str_replace('@@__CONCESIONES__@@',$_POST["RAM"],$PDFResolucionApi['botonexplotacion']):'',
+                                        'Concesion' => isset($PDFResolucionApi['botoncertificado'])? str_replace('@@__CONCESIONES__@@',$_POST["RAM"],$PDFResolucionApi['botoncertificado']):'',));
+                                    } catch (Exception $e) {
+                                        $this->db->rollBack();
+                                        echo json_encode(array("error" => 6104, "errorhead" => 'CERRANDO SOLICITUD', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                                        $txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'CIERRE CATCH: ' . $e->getMessage();
+                                        logErr($txt, '../logs/logs.txt');
+                                    }                                    
                                 } else {
                                     $this->db->rollBack();
                                     echo json_encode(array("error" => 6006, "errorhead" => 'GENERANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
@@ -2921,6 +2938,7 @@ require_once("../qr/qrlib.php");
                     echo json_encode(array("error" => 6002, "errorhead" => 'AUTOMOTIVADO PDF', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
                 }
             } else {
+                $this->db->rollBack();
                 echo $updateEstadoPreforma;
             }
         } else {
@@ -2931,8 +2949,6 @@ require_once("../qr/qrlib.php");
 	//***********************************************************************************************
 	//* Final: Funcion principal de cierre de RAM ya es Expediente
 	//***********************************************************************************************
-
-
 }
 
 if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {

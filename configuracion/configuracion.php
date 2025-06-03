@@ -56,7 +56,7 @@ $roles_sistema_menu=['SUPERVISOR_RA','SUPERVISOR_VENTANILLA_RA'];
 // ***********************************************************************************/
 //* Version del Sistema
 // ***********************************************************************************/	
-$appcfg_software_version = 'VERSION 3.0.100 RTBM';
+$appcfg_software_version = 'VERSION 3.0.100';
 // ***********************************************************************************/
 //* fecha de Cambio de Version, utilizada como fecha de referencia de cambio de versión 
 //* y como fecha de partida para definir cuando aun se considera una version reciente

@@ -3,7 +3,7 @@ var rowsPerPage = 10;
 var estadoInicial = '' //* Puedes establecer el estado 
 var descripcionInicial = '';
 var agregar = '';
-var estadosSistem = ['IDE-1', 'IDE-2', 'IDE-3', 'IDE-4', 'IDE-5', 'IDE-6'];
+var estadosSistem = ['IDE-1', 'IDE-2', 'IDE-3', 'IDE-4', 'IDE-5', 'IDE-6', 'IDE-7', 'IDE-8'];
 var descripcionEstado = ['EN PROCESO', 'EN VENTANILLA', 'CANCELADO', 'FINALIZADO', 'INADMISION', 'REQUERIDO'];
 var usuario = (document.getElementById('id_user').value).toUpperCase();
 
@@ -64,7 +64,6 @@ function vista_data(estado = '', descripcion = '', agregar, num) {
 
    var elemento = document.getElementById('idAgregar');
 
-
    if (agregar !== '1' || esConsultas == true) {
       elemento.style.display = 'none';
       // console.log('agregar no está habilitado', agregar);
@@ -91,7 +90,6 @@ function vista_data(estado = '', descripcion = '', agregar, num) {
    const loadingIndicator = document.getElementById("tabla-container").innerHTML;
    //*colocando inagne de carga en tabla_container.
    document.getElementById("tabla-container").innerHTML = '<center><img width="100px" height="100px" src="' + $appcfg_Dominio_Corto + 'ram/assets/images/loading-waiting.gif"></center>';
-
    //?nota:en estado si hay estado se envia si no se poner por defecto el ultimo estado seleccionado.
    //*peticion fetch que envia estado datoBuscar, limit, page
    fetch(url)
@@ -437,7 +435,7 @@ function agregarRams() {
 //*INICIO: funcion encargada de crear el body de la tabla
 //***********************************************************/
 function renderTableRows(data, tbody, todo, descripcion) {
-   console.log(data, 'datassss.');
+   // console.log(data, 'datassss.');
    tbody.innerHTML = ''; //*limpiando cuerpo de la tabla
    //*recorriendo datos 
    data.forEach((fila, index) => {
@@ -452,20 +450,22 @@ function renderTableRows(data, tbody, todo, descripcion) {
       // console.log(fila[8], 'fila');
       //*para dividir los elementos del pago.
       var dividirDatosPagos = [];
-      if (fila[10] !== null) {
-         dividirDatosPagos = fila[10].split("-");
-         //  console.log(dividirDatosPagos);
+
+      if (typeof fila[10] === 'string' && fila[10].includes('-')) {
+         dividirDatosPagos = fila[10].split('-');
       }
+
       var activo = '';
       var folioPago = '';
       var url = '';
+
       //*recorriendo los datos
       fila.forEach((valor, colIndex) => {
          activo = (dividirDatosPagos[1] != undefined) ? dividirDatosPagos[1] : 'NO ESTA ACTIVO';
          folioPago = (dividirDatosPagos[0] != undefined) ? dividirDatosPagos[0] : 'NO HAY AVISO DE COBRO';
-          console.log(folioPago, 'folioPago');
+         // console.log(folioPago, 'folioPago');
          //?nota:Fila[0] es el ram
-         
+         // https://satt2.transporte.gob.hn:90/api_rep.php?ra=S&action=get-facturaPdf&nu=205463
          url = `${$appcfg_Dominio_Raiz}:90/api_rep.php?ra=S&action=get-facturaPdf&nu=${folioPago}`
          // url = `${$appcfg_Dominio}Documentos/${fila[0]}/AvisodeCobro_${fila[0]}.pdf`
          if (colIndex !== 10 && colIndex !== 11 && colIndex !== 12) {
@@ -480,7 +480,7 @@ function renderTableRows(data, tbody, todo, descripcion) {
                td.textContent = soloFecha;
             } else {
                if (colIndex == 9) {
-                  console.log(fila[9], 'fila[9]');
+                  // console.log(fila[9], 'fila[9]');
                   td.innerHTML = `<span data-bs-toggle="tooltip"} class="badge badge-no">NO</span>`;
                   actualizarBadge(valor, td); // Inicialmente muestra "NO"
                   setTimeout(() => {
@@ -546,13 +546,12 @@ function renderTableRows(data, tbody, todo, descripcion) {
                         </span>`
                : `<span style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
                <a href="${url}" target="_blank"  style="display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration:none">
-                           <i class="fas fa-dollar-sign dolar-span text-center"  data-bs-toggle="tooltip" title="${folioPago}" style="font-size: 23px;">
-                           </i>
-                           <span class="dolar-span-text " style="font-size: 12px;"></span>
-                        </span>
-                        <a/> 
-                        ` //${valor}
-
+                  <i class="fas fa-dollar-sign dolar-span text-center"  data-bs-toggle="tooltip" title="${folioPago}" style="font-size: 23px;">
+                  </i>
+                  <span class="dolar-span-text " style="font-size: 12px;"></span>
+               </span>
+               <a/> 
+               ` //${valor}
             }
                   </div>`;
          // Inicializar tooltip de Bootstrap
@@ -571,7 +570,7 @@ function renderTableRows(data, tbody, todo, descripcion) {
 
             //*creando el icono de cancelar
             td_cancelar.innerHTML = `
-            <span onclick="fUpdateEstado('IDE-3','${fila[0]}')" 
+            <span onclick="fUpdateEstado('IDE-3','${fila[0]}','CANCELADO')" 
             class="accion-item " data-bs-toggle="tooltip" title="Boton para Cancelar solicitud" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
                <i class="fas fa-window-close cancelar" style="font-size: 35px;"></i>
                <span class="cancelar" style="font-size: 12px;">CANCELAR</span>
@@ -580,7 +579,7 @@ function renderTableRows(data, tbody, todo, descripcion) {
             //*creando el icono de inadmitido
             var td_prohibido = document.createElement('td');
             td_prohibido.innerHTML = `
-            <span class="inadmitido" onclick="fUpdateEstado('IDE-4','${fila[0]}')" 
+            <span class="inadmitido" onclick="fUpdateEstado('IDE-4','${fila[0]}','INADMITIDO')" 
             class="accion-item inadmitido" data-bs-toggle="tooltip" title="Boton para Inadmitir solicitud" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;">
                <i class="fas fa-ban inadmitido" style="font-size: 35px;"></i>
                <span class="inadmitido" style="font-size: 12px;">INADMITIDO</span>
@@ -735,27 +734,53 @@ function actualizarBadge(valor, td) {
 //**********************************************************************************************/
 //*INICIO: funcion encargada de cambiar los estado de la solicitud por cancelado o inadmitido
 //************************************************************************************************/
-function fUpdateEstado(estado, ram, echo) {
+function fUpdateEstado(estado, ram, title) {
+   //* Mostrar el modal para la descripcion.
+   const myModal = new bootstrap.Modal(document.getElementById('modalDescripcion'));
+   myModal.show();
+   document.getElementById('descripcionInput').innerHTML = ''; // Limpiar el campo de descripción
+   //* obtenr descripcion al momento de cambiar el estado
+   document.getElementById('guardarDescripcion').addEventListener('click', function () {
 
-   //*confirmamos si el usuario esta seguro de hacer el cambio de estado coon un alerte.
-   Swal.fire({
-      title: `CONFIRMACIÓN`,
-      html: `¿ESTA SEGURO DE CAMBIAR EL ESTADO DE LA SOLICITUD  <strong>${ram}</strong>?`,
-      icon: 'info',
-      showCancelButton: true,
-      confirmButtonText: 'SÍ',
-      cancelButtonText: 'CANCELAR',
-   }).then((result) => {
-      //* Si confirma que está seguro de agregar la concesión, llamamos la función para agregarla.
-      if (result.isConfirmed) {
-         //*! llamamos la funcion que hace el cambio en la base de datos 
-         fUpdateEstadoFetch(estado, ram, echo);
+      const descripcion = document.getElementById('descripcionInput').value.toUpperCase();
+
+      if (descripcion.trim() === '') {
+         Swal.fire({
+            title: '¡ERROR!',
+            html: `LA DESCRIPCIÓN PARA CAMBIAR EL ESTADO A <strong>${title}</strong> NO PUEDE ESTAR VACÍO.`,
+            icon: 'error',
+            confirmButtonText: 'OK',
+         });
+         return; // Salir de la función si la descripción está vacía
+
+      } else {
+         Swal.fire({
+            title: `CONFIRMACIÓN`,
+            html: `¿ESTA SEGURO DE CAMBIAR EL ESTADO DE LA SOLICITUD  <strong>${ram}</strong> A EL ESTADO DE <strong>${title}</strong>? `,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'SÍ',
+            cancelButtonText: 'CANCELAR',
+         }).then((result) => {
+            //* Si confirma que está seguro de agregar la concesión, llamamos la función para agregarla.
+            if (result.isConfirmed) {
+               //*! llamamos la funcion que hace el cambio en la base de datos 
+               console.log(descripcion, estado, ram); // Asume que ya tienes 'estado' y 'ram' definidos
+               fUpdateEstadoFetch(estado, ram, descripcion);
+               myModal.hide();
+               document.getElementById('descripcionInput').innerHTML = ''; // Limpiar el campo de descripción
+            }
+         });
+
       }
-   });
 
+
+   });
 }
+//*confirmamos si el usuario esta seguro de hacer el cambio de estado coon un alerte.
+
 //*Funcion encargada de hacer el metodo POST  al abase de datos para realizar el cmabio.
-function fUpdateEstadoFetch(estado, ram, echo) {
+function fUpdateEstadoFetch(estado, ram, descripcion, echo) {
    //* Crea un objeto FormData a partir de tu formulario
    let fd = new FormData(document.forms.form1);
 
@@ -766,6 +791,7 @@ function fUpdateEstadoFetch(estado, ram, echo) {
    fd.append("action", "update-estado-preforma");
    fd.append("RAM", JSON.stringify(ram));
    fd.append("idEstado", JSON.stringify(estado));
+   fd.append("descripcion", JSON.stringify(descripcion));
    fd.append("echo", JSON.stringify(true));
 
    //*Opciones para la solicitud Fetch
@@ -948,7 +974,7 @@ window.onload = function () {
       if (infoEstado != null) {
          infoEstado.forEach((element, index) => {
             if (index == 0) {
-               console.log(element, 'element');
+               // console.log(element, 'element');
                estadoInicial = element[0];
                descripcionInicial = element[1];
                agregar = element[2];

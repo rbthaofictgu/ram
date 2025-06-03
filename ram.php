@@ -161,13 +161,17 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <div class="modal fade bd-example-modal-lg" id="modalReports" tabindex="-1" role="dialog" aria-labelledby="modalReportsTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
-          <div class="modal-header logo_bg">
-            <div class="modal-title" id="modalReportsLongTitle"><strong class="light"><i class="fas fa-print fa-2x light"></i> <h2>LISTADO DE REPORTES</h2></strong></div>
+          <div class="modal-header"> <!--* logo_bg -->
+            <div class="modal-title" id="modalReportsLongTitle">
+              <strong class="light">
+              <i class="fas fa-print fa-2x light"></i><h2>LISTADO DE REPORTES</h2>
+            </strong>
+            </div>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-              <span aria-hidden="true"><i class="fas fa-window-close fa-2x gobierno1"></i></span>
+              <span aria-hidden="true"><i class="fas fa-window-close gobierno1"></i></span>
             </button>
           </div>
-          <div class="modal-body">
+          <div id="id_reportes" class="modal-body">
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -185,7 +189,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
       data-bs-original-title="Ver tabla de tramites para la concesión actual"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fShowTramites()" style="display: none;" id="rightDivTR" type="button" class="btn btn-primary btn-sm"><i class="fas fa-clipboard-list"></i></button>
+      onclick="fShowTramites()" style="display: none;" id="rightDivTR" type="button" class="btn btn-primary btn-sm"><i class="fas fa-clipboard-list fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Final de Div De  Boton Show/Hide Concesion en Pantalla -->
     <!-- ******************************************************* -->
@@ -196,7 +200,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
       data-bs-original-title="Ver malla de todas las concesiones registradas con sus tramites"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fShowConcesiones()" style="display: flex;" id="rightDiv" type="button" class="btn btn-success btn-sm"><i class="fas fa-binoculars"></i></button>
+      onclick="fShowConcesiones()" style="display: flex;" id="rightDiv" type="button" class="btn btn-success btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-binoculars fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Final de Div De Concesiones y sus Tramites              -->
     <!-- ******************************************************* -->
@@ -207,13 +211,13 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
       data-bs-original-title="Ver los reportes disponibles para la RAM"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fDisplayReports()" style="display: flex;" id="rightDivPR" type="button" class="btn btn-light btn-sm"><i class="fas fa-print"></i></button>
+      onclick="fDisplayReports()" style="display: flex;" id="rightDivPR" type="button" class="btn btn-light btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-print fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Inicio de Div De Presentar Lista de Reportes            -->
     <!-- ******************************************************* -->
     <br>
     <br>
-    <button title="CAMBIAR DE UNIDAD" id="btnCambiarUnidad" type="button" style="display: none; position: absolute; top: 195px; right: 25px; padding: 10px" class="btn btn-success btn-sm scroll-btn">
+    <button title="CAMBIAR DE UNIDAD" id="btnCambiarUnidad" type="button" style="display: none; position: absolute; top: 195px; right: 25px; padding: 10px" class="btn btn-success btn-sm d-flex justify-content-center align-items-center scroll-btn">
       <i class="fas fa-truck-moving fa-2x"></i>  <strong>ENTRA</strong>
     </button>
     <!-- ******************************************************* -->

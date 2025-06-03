@@ -45,6 +45,7 @@ var modalidadDeEntrada = "I";
 var chkTramites;
 var fVieneFuncionEditarConcesion = false;
 var requiereCambioDePlaca = false;
+var Reportes = '';
 
 
 function reLoadScreen(ruta) {
@@ -1058,6 +1059,27 @@ function fMarcarRequicitos() {
   ).checked = true;
 }
 //**************************************************************************************/
+//* Procesar Reportes y Establecerlos en Modal de Reportes
+//**************************************************************************************/
+function procesarDatosIHTT(Reportes) {
+  var detalle = document.getElementById("id_reportes");
+  var keys = 	['botoncertificado','botonexplotacion','botonexpediente',
+                'botonavisocobro','botoncomprobante','botonportada',
+                'botonauto','botonresolucion'];
+
+  for (const key in Reportes) {
+    if (Reportes.hasOwnProperty(key)) {
+      if (keys.includes(key)) {
+        const valor = Reportes[key];
+        console.log(`Clave: ${key}`);
+        console.log(`Valor: ${valor}`);
+        console.log('--------------------------------');
+        detalle.innerHTML = detalle.innerHTML + valor; 
+      }
+    }
+  }
+}
+//**************************************************************************************/
 //* Cargando la información por default que debe usar el formulario
 //**************************************************************************************/
 function f_DataOmision() {
@@ -1114,7 +1136,7 @@ function f_DataOmision() {
   fetchWithTimeout(url, options, 1000000)
     .then((response) => response.json())
     .then(function (datos) {
-      console.log(datos, "datos de la respuesta del servidor en f_DataOmision()");
+      Reportes = '';
       cargadocs=false;
       estanCargadocs=true;
       if (document.getElementById("Ciudad").value.toUpperCase().substring(0, 11) != "TEGUCIGALPA") {
@@ -1143,165 +1165,171 @@ function f_DataOmision() {
         //*Si se recupero la información de apoderado ingresa a este if                                                     */
         //*******************************************************************************************************************/
         if (typeof datos[3] != "undefined" && typeof datos[3][0] != "undefined") {
-          //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
-          document.getElementById("nomapoderado").value =
-            datos[3][0]["Nombre_Apoderado_Legal"];
-          document.getElementById("colapoderado").value =
-            datos[3][0]["ID_Colegiacion"];
-          document.getElementById("identidadapod").value =
-            datos[3][0]["Ident_Apoderado_Legal"];
-          document.getElementById("dirapoderado").value =
-            datos[3][0]["Direccion_Apoderado_Legal"];
-          document.getElementById("telapoderado").value =
-            datos[3][0]["Telefono_Apoderado_Legal"];
-          document.getElementById("emailapoderado").value =
-            datos[3][0]["Email_Apoderado_Legal"];
-          document.getElementById("ID_Apoderado").value = datos[3][0]["ID"];
-          if (datos[4].length > 0) {
-            fLlenarSelect("Departamentos", datos[11], datos[4][0]["ID_Departamento"], false, {
-              text: "SELECCIONE UN DEPARTAMENTO",
-              value: "-1",
-            });
-            fLlenarSelect("Municipios", datos[10], datos[4][0]["ID_Municipio"], false, {
-              text: "SELECCIONE UN MUNICIPIO",
-              value: "-1",
-            });
-            fLlenarSelect("Aldeas", datos[9], datos[4][0]["ID_Aldea"], false, {
-              text: "SELECCIONE UNA ALDEA",
-              value: "-1",
-            });
-          }
-          //*******************************************************************************************************************/
-          //* Si el elemento 12 existe quiero decir que ya esta convertido a Expediente la FLS
-          //*******************************************************************************************************************/
-          if (datos?.[12]) {
-            document.getElementById("ID_Expediente").value = datos[12];
-            document.getElementById("ID_Solicitud").value = datos[12];
-            if (datos[4][0]["Usuario_Acepta"] != document.getElementById("User_Name").value) {
-              document.getElementById("esUsuarioPropietario").value = true;         
-              document.getElementById("btnnext4").style.display = "none";   
-              document.getElementById("share").style.display = "inline";   
-              document.getElementById("share").setAttribute('title','Asignado a: ' + datos[4][0]["Usuario_Acepta"]);     
+            //*Moviendo campos de base de datos a datos de pantalla Apoderado Legal
+            document.getElementById("nomapoderado").value =
+              datos[3][0]["Nombre_Apoderado_Legal"];
+            document.getElementById("colapoderado").value =
+              datos[3][0]["ID_Colegiacion"];
+            document.getElementById("identidadapod").value =
+              datos[3][0]["Ident_Apoderado_Legal"];
+            document.getElementById("dirapoderado").value =
+              datos[3][0]["Direccion_Apoderado_Legal"];
+            document.getElementById("telapoderado").value =
+              datos[3][0]["Telefono_Apoderado_Legal"];
+            document.getElementById("emailapoderado").value =
+              datos[3][0]["Email_Apoderado_Legal"];
+            document.getElementById("ID_Apoderado").value = datos[3][0]["ID"];
+            if (datos[4].length > 0) {
+              fLlenarSelect("Departamentos", datos[11], datos[4][0]["ID_Departamento"], false, {
+                text: "SELECCIONE UN DEPARTAMENTO",
+                value: "-1",
+              });
+              fLlenarSelect("Municipios", datos[10], datos[4][0]["ID_Municipio"], false, {
+                text: "SELECCIONE UN MUNICIPIO",
+                value: "-1",
+              });
+              fLlenarSelect("Aldeas", datos[9], datos[4][0]["ID_Aldea"], false, {
+                text: "SELECCIONE UNA ALDEA",
+                value: "-1",
+              });
             }
             //*******************************************************************************************************************/
-            //* Si el aviso de cobro ya no ha sido pagado se inahibilita el boton de siguiente(cerrar en pantalla 4)
+            //* Si el elemento 12 existe quiero decir que ya esta convertido a Expediente la FLS
             //*******************************************************************************************************************/
-            document.getElementById("CodigoAvisoCobro").value = datos[4][0]['CodigoAvisoCobro'];
-            document.getElementById("AvisoCobroEstado").value = datos[4][0]['AvisoCobroEstado'];
-            console.log(datos[4][0]['AvisoCobroEstado'],'datos[4][0][\'AvisoCobroEstado\']');
-            document.getElementById("avisocobro").style.display = "inline";   
-            document.getElementById("avisocobro").href =  $appcfg_Dominio_Raiz + ":90/api_rep.php?ra=S&action=get-facturaPdf&nu="+datos[4][0]["CodigoAvisoCobro"];   
-            document.getElementById("avisocobro").setAttribute('title','Número de Aviso de Cobro: ' + datos[4][0]["CodigoAvisoCobro"]);     
-            //*******************************************************************************************************************/
-            if (Number(datos[4][0]['AvisoCobroEstado']) != 2) {
-              document.getElementById("btnnext4").style.display = "none";
-              document.getElementById("avisocobroicon").classList.remove("text-success");
-              document.getElementById("avisocobroicon").classList.add("text-error");   
+            if (datos?.[12]) {
+              document.getElementById("ID_Expediente").value = datos[12];
+              document.getElementById("ID_Solicitud").value = datos[12];
+              if (datos[4][0]["Usuario_Acepta"] != document.getElementById("User_Name").value) {
+                document.getElementById("esUsuarioPropietario").value = true;         
+                document.getElementById("btnnext4").style.display = "none";   
+                document.getElementById("share").style.display = "inline";   
+                document.getElementById("share").setAttribute('title','Asignado a: ' + datos[4][0]["Usuario_Acepta"]);     
+              }
+              //*******************************************************************************************************************/
+              //* Si el aviso de cobro ya no ha sido pagado se inahibilita el boton de siguiente(cerrar en pantalla 4)
+              //*******************************************************************************************************************/
+              document.getElementById("CodigoAvisoCobro").value = datos[4][0]['CodigoAvisoCobro'];
+              document.getElementById("AvisoCobroEstado").value = datos[4][0]['AvisoCobroEstado'];
+              console.log(datos[4][0]['AvisoCobroEstado'],'datos[4][0][\'AvisoCobroEstado\']');
+              document.getElementById("avisocobro").style.display = "inline";   
+              document.getElementById("avisocobro").href =  $appcfg_Dominio_Raiz + ":90/api_rep.php?ra=S&action=get-facturaPdf&nu="+datos[4][0]["CodigoAvisoCobro"];   
+              document.getElementById("avisocobro").setAttribute('title','Número de Aviso de Cobro: ' + datos[4][0]["CodigoAvisoCobro"]);     
+              //*******************************************************************************************************************/
+              if (Number(datos[4][0]['AvisoCobroEstado']) != 2) {
+                document.getElementById("btnnext4").style.display = "none";
+                document.getElementById("avisocobroicon").classList.remove("text-success");
+                document.getElementById("avisocobroicon").classList.add("text-error");   
+              } else {
+                document.getElementById("avisocobroicon").classList.remove("text-error");
+                document.getElementById("avisocobroicon").classList.add("text-success");
+              }
             } else {
-              document.getElementById("avisocobroicon").classList.remove("text-error");
-              document.getElementById("avisocobroicon").classList.add("text-success");
+              document.getElementById("ID_Expediente").value = '';
+              document.getElementById("ID_Solicitud").value = '';
+              if (datos[4][0]["Usuario_Creacion"] != document.getElementById("User_Name").value) {
+                document.getElementById("esUsuarioPropietario").value = true;         
+                document.getElementById("btnnext4").style.display = "none"; 
+                document.getElementById("share").style.display = "inline";     
+                document.getElementById("share").setAttribute('title','Creado por: ' + datos[4][0]["Usuario_Creacion"]);     
+              }            
             }
-          } else {
-            document.getElementById("ID_Expediente").value = '';
-            document.getElementById("ID_Solicitud").value = '';
-            if (datos[4][0]["Usuario_Creacion"] != document.getElementById("User_Name").value) {
-              document.getElementById("esUsuarioPropietario").value = true;         
-              document.getElementById("btnnext4").style.display = "none"; 
-              document.getElementById("share").style.display = "inline";     
-              document.getElementById("share").setAttribute('title','Creado por: ' + datos[4][0]["Usuario_Creacion"]);     
-            }            
-          }
-          fLlenarSelect(
-            "entregadocs",
-            datos[1],
-            datos[4][0]["Entrega_Ubicacion"],
-            false,
-            {
-              text: "SELECCIONE UN LUGAR DE ENTREGA",
-              value: "-1",
+            fLlenarSelect(
+              "entregadocs",
+              datos[1],
+              datos[4][0]["Entrega_Ubicacion"],
+              false,
+              {
+                text: "SELECCIONE UN LUGAR DE ENTREGA",
+                value: "-1",
+              }
+            );
+            document.getElementById("tipopresentacion").value = datos[4][0]["Presentacion_Documentos"];
+            //* Moviendo campos de base de datos a datos de pantalla Solicitante
+            if (typeof datos[4] != "undefined") {
+              document.getElementById("rtnsoli").value =
+                datos[4][0]["RTN_Solicitante"];
+              document.getElementById("nomsoli").value =
+                datos[4][0]["Nombre_Solicitante"];
+              document.getElementById("denominacionsoli").value =
+                datos[4][0]["Denominacion_Social"];
+              document.getElementById("domiciliosoli").value =
+                datos[4][0]["Domicilo_Solicitante"];
+              document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + datos[4][0]["DESC_Estado"];
+              document.getElementById("ID_Estado_RAM").value = datos[4][0]["Estado_Formulario"];
+              console.log(document.getElementById("ID_Estado_RAM").value,'document.getElementById("ID_Estado_RAM").value');
+              document.getElementById("telsoli").value =
+                datos[4][0]["Telefono_Solicitante"];
+              document.getElementById("emailsoli").value =
+                datos[4][0]["Email_Solicitante"];
+              document.getElementById("tiposolicitante").value = datos[4][0]["DESC_Solicitante"];
+              document.getElementById("tiposolicitante").setAttribute('data-id',datos[4][0]["ID_Tipo_Solicitante"]);
+              document.getElementById("Departamentos").value =
+                datos[4][0]["ID_Departamento"];
+              document.getElementById("ID_Solicitante").value = datos[4][0]["ID"];
+              document.getElementById("esEditable").value = datos[4][0]["esEditable"];
+              //***********************************************************************************************************************/
+              //*Si esta en modo consulta no importa el estado en que se encuentre la solicitud siempre esta en modo editable = false
+              //***********************************************************************************************************************/
+              console.log(Boolean(Consulta),'Booleand Consulta Befero Set esEditable');
+              if (Boolean(Consulta) == true) { console.log('set esEditable when Consulta == 0');document.getElementById("esEditable").value = false;}
+              document.getElementById("esCompartible").value = datos[4][0]["esCompartible"];
+              if (esEditable() == false) {
+                disabledEdit();
+                lockFormElements();   
+              }
+            } 
+            //***************************************************************************/
+            //* Armando Objeto de Concesiones Salvadas en Preforma
+            //***************************************************************************/
+            if (typeof datos[5] != "undefined") {
+              guardarConcesionSalvadaPreforma(datos[5], datos[7]);
             }
-          );
-          document.getElementById("tipopresentacion").value = datos[4][0]["Presentacion_Documentos"];
-          //* Moviendo campos de base de datos a datos de pantalla Solicitante
-          if (typeof datos[4] != "undefined") {
-            document.getElementById("rtnsoli").value =
-              datos[4][0]["RTN_Solicitante"];
-            document.getElementById("nomsoli").value =
-              datos[4][0]["Nombre_Solicitante"];
-            document.getElementById("denominacionsoli").value =
-              datos[4][0]["Denominacion_Social"];
-            document.getElementById("domiciliosoli").value =
-              datos[4][0]["Domicilo_Solicitante"];
-            document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + datos[4][0]["DESC_Estado"];
-            document.getElementById("telsoli").value =
-              datos[4][0]["Telefono_Solicitante"];
-            document.getElementById("emailsoli").value =
-              datos[4][0]["Email_Solicitante"];
-            document.getElementById("tiposolicitante").value = datos[4][0]["DESC_Solicitante"];
-            document.getElementById("tiposolicitante").setAttribute('data-id',datos[4][0]["ID_Tipo_Solicitante"]);
-            document.getElementById("Departamentos").value =
-              datos[4][0]["ID_Departamento"];
-            document.getElementById("ID_Solicitante").value = datos[4][0]["ID"];
-            document.getElementById("ID_Estado_RAM").value = datos[4][0]["Estado_Formulario"];
-            document.getElementById("esEditable").value = datos[4][0]["esEditable"];
-            //***********************************************************************************************************************/
-            //*Si esta en modo consulta no importa el estado en que se encuentre la solicitud siempre esta en modo editable = false
-            //***********************************************************************************************************************/
-            console.log(Boolean(Consulta),'Booleand Consulta Befero Set esEditable');
-            if (Boolean(Consulta) == true) { console.log('set esEditable when Consulta == 0');document.getElementById("esEditable").value = false;}
-            document.getElementById("esCompartible").value = datos[4][0]["esCompartible"];
-            if (esEditable() == false) {
-              console.log('esEditable == false');
-              disabledEdit();
-              lockFormElements();   
+            //***************************************************************************/
+            //* Estableciento el Link del Expediente Cargado para Trabajarlo
+            //***************************************************************************/
+            if (typeof datos[8] != "undefined" && datos[8] != false) {
+              document.getElementById("fileUploaded").style.display = "block";
+              document
+                .getElementById("fileUploadedLink")
+                .setAttribute("href", $appcfg_Dominio + datos[8]);
+            } else {
+              document.getElementById("fileUploaded").style.display = "none";
             }
-          } 
-          //***************************************************************************/
-          //* Armando Objeto de Concesiones Salvadas en Preforma
-          //***************************************************************************/
-          if (typeof datos[5] != "undefined") {
-            guardarConcesionSalvadaPreforma(datos[5], datos[7]);
-          }
-          //***************************************************************************/
-          //* Estableciento el Link del Expediente Cargado para Trabajarlo
-          //***************************************************************************/
-          if (typeof datos[8] != "undefined" && datos[8] != false) {
-            document.getElementById("fileUploaded").style.display = "block";
-            document
-              .getElementById("fileUploadedLink")
-              .setAttribute("href", $appcfg_Dominio + datos[8]);
-          } else {
-            document.getElementById("fileUploaded").style.display = "none";
-          }
-          //***************************************************************************/
-          //* Marcar requicitos
-          //***************************************************************************/
-          if (typeof datos[6] != "undefined" && datos[6] != false) {
-            console.log(datos[6],'datos[6]');
-            console.log(typeof datos[6] != "undefined",'typeof datos[6] != "undefined"');
-            console.log(datos[6] != false,'datos[6] != false');
-            requicitosRecuperados = true;
-            fMarcarRequicitos();
-          } else {
-            requicitosRecuperados = false;
+            //***************************************************************************/
+            //* Marcar requicitos
+            //***************************************************************************/
+            if (typeof datos[6] != "undefined" && datos[6] != false) {
+              console.log(datos[6],'datos[6]');
+              console.log(typeof datos[6] != "undefined",'typeof datos[6] != "undefined"');
+              console.log(datos[6] != false,'datos[6] != false');
+              requicitosRecuperados = true;
+              fMarcarRequicitos();
+            } else {
+              requicitosRecuperados = false;
+            }
+
+            if (typeof datos[8] != "undefined" && datos[8] != false) {
+                estanCargadocs = true;
+            } else {
+              if (cargadocs==true) {
+                estanCargadocs = false;
+              } else {
+                estanCargadocs = true;
+              }
           }
 
-          if (typeof datos[8] != "undefined" && datos[8] != false) {
-              estanCargadocs = true;
-          } else {
-            if (cargadocs==true) {
-              estanCargadocs = false;
-            } else {
-              estanCargadocs = true;
-            }
-        }
+          //*****************************************
+          //*Recuperando Reportes
+          //*****************************************
+          if (datos?.['Reportes']) { 
+            procesarDatosIHTT(datos['Reportes'])
+          }
 
         } else {
-
           if (typeof datos[15] != "undefined" && datos[15] != false) {
             document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + ' ' + datos[15].Desc_Estado;
+            console.log(document.getElementById("ID_Estado_RAM").value);
           }
-
           if (datos[1].length > 0) {
             fLlenarSelect("entregadocs", datos[1], null, false, {
               text: "SELECCIONE UN LUGAR DE ENTREGA",
@@ -1527,7 +1555,12 @@ function fCerrarProcesoEnDB() {
           html += Datos.Resolucion + "<br/>";
           html += Datos.Comprobante + "<br/>";
           html += Datos.Portada + "<br/>";
-          html += Datos.Concesion + "<br/>";
+          if (Datos.Concesion != '') {
+            html += Datos.Concesion + "<br/>";
+          }
+          if (Datos.ConcesionesExplotacion != '') {
+            html += Datos.ConcesionesExplotacion + "<br/>";
+          }
           fSweetAlertEventNormal(
             title,
             undefined,
@@ -1542,7 +1575,6 @@ function fCerrarProcesoEnDB() {
             //***********************************************************************************/
             startCelebration();
         }
-        console.log(Datos.ConcesionesEncryptada);
       }
     })
     .catch((error) => {
@@ -4816,26 +4848,39 @@ btnSalvarConcesion.addEventListener("click", function (event) {
           '',
           "error",
           "LOS PRIMEROS DOS DIGITOS DE LA PLACA <strong>("+ inputPlaca.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>'
-      );
+        );
       } else {
-        //**********************************************************************************************************/
-        //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
-        //**********************************************************************************************************/
-        setFocus = false;
-        isSaving = true;
-        fGetInputs();
-        isSaving = false;
-        setFocus = true;
-        const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
-        if (sum == 0) {
-          salvarConcesion();
-        } else {
+        var inputPlaca1 = document.getElementById('concesion1_placa');
+        var valorPlaca1 = inputPlaca1 ? inputPlaca.value.toUpperCase() : '';      
+        valorPlaca1 = valorPlaca1.toUpperCase();
+        if (document.getElementById('ID_Estado_RAM').value = 'IDE-1' && esCambioDeVehiculo==true && $appcfg_placas.includes(valorPlaca1.substring(0,2))==false) {
           fSweetAlertEventSelect(
             event,
-            "ERRORES",
-            "SE HAN DETECTADO ERROR(ES) DE DATOS EN LA PANTALLA FAVOR CORRIJA Y VUELVA A INTENTAR SALVAR",
-            "error"
+            "ERROR SALVANDO",
+            '',
+            "error",
+            "LOS PRIMEROS DOS DIGITOS DE LA PLACA QUE ENTRA <strong>("+ inputPlaca1.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>'
           );
+        } else {
+          //**********************************************************************************************************/
+          //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
+          //**********************************************************************************************************/
+          setFocus = false;
+          isSaving = true;
+          fGetInputs();
+          isSaving = false;
+          setFocus = true;
+          const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
+          if (sum == 0) {
+            salvarConcesion();
+          } else {
+            fSweetAlertEventSelect(
+              event,
+              "ERRORES",
+              "SE HAN DETECTADO ERROR(ES) DE DATOS EN LA PANTALLA FAVOR CORRIJA Y VUELVA A INTENTAR SALVAR",
+              "error"
+            );
+          }
         }
       }
     } else {
