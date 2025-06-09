@@ -54,7 +54,8 @@ require_once("../qr/qrlib.php");
 	protected $host;
 	protected $appcfg_estado_inicial;
 	protected $appcfg_estado_inicial_descripcion;
-	public function __construct($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion)
+	protected $appcfg_placas;
+	public function __construct($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion,$appcfg_placas)
 	{
 		$this->setDB(        $db,
 		         $appcfg_Dominio,
@@ -65,7 +66,8 @@ require_once("../qr/qrlib.php");
 			   $appcfg_smtp_user,
 		   $appcfg_smtp_password,
 		   $appcfg_estado_inicial,
-		   $appcfg_estado_inicial_descripcion);
+		   $appcfg_estado_inicial_descripcion,
+		$appcfg_placas);
 
 		$this->setIp();
 		$this->setHost();
@@ -130,7 +132,7 @@ require_once("../qr/qrlib.php");
 	}
 
 	
-	protected function setDB($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion): void	{
+	protected function setDB($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion,$appcfg_placas): void	{
 		$this->db = $db;
 		$this->dominio = $appcfg_Dominio;
 		$this->dominio_corto = $appcfg_Dominio_Corto;
@@ -141,6 +143,7 @@ require_once("../qr/qrlib.php");
 		$this->server_smtp_password = $appcfg_smtp_password;
 		$this->appcfg_estado_inicial = $appcfg_estado_inicial;
 		$this->appcfg_estado_inicial_descripcion = $appcfg_estado_inicial_descripcion;		
+		$this->appcfg_placas = $appcfg_placas;
 	}
 
 	protected function getDB($db)
@@ -1146,6 +1149,7 @@ require_once("../qr/qrlib.php");
 	protected function getSolicitanteRAM()
 	{
 	  $q = "SELECT 
+			us.ID_Empleado,
 			sol.Estado_Formulario,
 			eu.ID_Estado,
 			eu.id,
@@ -1196,9 +1200,12 @@ require_once("../qr/qrlib.php");
 			mn.ID_Departamento,
 			st.DESC_Solicitante,
 			es.esEditable,
-			es.esCompartible
+			es.esCompartible,
+			ISNULL(ENC.CodigoAvisoCobro,0) AS CodigoAvisoCobro
 		FROM 
 			IHTT_Preforma.dbo.TB_Solicitante sol
+			left outer join [IHTT_USUARIOS].[dbo].[TB_Usuarios] us on sol.Usuario_Creacion = us.Usuario_Nombre
+			left outer join [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] ENC on sol.ID_Formulario_Solicitud = ENC.ID_Solicitud
 		JOIN 
 			IHTT_SELD.dbo.TB_Aldea ald ON sol.ID_Aldea = ald.ID_Aldea
 		JOIN 
@@ -1741,43 +1748,27 @@ require_once("../qr/qrlib.php");
 
 
 
-	protected function getLinkReportes($Datos,$Tramites):array
+	protected function getLinkReportes($Datos,$Tramites,$esExpediente):array
 	{
         if ($Tramites[0]['ID_Clase_Servicio'] == 'STPC' || $Tramites[0]['ID_Clase_Servicio'] == 'STPP') {
-			//**********************************************************************************/
-			//* PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Expediente['ID_Solicitud'] . '  **/
-			//**********************************************************************************/
-			$rutaportada = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir_exp.php?action=get-Expediente&sol=". $Datos[0]['ID_Formulario_Solicitud'];
-			$respuestaretornar['msgportada']='<strong>  PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
-			$respuestaretornar['botonportada']='<a style="width:100%;background-color: #6DE0EFFF; border-radius: 15px; border: solid 4px #151414;" href="'.$rutaportada.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgportada'].'</a>';
-			$respuestaretornar['rutaportada']=$rutaportada;
-			//*******************************************************************************************************************/
-			//* RUTA COMPROBANTE DE INGRESO																				       **/
-			//*******************************************************************************************************************/
-			//*var urlcomprobante = $appcfg_Dominio_Raiz + ":293/api_rep.php?action=get-PDFComprobante&Solicitud="+Datos.SOL+"&fls="+Datos.SOL2+"&Nombre_Usuario=" +
-			//*Datos.Nombre_Usuario+"&Cod_Usuario="+Datos.Cod_Usuario+"&Originano_En_Ventanilla=1&ID_Usuario="+Datos.ID_Usuario+"&user_name="+Datos.user_name;		
-			$rutacomprobante = $this->dominio_raiz . ":293/api_rep.php?action=get-PDFComprobante&Solicitud=". $Datos[0]['ID_Formulario_Solicitud_Encrypted']."&Originano_En_Ventanilla=1&fls=".$Datos[0]['ID_Formulario_Solicitud']."&Nombre_Usuario=" .
-			$Datos[0]['Usuario_Acepta']."&Cod_Usuario=".$Datos[0]['Codigo_Usuario_Acepta'] . "&ID_Usuario=".$Datos[0]['ID_Empleado']."&user_name=".$Datos[0]['Usuario_Creacion'];
-			$respuestaretornar['msgcomprobante']='<strong>  COMPROBANTE DE INGRESO AL SICE DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
-			$respuestaretornar['botoncomprobante']='<a style="width:100%;background-color: #F163D3; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutacomprobante.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcomprobante'].'</a>';
-			$respuestaretornar['rutacomprobante']=$rutacomprobante;
-			//*******************************************************************************************************************/
-			//* RUTA AUTO INGRESO                                                                                              **/
-			//*******************************************************************************************************************/
-			if ($Datos[0]['ID_AutoAdmision'] > 0) {
-				$url_auto_motivado = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/AutoMotivado_' . $Datos[0]['ID_Formulario_Solicitud'] . '.pdf';   
-				$respuestaretornar['msgauto']='<strong>  AUTO DE INGRESO NÚMERO: ' . $Datos[0]['ID_AutoAdmision'] . '  </strong>';
-				$respuestaretornar['botonauto']='<a style="width:100%;background-color:  #F7942BFF; border-radius: 15px; border: solid 4px #33536f;" href="'. $url_auto_motivado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgauto'].'</a>';
-				$respuestaretornar['rutaauto']=$url_auto_motivado;
-				$respuestaretornar['numero_auto']=$Datos[0]['ID_AutoAdmision'];
+			if ($esExpediente == true) {
 				//**********************************************************************************/
-				//* RESOLUCIOON CON NÚMERO: ' . $Resolucion . '  **/
+				//* PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Expediente['ID_Solicitud'] . '  **/
 				//**********************************************************************************/
-				$url_resolucion = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/' .  $Datos[0]['ID_Resolucion'] . '.pdf';
-				$respuestaretornar['msgresolucion']='<strong>  RESOLUCION NÚMERO: ' . $Datos[0]['ID_Resolucion'] .  '  </strong>';
-				$respuestaretornar['botonresolucion']='<a style="width:100%;background-color: #D8E42D; border-radius: 15px; border: solid 4px #0E0E0D;" href="'.$url_resolucion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgresolucion'].'</a>';
-				$respuestaretornar['rutaresolucion']=$url_resolucion;
-				$respuestaretornar['id_resolucion']=$Datos[0]['ID_Resolucion'];
+				$rutaportada = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir_exp.php?action=get-Expediente&sol=". $Datos[0]['ID_Formulario_Solicitud'];
+				$respuestaretornar['msgportada']='<strong>  PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
+				$respuestaretornar['botonportada']='<a style="width:100%;background-color: #6DE0EFFF; border-radius: 15px; border: solid 4px #151414;" href="'.$rutaportada.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgportada'].'</a>';
+				$respuestaretornar['rutaportada']=$rutaportada;
+				//*******************************************************************************************************************/
+				//* RUTA COMPROBANTE DE INGRESO																				       **/
+				//*******************************************************************************************************************/
+				//*var urlcomprobante = $appcfg_Dominio_Raiz + ":293/api_rep.php?action=get-PDFComprobante&Solicitud="+Datos.SOL+"&fls="+Datos.SOL2+"&Nombre_Usuario=" +
+				//*Datos.Nombre_Usuario+"&Cod_Usuario="+Datos.Cod_Usuario+"&Originano_En_Ventanilla=1&ID_Usuario="+Datos.ID_Usuario+"&user_name="+Datos.user_name;		
+				$rutacomprobante = $this->dominio_raiz . ":293/api_rep.php?action=get-PDFComprobante&Solicitud=". $Datos[0]['ID_Formulario_Solicitud_Encrypted']."&Originano_En_Ventanilla=1&fls=".$Datos[0]['ID_Formulario_Solicitud']."&Nombre_Usuario=" .
+				$Datos[0]['Usuario_Acepta']."&Cod_Usuario=".$Datos[0]['Codigo_Usuario_Acepta'] . "&ID_Usuario=".$Datos[0]['ID_Empleado']."&user_name=".$Datos[0]['Usuario_Creacion'];
+				$respuestaretornar['msgcomprobante']='<strong>  COMPROBANTE DE INGRESO AL SICE DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
+				$respuestaretornar['botoncomprobante']='<a style="width:100%;background-color: #F163D3; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutacomprobante.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcomprobante'].'</a>';
+				$respuestaretornar['rutacomprobante']=$rutacomprobante;			
 			}
 			//*******************************************************************************************************************/
 			//* RUTA CERTIFICADO/PERMISO ESPECIAL Y PERMISO DE EXPLOTACIÓN
@@ -1795,7 +1786,44 @@ require_once("../qr/qrlib.php");
 			$respuestaretornar['msgexplotacion']='<strong>  PERMISO(S) DE EXPLOTACIÓN REGISTRADO(S) DENTRO DEL RAM.- ' . $Datos[0]['ID_Formulario_Solicitud'] . '</strong>';
 			$respuestaretornar['botonexplotacion']='<a style="width:100%;background-color: #BE0CBEFF; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutapermisoexplotacion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgexplotacion'].'</a>';
 			$respuestaretornar['rutaexplotacion']=$rutapermisoexplotacion;
+			if (isset($Datos[0]) and isset($Datos[0]['ID_AutoAdmision']) and $Datos[0]['ID_AutoAdmision'] > 0) {
+				//*******************************************************************************************************************/
+				//* RUTA AUTO MOTIVADO
+				//*******************************************************************************************************************/
+				$url_auto_motivado = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/AutoMotivado_' . $Datos[0]['ID_Formulario_Solicitud'] . '.pdf';   
+				$respuestaretornar['msgauto']='<strong>  AUTO DE INGRESO NÚMERO: ' . $Datos[0]['ID_AutoAdmision'] . '  </strong>';
+				$respuestaretornar['botonauto']='<a style="width:100%;background-color:  #F7942BFF; border-radius: 15px; border: solid 4px #33536f;" href="'. $url_auto_motivado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgauto'].'</a>';
+				$respuestaretornar['rutaauto']=$url_auto_motivado;
+				$respuestaretornar['numero_auto']=$Datos[0]['ID_AutoAdmision'];
+				//**********************************************************************************/
+				//* RESOLUCIOON CON NÚMERO: ' . $Resolucion . '  **/
+				//**********************************************************************************/
+				$url_resolucion = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/' .  $Datos[0]['ID_Resolucion'] . '.pdf';
+				$respuestaretornar['msgresolucion']='<strong>  RESOLUCION NÚMERO: ' . $Datos[0]['ID_Resolucion'] .  '  </strong>';
+				$respuestaretornar['botonresolucion']='<a style="width:100%;background-color: #D8E42D; border-radius: 15px; border: solid 4px #0E0E0D;" href="'.$url_resolucion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgresolucion'].'</a>';
+				$respuestaretornar['rutaresolucion']=$url_resolucion;
+				$respuestaretornar['id_resolucion']=$Datos[0]['ID_Resolucion'];
+			}
         } else {
+			if ($esExpediente == true) {
+				//**********************************************************************************/
+				//* PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Expediente['ID_Solicitud'] . '  **/
+				//**********************************************************************************/
+				$rutaportada = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir_exp.php?action=get-Expediente&sol=". $Datos[0]['ID_Formulario_Solicitud'];
+				$respuestaretornar['msgportada']='<strong>  PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
+				$respuestaretornar['botonportada']='<a style="width:100%;background-color: #6DE0EFFF; border-radius: 15px; border: solid 4px #151414;" href="'.$rutaportada.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgportada'].'</a>';
+				$respuestaretornar['rutaportada']=$rutaportada;
+				//*******************************************************************************************************************/
+				//* RUTA COMPROBANTE DE INGRESO																				       **/
+				//*******************************************************************************************************************/
+				//*var urlcomprobante = $appcfg_Dominio_Raiz + ":293/api_rep.php?action=get-PDFComprobante&Solicitud="+Datos.SOL+"&fls="+Datos.SOL2+"&Nombre_Usuario=" +
+				//*Datos.Nombre_Usuario+"&Cod_Usuario="+Datos.Cod_Usuario+"&Originano_En_Ventanilla=1&ID_Usuario="+Datos.ID_Usuario+"&user_name="+Datos.user_name;		
+				$rutacomprobante = $this->dominio_raiz . ":293/api_rep.php?action=get-PDFComprobante&Solicitud=". $Datos[0]['ID_Formulario_Solicitud_Encrypted']."&Originano_En_Ventanilla=1&fls=".$Datos[0]['ID_Formulario_Solicitud']."&Nombre_Usuario=" .
+				$Datos[0]['Usuario_Acepta']."&Cod_Usuario=".$Datos[0]['Codigo_Usuario_Acepta'] . "&ID_Usuario=".$Datos[0]['ID_Empleado']."&user_name=".$Datos[0]['Usuario_Creacion'];
+				$respuestaretornar['msgcomprobante']='<strong>  COMPROBANTE DE INGRESO AL SICE DEL EXPEDIENTE/SOLICITUD: ' . $Datos[0]['ID_Formulario_Solicitud'] . '  </strong>';
+				$respuestaretornar['botoncomprobante']='<a style="width:100%;background-color: #F163D3; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutacomprobante.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcomprobante'].'</a>';
+				$respuestaretornar['rutacomprobante']=$rutacomprobante;			
+			}
 			if ($Tramites[0]['ID_Clase_Servicio'] == 'STEC') {
 				$rutacertificado = $this->dominio_raiz  . ":172/PDFPermisoEspecialCarga_Mixto.php?modo=visualizacion&PermisoEspecial=".$Datos[0]['ID_Formulario_Solicitud'];
 			} else {
@@ -1804,6 +1832,24 @@ require_once("../qr/qrlib.php");
 			$respuestaretornar['errorcertificado']=false;
 			$respuestaretornar['msgcertificado']='<strong>  PERMISO(S) ESPECIAL(ES) REGISTRADO(S) DENTRO DEL RAM.-' . $Datos[0]['ID_Formulario_Solicitud'] . '</strong>';
 			$respuestaretornar['botoncertificado']='<a style="width:100%;background-color: #4BEE56; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutacertificado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcertificado'].'</a>';
+			if (isset($Datos[0]) and isset($Datos[0]['ID_AutoAdmision']) and $Datos[0]['ID_AutoAdmision'] > 0) {
+				//*******************************************************************************************************************/
+				//* RUTA AUTO MOTIVADO
+				//*******************************************************************************************************************/
+				$url_auto_motivado = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/AutoMotivado_' . $Datos[0]['ID_Formulario_Solicitud'] . '.pdf';   
+				$respuestaretornar['msgauto']='<strong>  AUTO DE INGRESO NÚMERO: ' . $Datos[0]['ID_AutoAdmision'] . '  </strong>';
+				$respuestaretornar['botonauto']='<a style="width:100%;background-color:  #F7942BFF; border-radius: 15px; border: solid 4px #33536f;" href="'. $url_auto_motivado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgauto'].'</a>';
+				$respuestaretornar['rutaauto']=$url_auto_motivado;
+				$respuestaretornar['numero_auto']=$Datos[0]['ID_AutoAdmision'];
+				//**********************************************************************************/
+				//* RESOLUCIOON CON NÚMERO: ' . $Resolucion . '  **/
+				//**********************************************************************************/
+				$url_resolucion = 'Documentos/' . $Datos[0]['ID_Formulario_Solicitud'] . '/' .  $Datos[0]['ID_Resolucion'] . '.pdf';
+				$respuestaretornar['msgresolucion']='<strong>  RESOLUCION NÚMERO: ' . $Datos[0]['ID_Resolucion'] .  '  </strong>';
+				$respuestaretornar['botonresolucion']='<a style="width:100%;background-color: #D8E42D; border-radius: 15px; border: solid 4px #0E0E0D;" href="'.$url_resolucion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgresolucion'].'</a>';
+				$respuestaretornar['rutaresolucion']=$url_resolucion;
+				$respuestaretornar['id_resolucion']=$Datos[0]['ID_Resolucion'];
+			}
         }		
 		//********************************************************************************************************************************************/
 		//* RUTA Expediente Escaenado
@@ -1817,11 +1863,17 @@ require_once("../qr/qrlib.php");
 		//********************************************************************************************************************************************/
 		//* RUTA AVISO DE COBRO                                                                                                                     **/
 		//********************************************************************************************************************************************/
-		$rutaavisocobro  = $this->dominio_raiz . ':90/api_rep.php?ra=S&action=get-facturaPdf&nu=' . $Datos[0]['CodigoAvisoCobro'];   
-		$respuestaretornar['msgavisocobro']='<strong>  AVISO DE COBRO NO: ' . $Datos[0]['CodigoAvisoCobro'] . '  </strong>';
-		$respuestaretornar['botonavisocobro']='<a style="width:100%;background-color: #FB6C6CFF; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutaavisocobro.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgavisocobro'].'</a>';
-		$respuestaretornar['rutaavisocobro']=$rutaavisocobro;
-		return $respuestaretornar;
+		IF ($Datos[0]['CodigoAvisoCobro'] > 0) {
+			$rutaavisocobro  = $this->dominio_raiz . ':90/api_rep.php?ra=S&action=get-facturaPdf&nu=' . $Datos[0]['CodigoAvisoCobro'];   
+			$respuestaretornar['msgavisocobro']='<strong>  AVISO DE COBRO NO: ' . $Datos[0]['CodigoAvisoCobro'] . '  </strong>';
+			$respuestaretornar['botonavisocobro']='<a style="width:100%;background-color: #FB6C6CFF; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutaavisocobro.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgavisocobro'].'</a>';
+			$respuestaretornar['rutaavisocobro']=$rutaavisocobro;
+		}	
+		if (!isset($respuestaretornar)){
+			return Array();
+		} else {
+			return $respuestaretornar;
+		}
 	}
 
 	protected function getDatosPorOmision()
@@ -1848,6 +1900,7 @@ require_once("../qr/qrlib.php");
 							$datos[10] = $this->getMunicipios($datos[4][0]['ID_Departamento']);
 							$datos[11] = $this->getDepartamentos();
 						}
+						$datos['Reportes'] = $this->getLinkReportes($datos[4],$datos[5],true);
 						$datos[99] = 'getSolicitanteRAM() Recuperando Preforma ' . $datos[4][0]['ID_Aldea'];
 						echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 					} else {
@@ -1867,7 +1920,7 @@ require_once("../qr/qrlib.php");
 							$datos[11] = $this->getDepartamentos();
 						}
 						$datos[12] = $_POST["RAM"];
-						$datos['Reportes'] = $this->getLinkReportes($datos[4],$datos[5]);
+						$datos['Reportes'] = $this->getLinkReportes($datos[4],$datos[5],true);
 						$datos[99] = 'getSolicitanteEXP() Recuperando Expediente';
 						echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 					} else {
@@ -2363,25 +2416,43 @@ require_once("../qr/qrlib.php");
 		echo json_encode($datos);
 	}
 
-	protected function getAvisodeCobroxPlaca($Numero_Placa)
+	protected function getAvisodeCobroxPlaca($Numero_Placa,$Numero_Placa_Anterior)
 	{
 		$row_rs_stmt['error'] = false;
 		$respuesta[0]['errorcode'] = '';
 		try {
-			$query_rs_stmt = "SELECT [Numero_Placa],[MONTO]
-			FROM [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] ENC,[IHTT_Webservice].[dbo].[TB_AvisoCobroDET] DET, [IHTT_DB].[dbo].[TB_Tramite] TR
-			WHERE ENC.AvisoCobroEstado = 2 AND ENC.CodigoAvisoCobro = DET.CodigoAvisoCobro AND DET.CodigoTipoTramite = TR.[ID_Tramite] AND TR.[ID_Tipo_Tramite] = 'IHTTTRA-03' AND (TR.[ID_Clase_Tramite] = 'CLATRA-15' OR TR.[ID_Clase_Tramite] = 'CLATRA-08') AND ([Numero_Placa] = :Numero_Placa OR DET.DescripcionDetalle like :Numero_Placa1)";
-			// Recueprando la información del stmt
-			$stmt = $this->db->prepare($query_rs_stmt);
-			$stmt->execute(array(':Numero_Placa' => $Numero_Placa,':Numero_Placa1' => '%' . $Numero_Placa . '%'));
-			$row_rs_stmt = $stmt->fetch();
-			$res = $stmt->errorInfo();
-			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
-				$row_rs_stmt['error'] = true;
-				$respuesta[0]['errorcode'] = $res[1];
-				$row_rs_stmt['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ';
-				$txt = date('Y m d h:i:s') . '	' . 'Api_Ram.php getAvisodeCobroxPlaca.php Error ' . $query_rs_stmt  . ' res[0]' . $res[0] . ' res[1]' . $res[1] . ' res[2]' . $res[2] . ' res[3]' . $res[3];
-				logErr($txt, '../logs/logs.txt');
+			if (in_array($Numero_Placa_Anterior, $this->appcfg_placas)) {
+				$query_rs_stmt = "SELECT [Numero_Placa],[MONTO]
+				FROM [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] ENC,[IHTT_Webservice].[dbo].[TB_AvisoCobroDET] DET, [IHTT_DB].[dbo].[TB_Tramite] TR
+				WHERE ENC.AvisoCobroEstado = 2 AND ENC.CodigoAvisoCobro = DET.CodigoAvisoCobro AND DET.CodigoTipoTramite = TR.[ID_Tramite] AND TR.[ID_Tipo_Tramite] = 'IHTTTRA-03' AND (TR.[ID_Clase_Tramite] = 'CLATRA-15' OR TR.[ID_Clase_Tramite] = 'CLATRA-08') AND ([Numero_Placa] = :Numero_Placa OR DET.DescripcionDetalle like :Numero_Placa1)";
+				// Recueprando la información del stmt
+				$stmt = $this->db->prepare($query_rs_stmt);
+				$stmt->execute(array(':Numero_Placa' => $Numero_Placa_Anterior,':Numero_Placa1' => '%' . $Numero_Placa_Anterior . '%'));
+				$row_rs_stmt = $stmt->fetch();
+				$res = $stmt->errorInfo();
+				if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
+					$row_rs_stmt['error'] = true;
+					$respuesta[0]['errorcode'] = $res[1];
+					$row_rs_stmt['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ';
+					$txt = date('Y m d h:i:s') . '	' . 'Api_Ram.php getAvisodeCobroxPlaca.php Error ' . $query_rs_stmt  . ' res[0]' . $res[0] . ' res[1]' . $res[1] . ' res[2]' . $res[2] . ' res[3]' . $res[3];
+					logErr($txt, '../logs/logs.txt');
+				}
+			} else {
+				$query_rs_stmt = "SELECT [Numero_Placa],[MONTO]
+				FROM [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] ENC,[IHTT_Webservice].[dbo].[TB_AvisoCobroDET] DET, [IHTT_DB].[dbo].[TB_Tramite] TR
+				WHERE ENC.AvisoCobroEstado = 2 AND ENC.CodigoAvisoCobro = DET.CodigoAvisoCobro AND DET.CodigoTipoTramite = TR.[ID_Tramite] AND TR.[ID_Tipo_Tramite] = 'IHTTTRA-03' AND (TR.[ID_Clase_Tramite] = 'CLATRA-15' OR TR.[ID_Clase_Tramite] = 'CLATRA-08') AND ([Numero_Placa] = :Numero_Placa OR DET.DescripcionDetalle like :Numero_Placa1 or [Numero_Placa] = :Numero_Placa2 OR DET.DescripcionDetalle like :Numero_Placa3)";
+				// Recueprando la información del stmt
+				$stmt = $this->db->prepare($query_rs_stmt);
+				$stmt->execute(array(':Numero_Placa' => $Numero_Placa_Anterior,':Numero_Placa1' => '%' . $Numero_Placa_Anterior . '%',':Numero_Placa2' => $Numero_Placa,':Numero_Placa3' => '%' . $Numero_Placa . '%'));
+				$row_rs_stmt = $stmt->fetch();
+				$res = $stmt->errorInfo();
+				if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
+					$row_rs_stmt['error'] = true;
+					$respuesta[0]['errorcode'] = $res[1];
+					$row_rs_stmt['msg'] = "Mensaje de Error: " . $res[0] . ' ' . $res[1] . ' ' . $res[2] . ' ' . $res[3] . ' ';
+					$txt = date('Y m d h:i:s') . '	' . 'Api_Ram.php getAvisodeCobroxPlaca.php Error ' . $query_rs_stmt  . ' res[0]' . $res[0] . ' res[1]' . $res[1] . ' res[2]' . $res[2] . ' res[3]' . $res[3];
+					logErr($txt, '../logs/logs.txt');
+				}
 			}
 		} catch (\Throwable $th) {
 			$row_rs_stmt['error'] = true;
@@ -2800,7 +2871,7 @@ require_once("../qr/qrlib.php");
 			$rows = ($this->select($q, array(':ID_Formulario_Solicitud' => $RAM, ':N_Certificado' => $idConcesion, ':N_Permiso_Especial' => $idConcesion, ':ID_Categoria' => $ID_Categoria)));
 			foreach ($rows as $row) {
 				if ($row['Acronimo_Clase'] ==  'CU' || $row['Acronimo_Clase'] ==  'CL') {
-					$display = 'display:' .($row['Checked'] == 'checked') ? 'flex;' : 'none;';
+					$display = 'display:' .($row['Checked'] == 'checked=true') ? 'flex;' : 'none;';
 					$html = $html . '<div class="row border border-info" id="row_tramite_' . $row['Acronimo_Tramite'] . '_' . $row['Acronimo_Clase'] . '">
 					<div class="col-md-1">
 					  <input ' . $row['Checked'] . ' data-iddb="' . $row['ID'] . '" data-monto="' . $row['Monto'] . '" 
@@ -3268,7 +3339,7 @@ require_once("../qr/qrlib.php");
 							//* Según la abogada Cinthia se debe buscar el aviso de cobro por la placa vieja no por la nueva
 							//**********************************************************************************************************************/							
 							//*$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa);
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa,$vehiculo->cargaUtil->placaAnterior);
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 								$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3348,7 +3419,7 @@ require_once("../qr/qrlib.php");
 								//**********************************************************************************************************************/
 								// Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
 								//**********************************************************************************************************************/
-								$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
+								$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa,$vehiculo->cargaUtil->placaAnterior);
 								if (isset($row_rs_stmt['MONTO'])) {
 									$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 									$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3417,7 +3488,7 @@ require_once("../qr/qrlib.php");
 									//**********************************************************************************************************************/
 									// Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
 									//**********************************************************************************************************************/
-									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
+									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa,$vehiculo->cargaUtil->placaAnterior);
 									if (isset($row_rs_stmt['MONTO'])) {
 										$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 										$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3479,7 +3550,7 @@ require_once("../qr/qrlib.php");
 									//**********************************************************************************************************************/
 									// Si el vehiculo tiene cambio de placa se verifica si ese cambio de placa esta pagado
 									//**********************************************************************************************************************/
-									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placaAnterior);
+									$row_rs_stmt = $this->getAvisodeCobroxPlaca($vehiculo->cargaUtil->placa,$vehiculo->cargaUtil->placaAnterior);
 									if (isset($row_rs_stmt['MONTO'])) {
 										$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 										$vehiculo->cargaUtil->estaPagadoElCambiodePlaca = true;
@@ -3574,7 +3645,7 @@ require_once("../qr/qrlib.php");
 					isset($data[0]["Unidad"][0]) &&
 					Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 				) {
-					$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+					$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 					if (isset($row_rs_stmt['MONTO'])) {
 						$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 					} else {
@@ -3613,7 +3684,7 @@ require_once("../qr/qrlib.php");
 						isset($data[0]["Unidad"][0]) &&
 						Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 					) {
-						$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+						$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 						if (isset($row_rs_stmt['MONTO'])) {
 							$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 						} else {
@@ -3652,7 +3723,7 @@ require_once("../qr/qrlib.php");
 							isset($data[0]["Unidad"][0]) &&
 							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 						) {
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 							} else {
@@ -3690,7 +3761,7 @@ require_once("../qr/qrlib.php");
 							isset($data[0]["Unidad"][0]) &&
 							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 						) {
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 							} else {
@@ -3755,7 +3826,7 @@ require_once("../qr/qrlib.php");
 					isset($data[0]["Unidad"][0]) &&
 					Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 				) {
-					$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+					$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 					if (isset($row_rs_stmt['MONTO'])) {
 						$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 					} else {
@@ -3794,7 +3865,7 @@ require_once("../qr/qrlib.php");
 						isset($data[0]["Unidad"][0]) &&
 						Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 					) {
-						$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+						$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 						if (isset($row_rs_stmt['MONTO'])) {
 							$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 						} else {
@@ -3833,7 +3904,7 @@ require_once("../qr/qrlib.php");
 							isset($data[0]["Unidad"][0]) &&
 							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 						) {
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 							} else {
@@ -3852,7 +3923,7 @@ require_once("../qr/qrlib.php");
 							$data[0]["Unidad"][1]['Multas1'] = $this->getDatosMulta($data[0]["Unidad"][1]['ID_Placa'], $data[0]["Unidad"][1]['ID_Placa_Antes_Replaqueo']);
 						}
 						$data[0]["Tipo_Concesion"] = 'CERTIFICADO DE OPERACIÓN:';
-						$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramiteExpediente(['PE', 'CO', 'CL', 'CM', 'CC', 'CS', 'CU'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
+						$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramiteExpediente(['PE',  'CO', 'CL', 'CM', 'CC', 'CS', 'CU'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
 						$tipo = $this->getCategoriaEspecilizadaCarga($data[0]["Id_Tipo_Categoria"]);
 						if (count($tipo) > 0) {
 							$data[0]["Tipo_Categoria_Especilizada"] = $tipo[0]['value'];
@@ -3871,7 +3942,7 @@ require_once("../qr/qrlib.php");
 							isset($data[0]["Unidad"][0]) &&
 							Trim($data[0]["Unidad"][0]['ID_Placa']) != Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo'])
 						) {
-							$row_rs_stmt = $this->getAvisodeCobroxPlaca($data[0]["Unidad"][0]['ID_Placa']);
+							$row_rs_stmt = $this->getAvisodeCobroxPlaca(Trim($data[0]["Unidad"][0]['ID_Placa']),Trim($data[0]["Unidad"][0]['ID_Placa_Antes_Replaqueo']));
 							if (isset($row_rs_stmt['MONTO'])) {
 								$data[0]["Unidad"][0]['estaPagadoElCambiodePlaca'] = true;
 							} else {
@@ -6942,7 +7013,7 @@ require_once("../qr/qrlib.php");
 					}
 				} else {
 					If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-08') {
-						$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ' A NUEVO NÚMERO DE PLACA: ' . $vehiculos[0]['ID_Placa'];
+						$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ' A NUEVO NÚMERO DE PLACA: ' . isset($vehiculos[1]['ID_Placa'])?$vehiculos[1]['ID_Placa']:$vehiculos[0]['ID_Placa'];
 					} else {
 						If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
 							$Data[0]['Tramites'][$contador]['DescripcionDetalle'] = $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ' A NUEVO NÚMERO DE PLACA: ' . $vehiculos[0]['ID_Placa'];
@@ -7449,5 +7520,6 @@ if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
 		$appcfg_smtp_user,
 		$appcfg_smtp_password,
 		$appcfg_estado_inicial,
-		$appcfg_estado_inicial_descripcion);
+		$appcfg_estado_inicial_descripcion,
+		$appcfg_placas);
 }

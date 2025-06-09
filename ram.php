@@ -103,7 +103,6 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   </audio>
 
     <div class="container-fluid bg-white shadow-sm">
-
     <!-- ******************************************************* -->
     <!-- Inicio de Modal de Concesiones Salvadas -->
     <!-- ******************************************************* -->
@@ -123,7 +122,6 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-            <!-- <button type="button" class="btn btn-primary">Save changes</button> -->
           </div>
         </div>
       </div>
@@ -134,27 +132,32 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <!-- ******************************************************* -->
     <!-- Final de Modal de Concesiones Salvadas -->
     <!-- ******************************************************* -->
-    <!-- ******************************************************* -->
-    <!-- Inicio de Modal de Placas -->
-    <!-- ******************************************************* -->
-    <div class="modal fade modal-lg" id="modalPlaca" tabindex="-1" aria-labelledby="modalPlacaLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-scrollable modal-dialog-tamaño">
-        <div class="modal-content modal-content-Tamaño">
+    <!-- ********************************************************* -->
+    <!-- Inicio de Modal de Placas RTBM -->
+    <!-- ********************************************************* -->
+    <div class="modal fade modal-xl" id="modalPlaca" tabindex="-1" aria-labelledby="modalPlacaLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+        <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5 titleTable" id="modalPlacaLabel"></h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h4 class="modal-title fs-5" id="modalPlacaLabel"></h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div id="modalBodyPlaca" class="modal-body modal-body-tamaño container" style="max-height: 300px; overflow-y: auto;">
+          <div class="modal-body">
+              <div id="tabla-container" class="container-fluid">
+              <div id="modalBodyPlaca" class="row">
+              </div>
+              </div>
           </div>
-          <div id="btnModalPlaca" class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Cerrar</button>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
           </div>
         </div>
-      </div>
+        </div>
     </div>
-    <!-- ******************************************************* -->
-    <!-- Final de Modal de Placas -->
-    <!-- ******************************************************* -->
+    <!-- ********************************************************* -->
+    <!-- Final de Modal de Placas RTBM -->
+    <!-- ********************************************************* -->
     <!-- ******************************************************* -->
     <!-- Inicio de Modal de Ingreso Número Concesion -->
     <!-- ******************************************************* -->
@@ -182,6 +185,31 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <!-- ******************************************************* -->
     <!-- Inicio de Modal de Ingreso Número Concesion -->
     <!-- ******************************************************* -->
+    <!-- ********************************************************* -->
+    <!-- Inicio de Modal de Dictamen de Cambio de Unidad (Revisión Fisico Mecanica) -->
+    <!-- ********************************************************* -->
+    <div class="modal fade modal-xl" id="modalDictamenten" tabindex="-1" aria-labelledby="modalDictamentenLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-scrollable modal-fullscreen">
+        <div class="modal-content">
+          <div class="modal-header">
+              <h4 class="modal-title fs-5" id="modalDictamentenLabel"></h4>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+              <div id="tabla-container" class="container-fluid">
+                <div id="modalBodyDictamenten" class="row"></div>
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+        </div>
+    </div>
+    <!-- ********************************************************* -->
+    <!-- Final de Modal de Dictamen de Cambio de Unidad (Revisión Fisico Mecanica) -->
+    <!-- ********************************************************* -->
     <!-- ******************************************************* -->
     <!-- Inicio de Div De  Boton Show/Hide Concesion en Pantalla -->
     <!-- ******************************************************* -->
@@ -217,7 +245,9 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <!-- ******************************************************* -->
     <br>
     <br>
-    <button title="CAMBIAR DE UNIDAD" id="btnCambiarUnidad" type="button" style="display: none; position: absolute; top: 195px; right: 25px; padding: 10px" class="btn btn-success btn-sm d-flex justify-content-center align-items-center scroll-btn">
+    <button title="CAMBIAR DE UNIDAD" id="btnCambiarUnidad" type="button" 
+      class="btn btn-success btn-sm"
+      style="display: none; position: absolute; top: 195px; right: 25px; padding: 10px">
       <i class="fas fa-truck-moving fa-2x"></i>  <strong>ENTRA</strong>
     </button>
     <!-- ******************************************************* -->

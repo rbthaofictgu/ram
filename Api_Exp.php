@@ -822,11 +822,12 @@ require_once("../qr/qrlib.php");
                                 $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO PERMISO ESPECIAL ' . $row_rs_expediente['N_Permiso_Especial'];									
                             } else	{
                                 If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
-                                    if ($detallevehiculoentra == '') {
-                                        $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoactual['ID_Placa']  . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    } else {
-                                        $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoentra['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    }
+                                    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoactual['ID_Placa']  . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                    //*if ($detallevehiculoentra == '') {
+                                    //*    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoactual['ID_Placa']  . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                    //*} else {
+                                    //*    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoentra['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                    //*}
                                 } else {
                                     If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-17') {
                                         $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
@@ -885,11 +886,12 @@ require_once("../qr/qrlib.php");
                                 $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO DE PERMISO ESPECIAL ' . $row_rs_expediente['N_Permiso_Especial'];									
                             } else	{
                                 If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
-                                    if ($detallevehiculoentra == '') {
-                                        $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoactual['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    } else {
-                                        $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoentra['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    }
+                                    $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoactual['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                    //*if ($detallevehiculoentra == '') {
+                                    //*    $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoactual['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                    //*} else {
+                                    //*    $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoentra['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                    //*}
                                 } else {
                                     If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-17') {
                                         $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
@@ -2239,7 +2241,10 @@ require_once("../qr/qrlib.php");
             // Tipo de concesion
             $tipo_concesion = '';
             // Es Renovacion de Tipo de Transporte
-            $es_renovacion_tipo_transporte = '';        
+            $es_renovacion_tipo_transporte = '';  
+            // ID de la Placa Actual o Saliente
+            $id_placa_actual = '';
+            $id_placa = '';
             // Funcion que recupera los datos para insertar en el template
             $row_rs_todos_los_registros =  $this->getSolicitudResolucion($rs_id_rs_expediente,$CONCESION['Concesion'],$rs_id_rs_template);
             //* INICIO: Recuperando Vehiculos del tramite
@@ -2248,7 +2253,7 @@ require_once("../qr/qrlib.php");
             $vehiculoactual = $this->getVehiculosExpediente($rs_id_rs_expediente,$CONCESION['Concesion'],$tabla="[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] e"); 
             $vehiculoentra = $this->getVehiculosExpediente($rs_id_rs_expediente,$CONCESION['Concesion'],$tabla="[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] e"); 
             $detallevehiculoactual = " MARCA: " . $vehiculoactual['DESC_Marca'] . ", MODELO: " . $vehiculoactual['Modelo'] . ", COLOR: " . $vehiculoactual['DESC_Color']. ", MOTOR: " . $vehiculoactual['Motor']. ", CHASIS: " . $vehiculoactual['Chasis'] . " Y PLACA: " . $vehiculoactual['ID_Placa'];
-            $id_placa = $vehiculoactual['ID_Placa'];
+            $id_placa_actual = $vehiculoactual['ID_Placa'];
             $id_placa_antes_replaqueo = 'XXXXXXXXXX';
             $detallevehiculoentra='';
             if (isset($vehiculoentra['DESC_Marca'])) {
@@ -2258,6 +2263,10 @@ require_once("../qr/qrlib.php");
                 if ($id_placa_antes_replaqueo == '' or $id_placa_antes_replaqueo == null) {
                     $id_placa_antes_replaqueo = 'XXXXXXXXXX';
                 }
+            }
+            //* Si no hay unidad entrante, se toma la placa de la unidad actual 
+            if ($id_placa == '' or $id_placa == null) {
+                $id_placa = $id_placa_actual;
             }
             // FINAL: Recuperando Vehiculos del tramite
             // contador de registros procesados
@@ -2475,8 +2484,8 @@ require_once("../qr/qrlib.php");
                                         $es_renovacion_permisoespecial = true;
                                     } else	{
                                         If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
-                                            $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                            $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                            $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                            $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                             $es_replaqueo = 'SI';
                                             $cambio_placa = true;
                                         } else {
@@ -2651,8 +2660,8 @@ require_once("../qr/qrlib.php");
                                         $es_renovacion_permisoespecial = true;
                                     } else	{
                                         If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
-                                            $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                            $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                            $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                            $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                             $es_replaqueo = 'SI';
                                             $cambio_placa = true;
                                         } else {

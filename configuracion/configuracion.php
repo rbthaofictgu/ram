@@ -250,4 +250,5 @@ $appcfg_smtp_server = "122.8.183.193";
 $appcfg_smtp_user = "notificacionessecretariageneral@transporte.gob.hn";
 $appcfg_smtp_password = "Ihtt2024";
 $appcfg_placas = ["TB", "TC", "TE", "TP", "TT", "TR", "TB"];
+$appcfg_separador_placa = '->';
 ?>

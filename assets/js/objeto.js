@@ -95,7 +95,7 @@ function filtrarDataConcesionNumber() {
       if (item != false && item != 'undefined') {
          const filtrarItem = { ...item };
          dataExcluir.forEach(field => {
-            //*eliminar campo que sean ifuales a los de dataExcluir
+            //*eliminar campo que sean iguales a los de dataExcluir.
             delete filtrarItem[field];
          });
          //*retorna el arreglo con los elemento eliminados
@@ -1036,6 +1036,8 @@ function mostrarAgregar_fila2() {
 
 function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad1 = '') {
 
+   var ID_Placa = unidad1['ID_Placa'];
+   console.log(ID_Placa, 'unidad11...');
    //*para limpiar si se elimina un tramite;
    if (document.getElementById(`fila_Oculta_${index}`)) {
       document.getElementById(`fila_Oculta_${index}`).innerHTML = '';
@@ -1088,7 +1090,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
       td_trash.style.cursor = 'pointer';
 
       const tdfila = document.createElement('td');
-      td_trash.className = 'table-secondary';
+      td_trash.className = 'table-secondary text-start';
       td_trash.style.cursor = 'pointer';
 
       //*indice de las nuevas filas creadas. //'M_CL'
@@ -1151,6 +1153,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
       for (const key in tramite) {
          if (key !== 'ID_Compuesto') {
             const tdSub = document.createElement('td');
+            tdSub.className = "table-secondary text-start";
             if (Object.prototype.hasOwnProperty.call(tramite, key)) {
                if (key === 'Monto') {
                   let monto = +tramite[key]; // Convertir el valor de 'Monto' a número
@@ -1159,29 +1162,43 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                      suma += tramite['Cantidad_Vencimientos'] * monto;
                   }
                }
-               tdSub.className = (key === 'Monto') ? 'text-nowrap table-secondary' : 'text-nowrap table-secondary';
+               tdSub.className = (key === 'Monto') ? 'text-nowrap table-secondary text-end' : 'text-nowrap table-secondary text-start';
                //*si es cambio de MODIFICACIÓN CAMBIO DE UNIDAD el tramite.
                if (tramite['descripcion'] == 'MODIFICACIÓN CAMBIO DE UNIDAD') {
                   var estadoRam = document.getElementById("ID_Estado_RAM").value;
                   console.log(estadoRam, 'estadoRam dentro de tramite modificacion de unidad');
                   // const estadosValidosModificacionUnidad = ['IDE-1', 'IDE-2'];
+
                   //*siel parametro se manda y hay cambio de unidad se muestra las constancias.
                   if (estadosValidosModificacionUnidad.includes((estadoRam) ? estadoRam : '')) {
+                     // console.log(ID_Placa, 'unid...');
                      //*se muestra texto si no es url o el cambio de unidad
                      const link = document.createElement('a');
                      link.style.textDecoration = 'none';
-                     link.innerHTML = (tramite[key] == 'MODIFICACIÓN CAMBIO DE UNIDAD') ? `<i class="fa-sharp fa-solid fa-eye" ></i> ${tramite[key]} ` : tramite[key];
+                     link.className = "table-secondary text-start";
+                     link.innerHTML = (tramite[key] == 'MODIFICACIÓN CAMBIO DE UNIDAD') ? `<i id='est_const' class="fas fa-file-contract" data-bs-toggle="tooltip" title="Aqui se envia a realizar el dictamen de la unidad" ></i> ${tramite[key]}` : tramite[key];
                      link.target = "_blank";
-                     link.href = $appcfg_Dominio_Raiz + `:140/RenovacionesE/NuevoDictamenR.aspx?Solicitud=${ram}`
+                     link.href = $appcfg_Dominio_Raiz + `:140/RenovacionesE/NuevoDictamenR.aspx?Solicitud=${ram}&Concesion=${Concesion}&ID_Placa=${ID_Placa}`;
                      tdSub.appendChild(link);
+                     setTimeout(() => {
+                        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                        tooltipTriggerList.map(el => new bootstrap.Tooltip(el));
+                     }, 100);
                   } else {
                      //*se muestra texto si no es url o el cambio de unidad
                      const link = document.createElement('td');
                      link.innerHTML = tramite[key];
+                     link.className = 'text-nowrap table-secondary text-start';
                      tdSub.appendChild(link);
                   }
+
                } else {
                   //*cuando el tramite no es cambio de unidad.
+                  if (key === 'Monto') {
+                     tdSub.className = 'text-nowrap table-secondary text-end';
+                  } else {
+                     tdSub.className = 'text-nowrap table-secondary text-start';
+                  }
                   if (key == 'Fecha_Expiracion') {
                      tdSub.textContent = tramite[key] || "";
                      //*si no existe el dato de fecha que coloque padin para dar el espacio de las fechas.
@@ -1196,7 +1213,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
                            tdSub.style.padding = "0 50px";
                         }
                      } else {
-                        tdSub.textContent = montoFormateado(tramite[key])// Asigna el valor o una cadena vacía si es undefined/null   
+                        tdSub.textContent = tramite[key]// Asigna el valor o una cadena vacía si es undefined/null   
                      }
                   }
                }
@@ -1217,7 +1234,7 @@ function agregar_fila(index, idFilaAnterior, div, Concesion, unidad = '', unidad
       TOTAL_TRAMITES_X_CONCESION[updateCollection(Concesion)] = tramitesValidos.length;
       index++;
    })
-
+   
    //***************************/
    //* Fila de total (addRoT)
    //***************************/

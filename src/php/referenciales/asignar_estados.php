@@ -21,12 +21,6 @@ include_once('../../../validar_seguridad.php');
 
 ?>
 
-<!-- //* archivo de funciones varias(recuperar url,intentos fallidos,validar accesos, etc.) -->
-<?php require_once('../../utils/funciones_db.php'); ?>
-<!-- //*funcion que permite validar privilegio a acceder a cada opción. -->
-<?php require_once('../../utils/create_copy_row.php'); ?>
-
-<?php require_once('../../utils/tipo_dispositivo.php'); ?>
 <!-- //* archivo de conexion a la base de datos -->
 <?php require_once('../../../../config/conexion.php'); ?>
 <!-- //* archivo de configuracion donde se encuentrar las variables globales. -->
@@ -96,5 +90,5 @@ include_once('../../../validar_seguridad.php');
 
 <script src="https://cdn.jsdelivr.net/npm/@algolia/autocomplete-js"></script>
 <script type="text/javascript" src="<?php echo $appcfg_Dominio; ?>assets/js/asignar_estados.js"></script>
-<script type="text/javascript" src="<?php echo $appcfg_Dominio; ?>assets/js/modulos_sistema.js"></script>
+
 </body>

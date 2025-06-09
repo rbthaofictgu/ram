@@ -49,7 +49,6 @@ var Reportes = '';
 
 
 function reLoadScreen(ruta) {
-  console.log(ruta,'ruta reLoadScreen');
   window.location.href = ruta;
 }
 
@@ -324,6 +323,11 @@ function fShowTramites(forzarShow=false) {
   }
 }
 function fShowConcesiones() {
+  let tooltipTrigger  = document.getElementById('rightDiv');
+  const instance = bootstrap.Tooltip.getInstance(tooltipTrigger);
+  if (instance && instance._isShown) {
+    instance.hide();
+  }
   concesionBorradoEnMalla = 0
   const myModal = new bootstrap.Modal(document.getElementById("exampleModal"));
   myModal.show();
@@ -587,14 +591,10 @@ function fGetInputsSelect() {
 
     if (input.disabled == false) {
       let parts = input.id.split("_");
-      console.log(parts[0].slice(-1),'parts[0].slice(-1)');
-      console.log(esCambioDeVehiculo,'esCambioDeVehiculo');
       if (
         (parts[0].slice(-1) == 1 && esCambioDeVehiculo == true) ||
         parts[0].slice(-1) != 1
       ) {
-        console.log(input.getAttribute("data-valor"));
-        console.log(input.value,'input.value');
         if (input.getAttribute("data-valor") > input.value) {
           input.classList.add("text-error");
           var label = document.getElementById(input.id + "label");
@@ -626,7 +626,6 @@ function fGetInputsSelect() {
 //* Eliminar todos los mensajes de error
 //**************************************************************************************/
 function fCleanErrorMsg() {
-  //console.log('On fCleanErrorMsg()');
   // Obtener el elemento por su ID
   var element = document.getElementById("test-form-" + (currentstep + 1));
   // Obtener todos los elementos de entrada dentro de este elemento
@@ -1071,9 +1070,6 @@ function procesarDatosIHTT(Reportes) {
     if (Reportes.hasOwnProperty(key)) {
       if (keys.includes(key)) {
         const valor = Reportes[key];
-        console.log(`Clave: ${key}`);
-        console.log(`Valor: ${valor}`);
-        console.log('--------------------------------');
         detalle.innerHTML = detalle.innerHTML + valor; 
       }
     }
@@ -1100,7 +1096,6 @@ function f_DataOmision() {
   if (Consulta == null) {
     Consulta = false;
   }
-  console.log(Consulta,'Consulta');  
   if (RAM != null) {
     document.getElementById("RAM-ROTULO").innerHTML =
       "<strong>" + RAM + "</strong>";
@@ -1210,7 +1205,6 @@ function f_DataOmision() {
               //*******************************************************************************************************************/
               document.getElementById("CodigoAvisoCobro").value = datos[4][0]['CodigoAvisoCobro'];
               document.getElementById("AvisoCobroEstado").value = datos[4][0]['AvisoCobroEstado'];
-              console.log(datos[4][0]['AvisoCobroEstado'],'datos[4][0][\'AvisoCobroEstado\']');
               document.getElementById("avisocobro").style.display = "inline";   
               document.getElementById("avisocobro").href =  $appcfg_Dominio_Raiz + ":90/api_rep.php?ra=S&action=get-facturaPdf&nu="+datos[4][0]["CodigoAvisoCobro"];   
               document.getElementById("avisocobro").setAttribute('title','Número de Aviso de Cobro: ' + datos[4][0]["CodigoAvisoCobro"]);     
@@ -1256,7 +1250,6 @@ function f_DataOmision() {
                 datos[4][0]["Domicilo_Solicitante"];
               document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + datos[4][0]["DESC_Estado"];
               document.getElementById("ID_Estado_RAM").value = datos[4][0]["Estado_Formulario"];
-              console.log(document.getElementById("ID_Estado_RAM").value,'document.getElementById("ID_Estado_RAM").value');
               document.getElementById("telsoli").value =
                 datos[4][0]["Telefono_Solicitante"];
               document.getElementById("emailsoli").value =
@@ -1270,8 +1263,7 @@ function f_DataOmision() {
               //***********************************************************************************************************************/
               //*Si esta en modo consulta no importa el estado en que se encuentre la solicitud siempre esta en modo editable = false
               //***********************************************************************************************************************/
-              console.log(Boolean(Consulta),'Booleand Consulta Befero Set esEditable');
-              if (Boolean(Consulta) == true) { console.log('set esEditable when Consulta == 0');document.getElementById("esEditable").value = false;}
+              if (Boolean(Consulta) == true) { document.getElementById("esEditable").value = false;}
               document.getElementById("esCompartible").value = datos[4][0]["esCompartible"];
               if (esEditable() == false) {
                 disabledEdit();
@@ -1299,9 +1291,6 @@ function f_DataOmision() {
             //* Marcar requicitos
             //***************************************************************************/
             if (typeof datos[6] != "undefined" && datos[6] != false) {
-              console.log(datos[6],'datos[6]');
-              console.log(typeof datos[6] != "undefined",'typeof datos[6] != "undefined"');
-              console.log(datos[6] != false,'datos[6] != false');
               requicitosRecuperados = true;
               fMarcarRequicitos();
             } else {
@@ -1328,7 +1317,6 @@ function f_DataOmision() {
         } else {
           if (typeof datos[15] != "undefined" && datos[15] != false) {
             document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + ' ' + datos[15].Desc_Estado;
-            console.log(document.getElementById("ID_Estado_RAM").value);
           }
           if (datos[1].length > 0) {
             fLlenarSelect("entregadocs", datos[1], null, false, {
@@ -1386,7 +1374,6 @@ function f_DataOmision() {
       //* INICIO: Despliega la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
       loading(false, currentstep);
-      console.log(9153,'9153');
       if (concesionNumber.length < 1) {
         document.getElementById("input-prefetch").style.display = "none";
         document.getElementById("toggle-icon").style.display = "none";
@@ -1403,7 +1390,6 @@ function f_DataOmision() {
         document.getElementById("rightDiv").style.display = "flex";
         document.getElementById("rightDivPR").style.display = "flex";
       }
-      console.log(9154,'9154');
       //*****************************************************************************************/
       //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -1416,7 +1402,6 @@ function f_DataOmision() {
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      console.log("error f_DataOmision() " + error);
       fSweetAlertEventNormal(
         "OPPS",
         "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
@@ -1585,7 +1570,6 @@ function fCerrarProcesoEnDB() {
       //*****************************************************************************************/
       //* FINAL: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
-      console.log("catch error fCerrarProcesoEnDB en preforma" + error);
       fSweetAlertEventSelect(
         "",
         "CERRANDO RAM",
@@ -1737,7 +1721,6 @@ btnNextList.forEach(function (btn) {
             }
           //stepperForm.next();
         } else {
-          console.log(currentstep,'currentstep 0 y 1');
           if (currentstep == 0 || currentstep == 1) {
             fGetInputs();
             const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
@@ -2405,7 +2388,6 @@ function f_RenderConcesion(datos) {
     document.getElementById("concesion_identidad_propietario").innerHTML =
       datos[1][0]["Unidad"][0]["RTN_Propietario"];
 
-    console.log(datos[1][0]["Unidad"][0]["ID_Placa_Anterior"],'datos[1][0]["Unidad"][0]["ID_Placa_Anterior"] f_RenderConcesion()');
     if (
       datos[1] &&
       datos[1][0] &&
@@ -2784,7 +2766,6 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
   fetchWithTimeout(url, options, 300000)
     .then((response) => response.json())
     .then(function (datos) {
-      console.log(datos, "datos en f_FetchCallConcesion es la busqueda de la concepció previo a trabajarla e insertarla en prefomra");
       if (typeof datos[0] != "undefined") {
         if (datos[0] > 0) {
           //******************************************************************************************************************************/
@@ -2834,9 +2815,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 //***************************************************************************************/
                 document.getElementById("btnCambiarUnidad").style.display = "none";
                 document.getElementById("concesion_tramites").value = "";
-                console.log(100);
                 f_RenderConcesion(datos);
-                console.log(200);
                 seRecuperoVehiculoDesdeIP = 0;
                 //****************************************************************************************************/
                 //*Enviando Toast de Exito en Recuperación la Información de la Concesión
@@ -2920,7 +2899,6 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 }
 
                 if (unidad?.["Preforma"]?.[0]) {
-                  console.log(unidad["Preforma"]);
                   html =
                     html +
                     mallaDinamica(
@@ -2959,9 +2937,7 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 //* Inicializar tomselect                                                                            */
                 //****************************************************************************************************/
                 inicialitarTomSelect();
-                console.log(300);
                 hideAltoAnchoLargo();
-                console.log(400);
               }
             }
           }
@@ -3157,7 +3133,6 @@ function fEditarConcesion(idConcesion) {
           }
 
           if (unidad?.["Preforma"]?.[0]) {
-            console.log(unidad["Preforma"]);
             html =
               html +
               mallaDinamica(
@@ -3229,12 +3204,27 @@ function fEditarConcesion(idConcesion) {
           hideAltoAnchoLargo();
         }
       } else {
-        fLimpiarPantalla();
-        fSweetAlertSelect(
-          "INFORMACIÓN",
-          "ERROR DESCONOCIDO, INTENTELO DE NUEVO EN UN MOMENTO, SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
-          "error"
-        );        
+        if (typeof datos.error != "undefined") {
+          document.getElementById("txt_clave_desbloqueo").removeAttribute("disabled");
+          document.getElementById("txt_usuario_desbloqueo").removeAttribute("disabled");
+          fLimpiarPantalla();
+          fSweetAlertEventNormal(
+            datos.errorhead,
+            undefined,
+            "error",
+            datos.error + "- " + datos.errormsg,
+            undefined,
+            undefined,
+            'IR A INICIO DE SESIÓN',
+            openModalLogin);
+        } else {
+          fLimpiarPantalla();
+          fSweetAlertSelect(
+            "INFORMACIÓN",
+            "ERROR DESCONOCIDO, INTENTELO DE NUEVO EN UN MOMENTO, SI EL ERROR PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA",
+            "error"
+          );        
+        }
       }
     })
     .catch((error) => {
@@ -3350,8 +3340,6 @@ function f_RenderConcesionPreforma(datos) {
     document.getElementById("concesion_identidad_propietario").innerHTML =
       datos[1][0]["Unidad"][0]["RTN_Propietario"];
 
-    console.log(datos[1][0]["Unidad"][0]["ID_Placa_Antes_Replaqueo"],'datos[1][0]["Unidad"][0]["ID_Placa_Antes_Replaqueo"] f_RenderConcesionPreforma');
-    
     if (
       datos[1] &&
       datos[1][0] &&
@@ -4851,9 +4839,14 @@ btnSalvarConcesion.addEventListener("click", function (event) {
         );
       } else {
         var inputPlaca1 = document.getElementById('concesion1_placa');
-        var valorPlaca1 = inputPlaca1 ? inputPlaca.value.toUpperCase() : '';      
+        var valorPlaca1 = inputPlaca1 ? inputPlaca1.value.toUpperCase() : '';      
         valorPlaca1 = valorPlaca1.toUpperCase();
-        if (document.getElementById('ID_Estado_RAM').value = 'IDE-1' && esCambioDeVehiculo==true && $appcfg_placas.includes(valorPlaca1.substring(0,2))==false) {
+        console.log(document.getElementById('ID_Estado_RAM').value,'document.getElementById(ID_Estado_RAM).value')
+        console.log(valorPlaca1,'valorPlaca1');
+        console.log(esCambioDeVehiculo,'esCambioDeVehiculo');
+        console.log($appcfg_placas.includes(valorPlaca1.substring(0,2)),'$appcfg_placas.includes(valorPlaca1.substring(0,2))');
+        console.log($appcfg_placas,'$appcfg_placas');
+        if (esCambioDeVehiculo==true && document.getElementById('ID_Estado_RAM').value == 'IDE-1' && $appcfg_placas.includes(valorPlaca1.substring(0,2))==false) {
           fSweetAlertEventSelect(
             event,
             "ERROR SALVANDO",
@@ -4936,7 +4929,6 @@ function disabledEdit(){
   document.getElementById("input-prefetch").style.display = "none";
   document.getElementById("toggle-icon").style.display = "none";
   document.getElementById("btnnext4").style.display = "none";
-  console.log('disabledEdit()');
 }
 
 //Cuando presente el nuevo panel
@@ -4994,7 +4986,6 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
       }  else {
         document.getElementById("btnSalvarConcesion").style.display = "none";
         document.getElementById("btnCambiarUnidad").style.display = "none";
-        console.log(esEditable(),'esEditable() step 22222');
         if (esEditable() == true) {
           document.getElementById("input-prefetch").style.display = "block";
           document.getElementById("toggle-icon").style.display = "block";
@@ -5464,7 +5455,7 @@ async function addTramitePreforma(el) {
     );
     fSweetAlertEventSelect(
       "",
-      "CATCH addTramitePreforma()",
+      "OPPS",
       "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
       "warning"
     );
@@ -5637,7 +5628,11 @@ function fHiddenShowTramites(
             "IHTTTRA-03_CLATRA-08_M_CU"
           );
           if (elementochk) {
-            elementochk.checked = false;
+            elementochk.checked = true;
+            var elementox = document.getElementById("concesion_tramite_placa_CU");
+            if (elementox) {
+              elementox.style.display = "flex";
+            }
           }
         }
       }
@@ -5992,6 +5987,7 @@ function getVehiculoDesdeIPMoveDatos(vehiculo, Tipo_Tramite) {
   //**********************************************************************************/
   seRecuperoVehiculoDesdeIP = 3;
   if (Tipo_Tramite == "CU") {
+    console.log(Tipo_Tramite,'Tipo_Tramite en getVehiculosDesdeIpMoveDatos');
     document.getElementById("btnCambiarUnidad").innerHTML = '<i class="fas fa-truck-moving fa-2x"></i>  <strong>ENTRA</strong>';
     document.getElementById("btnCambiarUnidad").style = "display:flex; position: absolute; top: 195px; right: 25px; padding: 10px;";
     document.getElementById("idVistaSTPC2").style = "display:fixed;";
