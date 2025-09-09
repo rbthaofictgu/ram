@@ -52,7 +52,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
    <?php include_once('menu.php') ?>
   </header>
   <?php if (!isset($_SESSION["Secuencia"])) { ?>
-    <input type="hidden" id="Secuencia" value="1">
+  <input type="hidden" id="Secuencia" value="1">
   <?php } else { ?>
     <input type="hidden" id="Secuencia" value="<?php echo $_SESSION["Secuencia"] ?>">
   <?php } ?>
@@ -75,6 +75,10 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <input type="hidden" id="ID_Tipo_Servicio" value="">
   <input type="hidden" id="Malla" value="">
   <input type="hidden" id="RAM" value="">
+  <input type="hidden" id="Numero_Concesion_DGT" value="">
+  <input type="hidden" id="Numero_PermisoExplotacion_DGT" value="">
+  <input type="hidden" id="Numero_Registro_DGT" value="">
+  <input type="hidden" id="Numero_Censo" value="">
   <input type="hidden" id="ID_Expediente" value="">
   <input type="hidden" id="ID_Solicitud" value="">
   <input type="hidden" id="ID_Resolucion" value="">
@@ -96,13 +100,108 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <input value="<?php echo $User_Name; ?>" type="hidden" id="User_Name">
   <?php $Ciudad = isset($_SESSION['ciudad']) ? htmlspecialchars($_SESSION['ciudad'], ENT_QUOTES, 'UTF-8') : ''; ?>
   <input value="<?php echo $Ciudad; ?>" type="hidden" id="Ciudad">
-
   <!-- Cargar el sonido -->
   <audio id="celebrationSound" muted="false" autoplay="false">
     <source src="assets/sounds/397353_plasterbrain_tada-fanfare-g.mp3" type="audio/wav">
   </audio>
-
     <div class="container-fluid bg-white shadow-sm">
+    <!-- ******************************************************* -->
+    <!-- Inicio de Modal de Primera Vez                          -->
+    <!-- ******************************************************* -->
+    <div class="modal fade modal-md" id="primeraVezModal" tabindex="-1" aria-labelledby="primeraVezModalLabel"
+      aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title fs-5 gobierno1" id="primeraVezModalLabel"><i class="fas fa-chevron-circle-up"></i> PRIMERA VEZ O INCREMENTO <i class="fab fa-firstdraft"></i></h4>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="container-fluid">
+
+              <div class="row mb-3">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <i class="fas fa-building gobierno1"></i>
+                    <label class="form-label fw-bold">Emitida Por:</label>
+                    <div class="btn-group" role="group" aria-label="Selector de institución">
+                      <input type="radio" class="btn-check" name="institucion" id="institucion-ihtt" value="IHTT" autocomplete="off" checked>
+                      <label class="btn btn-outline-primary" for="institucion-ihtt">IHTT</label>
+                      <input type="radio" class="btn-check" name="institucion" id="institucion-dgt" value="DGT" autocomplete="off">
+                      <label class="btn btn-outline-primary" for="institucion-dgt">DGT</label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="col-6">
+                  <div class="mb-3">
+                    <i class="fas fa-briefcase gobierno1"></i>
+                    <label>Tipo de Servicio:</label>
+                    <select class="form-control form-control-sm" name="tipo_servicio_1ravez" id="tipo_servicio_1ravez"></select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-6">
+                  <div class="mb-3">
+                    <i class="fas fa-tag gobierno1"></i>
+                    <label>Categoría:</label>
+                    <select class="form-control form-control-sm" name="id_categoria_1ravez" id="id_categoria_1ravez"></select>
+                  </div>
+                </div>
+
+                <div class="col-6">
+                  <div class="mb-3">
+                    <i class="fas fa-truck-moving gobierno1"></i>
+                    <label>Tipo de Vehículo:</label>
+                    <select class="form-control form-control-sm" name="id_tipo_vehiculo_1ravez" id="id_tipo_vehiculo_1ravez"></select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-6">
+                  <div class="mb-3 position-relative">
+                    <i class="fas fa-list-alt gobierno1"></i>
+                    <label>Placa:</label>
+                    <input type="text" class="form-control" id="placa_1ravez" maxlength="25" placeholder="EJ: TTA2030" autocomplete="off">
+                    <i id="icono-check-placa" class="fas fa-check-circle text-success position-absolute" style="right: 10px; top: 75%; transform: translateY(-50%); display:none;"></i>
+                  </div>
+                </div>
+
+                <div class="col-6">
+                  <div class="mb-3">
+                    <i class="fas fa-file-contract gobierno1"></i>
+                    <label>Permiso de Explotación:</label>
+                    <input type="text" class="form-control" id="perexp_1ravez" maxlength="25" placeholder="EJ: PE-CNE-845-20" autocomplete="off">
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-12">
+                  <div class="mb-3">
+                    <i class="fas fa-certificate gobierno1"></i>
+                    <label>Concesión:</label>
+                    <input type="text" class="form-control" id="concesion_1ravez" maxlength="25" placeholder="EJ: CO-CNE-1030-20" autocomplete="off">
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Procesar</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- ********************************************************* -->
+    <!-- Final de Modal de Concesiones Salvadas -->
+    <!-- ********************************************************* -->      
     <!-- ******************************************************* -->
     <!-- Inicio de Modal de Concesiones Salvadas -->
     <!-- ******************************************************* -->
@@ -126,14 +225,11 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
         </div>
       </div>
     </div>
-    <!-- ******************************************************* -->
-    <!-- Final de Modal de Concesiones Salvadas -->
-    <!-- ******************************************************* -->
-    <!-- ******************************************************* -->
-    <!-- Final de Modal de Concesiones Salvadas -->
-    <!-- ******************************************************* -->
     <!-- ********************************************************* -->
-    <!-- Inicio de Modal de Placas RTBM -->
+    <!-- Final de Modal de Concesiones Salvadas -->
+    <!-- ********************************************************* -->
+    <!-- ********************************************************* -->
+    <!-- Inicio de Modal de Placas RTBM                            -->
     <!-- ********************************************************* -->
     <div class="modal fade modal-xl" id="modalPlaca" tabindex="-1" aria-labelledby="modalPlacaLabel"
         aria-hidden="true">
@@ -272,15 +368,25 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
         </h6>
       </div>
 
-      <div class="col-2">
+      <div class="col-4">
+
         <div class="input-container">
           <input  size="30" maxlength="25"  autocomplete="off" type="text" class="form-control input-prefetch" id="input-prefetch" placeholder="EJ: CO-CNE-10231-20 ó PES-CENE-314-19 ó PE-CNE-5421-20">
           <i class="fas fa-search-location" id="toggle-icon"></i>
         </div>
+
+        &nbsp;&nbsp;
+        <button onclick="open1raVezModal()"
+          data-bs-original-title="Primera Vez o Incremento"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+          id="btn1raVez" type="button" class="btn btn-success btn-sm">
+          <i class="far fa-plus-square"></i>
+        </button>
+
       </div>
 
-
-      <div class="col-4 d-flex justify-content-start">
+      <div class="col-2 d-flex justify-content-start">
 
         <button
           data-bs-original-title="Salva información en pantalla"
@@ -290,9 +396,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
           <i class="fa-solid fa-floppy-disk"></i>&nbsp;&nbsp;SALVAR
         </button>
         &nbsp;&nbsp;
-
         <h1 id="idEstado" style="font-size: 1.25rem;" class="gobierno3 fw-bolder fst-italic px-1 mx-4 text-end ms-auto" style="font-style: italic;font-weight: 700;">
-
         </h1>
       </div>
 
@@ -575,8 +679,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
               <!-- ******************************************************* -->
               <!-- Inicio de Div De Tabla de Tramites                      -->
               <!-- ******************************************************* -->
-              <div id="concesion_tramites"  class="row justify-content-center">
-                
+              <div id="concesion_tramites"  class="row justify-content-center scrollDiv">
               </div>
               <!-- ******************************************************* -->
               <!-- Final de Div De Tabla de Tramites                      -->
@@ -732,7 +835,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
                       <div class="form-group">
                         <input type="hidden" id="concesion_modelo_vehiculo" value="">
                         <input type="hidden" id="concesion_tipo_vehiculo" value="">
-                        <input style="text-transform: uppercase;" title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_vin" minlength="6" maxlength="17">
+                        <input style="text-transform: uppercase;" title="El vin no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-ZñÑ*0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_vin" minlength="4" maxlength="25">
                       </div>
                     </div>
 
@@ -758,7 +861,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" title="La serie no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_serie" minlength="6" maxlength="17">
+                        <input style="text-transform: uppercase;" title="La serie no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-ZñÑ*0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_serie" minlength="4" maxlength="25">
                       </div>
                     </div>
 
@@ -770,7 +873,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-Z0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="4" maxlength="25">
+                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-ZñÑ*0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion_motor" minlength="4" maxlength="25">
                       </div>
                     </div>
 
@@ -925,8 +1028,8 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input title="La capacidad de la unidad no puede tener menos de 2 caracteres ni mas de 10 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
-                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="17">
+                        <input title="La capacidad de la unidad no puede tener menos de 2 caracteres ni mas de 9 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
+                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="9">
                       </div>
                     </div>
 
@@ -1155,7 +1258,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
                       <div class="form-group">
                         <input type="hidden" id="concesion1_modelo_vehiculo" value="">
                         <input type="hidden" id="concesion1_tipo_vehiculo" value="">
-                        <input style="text-transform: uppercase;" title="El vin no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_vin" minlength="6" maxlength="17">
+                        <input style="text-transform: uppercase;" title="El vin no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-ZñÑ*0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_vin" minlength="4" maxlength="25">
                       </div>
                     </div>
 
@@ -1181,7 +1284,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" title="La serie no puede ser menor de 6 caracteres ni mayor a 17" pattern="^[a-zA-Z0-9\s,.\-]{6,17}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_serie" minlength="6" maxlength="17">
+                        <input style="text-transform: uppercase;" title="La serie no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-ZñÑ*0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_serie" minlength="4" maxlength="25">
                       </div>
                     </div>
 
@@ -1193,7 +1296,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-Z0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_motor" minlength="4" maxlength="25">
+                        <input style="text-transform: uppercase;" title="El número de motor no puede ser menor de 4 caracteres ni mayor a 25" pattern="^[a-zA-ZñÑ*0-9\s,.\-]{4,25}$" class="form-control form-control-sm form-control-unbordered test-controls" id="concesion1_motor" minlength="4" maxlength="25">
                       </div>
                     </div>
 
@@ -1348,8 +1451,8 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input title="La capacidad de la unidad no puede tener menos de 3 caracteres ni mas de 10 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
-                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad1" minlength="6" maxlength="17">
+                        <input title="La capacidad de la unidad no puede tener menos de 2 caracteres ni mas de 9 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
+                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad1" minlength="6" maxlength="9">
                       </div>
                     </div>
 

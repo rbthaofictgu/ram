@@ -1,6 +1,7 @@
 /***************************************************************************************************/
 /************************************* Estilos del IHTT  -  RAM ************************************/
 /***************************************************************************************************/
+
 body {
 	background-color: var(--main_color_bg_body);
 }
@@ -201,8 +202,8 @@ li {
 
 .full-width-tabs>ul.nav.nav-tabs {
 	display: table;
-	width: 100%;
-	table-layout: fixed;
+	/* width: 100%;
+	table-layout: fixed; */
 	/* To make all "columns" equal width regardless of content */
 }
 
@@ -1127,10 +1128,10 @@ body {
 .menu {
 	background-color: var(--bs-gobierno1);
 	/* color: var(--bs-gobierno2); */
-	color:white;
+	color: white;
 }
 
-.link-body-emphasis{
+.link-body-emphasis {
 	color: white !important;
 }
 
@@ -1694,31 +1695,31 @@ body {
 
 /* Styling for the div */
 #rightDiv {
-	width: 45px;
-	height: 45px;
+	width: 40px;
+	height: 30px;
 	position: fixed;
 	right: 10;
-	top: 40%;
+	top: 50%;
 	transform: translateY(-50%);
 	/* Centers vertically */
 }
 
 #rightDivTR {
-	width: 45px;
-	height: 45px;
+	width: 40px;
+	height: 30px;
 	position: fixed;
 	right: 10;
-	top: 50%;
+	top: 45%;
 	transform: translateY(-45%);
 	/* Centers vertically */
 }
 
 #rightDivPR {
-	width: 45px;
-	height: 45px;
+	width: 40px;
+	height: 30px;
 	position: fixed;
 	right: 10;
-	top: 60%;
+	top: 40%;
 	transform: translateY(-40%);
 	/* Centers vertically */
 }
@@ -2049,7 +2050,7 @@ a {
 }
 
 .progress .determinate {
-	position: absolute; background-color: inherit;
+	/position: absolute;/ background-color: inherit;
 	width: 100%;
 	height: 50px;
 	border-radius: 5px;
@@ -2127,7 +2128,7 @@ a {
 
 /* Cuando el campo se expanda */
 .input-prefetch.expanded {
-	width: 300px;
+	width: 200px;
 	/* Ancho del input cuando se expanda */
 	opacity: 1;
 	/* El input se vuelve visible */
@@ -2359,6 +2360,21 @@ a {
 	display: flex !important;
 	visibility: visible !important;
 	opacity: 1 !important;
+}
+
+.toast-con-avatar {
+	display: flex !important;
+	align-items: center !important;    /* vertical */
+	justify-content: center !important; /* horizontal */
+	gap: 12px;
+}
+
+.toast-con-avatar .toastify-avatar {
+	align-self: center !important;
+	border-radius: 50% !important;
+	width: 32px;
+	height: 32px;
+	object-fit: cover;
 }
 
 .full-width {
@@ -2643,4 +2659,182 @@ a {
 
 .badge-no:hover {
 	background-color: var(--bs-gobierno3-hover);
+}
+
+.eliminar-ram {
+	color: rgb(214, 6, 6);
+	font-size: 2rem;
+	transition: filter 0.2s ease;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	cursor: pointer;
+}
+
+.eliminar-ram:hover {
+	filter: brightness(80%);
+}
+
+.eliminar-ram span {
+	font-size: 0.9rem;
+	margin-top: 4px;
+}
+
+#modalPlaca {
+	z-index: 1065;
+	/* por encima del default 1055 */
+}
+
+.modal-backdrop.show:nth-of-type(2) {
+	z-index: 1060;
+}
+
+.fila-en-div {
+	min-width: 100%;
+	/* Asegura que padding no sume al ancho */
+	display: block;
+	border: 0px solid transparent;
+	/* o grid si lo necesitás */
+	/* justify-content: space-between; */
+	/* Opcional: para separar columnas */
+}
+
+.form-container {
+	background-color: #c4bdbd;
+	padding: 30px;
+	border-radius: 12px;
+	box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+	max-width: 500px;
+	margin: auto;
+}
+
+label {
+	font-weight: bold;
+	margin-bottom: 10px;
+}
+
+#idFechaGrafico {
+	border-radius: 8px;
+	padding: 10px;
+	color: #003366
+}
+
+#idRowPrincipal {
+	background-color: #ece5e5;
+	border-radius: 6px;
+	border: solid;
+	border-color: var(--bs-gobierno1);
+}
+
+.cuadrado {
+	display: inline-block;
+	padding: 0.35em 0.75em;
+	border-radius: 0.5em;
+	font-size: 0.85em;
+	font-weight: 600;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: 1.2;
+	transition: background-color 0.3s, color 0.3s;
+	background-color: var(--bs-gobierno1);
+	color: #fff;
+	border: 1px solid var(--bs-gobierno1);
+	/* width: 20px;
+	height: 10px;
+	padding: 3px; */
+}
+
+.total {
+	font-weight: bold;
+	margin-right: 5px;
+	color: var(--bs-gobierno1);
+}
+
+.pagadas {
+	font-weight: bold;
+	margin-right: 5px;
+	color: #30b376;
+}
+
+.total:hover {
+	font-weight: bold;
+	margin-right: 5px;
+	color: var(--bs-gobierno1);
+}
+
+.pagadas:hover {
+	font-weight: bold;
+	margin-right: 5px;
+	color: #5fcc9b;
+}
+
+/* NO */
+
+/* background-color: #5fcc9b;
+
+	border: 1px solid  #30b376;
+
+	background-color: #5bdda0; */
+
+/* para las concesiones y tramites */
+.badge {
+	display: inline-block;
+	padding: 0.30em 0.70em;
+	border-radius: 0.5em;
+	font-size: 0.80em;
+	font-weight: 500;
+	text-align: center;
+	text-transform: uppercase;
+	line-height: 1.2;
+	transition: background-color 0.3s, color 0.3s;
+}
+
+/* SI */
+.concesion {
+	background-color: #8d685a;
+	color: #fff;
+	border: 1px solid #8d685a;
+}
+
+.concesion:hover {
+	background-color: #c78c88
+}
+
+/* NO */
+.tramites {
+	background-color: #5a7f8d;
+	color: #fff;
+	border: 1px solid #5a7f8d;
+}
+
+.tramites:hover {
+	background-color: #7c9fb8
+}
+
+.btn-light-activo {
+	background-color: #8d685a;
+	color: white;
+	font-weight: bold;
+	border-color: #5a7f8d;
+}
+
+.btn-light-activo:hover {
+	background-color: #8d685a;
+	color: white;
+	border: 5px solid #5a7f8d;
+	-webkit-box-shadow: 12px 12px 5px -3px #8d685a;
+	-moz-box-shadow: 12px 12px 5px -3px #8d685a;
+	box-shadow: 12px 12px 5px -3px #8d685a;
+	font-variant: small-caps;
+}
+
+.btn-light-activo:active,
+.btn-light-activo:focus {
+	background-color: #8d685a;
+	color: white;
+	border: 5px solid #5a7f8d;
+	-webkit-box-shadow: 12px 12px 5px -3px #8d685a;
+	-moz-box-shadow: 12px 12px 5px -3px #8d685a;
+	box-shadow: 12px 12px 5px -3px #8d685a;
+	font-variant: small-caps;
 }

@@ -47,11 +47,6 @@ var fVieneFuncionEditarConcesion = false;
 var requiereCambioDePlaca = false;
 var Reportes = '';
 
-
-function reLoadScreen(ruta) {
-  window.location.href = ruta;
-}
-
 // function ////showConcesionTramites(noOcultar = false) {
 //   var ct = document.getElementById("sidebar");
 //   if (document.getElementById("concesion_vin").value != "") {
@@ -70,6 +65,17 @@ function reLoadScreen(ruta) {
 //     }
 //   }
 // }
+
+//*****************************************************************************************/
+//* INICIO: Abrir Modal para Primera Vez o Incremento de Concesion
+//*****************************************************************************************/
+function open1raVezModal () {
+  const myModal = new bootstrap.Modal(document.getElementById("primeraVezModal"));
+  myModal.show();
+}
+//*****************************************************************************************/
+//* FINAL: Abrir Modal para Primera Vez o Incremento de Concesion
+//*****************************************************************************************/
 
 //*****************************************************************************************/
 //* INICIO: Esta en un estado editable el expediente                                      */
@@ -813,18 +819,18 @@ async function fEliminarTramite(
 
     if (typeof Datos.ERROR != "undefined") {
       sendToast(
-        "INCONVENIENTES ELIMINANDO TRAMITE EN PREFORMA, INTENTELO NUEVAMENTE SI EL ERROR PERSISTE FAVOR CONTACTAR AL ADMINISTRADOR DEL SISTEMA",
+        $appcfg_icono_de_error + " INCONVENIENTES ELIMINANDO TRAMITE EN PREFORMA, INTENTELO NUEVAMENTE SI EL ERROR PERSISTE FAVOR CONTACTAR AL ADMINISTRADOR DEL SISTEMA",
         $appcfg_milisegundos_toast,
         "",
         true,
         true,
         "top",
-        "right",
+        $appcfg_pocision_toast,
         true,
-        $appcfg_background_toast,
+        $appcfg_style_toast,
         function () { },
         "error",
-        $appcfg_pocision_toast,
+        $appcfg_offset_toast,
         $appcfg_icono_toast
       );
       return false;
@@ -886,18 +892,18 @@ async function fEliminarTramite(
       //*INICIO: ENVIO DE MENSAJE DE BORRADO DEL TRAMITE EXITOSO
       //*******************************************************************************************************/
       sendToast(
-        "TRAMITE ELIMINADO EXITOSAMENTE",
+        $appcfg_icono_de_success + " TRAMITE ELIMINADO EXITOSAMENTE",
         $appcfg_milisegundos_toast,
         "",
         true,
         true,
         "top",
-        "right",
+        $appcfg_pocision_toast,
         true,
-        $appcfg_background_toast,
+        $appcfg_style_toast,
         function () { },
         "success",
-        $appcfg_pocision_toast,
+        $appcfg_offset_toast,
         $appcfg_icono_toast
       );
       if (idRow != null && Monto != false) {
@@ -1465,100 +1471,129 @@ function fCerrarProcesoEnDB() {
         return true;
       } else {
         //*******************************************************************************************************/
-        //*INICIO: ENVIO DE MENSAJE DE CIERRE EJECUTADO SATISFACTORIAMENTE
-        //*******************************************************************************************************/
-        var html = Datos;
-        sendToast(
-          text,
-          $appcfg_milisegundos_toast,
-          "",
-          true,
-          true,
-          "top",
-          "right",
-          true,
-          $appcfg_background_toast,
-          function () { },
-          "success",
-          $appcfg_pocision_toast,
-          $appcfg_icono_toast
-        );
-        if (cierre == 'FSL') {
-          var title = "SE CERRO SATISFACTORIAMENTE LA PREFORMA " + Datos.SOL2;
-          var msg =
-          "Su solicitud en línea: <span style='color:#ff8f5e;'>" +
-          Datos.SOL2 +
-          " Asignada a:" +
-          Datos.Nombre_Usuario +
-          "/" +
-          Datos.Cod_Usuario +
-          "</span> se ha guardo.";
-          var linkaviso =
-          '<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="' +
-          Datos.url_aviso +
-          '" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>IMPRIMIR ' +
-          Datos.msg +
-          " CON NÚMERO DE AVISO DE COBRO: " +
-          Datos.numero_aviso +
-          "</a>";
-          var urlcomprobante =
-          $appcfg_Dominio_Raiz +
-          ":293/api_rep.php?action=get-PDFComprobante&Solicitud=" +
-          Datos.SOL +
-          "&fls=" +
-          Datos.SOL2 +
-          "&Nombre_Usuario=" +
-          Datos.Nombre_Usuario +
-          "&Cod_Usuario=" +
-          Datos.Cod_Usuario +
-          "&Originano_En_Ventanilla=1&ID_Usuario=" +
-          Datos.ID_Usuario +
-          "&user_name=" +
-          Datos.user_name;
-          var linkcomprobante =
-          '<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="' +
-          urlcomprobante +
-          '" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>IMPRIMIR COMPROBANTE RAM No. ' +
-          Datos.SOL2 +
-          "</a>";
-          var html = linkcomprobante + "<br/>" + linkaviso;
-          fSweetAlertEventNormal(
-            title,
-            undefined,
-            "info",
-            html,
-            undefined,
-            undefined,
-            'FINALIZAR',
-            () => reLoadScreen('src/php/referenciales/infoRam.php'));
-            //***********************************************************************************/
-            //*Lanzar iconos de celebración                                                     */
-            //***********************************************************************************/
-            startCelebration();
+        if (typeof Datos.Placas !== 'undefined') {
+          var html = mallaDinamica(
+          {
+          titulo:"EL EXPEDIENTE PRESENTA UNIDADES CON PLACAS QUE NO SON DEL IHTT",
+          name: "UNIDADES CON PLACAS NO IHTT",
+          },
+          Datos.Placas,
+          {},
+          {
+            title: "text-center fw-bold",
+            encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+            bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+          },          
+          false,
+          -1,
+          );
+          if (html != "") {
+            fSweetAlertEventNormal(
+            "INFORMACIÓN",
+            "FAVOR REVISAR INFORMACIÓN",
+            "error",
+            html
+            );
+          }
         } else {
-          var html = Datos.AutoIngreso + "<br/>";
-          html += Datos.Resolucion + "<br/>";
-          html += Datos.Comprobante + "<br/>";
-          html += Datos.Portada + "<br/>";
-          if (Datos.Concesion != '') {
-            html += Datos.Concesion + "<br/>";
+          //*******************************************************************************************************/
+          //*INICIO: ENVIO DE MENSAJE DE CIERRE EJECUTADO SATISFACTORIAMENTE
+          //*******************************************************************************************************/
+          var html = Datos;
+          sendToast(
+            text,
+            $appcfg_milisegundos_toast,
+            "",
+            true,
+            true,
+            "top",
+            $appcfg_pocision_toast,
+            true,
+            $appcfg_style_toast,
+            function () { },
+            "success",
+            $appcfg_offset_toast,
+            $appcfg_icono_toast
+          );
+          if (cierre == 'FSL') {
+            var title = "SE CERRO SATISFACTORIAMENTE LA PREFORMA " + Datos.SOL2;
+            var msg =
+            "Su solicitud en línea: <span style='color:#ff8f5e;'>" +
+            Datos.SOL2 +
+            " Asignada a:" +
+            Datos.Nombre_Usuario +
+            "/" +
+            Datos.Cod_Usuario +
+            "</span> se ha guardo.";
+            var linkaviso =
+            '<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="' +
+            Datos.url_aviso +
+            '" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>IMPRIMIR ' +
+            Datos.msg +
+            " CON NÚMERO DE AVISO DE COBRO: " +
+            Datos.numero_aviso +
+            "</a>";
+            var urlcomprobante =
+            $appcfg_Dominio_Raiz +
+            ":293/api_rep.php?action=get-PDFComprobante&Solicitud=" +
+            Datos.SOL +
+            "&fls=" +
+            Datos.SOL2 +
+            "&Nombre_Usuario=" +
+            Datos.Nombre_Usuario +
+            "&Cod_Usuario=" +
+            Datos.Cod_Usuario +
+            "&Originano_En_Ventanilla=1&ID_Usuario=" +
+            Datos.ID_Usuario +
+            "&user_name=" +
+            Datos.user_name;
+            var linkcomprobante =
+            '<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="' +
+            urlcomprobante +
+            '" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>IMPRIMIR COMPROBANTE RAM No. ' +
+            Datos.SOL2 +
+            "</a>";
+            var html = linkcomprobante + "<br/>" + linkaviso;
+            fSweetAlertEventNormal(
+              title,
+              undefined,
+              "info",
+              html,
+              undefined,
+              undefined,
+              'FINALIZAR',
+              () => reLoadScreen('src/php/referenciales/infoRam.php'));
+              //***********************************************************************************/
+              //*Lanzar iconos de celebración                                                     */
+              //***********************************************************************************/
+              startCelebration();
+          } else {
+            var html = Datos.AutoIngreso + "<br/>";
+            html += Datos.Resolucion + "<br/>";
+            html += Datos.Comprobante + "<br/>";
+            html += Datos.Portada + "<br/>";
+            console.log(Datos.Concesion);
+            if (Datos.Concesion && Datos.Concesion != '') {
+              html += Datos.Concesion + "<br/>";
+            }
+            console.log(Datos.ConcesionesExplotacion);
+            if (Datos.ConcesionesExplotacion && Datos.ConcesionesExplotacion != '') {
+              html += Datos.ConcesionesExplotacion + "<br/>";
+            }
+            fSweetAlertEventNormal(
+              title,
+              undefined,
+              "info",
+              html,
+              undefined,
+              undefined,
+              'FINALIZAR',
+              () => reLoadScreen('src/php/referenciales/infoRam.php'));
+              //***********************************************************************************/
+              //*Lanzar iconos de celebración                                                     */
+              //***********************************************************************************/
+              startCelebration();
           }
-          if (Datos.ConcesionesExplotacion != '') {
-            html += Datos.ConcesionesExplotacion + "<br/>";
-          }
-          fSweetAlertEventNormal(
-            title,
-            undefined,
-            "info",
-            html,
-            undefined,
-            undefined,
-            'FINALIZAR',
-            () => reLoadScreen('src/php/referenciales/infoRam.php'));
-            //***********************************************************************************/
-            //*Lanzar iconos de celebración                                                     */
-            //***********************************************************************************/
-            startCelebration();
         }
       }
     })
@@ -2092,18 +2127,18 @@ function f_FetchCallApoderado(idApoderado, event, idinput) {
           //Moviendose al siguiente input
           moveToNextInput(event.target, 0);
           sendToast(
-            "INFORMACIÓN DEL APODERADO RECUPERADA EXITOSAMENTE",
+            $appcfg_icono_de_success + " INFORMACIÓN DEL APODERADO RECUPERADA EXITOSAMENTE",
             $appcfg_milisegundos_toast,
             "",
             true,
             true,
             "top",
-            "right",
+            $appcfg_pocision_toast,
             true,
-            $appcfg_background_toast,
+            $appcfg_style_toast,
             function () { },
             "success",
-            $appcfg_pocision_toast,
+            $appcfg_offset_toast,
             $appcfg_icono_toast
           );
         } else {
@@ -2233,18 +2268,18 @@ function f_FetchCallSolicitante(idSolicitante, event, idinput) {
           isError = false;
           moveToNextInput(event.target, 0);
           sendToast(
-            "INFORMACIÓN DEL SOLICITANTE RECUPERADA EXITOSAMENTE",
+            $appcfg_icono_de_success + " INFORMACIÓN DEL SOLICITANTE RECUPERADA EXITOSAMENTE",
             $appcfg_milisegundos_toast,
             "",
             true,
             true,
             "top",
-            "right",
+            $appcfg_pocision_toast,
             true,
-            $appcfg_background_toast,
+            $appcfg_style_toast,
             function () { },
             "success",
-            $appcfg_pocision_toast,
+            $appcfg_offset_toast,
             $appcfg_icono_toast
           );
         } else {
@@ -2619,7 +2654,15 @@ function hideAltoAnchoLargo() {
       if (el) {el.style = 'display:none';}                            
       document.getElementById('capacidadenlabel').innerHTML = 'Pasajeros';
       document.getElementById('capacidad1enlabel').innerHTML = 'Pasajeros';
-    }
+      document.getElementById('capacidad').setAttribute('title','La capacidad de la unidad no puede tener menos de 1 caracter ni mas de 2 caracteres');
+      document.getElementById('capacidad').setAttribute('pattern','^[1-9][0-9]?$');
+      document.getElementById('capacidad1').setAttribute('title','La capacidad de la unidad no puede tener menos de 1 caracter ni mas de 2 caracteres');
+      document.getElementById('capacidad1').setAttribute('pattern','^[1-9][0-9]?$');
+      document.getElementById('capacidad1').setAttribute('minlength',1);
+      document.getElementById('capacidad1').setAttribute('maxlength',2);
+      document.getElementById('capacidad').setAttribute('minlength',1);
+      document.getElementById('capacidad').setAttribute('maxlength',2);
+    } 
   } else {
     if (claseDeServicio == "STEP") {
       var el = document.getElementById('alto');
@@ -2636,6 +2679,14 @@ function hideAltoAnchoLargo() {
       if (el) {el.remove();}
       document.getElementById('capacidadenlabel').textContent = 'Pasajeros';
       document.getElementById('capacidad1enlabel').textContent = 'Pasajeros';
+      document.getElementById('capacidad1').setAttribute('title','La capacidad de la unidad no puede tener menos de 1 caracter ni mas de 2 caracteres');
+      document.getElementById('capacidad1').setAttribute('pattern','^[1-9][0-9]?$');
+      document.getElementById('capacidad').setAttribute('title','La capacidad de la unidad no puede tener menos de 1 caracter ni mas de 2 caracteres');
+      document.getElementById('capacidad').setAttribute('pattern','^[1-9][0-9]?$');
+      document.getElementById('capacidad1').setAttribute('minlength',1);
+      document.getElementById('capacidad1').setAttribute('maxlength',2);
+      document.getElementById('capacidad').setAttribute('minlength',1);
+      document.getElementById('capacidad').setAttribute('maxlength',2);
     }
   }
 }
@@ -2821,18 +2872,18 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                 //*Enviando Toast de Exito en Recuperación la Información de la Concesión
                 //****************************************************************************************************/
                 sendToast(
-                  "INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE",
+                  $appcfg_icono_de_success + "INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE",
                   $appcfg_milisegundos_toast,
                   "",
                   true,
                   true,
                   "top",
-                  "right",
+                  $appcfg_pocision_toast,
                   true,
-                  $appcfg_background_toast,
+                  $appcfg_style_toast,
                   function () { },
                   "success",
-                  $appcfg_pocision_toast,
+                  $appcfg_offset_toast,
                   $appcfg_icono_toast
                 );
                 //**********************************************************************************/
@@ -3076,18 +3127,18 @@ function fEditarConcesion(idConcesion) {
           //*Enviando Toast de Exito en Recuperación la Información de la Concesión
           //**************************************************************************************************************************/
           sendToast(
-            "INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE DE PREFORMA",
+            $appcfg_icono_de_success + " INFORMACIÓN DE LA CONCESIÓN RECUPERADA EXITOSAMENTE DE PREFORMA",
             $appcfg_milisegundos_toast,
             "",
             true,
             true,
             "top",
-            "right",
+            $appcfg_pocision_toast,
             true,
-            $appcfg_background_toast,
+            $appcfg_style_toast,
             function () { },
             "success",
-            $appcfg_pocision_toast,
+            $appcfg_offset_toast,
             $appcfg_icono_toast
           );
           //**************************************************************************************************************************/
@@ -3465,8 +3516,7 @@ function f_RenderConcesionPreforma(datos) {
     document.getElementById("ID_Tipo_Servicio").value =
       datos[1][0]["ID_Tipo_Servico"];
     document.getElementById("ID_Modalidad").value = datos[1][0]["ID_Modalidad"];
-    document.getElementById("ID_Clase_Servicio").value =
-      datos[1][0]["ID_Clase_Servico"];
+    document.getElementById("ID_Clase_Servicio").value = datos[1][0]["ID_Clase_Servico"];
     //***********************************************************************************************************************************/
     //* FINAL: Caracterización de la Concesion
     //***********************************************************************************************************************************/
@@ -3519,8 +3569,13 @@ function f_RenderConcesionPreforma(datos) {
       datos[1][0]["Unidad"][0]["Tipo"];
     document.getElementById("concesion_modelo_vehiculo").value =
       datos[1][0]["Unidad"][0]["Modelo"];
-    document.getElementById("capacidad").value =
-      datos[1][0]["Unidad"][0]["Capacidad_Carga"];
+
+    if (datos[1][0]["ID_Clase_Servico"] == "STPC" || datos[1][0]["ID_Clase_Servico"] == "STEC") {
+      document.getElementById("capacidad").value = datos[1][0]["Unidad"][0]["Capacidad_Carga"];
+    } else {
+      document.getElementById("capacidad").value = parseInt(datos[1][0]["Unidad"][0]["Capacidad_Carga"]);
+    }
+    
     document.getElementById("alto").value = datos[1][0]["Unidad"][0]["Alto"];
     document.getElementById("largo").value = datos[1][0]["Unidad"][0]["Largo"];
     document.getElementById("ancho").value = datos[1][0]["Unidad"][0]["Ancho"];
@@ -3657,8 +3712,12 @@ function f_RenderConcesionTramitesPreforma(datos) {
     datos[1][0]["Unidad"][1]["Tipo"];
   document.getElementById("concesion1_modelo_vehiculo").value =
     datos[1][0]["Unidad"][1]["Modelo"];
-  document.getElementById("capacidad1").value =
-    datos[1][0]["Unidad"][1]["Capacidad_Carga"];
+
+  if (datos[1][0]["ID_Clase_Servico"] == "STPC" || datos[1][0]["ID_Clase_Servico"] == "STEC") {
+    document.getElementById("capacidad1").value = datos[1][0]["Unidad"][1]["Capacidad_Carga"];
+  } else {
+    document.getElementById("capacidad1").value = parseInt(datos[1][0]["Unidad"][1]["Capacidad_Carga"]);
+  }    
   document.getElementById("alto1").value = datos[1][0]["Unidad"][1]["Alto"];
   document.getElementById("largo1").value = datos[1][0]["Unidad"][1]["Largo"];
   document.getElementById("ancho1").value = datos[1][0]["Unidad"][1]["Ancho"];
@@ -4561,36 +4620,37 @@ async function salvarRequicitos() {
       const Datos = await response.json();
       if (typeof Datos.ERROR != "undefined") {
         sendToast(
-          "ERROR SALVANDO LOS REQUISITOS, INTENTELO NUEVAMENTE SI EL ERROR PERSISTE FAVOR CONTACTAR AL ADMINISTRADOR DEL SISTEMA",
+          $appcfg_icono_de_error + " ERROR SALVANDO LOS REQUISITOS, INTENTELO NUEVAMENTE SI EL ERROR PERSISTE FAVOR CONTACTAR AL ADMINISTRADOR DEL SISTEMA",
           $appcfg_milisegundos_toast,
           "",
           true,
           true,
           "top",
-          "right",
+          $appcfg_pocision_toast,
           true,
-          $appcfg_background_toast,
+          $appcfg_style_toast,
           function () { },
           "error",
-          $appcfg_pocision_toast,
+          $appcfg_offset_toast,
           $appcfg_icono_toast
+
         );
         return true;
       } else {
         //****************************************************************************************************/
         sendToast(
-          "REQUICITOS PRE-FORMA SALVADOS EXITOSAMENTE",
+          $appcfg_icono_de_success + " REQUICITOS PRE-FORMA SALVADOS EXITOSAMENTE",
           $appcfg_milisegundos_toast,
           "",
           true,
           true,
           "top",
-          "right",
+          $appcfg_pocision_toast,
           true,
-          $appcfg_background_toast,
+          $appcfg_style_toast,
           function () { },
           "success",
-          $appcfg_pocision_toast,
+          $appcfg_offset_toast,
           $appcfg_icono_toast
         );
         requicitosRecuperados = true;
@@ -4734,18 +4794,18 @@ function salvarConcesion() {
       checked = false;
       //****************************************************************************************************/
       sendToast(
-        "PRE-FORMA SALVADA EXITOSAMENTE",
+        $appcfg_icono_de_success + " PRE-FORMA SALVADA EXITOSAMENTE",
         $appcfg_milisegundos_toast,
         "",
         true,
         true,
         "top",
-        "right",
+        $appcfg_pocision_toast,
         true,
-        $appcfg_background_toast,
+        $appcfg_style_toast,
         function () { },
         "success",
-        $appcfg_pocision_toast,
+        $appcfg_offset_toast,
         $appcfg_icono_toast
       );
       document.getElementById("btnCambiarUnidad").style = "display:none;";
@@ -5434,8 +5494,21 @@ async function addTramitePreforma(el) {
           el.value
         );
         sendToast(
-          "TRAMITE EN PREFORMA INSERTADO SATISFACTORIAMENTE" /* ... otros parámetros ... */
-        );
+        $appcfg_icono_de_success + " TRAMITE EN PREFORMA INSERTADO SATISFACTORIAMENTE",
+        $appcfg_milisegundos_toast,
+        "",
+        true,
+        true,
+        "top",
+        $appcfg_pocision_toast,
+        true,
+        $appcfg_style_toast,
+        function () { },
+        "success",
+        $appcfg_offset_toast,
+        $appcfg_icono_toast
+      );
+
         return true;
       } else {
         el.checked = false;
@@ -6043,18 +6116,18 @@ async function getVehiculoDesdeIP(Obj) {
           document.getElementById("concesion_vin").focus();
           isVehiculeBlock = false;
           sendToast(
-            "INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",
+            $appcfg_icono_de_success + " INFORMACIÓN DEL VEHICULO RECUPERADO EXITOSAMENTE DESDE EL INSTITUTO DE LA PROPIEDAD",
             $appcfg_milisegundos_toast,
             "",
             true,
             true,
             "top",
-            "right",
+            $appcfg_pocision_toast,
             true,
-            $appcfg_background_toast,
+            $appcfg_style_toast,
             function () { },
             "success",
-            $appcfg_pocision_toast,
+            $appcfg_offset_toast,
             $appcfg_icono_toast
           );
           var html = "";

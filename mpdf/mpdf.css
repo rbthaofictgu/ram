@@ -1,0 +1,251 @@
+
+
+
+/* LISTS */
+
+/* 
+A default margin-top/bottom for lists is NOT set in config.php - (standard browsers give outermost list a top and bottom margin).
+[mPDF default CSS set in config.php only works on basic elements, cannot do selectors such as "ol ol"]
+Need to add the following to do this, but also prevent margins in nested lists as per default HTML in most browsers: 
+*/
+
+ul, ol { margin-top: 0.83em; margin-bottom: 0.83em; }
+ul ul, ul ol, ol ul, ol ol { margin-top: 0; margin-bottom: 0; }
+
+.text{ text-align:justify;
+line-height: 18px;
+padding-left: 40px!important;
+padding-right: 40px!important;
+
+} 
+
+body {
+    background-image: url('assets/img/Certificacion_Fondo.png') ;
+	font-family: serif; 
+    font-size: 9pt; 
+	
+}
+
+.imgreport{
+	width: 500px;
+}
+
+.imagen_logo{ 
+	margin-left: 160px!important;
+	width: 50%;
+   } 
+
+
+.imagen_certificacion{ 
+	margin-left:235px!important;
+	margin-top: -20px!important;
+	width: 25%;
+   } 
+
+.imagen_certificacion_sello{ 
+	margin-left:500px!important;
+	margin-top: -170px!important;
+	width: 20%;
+   } 
+
+.imagenqr_firma{
+	margin-left: 140px!important;
+	margin-top: -20px!important;
+	width: 45%;
+	
+  }
+
+.imagenqr{
+	margin-top: 20px!important;
+	width: 85px;
+	margin-left: -50px!important;
+
+  }
+
+  .imagenqrV{
+	margin-left: 260px!important;
+	margin-top:  -40px!important;
+	width: 85px;
+
+  }
+
+  .encabezado{
+	 width: 20cm;
+  }
+
+  .encabezado_titulo{
+	  text-align: center;
+  }
+
+  .titulo_codigo{
+	text-align: right;
+	padding-right: 50px;
+	
+}
+
+  .titulo{
+	text-align: center;
+	padding-left: 50px;
+}
+
+.titulo_d{
+	text-align: left;
+	padding-left: 60px;
+}
+
+.titulo_e{
+	text-align: left;
+	padding-left: 5px!important;
+}
+.centertext{ text-align:center;
+	line-height: 10x;
+	padding-top: 10px;
+	font-weight: bold;
+} 
+
+.centertext_firma{ text-align:center;
+	line-height: 10px;
+	margin-left: -75px;
+	margin-top: -8px!important;
+	font-weight: bold;
+} 
+
+.centertext2{ text-align:center;
+	line-height: 10x;
+	padding-top: 190px;
+} 
+
+.imagen{
+	width: 900px;
+}
+/* INDEXES */
+div.mpdf_index_main {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	line-height: normal;
+	color: red; 
+}
+div.mpdf_index_entry {
+	line-height: normal;
+	text-indent: -1.5em;
+}
+div.mpdf_index_letter {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-size: 1.8em;
+	font-weight: bold;
+	line-height: normal;
+	text-transform: uppercase;
+	page-break-after: avoid; 
+	margin-top: 0.3em; 
+	margin-collapse: collapse;
+}
+a.mpdf_index_link { 
+	color: #000000; 
+	text-decoration: none; 
+}
+
+
+
+/* TABLE OF CONTENTS */
+div.mpdf_toc {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+	line-height: normal;
+}
+a.mpdf_toc_a  {
+	text-decoration: none;
+	color: black;
+}
+div.mpdf_toc_level_0 {		/* Whole line level 0 */
+	line-height: 1.5;
+	margin-left: 0;
+	padding-right: 0em;	/* should match the outdent specified for ToC; 0 is default; suggested value 2em */
+}
+span.mpdf_toc_t_level_0 {	/* Title level 0 - may be inside <a> */
+	font-weight: bold;
+}
+span.mpdf_toc_p_level_0 {	/* Page no. level 0 - may be inside <a> */
+}
+div.mpdf_toc_level_1 {		/* Whole line level 1 */
+	margin-left: 2em;
+	text-indent: -2em;
+	padding-right: 0em;	/* should match the outdent specified for ToC; 0 is default; suggested value 2em */
+}
+span.mpdf_toc_t_level_1 {	/* Title level 1 */
+	font-style: italic;
+	font-weight: bold;
+}
+span.mpdf_toc_p_level_1  {	/* Page no. level 1 - may be inside <a> */
+}
+div.mpdf_toc_level_2 {		/* Whole line level 2 */
+	margin-left: 4em;
+	text-indent: -2em;
+	padding-right: 0em;	/* should match the outdent specified for ToC; 0 is default; suggested value 2em */
+}
+span.mpdf_toc_t_level_2 {	/* Title level 2 */
+}
+span.mpdf_toc_p_level_2 {	/* Page no. level 2 - may be inside <a> */
+}
+
+.table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+    background-color: transparent;
+    border-collapse: collapse;
+}
+.table .thead-light th {
+    color: #043653c9;
+    background-color: #e8e4c5;
+    border-color: #dee2e6;
+    text-align: left;
+}
+.table-header {
+    color: white;
+    background-color: #043653c9 !important;
+    border-color: #043653c9;
+}
+.table thead th {
+    vertical-align: middle;
+    border-bottom: 2px solid #dee2e6;
+}
+.table td, .table th {
+    padding: .75rem;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+
+th {
+    text-align: center;
+}
+td {
+    text-align: center;
+}
+.border-warning {
+    border-color: #ffc107 !important;
+}
+.bg-warning {
+    background-color: #ffc107 !important;
+}
+.text-white {
+    color: #fff !important;
+}
+
+.normal-text {
+	color:rgb(96, 96, 96) !important;
+}
+
+.text-align-right {
+	text-align:right !important;
+}
+
+.text-align-left {
+	text-align:left !important;
+}
+
+.th1 {
+	width: 23% !important;
+}
+
+.imgcenter{
+	text-align: center;
+}
+

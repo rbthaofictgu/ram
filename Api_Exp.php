@@ -54,8 +54,12 @@ require_once("../qr/qrlib.php");
 	protected $host;
 	protected $appcfg_estado_inicial;
 	protected $appcfg_estado_inicial_descripcion;
-	public function __construct($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion)
+    protected $appcfg_placas;
+
+	public function __construct($db,$appcfg_Dominio,$appcfg_Dominio_Corto,$appcfg_Dominio_Raiz,$appcfg_smtp_server,$appcfg_smtp_port,$appcfg_smtp_user,$appcfg_smtp_password,$appcfg_estado_inicial,$appcfg_estado_inicial_descripcion,$appcfg_placas)
 	{
+
+        $this->appcfg_placas = $appcfg_placas;
 
 		$this->setDB(        $db,
 		         $appcfg_Dominio,
@@ -71,10 +75,11 @@ require_once("../qr/qrlib.php");
 		$this->setIp();
 		$this->setHost();
 		if (isset($_POST["action"])) {
-			if ($_POST["action"] == "cerrar-expediente" && isset($_POST["RAM"])) {
-				$this->cerrarRAM($_POST["RAM"]);
-			} else {
-				echo json_encode(array("error" => 1001, "errorhead" => 'OPPS', "errormsg" => 'NO SE ENCONTRO NINGUNA FUNCION EN EL API PARA LA ACCIÓN REQUERIDA'));
+			if ($_POST["action"] == "cerrar-expediente" && isset($_POST["RAM"])) { $this->cerrarRAM($_POST["RAM"]);
+			} else if ($_POST["action"] == "regenerar-resolucion" && isset($_POST["RAM"])) {
+                $this->RegenerarAutoyResolucion($_POST["RAM"],$_POST["Resolucion"],$_POST["AutoMotivado"]);
+            } else {
+                echo json_encode(array("error" => 1001, "errorhead" => 'OPPS', "errormsg" => 'NO SE ENCONTRO NINGUNA FUNCION EN EL API PARA LA ACCIÓN REQUERIDA'));
 			}
 		}
 	}
@@ -251,6 +256,85 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
+    	protected function enviarNotificacion($Data):array {
+		$error['error'] = false;
+		$error['msg'] = "";
+		$Body = $Data[0]['Template'];
+		$Body = str_replace('@@NOMBREABOGADO@@',$Data[0]['NombreApoderadoLega'],$Body);
+		$Body = str_replace('@@avisodecobro@@',$Data[0]['Numero_Aviso'],$Body);
+		$Body = str_replace('@@monto@@',$Data[0]['MontoLetras'] . ' (L. ' .  number_format($Data[0]['Monto_Total'],2) . ')' ,$Body);
+		$Body = str_replace('@@_expediente_@@',$Data[0]['ID_Solicitud'] . '/' . $Data[0]['ID_Expediente'],$Body);
+		$Body = str_replace('@@tramites@@',substr($Data[0]['Tramitex'],0,(strlen($Data[0]['Tramitex'])-2)),$Body);
+		//$Body = str_replace('@@resolucion@@',$Data[0]['ID_Resolucion'],$Body);
+		// Inicio
+		try {
+			$mail = new PHPMailer(true);
+			$mail = new PHPMailer;
+			//$mail->SMTPDebug = SMTP::DEBUG_SERVER;                         // Mostrar salida (Desactivar en producción)
+			//$mail->SMTPDebug = 2; // Set to 3 or 4 for more details
+			//$mail->Debugoutput = 'html';
+			$mail->SMTPOptions =  array('ssl' => array('verify_peer' => false, 'verify_peer_name' => false, 'allow_self_sifned' => true  ) );
+			$mail->isSMTP();      
+			$mail->Host = $this->server_smtp;  
+			$mail->SMTPAuth = true;                               
+			$mail->Username = $this->server_smtp_user;
+			$mail->Password = $this->server_smtp_password;
+			$mail->SMTPSecure = 'ssl';                           
+			$mail->Port = $this->server_smtp_port;
+			$mail->setFrom($this->server_smtp_user, 'IHTT NOTIFICACIÓN');
+
+			if ($_SESSION['Environment'] =='DEV') {
+				$mail->addAddress('rbthaofic@gmail.com');
+				$mail->addAddress('oscaricalix@gmail.com');
+				$mail->addAddress('copy@transporte.gob.hn'); 
+			} else {
+				$mail->addAddress(trim($Data[0]['Email_Apoderado']), trim($Data[0]['NombreApoderadoLega'])); 
+				$mail->addCC(trim($Data[0]['Email']), trim($Data[0]['NombreSolicitante'])); 
+				$mail->addCC('copy@transporte.gob.hn'); 
+			}	
+			
+			$mail->isHTML(true); 
+			$mail->CharSet = 'UTF-8';
+			$mail->Subject = $Data[0]['Titulo_Correo'];
+			$mail->Body    = $Body;
+			$mail->AltBody = $Body;
+			
+
+			if ($Data[0]['Aviso_Ruta'] != '') {
+				$mail->addAttachment($Data[0]['Aviso_Ruta']);        //Add 
+			}
+			if ($Data[0]['Auto_Ruta'] != '') {
+				$mail->addAttachment($Data[0]['Auto_Ruta']);         //Add 
+			}
+			if ($Data[0]['Ruta'] != '') {
+				$mail->addAttachment($Data[0]['Ruta']);              //Add 
+			}
+	
+			$mail->send();
+			//Attachments
+			//*******************************************************//
+			// Incio de generando Logs de Envio Fallido de email
+			//******************************************************//
+			if (isset($mail->ErrorInfo) && $mail->ErrorInfo != '') {
+				$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Enviado-> Envio Fallido de Notificación de Aviso de Cobro: $mail->ErrorInfo:' . '	' . trim($Data[0]['Email_Apoderado']) . $Data[0]['NombreApoderadoLega'] . $mail->ErrorInfo;
+				logErr($txt,'../logs/logs.txt');
+				$error['error'] = true;
+			}
+			return $error;
+		} catch (Exception $e) {
+			$error['error'] = true;
+			$error['msg'] = "El mensaje no se ha enviado. Mailer Error: {$mail->ErrorInfo}";
+			//*******************************************************//
+			// Incio de generando Logs de Envio Fallido de email
+			//******************************************************//
+			$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Exception Fallido-> Envio Fallido de Notificación de Aviso de Cobro: Exception $mail->ErrorInfo' . '	' . $mail->ErrorInfo;
+			logErr($txt,'../logs/logs.txt');
+			$txt = date('Y m d h:i:s') . '	' . 'Send_Mail Exception Fallido-> Envio Fallido de Notificación de Aviso de Cobro: Excepcion: $e' . '	' . $e;
+			logErr($txt,'../logs/logs.txt');
+			return $error;
+		}
+	}	
+
     //*******************************************************************************************/
 	//* INICIO: SALVADO DE BITACORA DE PREFORMA
 	//*******************************************************************************************/
@@ -392,20 +476,22 @@ require_once("../qr/qrlib.php");
         try {
             $query = "select distinct 
                     case 
-                    when Permiso_Explotacion != '' then RTRIM(Certificado_Operacion)
-                    else RTRIM(N_Permiso_Especial)
+                    when tt.Permiso_Explotacion != '' then RTRIM(tt.Certificado_Operacion)
+                    else RTRIM(tt.N_Permiso_Especial)
                 end	AS Concesion
-                from [IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] 
-                where ID_Solicitud = :ID_Solicitud
+                from 
+                [IHTT_DB].[dbo].[TB_Expedientes] exp
+                inner join [IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] tt on  tt.ID_Solicitud = exp.ID_Solicitud
+                where exp.ID_Expediente = :ID_Expediente
                 order by 
                     case 
-                        when Permiso_Explotacion != '' then RTRIM(Certificado_Operacion)
-                    else RTRIM(N_Permiso_Especial)
+                        when tt.Permiso_Explotacion != '' then RTRIM(tt.Certificado_Operacion)
+                    else RTRIM(tt.N_Permiso_Especial)
                 end";
             //*********************************************************************/
             //* Recueprando la información del Expediente
             //*********************************************************************/
-            return $this->select($query, Array(':ID_Solicitud' => $RAM));
+            return $this->select($query, Array(':ID_Expediente' => $RAM));
         } catch (\Throwable $th) {
             $txt = date('Y m d h:i:s') . '	' .'getSolicitud.php catch '. (isset($query) ? $query : 'undefined query') . ' ERROR ' . $th->getMessage();
             logErr($txt,'../logs/logs.txt');
@@ -823,11 +909,6 @@ require_once("../qr/qrlib.php");
                             } else	{
                                 If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
                                     $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoactual['ID_Placa']  . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    //*if ($detallevehiculoentra == '') {
-                                    //*    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoactual['ID_Placa']  . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    //*} else {
-                                    //*    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $vehiculoentra['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    //*}
                                 } else {
                                     If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-17') {
                                         $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
@@ -840,6 +921,18 @@ require_once("../qr/qrlib.php");
                                             }else {
                                                 If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-08') {
                                                     $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD <strong>' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                                } else {
+                                                    If ($row_rs_expediente['ID_Tipo_Tramite'] == 'IHTTTRA-08') {
+                                                        If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01') {
+                                                            $tramite = $tramite .  $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                        } else {
+                                                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02') {
+                                                                $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                            } else {
+                                                                $tramite = $tramite .  $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial'];									
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -887,11 +980,6 @@ require_once("../qr/qrlib.php");
                             } else	{
                                 If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
                                     $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoactual['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    //*if ($detallevehiculoentra == '') {
-                                    //*    $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoactual['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    //*} else {
-                                    //*    $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO PLACA: ' . $vehiculoentra['ID_Placa'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
-                                    //*}
                                 } else {
                                     If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-17') {
                                         $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
@@ -904,6 +992,18 @@ require_once("../qr/qrlib.php");
                                             }else {
                                                 If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-08') {
                                                     $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD <strong>' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $tipo_documento .' NUMERO: ' . $row_rs_expediente['Certificado_Operacion'];									
+                                                } else {
+                                                    If ($row_rs_expediente['ID_Tipo_Tramite'] == 'IHTTTRA-08') {
+                                                        If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01') {
+                                                            $tramite = $tramite . $conjunccion .  $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                        } else {
+                                                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02') {
+                                                                $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                            } else {
+                                                                $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial'];									
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
@@ -946,14 +1046,24 @@ require_once("../qr/qrlib.php");
             $mpdf->SetHTMLHeader('<div height="100%" width="100%">
             <img height="15%" width="75%" alt="encabezado" src="assets/images/encabezado-pagina1.png">
             </div>','O', true);
-            $mpdf->SetHTMLFooter('<table width="100%"><tr><td width="50%" align="left">Página(s): {PAGENO} de {nbpg}</td>
-            <td width="50%" align="right">'. $_SESSION["user_name"] .'</td></tr></table>');
+            $mpdf->SetHTMLFooter('<table width="100%"><tr><td width="10%" align="left">{PAGENO}/{nbpg}</td>
+            <td width="40%" align="right">'. Date('Y/m/d hh:mm:ss') .'</td><td width="20%" align="right">'. $_SESSION["user_name"] .'</td><td width="30%" align="right">Número Auto: ' . $numeroauto . '</td></tr></table>');            
             $mpdf->WriteHTML($pagina_inicio);
+            //************************************************************************************/
+            //* Borrando el archivo anterior si existe (Documento PDF)
+            //************************************************************************************/
+            if (file_exists($ruta)){ unlink($ruta);}
+            //************************************************************************************/
+            //* Generando el PDF del AutoMotivado de Ingreso en Disco Duro
+            //************************************************************************************/            
             $mpdf->Output($ruta, \Mpdf\Output\Destination::FILE);
+            //************************************************************************************/
+            //* Borrando el archivo anterior si existe (imagen de codigo QR)
+            //************************************************************************************/
             if (file_exists("../qr/temp/".$llave_publica.".png")){ unlink("../qr/temp/".$llave_publica.".png");}
             $respuestaretornar['error']=false;
             $respuestaretornar['msg']='<strong>  IMPRIMIR AUTO DE INGRESO CON EL NÚMERO: ' . $rs_id_rs_numeroauto . '  </strong>';
-            $respuestaretornar['Boton']='<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="'.$ruta.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msg'].'</a>';
+            $respuestaretornar['Boton']='<a style="background-color: rgb(119 183 202); border-radius: 15px; border: solid 4px #33536f;" href="'.  $this->dominio . $ruta.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msg'].'</a>';
             $respuestaretornar['ruta']=$ruta;
             $respuestaretornar['numero_auto']=$rs_id_rs_numeroauto;
             $respuestaretornar['llave_publica']=$llave_publica;
@@ -1068,9 +1178,9 @@ require_once("../qr/qrlib.php");
                 end as Concesion,
                 E.SOL_MD5
                 from [IHTT_DB].[dbo].[TB_Expedientes] E,[IHTT_DB].[dbo].[TB_Expediente_X_Tipo_Tramite] H
-                where E.ID_Solicitud = H.ID_Solicitud and H.ID_Solicitud = :ID_Solicitud";
+                where E.ID_Solicitud = H.ID_Solicitud and E.ID_Expediente = :ID_Expediente";
         try {
-            return $this->select($query, Array(':ID_Solicitud' => $rs_id_rs_expediente));
+            return $this->select($query, Array(':ID_Expediente' => $rs_id_rs_expediente));
         } catch (\Throwable $th) {
             $txt = date('Y m d h:i:s') . '	Usuario: ' . $_SESSION['user_name'] .' getSolicitudResolucion.php catch '. $query . ' ERROR ' . $th->getMessage();
             logErr($txt,'../logs/logs.txt');
@@ -1098,7 +1208,7 @@ require_once("../qr/qrlib.php");
         k.template,
         A.SOL_MD5,F.DESC_Tipo_Tramite,A.SitemaFecha as Sistema_Fecha,A.FechaRecibido,A.NombreSolicitante,B.NombreApoderadoLega,B.ID_ColegiacionAPL,
         (select ID_Resolucion FROM [IHTT_GDL].[dbo].[TB_Resolucion] Res Where Res.ID_Solicitud = A.ID_Solicitud) as ID_Resolucion,
-        (select TOP 1 ISNULL(CodigoAvisoCobro,0) from [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc]  AC Where LTRIM(RTRIM(A.Preforma)) = LTRIM(RTRIM(AC.Expediente))) as CodigoAvisoCobro,
+        (select TOP 1 ISNULL(CodigoAvisoCobro,0) from [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc]  AC Where AC.AvisoCobroEstado != 3 and LTRIM(RTRIM(A.Preforma)) = LTRIM(RTRIM(AC.Expediente))) as CodigoAvisoCobro,
         S.ID_Clase_Servicio as CS,A.SOL_MD5
         from [IHTT_DB].[dbo].[TB_Expedientes] A, 
         [IHTT_PREFORMA].[dbo].[TB_Solicitante] M,
@@ -1185,7 +1295,7 @@ require_once("../qr/qrlib.php");
     function updateAvisoCobrobyFsl ($dbsol,$ID_Fsl,$expediente) {
         date_default_timezone_set('America/Guatemala');
         $query = "UPDATE [IHTT_Webservice].[dbo].[TB_AvisoCobroEnc] 
-        SET [Expediente] = :Expediente Where  [ID_Solicitud] = :ID_Fsl;";
+        SET [Expediente] = :Expediente Where AvisoCobroEstado != 3 and [ID_Solicitud] = :ID_Fsl;";
         try {
             return $this->update($query, Array(':Expediente' => $expediente,':ID_Fsl' => $ID_Fsl));                        
         } catch (\Throwable $th) {
@@ -1625,7 +1735,7 @@ require_once("../qr/qrlib.php");
     //***********************************************************************************************
 	//* FINAL: Insertar en Certificado Historico
 	//***********************************************************************************************
-
+    
     //***********************************************************************************************
 	//* INICIO: ACTUALIZACIÓN DE CONCESION
 	//***********************************************************************************************
@@ -1711,7 +1821,15 @@ require_once("../qr/qrlib.php");
                 //***********************************************************************/
                 $query = "UPDATE [IHTT_SGCERP].[dbo].[TB_Permiso_Especial_Pas] set 
                 ID_Vehiculo_Transporte=:ID_Vehiculo_Transporte,ID_Expediente=:ID_Expediente, 
-                Fecha_Emision=SYSDATETIME(), Fecha_Expiracion=CONVERT(DATE,:Fecha_Expiracion, 111), ID_Colegiacion=:ID_Colegiacion, Resolucion=:Resolucion, Sistema_Usuario=:Sistema_Usuario, Sistema_Fecha=SYSDATETIME(), ID_Estado='ES-02', Observaciones='RENOVACIONES AUTOMATICAS, GENERADO POR PROGRAMA', Comisionado_Gestion=:Comisionado_Gestion
+                Fecha_Emision=SYSDATETIME(), 
+                Fecha_Expiracion=CONVERT(DATE,:Fecha_Expiracion, 111), 
+                ID_Colegiacion=:ID_Colegiacion,
+                Resolucion=:Resolucion,
+                Sistema_Usuario=:Sistema_Usuario,
+                Sistema_Fecha=SYSDATETIME(), 
+                ID_Estado='ES-02', 
+                Observaciones='RENOVACIONES AUTOMATICAS, GENERADO POR PROGRAMA', 
+                Comisionado_Gestion=:Comisionado_Gestion
                  where N_Permiso_Especial_Pas=:Concesion;";
                 $p =  Array(':ID_Vehiculo_Transporte' => $id_vehiculo,
                                             ':ID_Expediente' => $id_expediente,
@@ -2062,6 +2180,7 @@ require_once("../qr/qrlib.php");
         }
 
         if ($es_renovacion_certificado == true || $es_renovacion_permisoespecial == true) {
+
             $Nueva_Fecha_Expiracion = date('Y-m-d',strtotime($record["Fecha_Expiracion"]));
             $Nueva_Fecha_Expiracionx = $Nueva_Fecha_Expiracion;
             $hoyplus60 = date('Y-m-d', strtotime('+60 days'));
@@ -2072,6 +2191,7 @@ require_once("../qr/qrlib.php");
                     $Nueva_Fecha_Expiracion = date("Y-m-d",strtotime($Nueva_Fecha_Expiracion."+ 1 year"));
                 }
             }
+
         } else {
             $Nueva_Fecha_Expiracion = date('Y-m-d',strtotime($record["Fecha_Expiracion"]));
         }
@@ -2090,6 +2210,7 @@ require_once("../qr/qrlib.php");
             logErr($txt,'../logs/logs.txt');
             return false;                                                        
         }
+
         if ($salvar_historico_vehiculo == true){
             $respuestainsertVehiculoHistorico = $this->insertVehiculoHistorico ($record['ID_Vehiculo'],$es_renovacion_tipo_transporte);
             if ($respuestainsertVehiculoHistorico == false) {
@@ -2098,6 +2219,7 @@ require_once("../qr/qrlib.php");
                 return false;                                                        
             }
         }
+
         $llave_publica =  $Data[0]['SOL_MD5'];
         $respuestasaveBitacoraFirma = $this->saveBitacoraFirma( $Data[0]['Certificado_Operacion'],$Data[0]['Tipo_Documento'],$_SESSION["user_name"],$llave_publica);	                            
         if ($respuestasaveBitacoraFirma == false) {
@@ -2142,22 +2264,30 @@ require_once("../qr/qrlib.php");
             }
 
         } 
-
-        if ($es_renovacion_explotacion == true) {
+        return true;
+    }
+    //***********************************************************************************************
+	//* FINAL: Funcion para procesar todas las actualizaciones correspondientes en SGCERP
+	//***********************************************************************************************
+    //***********************************************************************************************
+	//* INICIO: Crear Link de Concesion y/o Permiso de Explotación
+	//***********************************************************************************************
+    function crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$referencia) {
+        if ($tipo_concesion == 'PE') {
+                //**********************************************************************************************************************************************/                                
             if ($es_renovacion_tipo_transporte == 'CARGA') {
                 $rutapermisoexplotacion = $this->dominio_raiz  . ":172/PDFPermisoExplotacionCarga_Mixto.php?modo=visualizacion&Permiso=@@__CONCESIONES__@@";
             } else {
                 $rutapermisoexplotacion = $this->dominio_raiz  . ":172/PDFPermisoExplotacionPasajero_Mixto.php?modo=visualizacion&Permiso=@@__CONCESIONES__@@";
             }
             $respuestaretornar['errorexplotacion']=false;
-            $respuestaretornar['msgexplotacion']='<strong>  IMPRIMIR PERMISO DE EXPLOTACIÓN NO.- ' . $record['Permiso_Explotacion'] . '</strong>';
+            $respuestaretornar['msgexplotacion']='<strong>  IMPRIMIR PERMISO DE EXPLOTACIÓN NO.- ' . $referencia . '</strong>';
             $respuestaretornar['botonexplotacion']='<a style="background-color: #F663BE; border-radius: 15px; border: solid 4px #09057B;" href="'.$rutapermisoexplotacion.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgexplotacion'].'</a>';
             $respuestaretornar['rutaexplotacion']=$rutapermisoexplotacion;
-            $respuestaretornar['id_explotacion']=$record['Permiso_Explotacion'];
-        }
-        
-        if ($tipo_concesion == 'CER') {
-            if ($nueva_unidad == true or $cambio_en_unidad == true or $es_renovacion_certificado == true or $cambio_placa == true) {
+            $respuestaretornar['id_explotacion']=$referencia;
+            //**********************************************************************************************************************************************/
+        } else {
+            if ($tipo_concesion == 'CER') {
                 if ($es_renovacion_tipo_transporte == 'CARGA') {
                     $rutacertificado = $this->dominio_raiz  . ":172/PDFCertificadoCarga_Mixto.php?modo=visualizacion&Certificado=@@__CONCESIONES__@@";
                 } else {
@@ -2167,10 +2297,8 @@ require_once("../qr/qrlib.php");
                 $respuestaretornar['msgcertificado']='<strong>  IMPRIMIR BORRADOR DE CERTIFICADO(s)</strong>';
                 $respuestaretornar['botoncertificado']='<a style="background-color: #4BEE56; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutacertificado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcertificado'].'</a>';
                 $respuestaretornar['rutacertificado']=$rutacertificado;
-                $respuestaretornar['id_certificado']=$record['Concesion'];
-            }
-        } else {
-            if ($nueva_unidad == true or $cambio_en_unidad == true or $es_renovacion_permisoespecial == true or $cambio_placa == true) {
+                $respuestaretornar['id_certificado']=$referencia;
+            } else { 
                 if ($es_renovacion_tipo_transporte == 'CARGA') {
                     $rutacertificado = $this->dominio_raiz  . ":172/PDFPermisoEspecialCarga_Mixto.php?modo=visualizacion&PermisoEspecial=@@__CONCESIONES__@@";
                 } else {
@@ -2180,18 +2308,18 @@ require_once("../qr/qrlib.php");
                 $respuestaretornar['msgcertificado']='<strong>  IMPRIMIR PERMISO(S) ESPECIAL(ES)</strong>';
                 $respuestaretornar['botoncertificado']='<a style="background-color: #4BEE56; border-radius: 15px; border: solid 4px #0E0E0E;" href="'.$rutacertificado.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcertificado'].'</a>';
                 $respuestaretornar['id_certificado']=$rutacertificado;
-                $respuestaretornar['id_especial']=$record['Concesion'];
+                $respuestaretornar['id_especial']=$referencia;
             }
         }
         return $respuestaretornar;
     }
     //***********************************************************************************************
-	//* INICIO: Funcion para procesar todas las actualizaciones correspondientes en SGCERP
+	//* FINAL: Crear Link de Concesion y/o Permiso de Explotación
 	//***********************************************************************************************
     //***********************************************************************************************
 	//* INICIO: Funcion principal de Generacion de Resolucion
 	//***********************************************************************************************
-    function PDFResolucionApi($rs_id_rs_expediente,$ID_Resolucion,$rs_id_rs_template=3,$cfg_institucion='INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE'){
+    function PDFResolucionApi($rs_id_rs_expediente,$ID_Resolucion,$rs_id_rs_template=3,$cfg_institucion='INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE',$actualizarConceciones=true) {
         ini_set("default_charset", 'utf-8');
         if (!empty($_SERVER['REMOTE_ADDR'])) {
             $ip = $_SERVER['REMOTE_ADDR'];
@@ -2220,8 +2348,8 @@ require_once("../qr/qrlib.php");
         $total_concesiones = is_array($CONCESIONES)?count($CONCESIONES):0;
         $contador=0;
         $contador_concesiones=0;
-        $concesionesnumeros='';
         $tipo_documentoX = '';
+        $link = Array();
         //* INICIO: CICLO QUE PROCESA TODAS LAS CONCESIONES REGISTRADAS EN EL EXPEDIENTE
         foreach ($CONCESIONES as $CONCESION){
             $ConcesionesEncryptada[] = $CONCESION['SOL_MD5'];
@@ -2281,7 +2409,8 @@ require_once("../qr/qrlib.php");
             $es_replaqueo = 'NO';
             $cambio_placa = false;
             $cambio_en_unidad = false;
-            $nueva_unidad = false;                                                        
+            $nueva_unidad = false;    
+            $permiso_ac = '';                                                    
             // for para iterar en los registro recuperados
             foreach ($row_rs_todos_los_registros as $row_rs_expediente){
                 // Si se recuperaron datos del expediente procesa
@@ -2304,9 +2433,9 @@ require_once("../qr/qrlib.php");
                             $rtn_solicitante = $row_rs_expediente['RTN_Solicitante'];
                             $ID_ColegiacionAPL = $row_rs_expediente['ID_ColegiacionAPL'];
                             $NombreApoderadoLega = $row_rs_expediente['NombreApoderadoLega'];
-                            // ***********************************************************************************************
-                            // Dependiendo si es Permiso Especial o Permiso de explotación se pone el campo en la variable
-                            // ***********************************************************************************************
+                            //***********************************************************************************************
+                            //* Dependiendo si es Permiso Especial o Permiso de explotación se pone el campo en la variable
+                            //***********************************************************************************************
                             If ($row_rs_expediente['N_Permiso_Especial'] != '') {
                                 $permiso_ac = $row_rs_expediente['N_Permiso_Especial'];
                                 $Data[0]['Tipo_Documento'] = 'PERMISO ESPECIAL';
@@ -2461,76 +2590,6 @@ require_once("../qr/qrlib.php");
                             }
                             //$pagina_inicio = str_replace('@@tramites@@',$row_rs_expediente['DESC_Tipo_Tramite'] . ' AUTOMATICA',$pagina_inicio);
                             $pagina_inicio = str_replace('@@modalidad@@',$row_rs_expediente['ID_Tipo_Servicio'] . ' DE ' . $row_rs_expediente['DESC_Modalidad'] ,$pagina_inicio);
-                            //*******************************************************************************************************************************/
-                            //* Poniendo el número de secuencia de la concesion al inicio de cada una de ellas en la descripción del tramite y la petición
-                            //*******************************************************************************************************************************/
-                            if ($contador_tramites==0) {
-                                $tramite = $tramite . ($contador_concesiones+1) .') ';
-                                $tramitepeticion = $tramitepeticion  . ($contador_concesiones+1) .') ';
-                            }                            
-                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01') {
-                                $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'] . ' POR EL TERMINO DE DOCE AÑOS (12 AÑOS)';
-                                $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
-                                $es_renovacion_explotacion = true;
-                            } else {
-                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02') {
-                                    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion']  . ' POR EL TERMINO DE TRES AÑOS (3 AÑOS)';
-                                    $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
-                                    $es_renovacion_certificado = true;
-                                } else	{
-                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-03') {
-                                        $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO DE PERMISO ESPECIAL' . $row_rs_expediente['N_Permiso_Especial']  . ' POR EL TERMINO DE UN AÑO (1 AÑO)';									
-                                        $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO DE PERMISO ESPECIAL ' . $row_rs_expediente['N_Permiso_Especial'];									
-                                        $es_renovacion_permisoespecial = true;
-                                    } else	{
-                                        If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
-                                            $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                            $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                            $es_replaqueo = 'SI';
-                                            $cambio_placa = true;
-                                        } else {
-                                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-17') {
-                                                $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                                $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                                $cambio_en_unidad = true;
-                                            } else {
-                                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-18') {
-                                                    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A COLOR: ' . $vehiculoactual['DESC_Color'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                                    $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A COLOR: ' . $vehiculoactual['DESC_Color'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                                    $cambio_en_unidad = true;
-                                                } else {
-                                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-19') {
-                                                        $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE CHASIS: ' . $vehiculoactual['Chasis'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                                        $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE CHASIS: ' . $vehiculoactual['Chasis'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                                        $cambio_en_unidad = true;
-                                                        $es_replaqueo = 'SI';
-                                                    }else {
-                                                        If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-08') {
-                                                            $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD: ' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
-                                                            $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD: ' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];							
-                                                            $es_replaqueo = 'SI';
-                                                            $nueva_unidad = true;                                                        
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }		
-                                }
-                            }
-                            $pagina_inicio = str_replace('@@ncf@@',$row_rs_expediente['Nombre_Firma'],$pagina_inicio);
-                            $pagina_inicio = str_replace('@@tcf@@',$row_rs_expediente['Titulo_Cargo'],$pagina_inicio);
-                            $qrubicacion= "../qr/temp/".$row_rs_expediente['SOL_MD5'].".png";
-                            $URL = $this->dominio_raiz .'ra/VFRA.php?template='. $rs_id_rs_template .'&Resolucion=S&Llave_Publica='.$llave_publica;
-                            QRcode::png($URL,$qrubicacion,QR_ECLEVEL_M,5,4);
-                            $pagina_inicio = str_replace('../../qr/temp/QR.PNG',$qrubicacion,$pagina_inicio);
-                            //* Inicio QR Comisionado Presidente
-                            if ($row_rs_expediente['titulo_cargo_comisionado'] != '') {
-                                $pagina_inicio = str_replace('@@ncfc@@',$row_rs_expediente['firma_comisionado'],$pagina_inicio);
-                                $pagina_inicio = str_replace('@@tcfc@@',$row_rs_expediente['titulo_cargo_comisionado'],$pagina_inicio);
-                                $pagina_inicio = str_replace('../../qr/temp/CQR.PNG',$qrubicacion,$pagina_inicio);
-                            }
-
                             //**************************************************************************************************************************************/
                             //* Inicio                                                                                                                              */
                             //**************************************************************************************************************************************/
@@ -2564,6 +2623,107 @@ require_once("../qr/qrlib.php");
                             //* Armando URL dpara presentar Resolución, AutoMotivado y Renovación del Cetticiado y/o Permiso de Explotación o Permiso Especial      */
                             //* Final                                                                                                                               */
                             //**************************************************************************************************************************************/						
+                            //*******************************************************************************************************************************/
+                            //* Poniendo el número de secuencia de la concesion al inicio de cada una de ellas en la descripción del tramite y la petición
+                            //*******************************************************************************************************************************/
+                            if ($contador_tramites==0) {
+                                $tramite = $tramite . ($contador_concesiones+1) .') ';
+                                $tramitepeticion = $tramitepeticion  . ($contador_concesiones+1) .') ';
+                            }                            
+                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01' and $row_rs_expediente['ID_Tipo_Tramite'] != 'IHTTTRA-08') {
+                                $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'] . ' POR EL TERMINO DE DOCE AÑOS (12 AÑOS)';
+                                $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                $es_renovacion_explotacion = true;
+                                //**************************************************************************************************/
+                                //** CREANDO LINK **/
+                                //**************************************************************************************************/
+                                $link['PermisoExplotacion'] = $this->crearLinks($es_renovacion_tipo_transporte,'PE',$row_rs_expediente['Permiso_Explotacion']);
+                            } else {
+                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02' and $row_rs_expediente['ID_Tipo_Tramite'] != 'IHTTTRA-08') {
+                                    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion']  . ' POR EL TERMINO DE TRES AÑOS (3 AÑOS)';
+                                    $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                    $es_renovacion_certificado = true;
+                                    $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                } else	{
+                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-03' and $row_rs_expediente['ID_Tipo_Tramite'] != 'IHTTTRA-08') {
+                                        $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO DE PERMISO ESPECIAL' . $row_rs_expediente['N_Permiso_Especial']  . ' POR EL TERMINO DE UN AÑO (1 AÑO)';									
+                                        $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO DE PERMISO ESPECIAL ' . $row_rs_expediente['N_Permiso_Especial'];									
+                                        $es_renovacion_permisoespecial = true;
+                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                    } else	{
+                                        If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
+                                            $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                            $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                            $es_replaqueo = 'SI';
+                                            $cambio_placa = true;
+                                            $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                        } else {
+                                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-17') {
+                                                $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                                $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                                $cambio_en_unidad = true;
+                                                $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                            } else {
+                                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-18') {
+                                                    $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A COLOR: ' . $vehiculoactual['DESC_Color'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                                    $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A COLOR: ' . $vehiculoactual['DESC_Color'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                                    $cambio_en_unidad = true;
+                                                    $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                                } else {
+                                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-19') {
+                                                        $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE CHASIS: ' . $vehiculoactual['Chasis'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                                        $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE CHASIS: ' . $vehiculoactual['Chasis'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                                        $cambio_en_unidad = true;
+                                                        $es_replaqueo = 'SI';
+                                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                                    }else {
+                                                        If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-08') {
+                                                            $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD: ' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
+                                                            $tramitepeticion = $tramitepeticion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD: ' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];							
+                                                            $es_replaqueo = 'SI';
+                                                            $nueva_unidad = true;                                                        
+                                                            $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                                        } else {
+                                                            If ($row_rs_expediente['ID_Tipo_Tramite'] == 'IHTTTRA-08') {
+                                                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01') {
+                                                                    $tramite = $tramite .  $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                    $tramitepeticion = $tramitepeticion .  $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                    $link['PermisoExplotacion'] = $this->crearLinks($es_renovacion_tipo_transporte,'PE',$row_rs_expediente['Permiso_Explotacion']);
+                                                                    $es_repocision_explotacion = true;
+                                                                } else {
+                                                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02') {
+                                                                        $tramite = $tramite . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                        $tramitepeticion = $tramitepeticion .  $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                                                        $es_repocision_certificado = true;
+                                                                    } else {
+                                                                        $tramite = $tramite .  $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial'];									
+                                                                        $tramitepeticion = $tramitepeticion  . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial'];									
+                                                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['N_Permiso_Especial']);
+                                                                        $es_repocision_permisoespecial = true;
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }		
+                                }
+                            }
+                            $pagina_inicio = str_replace('@@ncf@@',$row_rs_expediente['Nombre_Firma'],$pagina_inicio);
+                            $pagina_inicio = str_replace('@@tcf@@',$row_rs_expediente['Titulo_Cargo'],$pagina_inicio);
+                            $qrubicacion= "../qr/temp/".$row_rs_expediente['SOL_MD5'].".png";
+                            $URL = $this->dominio_raiz .'ra/VFRA.php?template='. $rs_id_rs_template .'&Resolucion=S&Llave_Publica='.$llave_publica;
+                            QRcode::png($URL,$qrubicacion,QR_ECLEVEL_M,5,4);
+                            $pagina_inicio = str_replace('../../qr/temp/QR.PNG',$qrubicacion,$pagina_inicio);
+                            //* Inicio QR Comisionado Presidente
+                            if ($row_rs_expediente['titulo_cargo_comisionado'] != '') {
+                                $pagina_inicio = str_replace('@@ncfc@@',$row_rs_expediente['firma_comisionado'],$pagina_inicio);
+                                $pagina_inicio = str_replace('@@tcfc@@',$row_rs_expediente['titulo_cargo_comisionado'],$pagina_inicio);
+                                $pagina_inicio = str_replace('../../qr/temp/CQR.PNG',$qrubicacion,$pagina_inicio);
+                            }
                         } else {
                             //**************************************************************************************************************************************/
                             //* Inicio                                                                                                                              */
@@ -2644,47 +2804,82 @@ require_once("../qr/qrlib.php");
                                 $tramite .= ($contador_concesiones+1) .') ';
                                 $tramitepeticion  .= ($contador_concesiones+1) .') ';
                             }
-                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01') {
+                            If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01' and $row_rs_expediente['ID_Tipo_Tramite'] != 'IHTTTRA-08') {
                                 $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'] . ' POR EL TERMINO DE DOCE AÑOS (12 AÑOS)';
                                 $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
                                 $es_renovacion_explotacion = true;
+                                $link['PermisoExplotacion'] = $this->crearLinks($es_renovacion_tipo_transporte,'PE',$row_rs_expediente['Permiso_Explotacion']);
                             } else {
-                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02') {
+                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02' and $row_rs_expediente['ID_Tipo_Tramite'] != 'IHTTTRA-08') {
                                     $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion']  . ' POR EL TERMINO DE TRES AÑOS (3 AÑOS)';
                                     $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
                                     $es_renovacion_certificado = true;
+                                    $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
                                 } else	{
-                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-03') {
+                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-03' and $row_rs_expediente['ID_Tipo_Tramite'] != 'IHTTTRA-08') {
                                         $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial']  . ' POR EL TERMINO DE UN AÑO (1 AÑO)';									
                                         $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial'];									
                                         $es_renovacion_permisoespecial = true;
+                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['N_Permiso_Especial']);
                                     } else	{
                                         If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-15') {
                                             $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                             $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE PLACA: ' . $id_placa_actual . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                             $es_replaqueo = 'SI';
                                             $cambio_placa = true;
+                                            $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
                                         } else {
                                             If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-17') {
                                                 $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor']  . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                                 $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NUMERO DE MOTOR: ' . $vehiculoactual['Motor'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                                 $cambio_en_unidad = true;
+                                                $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
                                             } else {
                                                 If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-18') {
                                                     $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A COLOR: ' . $vehiculoactual['DESC_Color'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                                     $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A COLOR: ' . $vehiculoactual['DESC_Color'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                                     $cambio_en_unidad = true;
+                                                    $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
                                                 } else {
                                                     If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-19') {
                                                         $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite']  . ', A NÚMERO DE CHASIS: ' . $vehiculoactual['Chasis'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                                         $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', A NÚMERO DE CHASIS: ' . $vehiculoactual['Chasis'] . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];									
                                                         $cambio_en_unidad = true;
+                                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
                                                     }else {
                                                         If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-08') {
                                                             $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD ' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];
                                                             $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' DE ' . $row_rs_expediente['DESC_Clase_Tramite'] . ', DE LA UNIDAD ' . $detallevehiculoactual . ' POR LA NUEVA UNIDAD: ' . $detallevehiculoentra . ' EN EL '. $Data[0]['Tipo_Documento'] .' NUMERO: ' . $Data[0]['Certificado_Operacion'];
                                                             $es_replaqueo = 'SI';
                                                             $nueva_unidad = true;
+                                                            $link['Conce sion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                                        } else {
+                                                            If ($row_rs_expediente['ID_Tipo_Tramite'] == 'IHTTTRA-08') {
+                                                                If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-01') {
+                                                                    $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                    $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                    $es_renovacion_explotacion = true;
+                                                                    $link['PermisoExplotacion'] = $this->crearLinks($es_renovacion_tipo_transporte,'PE',$row_rs_expediente['Permiso_Explotacion']);
+                                                                    // $txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'Api_Exp.PHP REPOCICIÓN PERMISO DE EXPLOTACIÓN NÚMERO: ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                    // logErr($txt, '../logs/logs.txt');                                                                        
+                                                                } else {
+                                                                    If ($row_rs_expediente['ID_Clase_Tramite'] == 'CLATRA-02') {
+                                                                        $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                        $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['Certificado_Operacion']  . ' ASOCIADO AL PERMISO DE EXPLOTACIÓN NÚMERO ' . $row_rs_expediente['Permiso_Explotacion'];
+                                                                        $es_renovacion_certificado = true;
+                                                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['Certificado_Operacion']);
+                                                                        // $txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'Api_Exp.PHP REPOCICIÓN CERTIFICADO DE OPERACIÓN NÚMERO: ' . $row_rs_expediente['Certificado_Operacion'];
+                                                                        // logErr($txt, '../logs/logs.txt');                                                                        
+                                                                       } else {
+                                                                        $tramite = $tramite . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial'];									
+                                                                        $tramitepeticion = $tramitepeticion . $conjunccion . $row_rs_expediente['DESC_Tipo_Tramite'] . ' ' . $row_rs_expediente['DESC_Clase_Tramite'] . ' CON NÚMERO ' . $row_rs_expediente['N_Permiso_Especial'];									
+                                                                        $es_renovacion_permisoespecial = true;                                                                        
+                                                                        $link['Concesion'] = $this->crearLinks($es_renovacion_tipo_transporte,$tipo_concesion,$row_rs_expediente['N_Permiso_Especial']);
+                                                                        // $txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'Api_Exp.PHP REPOCICIÓN PERMISO ESPECIAL NÚMERO: ' . $row_rs_expediente['N_Permiso_Especial'];
+                                                                        // logErr($txt, '../logs/logs.txt');
+                                                                    }
+                                                                }
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -2714,7 +2909,7 @@ require_once("../qr/qrlib.php");
             if ($Error_Proceso == true) {
                 break;
             } else {
-                if ($contador > 0) {
+                if ($contador > 0 and $actualizarConceciones == true) {
                     $contador_concesiones++;
                     $fProcesarConcesionesEnSGCERP = 
                     $this->fProcesarConcesionesEnSGCERP($es_renovacion_explotacion,$es_renovacion_certificado,$es_renovacion_permisoespecial,$cambio_placa,$cambio_en_unidad,
@@ -2723,10 +2918,6 @@ require_once("../qr/qrlib.php");
                     if (is_array($fProcesarConcesionesEnSGCERP) == false and $fProcesarConcesionesEnSGCERP == false) {
                         $Error_Proceso = true;
                         break;
-                    } else {
-                        if ($concesionesnumeros == '') {
-                            $concesionesnumeros = $fProcesarConcesionesEnSGCERP['botoncertificado'];
-                        }
                     }
                 }
             }            
@@ -2778,7 +2969,9 @@ require_once("../qr/qrlib.php");
                 $mpdf->SetDisplayMode('fullwidth');
                 //$mpdf->SetDisplayPreferences('/HideMenubar/HideToolbar/DisplayDocTitle');
                 $mpdf->SetHTMLHeader('<div height="100%" width="100%"><img height="15%" width="75%" alt="encabezado" src="assets/images/encabezado-pagina1.png"></div>','O', true);
-                $mpdf->SetHTMLFooter('<table width="100%"><tr><td width="20%" align="center">Página(s): {PAGENO} de {nbpg}</td><td width="50%" align="center">'.$_SESSION["user_name"].'</td><td width="50%" align="right">Resolución No. '.$ID_Resolucion.'</td></tr></table>');
+                //$mpdf->SetHTMLFooter('<table width="100%"><tr><td width="20%" align="center">Página(s): {PAGENO} de {nbpg}</td><td width="50%" align="center">'.$_SESSION["user_name"].'</td><td width="50%" align="right">Resolución No. '.$ID_Resolucion.'</td></tr></table>');
+                $mpdf->SetHTMLFooter('<table width="100%"><tr><td width="5%" align="left">{PAGENO}/{nbpg}</td>
+                <td width="40%" align="right">'. Date('Y/m/d hh:mm:ss') .'</td><td width="20%" align="right">'. $_SESSION["user_name"] .'</td><td width="35%" align="right">'.$ID_Resolucion.'</td></tr></table>');
                 $mpdf->WriteHTML($pagina_inicio);
                 //$mpdf->Output($row_rs_expediente['ID_Solicitud'] . '_Resolucion'  .'.pdf','D');
                 $directory='Documentos/' . $preforma;
@@ -2793,10 +2986,22 @@ require_once("../qr/qrlib.php");
                 $Data[0]['Ruta']  = $ruta;
                 $Data[0]['Template'] = 	$this->getTemplate(7);
                 $Data[0]['Titulo_Correo'] = 'AUTOMOTIVADO Y RESOLUCIÓN';
-                if ($Data[0]['Template'] != false) {
-                } 
                 //**********************************************************************************/
-                // Respuesta para Comprobante de ingreso al SICE
+                //* Boton para Imprimir Concesion
+                //**********************************************************************************/
+                if (isset($link['Concesion'])) {
+                    $bonotes = $link['Concesion'];
+                    $respuestaretornar['botoncertificado']=$bonotes['botoncertificado'];
+                }
+                //**********************************************************************************/
+                //* Boton para Imprimir Permiso de Explotacion
+                //**********************************************************************************/
+                if (isset($link['PermisoExplotacion'])) {
+                    $bonotes = $link['PermisoExplotacion'];
+                    $respuestaretornar['botonexplotacion']=$bonotes['botonexplotacion'];
+                }
+                //**********************************************************************************/
+                //* Respuesta para Comprobante de ingreso al SICE
                 //**********************************************************************************/
                 $rutacomprobante = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir.php?action=get-Solicitud-new&sol=". $Data[0]['SOL_MD5'];
                 $respuestaretornar['errorcomprobante']=false;
@@ -2804,26 +3009,26 @@ require_once("../qr/qrlib.php");
                 $respuestaretornar['botoncomprobante']='<a style="background-color: #F163D3; border-radius: 15px; border: solid 4px #1B0354D0;" href="'.$rutacomprobante.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msgcomprobante'].'</a>';
                 $respuestaretornar['rutacomprobante']=$rutacomprobante;
                 //**********************************************************************************/
-                // Respuesta para ver Portada
+                //* Respuesta para ver Portada
                 //**********************************************************************************/
                 $rutaportada = $this->dominio_raiz . ":84/Recepcion_Solicitudes_Masivo/api_imprimir_exp.php?action=get-Expediente&sol=". $Data[0]['ID_Solicitud'];
                 $respuestaretornar['errorportada']=false;
                 $respuestaretornar['msgportada']='<strong>  IMPRIMIR PORTADA DEL EXPEDIENTE/SOLICITUD: ' . $Data[0]['ID_Expediente'].'/'.$Data[0]['ID_Solicitud'] . '  </strong>';
                 $respuestaretornar['botonportada']='<a style="background-color: #E46A0C; border-radius: 15px; border: solid 4px #151414;" href="'.$rutaportada.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>IMPRIMIR PORTADA EXPEDIENTE No. '.$Data[0]['ID_Expediente'].'</a>';
                 $respuestaretornar['rutaportada']=$rutaportada;
+                //**********************************************************************************/                
                 //**********************************************************************************/
-                // Respuesta para ver Resolucion
+                //* Respuesta para ver Resolucion
                 //**********************************************************************************/
                 $respuestaretornar['error']=false;
                 $respuestaretornar['msg']='<strong>  IMPRIMIR RESOLUCION CON NÚMERO: ' . $ID_Resolucion .  '  </strong>';
-                $respuestaretornar['boton']='<a style="background-color: #D8E42D; border-radius: 15px; border: solid 4px #0E0E0D;" href="'.$ruta.'" target="_blank"  class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msg'].'</a>';
+                $respuestaretornar['boton']='<a style="background-color: #D8E42D; border-radius: 15px; border: solid 4px #0E0E0D;" href="'. $this->dominio . $ruta.'" target="_blank"  
+                class="waves-effect waves-green btn-flat btn"><i class="material-icons print"></i>'.$respuestaretornar['msg'].'</a>';
                 $respuestaretornar['ruta']=$ruta;
                 $respuestaretornar['id_resolucion']=$ID_Resolucion;
                 $respuestaretornar['ConcesionesEncryptada'] = $ConcesionesEncryptada;
                 $respuestaretornar['ConcesionesNumero'] = $ConcesionesNumero;
-                $respuestaretornar['botoncertificado'] = $concesionesnumeros;
                 return $respuestaretornar;
-                //$respuestaretornar['id_vehiculo']=$id_vehiculo;
             } 
         }  else {
             echo 'Error al generar PDF';
@@ -2836,11 +3041,11 @@ require_once("../qr/qrlib.php");
 	//*******************************************************************************************************************/
 	//* Funcion para Crear Carpeta de RAM en Documentos
 	//*******************************************************************************************************************/
-	protected function crearCarpeta($RAM)
+	protected function crearCarpeta($RAM,$DirectoryPath='')
 	{
 		$mover = true;
 		try {
-			$directory = "Documentos/" . $RAM;
+			$directory = $DirectoryPath . "Documentos/" . $RAM;
 			if (!is_dir($directory)) {
 				if (!mkdir($directory, 0777, true)) {
 					$response['msgLog'] = "Fallo la creación del directorio: $directory";
@@ -2883,81 +3088,145 @@ require_once("../qr/qrlib.php");
 		}
 	}
 
+   	protected function getPlacas($RAM)
+	{
+        $text_placas = implode(", ", array_map(fn($p) => "'$p'", $this->appcfg_placas));
+		$q = "SELECT
+            CASE 
+            WHEN ve.Numero_Explotacion != '' THEN RTRIM(ve.Numero_Certificado)
+            ELSE RTRIM(ve.Numero_PermisoEspecial)
+            END AS Concesion,
+            substring(ve.ID_Placa,1,2) as Tipo_Placa,
+            ve.ID_Placa,
+            isnull(ve.ID_Placa_Antes_Replaqueo,'') as Placa_Anterior
+            FROM [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] ve, [IHTT_DB].[dbo].[TB_Expedientes] ex
+            WHERE ve.ID_Solicitud = ex.ID_Solicitud and ex.ID_Expediente = :RAM and substring(ve.ID_Placa,1,2) not in (" . $text_placas . ")";
+        $row = $this->select($q, array(':RAM' => $RAM));
+        if (is_array($row) == true and count($row) > 0) {
+            $titulos = [
+                0 => 'CONCESION',
+                1 => 'TIPO PLACA',
+                2 => 'PLACA',
+                3  => 'PLACA ANTERIOR',
+                'CONCESION' => 'CONCESION',
+                'TIPO_PLACA' => 'TIPO PLACA',
+                'PLACA' => 'PLACA',
+                'PLACA ANTERIOR'  => 'PLACA ANTERIOR'
+            ];
+            $row[count($row)] = $titulos;
+        }
+        if (!isset($_POST["echo"])) {
+            return $row;
+        } else {
+            echo json_encode($row);
+        }
+	}
+
     //***********************************************************************************************
 	//* INICIO: Funcion principal de cierre de RAM ya es Expediente
 	//***********************************************************************************************
 	protected function cerrarRAM($RAM){
-        $this->db->beginTransaction();
         //***********************************************************************************************
         //* Salvando La Bitacora y el Número de AutoMotivado
         //***********************************************************************************************
-        $saveBitacoraNumeroAuto = $this->saveBitacoraNumeroAuto($RAM);
-        if ($saveBitacoraNumeroAuto != false) {
+        $getPlacas = $this->getPlacas($RAM);
+        if (is_array($getPlacas) == true and count($getPlacas) == 0) {
+            $this->db->beginTransaction();
             //***********************************************************************************************
-            //* Actualizando el Estado del RAM en Preforma
+            //* Salvando La Bitacora y el Número de AutoMotivado
             //***********************************************************************************************
-            $updateEstadoPreforma = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
-            if (!isset($respuestaupdateEstadoPreforma['error'])) {
-                $pdfAutoMotivadoIngresoApi = $this->pdfAutoMotivadoIngresoApi($RAM, $saveBitacoraNumeroAuto, $template=1);
-                if ($pdfAutoMotivadoIngresoApi != false) {
-                    //***********************************************************************************************
-                    //* Recuperando el siguiente numero de resolucion
-                    //***********************************************************************************************
-                    $getSiguienteResolucion = $this->getSiguienteResolucion();
-                    if ($getSiguienteResolucion != false) {
-                        $saveResolucion = $this->saveResolucion ($getSiguienteResolucion ,$_POST["RAM"],$_SESSION['ID_Usuario'],$_SESSION['user_name']);
-                        if ($saveResolucion != false) {
-                            $saveBitacoraFirma = $this->saveBitacoraFirma($getSiguienteResolucion,   'RESOLUCION', $_SESSION["user_name"],  $pdfAutoMotivadoIngresoApi['llave_publica']);	
-                            if ($saveBitacoraFirma != false) {
-                                $PDFResolucionApi = $this->PDFResolucionApi($_POST["RAM"],$getSiguienteResolucion,$rs_id_rs_template=3,$cfg_institucion='INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE');
-                                if ($PDFResolucionApi != false) {
-                                    try {
-                                        //*$this->db->rollBack();
-                                        $this->db->commit();
-                                        echo json_encode(array("AutoIngreso" => $pdfAutoMotivadoIngresoApi['Boton'],
-                                        "Resolucion" => $PDFResolucionApi['boton'],
-                                        "Comprobante" => $PDFResolucionApi['botoncomprobante'],
-                                        "Portada" => $PDFResolucionApi['botonportada'],
-                                        'ConcesionesExplotacion' => isset($PDFResolucionApi['botonexplotacion'])? str_replace('@@__CONCESIONES__@@',$_POST["RAM"],$PDFResolucionApi['botonexplotacion']):'',
-                                        'Concesion' => isset($PDFResolucionApi['botoncertificado'])? str_replace('@@__CONCESIONES__@@',$_POST["RAM"],$PDFResolucionApi['botoncertificado']):'',));
-                                    } catch (Exception $e) {
+            $saveBitacoraNumeroAuto = $this->saveBitacoraNumeroAuto($RAM);
+            if ($saveBitacoraNumeroAuto != false) {
+                //***********************************************************************************************
+                //* Actualizando el Estado del RAM en Preforma
+                //***********************************************************************************************
+                $updateEstadoPreforma = $this->updateEstadoPreforma($_POST["RAM"],$_POST['idEstado']);
+                if (!isset($respuestaupdateEstadoPreforma['error'])) {
+                    $pdfAutoMotivadoIngresoApi = $this->pdfAutoMotivadoIngresoApi($RAM, $saveBitacoraNumeroAuto, $template=1);
+                    if ($pdfAutoMotivadoIngresoApi != false) {
+                        //***********************************************************************************************
+                        //* Recuperando el siguiente numero de resolucion
+                        //***********************************************************************************************
+                        $getSiguienteResolucion = $this->getSiguienteResolucion();
+                        if ($getSiguienteResolucion != false) {
+                            $saveResolucion = $this->saveResolucion ($getSiguienteResolucion ,$_POST["RAM"],$_SESSION['ID_Usuario'],$_SESSION['user_name']);
+                            if ($saveResolucion != false) {
+                                $saveBitacoraFirma = $this->saveBitacoraFirma($getSiguienteResolucion,   'RESOLUCION', $_SESSION["user_name"],  $pdfAutoMotivadoIngresoApi['llave_publica']);	
+                                if ($saveBitacoraFirma != false) {
+                                    $PDFResolucionApi = $this->PDFResolucionApi($_POST["RAM"],$getSiguienteResolucion,$rs_id_rs_template=3,$cfg_institucion='INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE');
+                                    if ($PDFResolucionApi != false) {
+                                        try {
+                                            //*$this->db->rollBack();
+                                            $this->db->commit();
+                                            echo json_encode(array("AutoIngreso" => $pdfAutoMotivadoIngresoApi['Boton'],
+                                            "Resolucion" => $PDFResolucionApi['boton'],
+                                            "Comprobante" => $PDFResolucionApi['botoncomprobante'],
+                                            "Portada" => $PDFResolucionApi['botonportada'],
+                                            'ConcesionesExplotacion' => isset($PDFResolucionApi['botonexplotacion'])? str_replace('@@__CONCESIONES__@@',$_POST["RAM"],$PDFResolucionApi['botonexplotacion']):'',
+                                            'Concesion' => isset($PDFResolucionApi['botoncertificado'])? str_replace('@@__CONCESIONES__@@',$_POST["RAM"],$PDFResolucionApi['botoncertificado']):'',));
+                                        } catch (Exception $e) {
+                                            $this->db->rollBack();
+                                            echo json_encode(array("error" => 6104, "errorhead" => 'CERRANDO SOLICITUD', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                                            $txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'CIERRE CATCH: ' . $e->getMessage();
+                                            logErr($txt, '../logs/logs.txt');
+                                        }                                    
+                                    } else {
                                         $this->db->rollBack();
-                                        echo json_encode(array("error" => 6104, "errorhead" => 'CERRANDO SOLICITUD', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
-                                        $txt = date('Y m d h:i:s') . ';Api_Exp.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'CIERRE CATCH: ' . $e->getMessage();
-                                        logErr($txt, '../logs/logs.txt');
-                                    }                                    
+                                        echo json_encode(array("error" => 6006, "errorhead" => 'GENERANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                                    }                        
                                 } else {
                                     $this->db->rollBack();
-                                    echo json_encode(array("error" => 6006, "errorhead" => 'GENERANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                                    echo json_encode(array("error" => 6005, "errorhead" => 'GENERANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
                                 }                        
                             } else {
                                 $this->db->rollBack();
-                                echo json_encode(array("error" => 6005, "errorhead" => 'GENERANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                                echo json_encode(array("error" => 6004, "errorhead" => 'SALVANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
                             }                        
                         } else {
                             $this->db->rollBack();
-                            echo json_encode(array("error" => 6004, "errorhead" => 'SALVANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
-                        }                        
+                            echo json_encode(array("error" => 6003, "errorhead" => 'OBTENIENDO SIGUIENTE NUMERO DE RESOLUCION', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                        }
                     } else {
                         $this->db->rollBack();
-                        echo json_encode(array("error" => 6003, "errorhead" => 'OBTENIENDO SIGUIENTE NUMERO DE RESOLUCION', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                        echo json_encode(array("error" => 6002, "errorhead" => 'AUTOMOTIVADO PDF', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
                     }
                 } else {
                     $this->db->rollBack();
-                    echo json_encode(array("error" => 6002, "errorhead" => 'AUTOMOTIVADO PDF', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                    echo $updateEstadoPreforma;
                 }
             } else {
                 $this->db->rollBack();
-                echo $updateEstadoPreforma;
+                echo json_encode(array("error" => 6001, "errorhead" => 'SALVANDO BITACORA Y AUTOMOTIVADO', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
             }
         } else {
-            $this->db->rollBack();
-            echo json_encode(array("error" => 6001, "errorhead" => 'SALVANDO BITACORA Y AUTOMOTIVADO', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+            echo json_encode(array("Placas" => $getPlacas));
         }
     }
+    //***********************************************************************************************
+    //* Final: Funcion principal de cierre de RAM ya es Expediente
+    //***********************************************************************************************
+    
+    //***********************************************************************************************
+	//* INICIO: Regenerar Automotivado y Resolución
 	//***********************************************************************************************
-	//* Final: Funcion principal de cierre de RAM ya es Expediente
-	//***********************************************************************************************
+	protected function RegenerarAutoyResolucion($RAM,$Resolucion,$AutoMotivado){    
+        $crearCarpeta = $this->crearCarpeta($RAM);
+        if ($crearCarpeta == true) {
+            $pdfAutoMotivadoIngresoApi = $this->pdfAutoMotivadoIngresoApi($RAM, $AutoMotivado, $template=1);
+            if ($pdfAutoMotivadoIngresoApi != false) {
+                $PDFResolucionApi = $this->PDFResolucionApi($_POST["RAM"],$Resolucion,$rs_id_rs_template=3,$cfg_institucion='INSTITUTO HONDUREÑO DEL TRANSPORTE TERRESTRE',false);
+                if ($PDFResolucionApi != false) {
+                    echo json_encode(array("AutoIngreso" => $pdfAutoMotivadoIngresoApi['Boton'],"Resolucion" => $PDFResolucionApi['boton']));
+                } else {
+                    echo json_encode(array("error" => 6006, "errorhead" => 'GENERANDO RESOLUCIÓN', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA'));
+                }
+            } else {
+                echo json_encode(array("error" => 6002, "errorhead" => 'AUTOMOTIVADO PDF', "errormsg" => 'ESTAMOS PRESENTANDO INCONVENIENTES, INTENTANLO NUEVAMENTE SI EL INCONVENIENE PERSISTE CONTACTE AL ADMINISTRADOR DEL SISTEMA','pdfAutoMotivadoIngresoApi'=> $pdfAutoMotivadoIngresoApi));
+            }
+        } else {
+            echo $crearCarpeta;
+        }
+    }
 }
 
 if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
@@ -2965,12 +3234,13 @@ if (!isset($_SESSION["ID_Usuario"]) || !isset($_SESSION["user_name"])) {
 } else {
 	$api = new Api_Exp($db,
 			$appcfg_Dominio,
-            $appcfg_Dominio_Corto,
-            $appcfg_Dominio_Raiz,
-            $appcfg_smtp_server,
-            $appcfg_smtp_port,
-            $appcfg_smtp_user,
-            $appcfg_smtp_password,
-            $appcfg_estado_inicial,
-            $appcfg_estado_inicial_descripcion);
+        $appcfg_Dominio_Corto,
+        $appcfg_Dominio_Raiz,
+        $appcfg_smtp_server,
+        $appcfg_smtp_port,
+        $appcfg_smtp_user,
+        $appcfg_smtp_password,
+        $appcfg_estado_inicial,
+        $appcfg_estado_inicial_descripcion,
+        $appcfg_placas);
 }

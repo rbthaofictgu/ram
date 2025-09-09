@@ -2,8 +2,8 @@
 <meta charset="utf-8">
 <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="SISTEMA-RENOVACIONES-AUTOMATICAS-MASIVAS">
-<meta name="author" content="RONALD-THAOFIC-BARRIENTOS-MEJIA">
+<meta name="description" content="IHTT-INSTITUTO-HONDUREÑO-DE-TRANSPORTE-TERRESTRE-RAM-RENOVACIONES-AUTOMATICAS-MASIVAS">
+<meta name="author" content="RONALD-THAOFIC-BARRIENTOS-MEJIA RBTHAOFIC@GMAIL.COM Móvil: (+504)9561-4451">
 <link rel="apple-touch-icon" sizes="120x120" href="<?php echo $appcfg_Dominio; ?>assets/images/favicon/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="32x32" href="<?php echo $appcfg_Dominio; ?>assets/images/favicon/favicon-32x32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="<?php echo $appcfg_Dominio; ?>assets/images/favicon/favicon-16x16.png">
@@ -17,5 +17,6 @@
 <link href="<?php echo $appcfg_Dominio; ?>assets/css/styles.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/reloadscreen.js"></script>
 <link href="<?php echo $appcfg_Dominio_Corto; ?>tools/select2/css/select2.min.css" rel="stylesheet">
 <link href="<?php echo $appcfg_Dominio_Corto; ?>tools/select2/css/select2-bootstrap4.min.css" rel="stylesheet">  

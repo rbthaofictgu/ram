@@ -401,7 +401,7 @@ if ((isset($_POST["cmd_salvar_copy"]))) {
 
 <head>
    <title>MANTENIMIENTO <?php echo strtoupper($tablanext); ?></title>
-   <?php require_once('../../../encabezado_body.php');
+   <?php require_once('../../../encabezado.php');
    if ($totalRows_rs_usuarios  < 1) { ?>
       <style>
          /* Container */
