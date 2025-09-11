@@ -5566,6 +5566,7 @@ async function addTramite(el,tramiteDescripcion) {
 //**************************************************************************************/
 //* FINAL: Agregar Tramite a Preforma Cuando ya esta salvada la concesion
 //**************************************************************************************/
+
 //**************************************************************************************/
 //* INICIO: Funcion hidde and show lineas de tramites dependiente del caso
 //**************************************************************************************/
@@ -5602,6 +5603,9 @@ function fHiddenShowTramites(
     checkedItem = false;
   }
 
+  //**************************************************************************************/
+  //** SECCIÓN QUE OCULTA O PRESENTA EL CAMPO DE PLACA */
+  //**************************************************************************************/
   if (acronimo_clase == "CU" || acronimo_clase == "CL") {
     var placa = document.getElementById(
       "concesion_tramite_placa_" + acronimo_clase
@@ -5621,6 +5625,9 @@ function fHiddenShowTramites(
     }
   }
 
+  //**************************************************************************************/
+  //** SI NO ES UN TRAMITE DE MODIFICACIÓN */
+  //**************************************************************************************/
   if (acronimo_tipo != "M") {
     for (let id of checkboxIds[acronimo_tipo]) {
       const checkbox = document.getElementById(id);
@@ -5642,22 +5649,15 @@ function fHiddenShowTramites(
     }
   } else {
     const acronimo = acronimo_tipo + "_" + acronimo_clase;
+    //**************************************************************************************/
+    //** SI ES CAMBIO DE UNIDAD */
+    //**************************************************************************************/
     if (acronimo == "M_CU") {
       for (let id of checkboxIds[acronimo]) {
         const checkbox = document.getElementById(id);
-        if (
-          (checkbox && checkbox.disabled == false && checkedItem == false) ||
-          (checkbox &&
-            checkbox.checked == false &&
-            checkbox.disabled == false &&
-            checkedItem == true)
-        ) {
-          const [
-            tipo_tramite1,
-            clase_tramite1,
-            acronimo_tipo1,
-            acronimo_clase1,
-          ] = id.split("_");
+        if ((checkbox && checkbox.disabled == false && checkedItem == false) ||
+          (checkbox && checkbox.checked == false &&  checkbox.disabled == false && checkedItem == true)) {
+          const [tipo_tramite1,clase_tramite1,acronimo_tipo1,acronimo_clase1,] = id.split("_");
           if (acronimo_tipo === acronimo_tipo1) {
             checkbox.checked = false;
             const row = "row_tramite_" + acronimo_tipo1 + "_" + acronimo_clase1;
@@ -5672,28 +5672,32 @@ function fHiddenShowTramites(
       }
     } else {
       var contador = 0;
+      //**************************************************************************************/
+      //** SI NO ES CAMBIO DE UNIDAD */
+      //**************************************************************************************/
       for (let id of checkboxIds["M_CU"]) {
         const checkbox = document.getElementById(id);
-        if (
-          checkbox &&
-          checkbox.checked == true &&
-          checkbox.disabled == false
-        ) {
+        if (checkbox && checkbox.checked == true && checkbox.disabled == false) {
+          console.log(id, "id en el for inside if");
           contador++;
         }
       }
+      //**************************************************************************************/
+      //** SI SE ENCONTRO ALGUN TRAMITE DE CAMBIO SE OCULTA LA LINEA DE CAMBIO DE UNIDAD */
+      //**************************************************************************************/
       if (parseInt(contador) > 0) {
         const elemento = document.getElementById("row_tramite_M_CU");
         if (elemento) {
           elemento.style.display = "none";
-          const elementochk = document.getElementById(
-            "IHTTTRA-03_CLATRA-08_M_CU"
-          );
+          const elementochk = document.getElementById("IHTTTRA-03_CLATRA-08_M_CU");
           if (elementochk) {
             elementochk.checked = false;
           }
         }
       } else {
+        //***************************************************************************************/
+        //** SI NO SE ENCONTRO ALGUN TRAMITE DE CAMBIO SE PRESENTA LA LINEA DE CAMBIO DE UNIDAD */
+        //***************************************************************************************/
         const elemento = document.getElementById("row_tramite_M_CU");
         if (elemento) {
           elemento.style.display = "flex";
@@ -5701,7 +5705,7 @@ function fHiddenShowTramites(
             "IHTTTRA-03_CLATRA-08_M_CU"
           );
           if (elementochk) {
-            elementochk.checked = true;
+            //elementochk.checked = true;
             var elementox = document.getElementById("concesion_tramite_placa_CU");
             if (elementox) {
               elementox.style.display = "flex";

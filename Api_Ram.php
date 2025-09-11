@@ -747,14 +747,12 @@ require_once("../qr/qrlib.php");
 							ServiciosNombre, DescripcionTramite, ID_Transporte, 
 							Id_Tipo_Categoria, Certificado_Operacion, Permiso_Explotacion, 
 							N_Permiso_Especial)
-					VALUES (source.ID_Formulario_Solicitud, source.ID_Tramite, source.Observaciones, 
-							'', 
-							'',
-							source.Sistema_Usuario, source.Sistema_Fecha, 
-							source.ID_Tipo_Categoria, source.Tipo_Servicio, 
-							'','', '', '', 
-							source.ID_Tipo_Categoria, source.N_Certificado, 
-							source.Permiso_Explotacion, source.N_Permiso_Especial);";
+					VALUES (source.ID_Formulario_Solicitud, source.ID_Tramite, source.Observaciones, '', 
+							'',source.Sistema_Usuario, source.Sistema_Fecha, 
+							source.ID_Tipo_Categoria, source.Tipo_Servicio,'',
+							'', '', '', 
+							source.ID_Tipo_Categoria, source.N_Certificado, source.Permiso_Explotacion, 
+							source.N_Permiso_Especial);";
 		$parametros = array(":ID_Formulario_Solicitud" => $RAM,":ID_Solicitud" => $RAM);
 		return $this->update($query, $parametros);
 	}	
@@ -1037,31 +1035,38 @@ require_once("../qr/qrlib.php");
 		$_POST["idConcesiones"] = json_decode($_POST["idConcesiones"], true);
 		$_POST["RAM"] = json_decode($_POST["RAM"], true);
 		$return = true;
-		$this->db->beginTransaction();
-		foreach ($_POST["idConcesiones"] as $Concesion) {
-			$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] where ID_Formulario_Solicitud = :ID_Formulario_Solicitud and (N_Certificado = :N_Certificado or N_Permiso_Especial = :N_Permiso_Especial or Permiso_Explotacion = :Permiso_Explotacion)";
-			$p = array(":ID_Formulario_Solicitud" => $_POST["RAM"], ":N_Certificado" => $Concesion, ":N_Permiso_Especial" => $Concesion, ":Permiso_Explotacion" => $Concesion);
-			$return = $this->delete($query, $p);
-			if ($return == false) {
-				break;
+	    if (count($_POST["idConcesiones"]) < 11) {		
+			$this->db->beginTransaction();
+			foreach ($_POST["idConcesiones"] as $Concesion) {
+				if ($Concesion !== '') {
+					$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] where ID_Formulario_Solicitud = :ID_Formulario_Solicitud and 
+					((N_Certificado != '' and N_Certificado = :N_Certificado) or (N_Permiso_Especial != '' and N_Permiso_Especial = :N_Permiso_Especial))";
+					$p = array(":ID_Formulario_Solicitud" => $_POST["RAM"], ":N_Certificado" => $Concesion, ":N_Permiso_Especial" => $Concesion);
+					$return = $this->delete($query, $p);
+					if ($return == false) {
+						break;
+					}
+					$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] where ID_Formulario_Solicitud = :ID_Formulario_Solicitud and 
+					((Certificado_Operacion != '' and Certificado_Operacion = :Certificado_Operacion) or (Permiso_Especial != '' and Permiso_Especial = :Permiso_Especial))";
+					$p = array(":ID_Formulario_Solicitud" => $_POST["RAM"], ":Certificado_Operacion" => $Concesion, ":Permiso_Especial" => $Concesion);
+					$return = $this->delete($query, $p);
+					if ($return == false) {
+						break;
+					}
+				}
 			}
-			$query = "DELETE FROM [IHTT_PREFORMA].[dbo].[TB_Vehiculo] where ID_Formulario_Solicitud = :ID_Formulario_Solicitud and (Certificado_Operacion = :Certificado_Operacion or Permiso_Especial = :Permiso_Especial or Permiso_Explotacion = :Permiso_Explotacion)";
-			$p = array(":ID_Formulario_Solicitud" => $_POST["RAM"], ":Certificado_Operacion" => $Concesion, ":Permiso_Especial" => $Concesion, ":Permiso_Explotacion" => $Concesion);
-			$return = $this->delete($query, $p);
 			if ($return == false) {
-				break;
+				$this->db->rollBack();
+				echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
+			} else {
+				$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'API_RAM.PHP Error Borrado Concesiones Sin Autorización ' . print_r($_POST["idConcesiones"], true); 
+				logErr($txt, '../logs/logs.txt');
+				$this->db->rollback();
+				//$this->db->commit();
+				echo json_encode(['Borrado'  =>  True]);
 			}
-		}
-		if ($return == false) {
-			$this->db->rollBack();
-			echo json_encode(array("error" => 2000, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR CONCESIONES, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		} else {
-			$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'API_RAM.PHP Error Borrado Concesiones Sin Autorización' . print_r($_POST["idConcesiones"]); 
-			logErr($txt, '../logs/logs.txt');
-			//$this->db->rollBack();
-			$this->db->commit();
-			//echo json_encode(['Borrado'  =>  false]);
-			echo json_encode(['Borrado'  =>  True]);
+			echo json_encode(array("error" => 2001, "errorhead" => "BORRANDO CONCESIONE(S)", "errormsg" => 'ERROR AL INTENTAR BORRAR MAS DE 10 CONCESIONES DE UNA SOLA VEZ, FAVOR CONTACTE AL ADMON DEL SISTEMA'));
 		}
 	}
 	//***********************************************************************************************************************/
@@ -3509,7 +3514,7 @@ require_once("../qr/qrlib.php");
 					$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
 					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramite(['PS', 'CU', 'CL', 'CM', 'CC', 'CS', 'X'], $data[0]["Categoria"]);
 					$area = $this->getAreaOperacion();
-					if (count($area) > 0) {
+					if (is_array($area) and count($area) > 0) {
 						$data[0]["ID_Area_operaciones"] = $area[0]['value'];
 						$data[0]["Descripcion_Area_operaciones"] = $area[0]['text'];
 					}
@@ -3818,7 +3823,7 @@ require_once("../qr/qrlib.php");
 					$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
 					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramitePreforma(['PS', 'CU', 'CL', 'CM', 'CC', 'CS', 'X'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
 					$area = $this->getAreaOperacion();
-					if (count($area) > 0) {
+					if (is_array($area) and count($area) > 0) {
 						$data[0]["Tipo_Categoria_Especilizada"] = $area[0]['value'];
 						$data[0]["Desc_Categoria_Especilizada"] = $area[0]['text'];
 					}
@@ -3999,7 +4004,7 @@ require_once("../qr/qrlib.php");
 					$data[0]["Tipo_Concesion"] = 'PERMISO ESPECIAL:';
 					$data[0]["Tramites"] = $this->getTipoTramiteyClaseTramiteExpediente(['PS', 'CU', 'CL', 'CM', 'CC', 'CS', 'X'], $data[0]["Categoria"], $_POST["RAM"], $_POST["idConcesion"]);
 					$area = $this->getAreaOperacion();
-					if (count($area) > 0) {
+					if (is_array($area) and count($area) > 0) {
 						$data[0]["Tipo_Categoria_Especilizada"] = $area[0]['value'];
 						$data[0]["Desc_Categoria_Especilizada"] = $area[0]['text'];
 					}

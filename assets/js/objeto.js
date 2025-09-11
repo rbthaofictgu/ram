@@ -2065,7 +2065,7 @@ function eliminarConcesionesObjeto(idConcesiones, idRows, originalRows, Monto = 
                console.log(datos.error, 'error delete -concesion - preforma');
                fSweetAlertEventNormal(
                   datos.errorhead,
-                  datos.error + "- " + errormsgcash,
+                  datos.error + "- " + datos.errormsg,
                   "error"
                );
             }
