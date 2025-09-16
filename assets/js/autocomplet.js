@@ -65,7 +65,7 @@ function verificar_existencia_dato(concesion, event) {
 
    //*Debuelve true si existe
 
-   if (concesion.length < 7) {
+   if (concesion.length < 6) {
       console.log(concesion.length, 'dentro');
       Swal.fire({
          title: `!NO EXISTE LA" ${concesion.toUpperCase()}"¡`,
@@ -139,13 +139,13 @@ inputPrefetch.addEventListener("keydown", function (event) {
       if (selectedItem != undefined) {
          verificar_existencia_dato(selectedItem.value, event);
       } else {
-         if (event.target.value.length > 9) {
+         if (event.target.value.length > 5) {
             verificar_existencia_dato(event.target.value.toUpperCase(), event);
          } else {
 
             Swal.fire({
                title: `!${event.target.value.toUpperCase()}¡`,
-               text: 'NO SE PUEDE AGREGAR CONCESION CON LONGITUD MENOR A 10 CARACTERES ',
+               text: 'NO SE PUEDE AGREGAR CONCESION CON LONGITUD MENOR A 6 CARACTERES ',
                icon: 'warning',
                confirmButtonText: 'OK',
             });

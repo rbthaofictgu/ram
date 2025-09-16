@@ -3415,8 +3415,8 @@ require_once("../qr/qrlib.php");
 	protected function getConcesion()
 	{
 
-		$query = "select * from IHTT_SGCERP.dbo.v_Listado_General WHERE N_Certificado = :N_Certificado";
-		$p = array(":N_Certificado" => $_POST["Concesion"]);
+		$query = "select * from IHTT_SGCERP.dbo.v_Listado_General WHERE N_Certificado = :N_Certificado or Placa = :Placa";
+		$p = array(":N_Certificado" => $_POST["Concesion"],":Placa" => trim($_POST["Concesion"]));
 		$data = $this->select($query, $p);
 		$datos[0] = count($data);
 
@@ -3472,19 +3472,35 @@ require_once("../qr/qrlib.php");
 						$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior,$data[0]['RTN_Concesionario'],$vehiculo->cargaUtil->propietario->identificacion);
 						$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],strval($_POST['RAM']),$_POST["modalidadDeEntrada"]??'');
 						$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
-						$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
-						$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
-						$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
-						if (isset($vehiculo->cargaUtil->marcacodigo)) {
+
+						if (trim($vehiculo->cargaUtil->vin) != '') {
+							$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
+						} else {
+							$data[0]["Unidad"][0]['VIN'] = 'NOAPLICA';
+						}
+						if (trim($vehiculo->cargaUtil->motor) != '') {						
+							$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
+						} else {
+							$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+						}
+						if (trim($vehiculo->cargaUtil->combustible) != '' AND strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NO UTILIZA' and
+						strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'N/A' and strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NA') {						
+							$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
+						} else {
+							$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+						}
+						if (isset($vehiculo->cargaUtil->marcacodigo) and $vehiculo->cargaUtil->marcacodigo != '') {
 							$data[0]["Unidad"][0]['ID_Marca'] = $vehiculo->cargaUtil->marcacodigo;
 						}
-						if (isset($vehiculo->cargaUtil->colorcodigo)) {
+						if (isset($vehiculo->cargaUtil->colorcodigo) and $vehiculo->cargaUtil->colorcodigo != '') {
 							$data[0]["Unidad"][0]['ID_Color'] = $vehiculo->cargaUtil->colorcodigo;
 						}
+
+						$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
+						$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
 						$data[0]["Unidad"][0]['Anio'] = $vehiculo->cargaUtil->axo;
 						$data[0]["Unidad"][0]['ID_Placa'] = $vehiculo->cargaUtil->placa;
 						$data[0]["Unidad"][0]['ID_Placa_Anterior'] = $vehiculo->cargaUtil->placaAnterior;
-						$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
 						$data[0]["Unidad"][0]['Modelo'] = $vehiculo->cargaUtil->modelo;
 						$data[0]["Unidad"][0]['Tipo'] = $vehiculo->cargaUtil->tipo;
 						$data[0]["Unidad"][0]['RTN_Propietario'] = $vehiculo->cargaUtil->propietario->identificacion;
@@ -3552,13 +3568,27 @@ require_once("../qr/qrlib.php");
 							$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior,$data[0]['RTN_Concesionario'],$vehiculo->cargaUtil->propietario->identificacion);
 							$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],strval($_POST['RAM']),$_POST["modalidadDeEntrada"]??'I');
 							$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
-							$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
-							$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
 							$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
-							if (isset($vehiculo->cargaUtil->marcacodigo)) {
+							if (trim($vehiculo->cargaUtil->vin) != '') {
+								$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
+							} else {
+								$data[0]["Unidad"][0]['VIN'] = 'NOAPLICA';
+							}
+							if (trim($vehiculo->cargaUtil->motor) != '') {						
+								$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
+							} else {
+								$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+							}
+							if (trim($vehiculo->cargaUtil->combustible) != '' AND strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NO UTILIZA' and
+							strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'N/A' and strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NA') {						
+								$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
+							} else {
+								$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+							}
+							if (isset($vehiculo->cargaUtil->marcacodigo) and $vehiculo->cargaUtil->marcacodigo != '') {
 								$data[0]["Unidad"][0]['ID_Marca'] = $vehiculo->cargaUtil->marcacodigo;
 							}
-							if (isset($vehiculo->cargaUtil->colorcodigo)) {
+							if (isset($vehiculo->cargaUtil->colorcodigo) and $vehiculo->cargaUtil->colorcodigo != '') {
 								$data[0]["Unidad"][0]['ID_Color'] = $vehiculo->cargaUtil->colorcodigo;
 							}
 							$data[0]["Unidad"][0]['Anio'] = $vehiculo->cargaUtil->axo;
@@ -3621,19 +3651,32 @@ require_once("../qr/qrlib.php");
 								$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior,$data[0]['RTN_Concesionario'],$vehiculo->cargaUtil->propietario->identificacion);
 								$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],strval($_POST['RAM']),(strval($_POST['RAM']) != '')?'U':'I');
 								$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
-								$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
-								$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
-								$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
-								if (isset($vehiculo->cargaUtil->marcacodigo)) {
+								if (trim($vehiculo->cargaUtil->vin) != '') {
+									$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
+								} else {
+									$data[0]["Unidad"][0]['VIN'] = 'NOAPLICA';
+								}
+								if (trim($vehiculo->cargaUtil->motor) != '') {						
+									$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
+								} else {
+									$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+								}
+								if (trim($vehiculo->cargaUtil->combustible) != '' AND strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NO UTILIZA' and
+								strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'N/A' and strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NA') {						
+									$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
+								} else {
+									$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+								}
+								if (isset($vehiculo->cargaUtil->marcacodigo) and $vehiculo->cargaUtil->marcacodigo != '') {
 									$data[0]["Unidad"][0]['ID_Marca'] = $vehiculo->cargaUtil->marcacodigo;
 								}
-								if (isset($vehiculo->cargaUtil->colorcodigo)) {
+								if (isset($vehiculo->cargaUtil->colorcodigo) and $vehiculo->cargaUtil->colorcodigo != '') {
 									$data[0]["Unidad"][0]['ID_Color'] = $vehiculo->cargaUtil->colorcodigo;
 								}
+								$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
 								$data[0]["Unidad"][0]['Anio'] = $vehiculo->cargaUtil->axo;
 								$data[0]["Unidad"][0]['ID_Placa'] = $vehiculo->cargaUtil->placa;
 								$data[0]["Unidad"][0]['ID_Placa_Anterior'] = $vehiculo->cargaUtil->placaAnterior;
-								$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
 								$data[0]["Unidad"][0]['Modelo'] = $vehiculo->cargaUtil->modelo;
 								$data[0]["Unidad"][0]['Tipo'] = $vehiculo->cargaUtil->tipo;
 								$data[0]["Unidad"][0]['RTN_Propietario'] = $vehiculo->cargaUtil->propietario->identificacion;
@@ -3683,19 +3726,32 @@ require_once("../qr/qrlib.php");
 								$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior,$data[0]['RTN_Concesionario'],$vehiculo->cargaUtil->propietario->identificacion);
 								$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],isset($_POST['RAM'])??'');
 								$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
-								$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
-								$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
-								$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
-								if (isset($vehiculo->cargaUtil->marcacodigo)) {
+								if (trim($vehiculo->cargaUtil->vin) != '') {
+									$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
+								} else {
+									$data[0]["Unidad"][0]['VIN'] = 'NOAPLICA';
+								}
+								if (trim($vehiculo->cargaUtil->motor) != '') {						
+									$data[0]["Unidad"][0]['Motor'] = $vehiculo->cargaUtil->motor;
+								} else {
+									$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+								}
+								if (trim($vehiculo->cargaUtil->combustible) != '' AND strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NO UTILIZA' and
+								strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'N/A' and strtoupper(trim($vehiculo->cargaUtil->combustible)) != 'NA') {						
+									$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
+								} else {
+									$data[0]["Unidad"][0]['Motor'] = 'NOAPLICA';
+								}
+								if (isset($vehiculo->cargaUtil->marcacodigo) and $vehiculo->cargaUtil->marcacodigo != '') {
 									$data[0]["Unidad"][0]['ID_Marca'] = $vehiculo->cargaUtil->marcacodigo;
 								}
-								if (isset($vehiculo->cargaUtil->colorcodigo)) {
+								if (isset($vehiculo->cargaUtil->colorcodigo) and $vehiculo->cargaUtil->colorcodigo != '') {
 									$data[0]["Unidad"][0]['ID_Color'] = $vehiculo->cargaUtil->colorcodigo;
 								}
+								$data[0]["Unidad"][0]['Chasis'] = $vehiculo->cargaUtil->chasis;
 								$data[0]["Unidad"][0]['Anio'] = $vehiculo->cargaUtil->axo;
 								$data[0]["Unidad"][0]['ID_Placa'] = $vehiculo->cargaUtil->placa;
 								$data[0]["Unidad"][0]['ID_Placa_Anterior'] = $vehiculo->cargaUtil->placaAnterior;
-								$data[0]["Unidad"][0]['Combustible'] = $vehiculo->cargaUtil->combustible;
 								$data[0]["Unidad"][0]['Modelo'] = $vehiculo->cargaUtil->modelo;
 								$data[0]["Unidad"][0]['Tipo'] = $vehiculo->cargaUtil->tipo;
 								$data[0]["Unidad"][0]['RTN_Propietario'] = $vehiculo->cargaUtil->propietario->identificacion;
@@ -5325,8 +5381,7 @@ require_once("../qr/qrlib.php");
 
 	protected function updateUnidad($Unidad, $Concesion, $Estado)
 	{
-
-		IF (isset($Concesion['Permiso_Especial']) AND $Concesion['Permiso_Especial'] == "") {
+		if (isset($Concesion['Permiso_Especial']) AND $Concesion['Permiso_Especial'] == "") {
 			$PERMISO_ESPECIAL = "";
 			$PERMISO_EXPLOTACION = $_POST['Concesion']['Permiso_Explotacion'];
 			$CERTIFICADO_OPERACION = $_POST['Concesion']['Certificado'];
@@ -5714,69 +5769,70 @@ require_once("../qr/qrlib.php");
 			$responseValidarPlacas = $this->validarPlaca($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'], $_POST["Concesion"]['Certificado']==''?$_POST["Concesion"]['Permiso_Especial']:$_POST["Concesion"]['Certificado']);
 			$responseValidarPreforma = $this->validarEnPreforma($_POST["Unidad"]['Placa'], $_POST["Unidad"]['ID_Placa_Antes_Replaqueo'],  $_POST["Concesion"]['Certificado']==''?$_POST["Concesion"]['Permiso_Especial']:$_POST["Concesion"]['Certificado'],$_POST["Concesion"]['RAM'],$_POST["modalidadDeEntrada"]??'');
 		}
-		if ($_POST["Concesion"]['RAM'] == '') {
-			$responseValidarUsuario = $this->getUsuarioAsigna();
-			if ($responseValidarUsuario == false) {
-				echo 'responseValidarUsuario == false';
-			}
-			$responseValidarCiudad = $this->getCiudad($_SESSION["ID_Usuario"]);
-			if ($responseValidarCiudad == false) {
-				echo 'responseValidarCiudad == false';
-			}
-			$RAM = $this->getSiguienteRAM($_POST["Concesion"]['Secuencia']);
-		} else {
+		if ($_POST["Concesion"]['RAM'] != '') {
 			$RAM['nuevo_numero'] = $_POST["Concesion"]['RAM'];
 			//*******************************************************************************************************************/
 			//* Aqui se crean estas dos variable solo para que no de error en las siguientes lineas
 			//*******************************************************************************************************************/
 			$responseValidarUsuario = true;
 			$responseValidarCiudad = true;
-		}
-		//*((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
-		//*((isset($responseValidarMultas)    and isset($responseValidarMultas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
-		//*((isset($responseValidarMultas1)   and isset($responseValidarMultas1[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
-		//*((isset($responseValidarPreforma)  and isset($responseValidarPreforma[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
-		if (
-			$RAM == false or
-			((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or
-			((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or
-			(((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
-			(((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
-			(((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
-			(((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
-		) {
-			$this->db->rollBack();
-			echo json_encode([
-				'ERROR'  =>  true,
-				'RAM'  =>  $RAM,
-				'Ciudad'      =>  isset($responseValidarCiudad) ? $responseValidarCiudad : '',
-				'Usuario'     =>  isset($responseValidarUsuario) ? $responseValidarUsuario : '',
-				'Placas'      =>  $responseValidarPlacas,
-				'Multas'      =>  $responseValidarMultas,
-				'Multas1'     => $responseValidarMultas1 ?? array(),
-				'Preforma'   =>   isset($responseValidarPreforma) ? $responseValidarPreforma : ''
-			]);
-		} else {
-			$isOKUnidad = $_POST["Unidad"]['ID_Unidad'];
-			if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
-				$isOKUnidad = $this->updateUnidad( $_POST["Unidad"], $_POST["Concesion"], 'SALE');
-			} else {
-				$isOKUnidad = $this->updateUnidad( $_POST["Unidad"], $_POST["Concesion"], 'NORMAL');
-			}
-			if ($isOKUnidad == false) {
+			//*((isset($responseValidarPlacas)    and isset($responseValidarPlacas[0]) == true)  or ((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
+			//*((isset($responseValidarMultas)    and isset($responseValidarMultas[0]) == true) or ((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+			//*((isset($responseValidarMultas1)   and isset($responseValidarMultas1[0]) == true) or ((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+			//*((isset($responseValidarPreforma)  and isset($responseValidarPreforma[0]) == true) or ((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+			if (
+				$RAM == false or
+				((isset($responseValidarUsuario)   and $responseValidarUsuario  == false  and is_array($responseValidarUsuario) == false))    or
+				((isset($responseValidarCiudad)    and $responseValidarCiudad   == false  and is_array($responseValidarCiudad) == false))    or
+				(((isset($responseValidarPlacas)   and $responseValidarPlacas    == false and is_array($responseValidarPlacas) == false)))   or
+				(((isset($responseValidarMultas)   and $responseValidarMultas    == false and is_array($responseValidarMultas) == false)))   or
+				(((isset($responseValidarMultas1)  and $responseValidarMultas1   == false and is_array($responseValidarMultas1) == false)))   or
+				(((isset($responseValidarPreforma) and $responseValidarPreforma  == false and is_array($responseValidarPreforma) == false)))
+			) {
 				$this->db->rollBack();
-				echo json_encode(array("error" => 4002, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD'));
+				echo json_encode([
+					'ERROR'  =>  true,
+					'RAM'  =>  $RAM,
+					'Ciudad'      =>  isset($responseValidarCiudad) ? $responseValidarCiudad : '',
+					'Usuario'     =>  isset($responseValidarUsuario) ? $responseValidarUsuario : '',
+					'Placas'      =>  $responseValidarPlacas,
+					'Multas'      =>  $responseValidarMultas,
+					'Multas1'     => $responseValidarMultas1 ?? array(),
+					'Preforma'   =>   isset($responseValidarPreforma) ? $responseValidarPreforma : ''
+				]);
 			} else {
+				$isOKUnidad = $_POST["Unidad"]['ID_Unidad'];
 				if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
-					if ($_POST["Unidad1"]['ID_Unidad'] !== '' && $_POST["Unidad1"]['ID_Unidad'] !== null) {
-						$isOKUnidad1 = $this->updateUnidad($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
-					} else {
-						$isOKUnidad1 = $this->saveUnidad($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
-					}
-					if ($isOKUnidad1 == false) {
-						$this->db->rollBack();
-						echo json_encode(array("error" => 4003, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD 1'));
-						$ERROR = true;
+					$isOKUnidad = $this->updateUnidad( $_POST["Unidad"], $_POST["Concesion"], 'SALE');
+				} else {
+					$isOKUnidad = $this->updateUnidad( $_POST["Unidad"], $_POST["Concesion"], 'NORMAL');
+				}
+				if ($isOKUnidad == false) {
+					$this->db->rollBack();
+					echo json_encode(array("error" => 4002, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD'));
+				} else {
+					if ($_POST["Concesion"]['esCambioDeVehiculo'] == true) {
+						if ($_POST["Unidad1"]['ID_Unidad'] !== '' && $_POST["Unidad1"]['ID_Unidad'] !== null) {
+							$isOKUnidad1 = $this->updateUnidad( $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
+						} else {
+							$isOKUnidad1 = $this->saveUnidad($RAM['nuevo_numero'], $_POST["Unidad1"], $_POST["Concesion"], 'ENTRA');
+						}
+						if ($isOKUnidad1 == false) {
+							$this->db->rollBack();
+							echo json_encode(array("error" => 4003, "errorhead" => "INCONVENIENTES", "errormsg" => 'INTENTANTO ACTUALIZAR LA UNIDAD 1'));
+							$ERROR = true;
+						} else {
+							$this->db->commit();
+							//$this->db->rollBack();
+							echo json_encode(
+								[
+									'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
+									'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
+									'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
+									'Unidad1'        =>  isset($isOKUnidad1) ? $isOKUnidad1 : false
+								]
+							);
+						}
 					} else {
 						$this->db->commit();
 						//$this->db->rollBack();
@@ -5785,22 +5841,13 @@ require_once("../qr/qrlib.php");
 								'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
 								'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
 								'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
-								'Unidad1'        =>  isset($isOKUnidad1) ? $isOKUnidad1 : false
 							]
 						);
 					}
-				} else {
-					$this->db->commit();
-					//$this->db->rollBack();
-					echo json_encode(
-						[
-							'Solicitante'    =>  isset($isOKSolicitante) ? $isOKSolicitante : false,
-							'Apoderado'      =>  isset($isOKApoderado) ? $isOKApoderado : false,
-							'Unidad'         =>  isset($isOKUnidad) ? $isOKUnidad : false,
-						]
-					);
 				}
 			}
+		} else {
+			echo json_encode(array("error" => 4004, "errorhead" => "NÚMERO DE RAM", "errormsg" => 'EL NÚMERO DE RAM ES OBLIGATORIO'));
 		}
 	}
 

@@ -1822,14 +1822,14 @@ function fLimpiarPantalla() {
       document.getElementById("rightDivPR").style.display = "none";
       document.getElementById("combustible").value = "";
       document.getElementById("capacidad").value = "";
-      document.getElementById("alto").value = "";
-      document.getElementById("largo").value = "";
-      document.getElementById("ancho").value = "";
+
+      ["alto", "largo", "ancho", "alto1", "largo1", "ancho1"].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = "";
+      });
+
       document.getElementById("combustible1").value = "";
       document.getElementById("capacidad1").value = "";
-      document.getElementById("alto1").value = "";
-      document.getElementById("largo1").value = "";
-      document.getElementById("ancho1").value = "";
       document.getElementById("Permiso_Explotacion").value = "";
       document.getElementById("ID_Unidad").value = "";
       document.getElementById("ID_Unidad1").value = "";
@@ -1888,9 +1888,8 @@ function fLimpiarPantalla() {
       document.getElementById("concesion_categoria").innerHTML = "";
       document.getElementById("combustible").value = "";
       document.getElementById("capacidad").value = "";
-      document.getElementById("alto").value = "";
-      document.getElementById("largo").value = "";
-      document.getElementById("ancho").value = "";
+
+      
       // Concesion en Pantalla 4
       var concesionlabel = document.getElementById("concesion1label");
       if (concesionlabel != null) {
@@ -1926,9 +1925,6 @@ function fLimpiarPantalla() {
       document.getElementById("concesion1_categoria").innerHTML = "";
       document.getElementById("combustible1").value = "";
       document.getElementById("capacidad1").value = "";
-      document.getElementById("alto1").value = "";
-      document.getElementById("largo1").value = "";
-      document.getElementById("ancho1").value = "";
       //*******************************************************************************/
       //*Desmarcar tramites
       //*******************************************************************************/
@@ -2772,13 +2768,14 @@ function f_RenderConcesionTramites() {
   document.getElementById("combustible1").value =
     document.getElementById("combustible").value;
   document.getElementById("capacidad1").value =
-    document.getElementById("capacidad").value;
-  document.getElementById("alto1").value =
-    document.getElementById("alto").value;
-  document.getElementById("largo1").value =
-    document.getElementById("largo").value;
-  document.getElementById("ancho1").value =
-    document.getElementById("ancho").value;
+    document.getElementById("capacidad").value;  
+
+  if (document.getElementById("alto")?.value !== undefined) {
+    document.getElementById("alto1").value =  document.getElementById("alto").value;
+    document.getElementById("largo1").value =   document.getElementById("largo").value;
+    document.getElementById("ancho1").value =  document.getElementById("ancho").value;
+  }
+
 }
 //*********************************************************************************************************************/
 //** Inicio Function para Establecer la Unidad de los Tramites                                                        **/
@@ -3576,9 +3573,12 @@ function f_RenderConcesionPreforma(datos) {
       document.getElementById("capacidad").value = parseInt(datos[1][0]["Unidad"][0]["Capacidad_Carga"]);
     }
     
-    document.getElementById("alto").value = datos[1][0]["Unidad"][0]["Alto"];
-    document.getElementById("largo").value = datos[1][0]["Unidad"][0]["Largo"];
-    document.getElementById("ancho").value = datos[1][0]["Unidad"][0]["Ancho"];
+    if (document.getElementById("alto")?.value !== undefined) {
+      document.getElementById("alto").value = datos[1][0]["Unidad"][0]["Alto"];
+      document.getElementById("largo").value = datos[1][0]["Unidad"][0]["Largo"];
+      document.getElementById("ancho").value = datos[1][0]["Unidad"][0]["Ancho"];
+    }
+
     dataConcesion["marcas"] = datos[1][0]["Marcas"];
     fLlenarSelect(
       "marcas",
@@ -3717,10 +3717,13 @@ function f_RenderConcesionTramitesPreforma(datos) {
     document.getElementById("capacidad1").value = datos[1][0]["Unidad"][1]["Capacidad_Carga"];
   } else {
     document.getElementById("capacidad1").value = parseInt(datos[1][0]["Unidad"][1]["Capacidad_Carga"]);
-  }    
-  document.getElementById("alto1").value = datos[1][0]["Unidad"][1]["Alto"];
-  document.getElementById("largo1").value = datos[1][0]["Unidad"][1]["Largo"];
-  document.getElementById("ancho1").value = datos[1][0]["Unidad"][1]["Ancho"];
+  }
+
+  if (document.getElementById("alto1")?.value !== undefined) {   
+    document.getElementById("alto1").value = datos[1][0]["Unidad"][1]["Alto"];
+    document.getElementById("largo1").value = datos[1][0]["Unidad"][1]["Largo"];
+    document.getElementById("ancho1").value = datos[1][0]["Unidad"][1]["Ancho"];
+  }
   //***********************************************************************************************************************************/
   //* INICIO: DWD Marcas1
   //***********************************************************************************************************************************/
@@ -3845,14 +3848,10 @@ function setConcesion() {
   //*********************************************************************************************************************/
   if (esCertificado) {
     var Certificado = document.getElementById("concesion_concesion").innerHTML;
-    var Permiso_Explotacion = document
-      .getElementById("concesion_perexp")
-      .innerHTML.split("||")[0];
+    var Permiso_Explotacion = document.getElementById("concesion_perexp").innerHTML.split("||")[0];
     var Permiso_Especial = "";
   } else {
-    var Permiso_Especial = document.getElementById(
-      "concesion_concesion"
-    ).innerHTML;
+    var Permiso_Especial = document.getElementById("concesion_concesion").innerHTML;
     var Permiso_Explotacion = "";
     var Certificado = "";
   }
@@ -3942,10 +3941,10 @@ function setUnidad() {
     Color: document.getElementById("colores").value,
     Anio: document.getElementById("anios").value,
     Combustible: document.getElementById("combustible").value,
-    Capacidad: document.getElementById("capacidad").value,
-    Alto: document.getElementById("alto").value,
-    Largo: document.getElementById("largo").value,
-    Ancho: document.getElementById("ancho").value,
+    Capacidad: document.getElementById("capacidad")?.value || 0,
+    Alto: document.getElementById("alto")?.value || 0,
+    Largo: document.getElementById("largo")?.value || 0,
+    Ancho: document.getElementById("ancho")?.value || 0,
     Nombre_Propietario: document.getElementById("concesion_nombre_propietario")
       .innerHTML,
     RTN_Propietario: document.getElementById("concesion_identidad_propietario")
@@ -3974,10 +3973,10 @@ function setUnidad1() {
     Color: document.getElementById("colores1").value,
     Anio: document.getElementById("anios1").value,
     Combustible: document.getElementById("combustible1").value,
-    Capacidad: document.getElementById("capacidad1").value,
-    Alto: document.getElementById("alto1").value,
-    Largo: document.getElementById("largo1").value,
-    Ancho: document.getElementById("ancho1").value,
+    Capacidad: document.getElementById("capacidad1")?.value || 0,
+    Alto: document.getElementById("alto1")?.value || 0,
+    Largo: document.getElementById("largo1")?.value || 0,
+    Ancho: document.getElementById("ancho1")?.value || 0,
     Nombre_Propietario: document.getElementById("concesion1_nombre_propietario")
       .innerHTML,
     RTN_Propietario: document.getElementById("concesion1_identidad_propietario")
@@ -4685,48 +4684,56 @@ async function salvarRequicitos() {
 //** Inicio Function para Salvar La Preforma                                                                         **/
 //*********************************************************************************************************************/
 function salvarConcesion() {
-  // URL del Punto de Acceso a la API
-  const url = $appcfg_Dominio + "Api_Ram.php";
-  let fd = new FormData(document.forms.form1);
-  var Tramites = "";
-  var Unidad = "";
-  var Unidad1 = "";
-  // Adjuntando el action al FormData
-  if (document.getElementById("ID_Expediente").value == "") {
-    fd.append("action", "save-preforma");
+  if (concesionNumber.length > 0 && document.getElementById("RAM").value === '') {
+    fSweetAlertEventSelect(
+      "",
+      "ERROR EN RAM",
+      "EL NÚMERO DE RAM NO PUEDE ESTAR VACÍO, FAVOR DE VERIFICAR",
+      "error"
+    );
   } else {
-    fd.append("action", "save-expediente");
-    // Enviar el número de Expediente
-    fd.append("ID_Expediente", document.getElementById("ID_Expediente").value);
-    // Enviar el número de Solicitud
-    fd.append("ID_Solicitud", document.getElementById("ID_Solicitud").value);
-  }
-  // Modalidad de entrada de la data (I=INSERT, U-UPDATE)
-  fd.append("modalidadDeEntrada", modalidadDeEntrada);
-  // Adjuntando el Concesion y Caracterización al FormData
-  fd.append("Concesion", JSON.stringify(setConcesion()));
-  // Adjuntando el Apoderado al FormData
-  fd.append("Apoderado", JSON.stringify(setApoderado()));
-  // Adjuntando el Solicitante al FormData
-  fd.append("Solicitante", JSON.stringify(setSolicitante()));
-  // Adjuntando el Unidad al FormData
-  Unidad = setUnidad();
-  fd.append("Unidad", JSON.stringify(Unidad));
-  // Adjuntando el Unidad1 al FormData Solo si Existe el Tramite Cambio de Unidad
-  if (esCambioDeVehiculo == true) {
-    Unidad1 = setUnidad1();
-    fd.append("Unidad1", JSON.stringify(Unidad1));
-  }
-  // Adjuntando el Tramites al FormData
-  Tramites = setTramites();
-  fd.append("Tramites", JSON.stringify(Tramites));
-  //  Fetch options
-  const options = {
-    method: "POST",
-    body: fd,
-  };
-  // Hacer al solicitud fetch con un timeout de 2 minutos
-  fetchWithTimeout(url, options, 300000)
+    // URL del Punto de Acceso a la API
+    const url = $appcfg_Dominio + "Api_Ram.php";
+    let fd = new FormData(document.forms.form1);
+    var Tramites = "";
+    var Unidad = "";
+    var Unidad1 = "";
+    // Adjuntando el action al FormData
+    if (document.getElementById("ID_Expediente").value == "") {
+      fd.append("action", "save-preforma");
+    } else {
+      fd.append("action", "save-expediente");
+      // Enviar el número de Expediente
+      fd.append("ID_Expediente", document.getElementById("ID_Expediente").value);
+      // Enviar el número de Solicitud
+      fd.append("ID_Solicitud", document.getElementById("ID_Solicitud").value);
+    }
+    // Modalidad de entrada de la data (I=INSERT, U-UPDATE)
+    fd.append("modalidadDeEntrada", modalidadDeEntrada);
+    // Adjuntando el Concesion y Caracterización al FormData
+    fd.append("Concesion", JSON.stringify(setConcesion()));
+    // Adjuntando el Apoderado al FormData
+    fd.append("Apoderado", JSON.stringify(setApoderado()));
+    // Adjuntando el Solicitante al FormData
+    fd.append("Solicitante", JSON.stringify(setSolicitante()));
+    // Adjuntando el Unidad al FormData
+    Unidad = setUnidad();
+    fd.append("Unidad", JSON.stringify(Unidad));
+    // Adjuntando el Unidad1 al FormData Solo si Existe el Tramite Cambio de Unidad
+    if (esCambioDeVehiculo == true) {
+      Unidad1 = setUnidad1();
+      fd.append("Unidad1", JSON.stringify(Unidad1));
+    }
+    // Adjuntando el Tramites al FormData
+    Tramites = setTramites();
+    fd.append("Tramites", JSON.stringify(Tramites));
+    //  Fetch options
+    const options = {
+      method: "POST",
+      body: fd,
+    };
+    // Hacer al solicitud fetch con un timeout de 2 minutos
+    fetchWithTimeout(url, options, 300000)
     .then((response) => response.json())
     .then(function (Datos) {
       //****************************************************************************************************/
@@ -4831,6 +4838,7 @@ function salvarConcesion() {
       );
       return true;
     });
+  }
 }
 //*********************************************************************************************************************/
 //** Final Function para Salvar La Preforma                                                                          **/
