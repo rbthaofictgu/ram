@@ -280,6 +280,42 @@ require_once("../qr/qrlib.php");
 			return false;
 		}
 	}
+	//*************************************************************************************/
+	//* Obtener la clase de servicio a asignar a la concesion                                     */
+	//*************************************************************************************/
+	protected function getClaseServicio(): array {
+		$query = "select ID_Clase_Servico as value, DESC_Clase_Servico as text from  [IHTT_DB].[dbo].[TB_Clase_Servicio] where SUBSTRING(ID_Clase_Servico,1,2) = 'ST'";
+		$parametros = array();
+		return $this->select($query, $parametros);
+	}
+
+	//*************************************************************************************/
+	//* Obtener la categoria a asignar a la concesion                                     */
+	//*************************************************************************************/
+	protected function getCategoria(): array {
+		$query = "select c.ID_Categoria as value, c.DESC_Categoria as text from  
+					[IHTT_DB].[dbo].[TB_Categoria] c,[IHTT_DB].[dbo].[TB_Modalidad] m
+					where C.ID_Modalidad = m.ID_Modalidad and m.ID_Clase_Servicio = 'STPC' and c.Origen_Instituto = 'IHTT'";
+		$parametros = array();
+		return $this->select($query, $parametros);
+	}
+
+	//*************************************************************************************/
+	//* Obtener la categoria a asignar a la concesion                                     */
+	//*************************************************************************************/
+	protected function getTipoVehiculo($Clase_Servicio): array {
+		if ($Clase_Servicio == 'STPC' || $Clase_Servicio == 'STEC') {
+			$query = "select ID_Tipo_Vehiculo_Pasajero as value, DESC_Tipo_Vehiculo as text from [IHTT_DB].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] WHERE DATALENGTH(DESC_Tipo_Vehiculo) = 2
+						order by DESC_Tipo_Vehiculo";
+		} else {
+			$query = "select ID_Tipo_Vehiculo_Transporte_Pas as value, DESC_Tipo_Vehiculo_Transporte_Pas as text from [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] 
+						order by DESC_Tipo_Vehiculo_Transporte_Pas";
+		}
+		$parametros = array();
+		return $this->select($query, $parametros);
+	}
+	
+
 	protected function saveIhttDbSoliciante($RAM,$RTN) : string {
 		$query = "MERGE INTO [IHTT_DB].[dbo].[TB_Solicitante] AS target
 				USING (
@@ -3472,6 +3508,7 @@ require_once("../qr/qrlib.php");
 						$data[0]["Unidad"][0]['Multas'] = $this->getDatosMulta($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior,$data[0]['RTN_Concesionario'],$vehiculo->cargaUtil->propietario->identificacion);
 						$data[0]["Unidad"][0]['Preforma'] = $this->validarEnPreforma($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"],strval($_POST['RAM']),$_POST["modalidadDeEntrada"]??'');
 						$data[0]["Unidad"][0]['Placas'] = $this->validarPlaca($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
+						$data[0]["Unidad"][0]['Expedientes'] = $this->validarExpedientes($vehiculo->cargaUtil->placa, $vehiculo->cargaUtil->placaAnterior, $_POST["Concesion"]);
 
 						if (trim($vehiculo->cargaUtil->vin) != '') {
 							$data[0]["Unidad"][0]['VIN'] = $vehiculo->cargaUtil->vin;
@@ -4410,6 +4447,121 @@ require_once("../qr/qrlib.php");
 			$row[count($row) + 1] = $titulos;
 		}
 		return $row;
+	}
+
+	protected function validarExpedientes(string $placa, string $placa1, string $concesion): mixed
+	{
+		try {
+			$sql = "WITH candidatos AS (
+				SELECT
+					E.ID_Expediente,
+					E.ID_Solicitud,
+					E.ID_Solicitante,
+					E.NombreSolicitante,
+					E.SitemaFecha,
+					E.Expediente_Estado,
+					E.N_Permiso_Especial,
+					E.Certificado_Operacion,
+					E.Permiso_Explotacion
+				FROM IHTT_DB.dbo.TB_Expedientes AS E
+				WHERE E.Fuente IN (N'DGT',N'DGT-IHTT',N'Heredado-IHTT',N'IHTT',N'HTT-DGT',N'VENTANILLA CENSO',N'VU')
+				AND E.Expediente_Estado IN (
+					N'ACTIVO',N'CON PROBLEMAS',N'CORRECCION',N'CUSTODIA',N'DICTAMEN',N'FIRMA',
+					N'INCOMPLETO',N'REVISION',N'SUBSANACION',N'APROBACION DE REGISTRO',
+					N'PENDIENTE',N'BUSCAR PRIMARIO'
+				)
+			),
+			resueltos AS (
+				SELECT R.ID_Solicitud
+				FROM IHTT_GDL.dbo.TB_Resolucion AS R
+				UNION
+				SELECT A.ID_Solicitud_Primario
+				FROM IHTT_DB.dbo.TB_Expediente_Acumulado AS A
+				UNION
+				SELECT A.ID_Solicitud_Acumulado
+				FROM IHTT_DB.dbo.TB_Expediente_Acumulado AS A
+			)
+			SELECT
+					c.ID_Expediente,
+					c.ID_Solicitud,
+					c.ID_Solicitante,
+					c.NombreSolicitante,
+					c.SitemaFecha,
+					c.Expediente_Estado,
+					CASE WHEN c.N_Permiso_Especial = '' THEN c.Certificado_Operacion ELSE c.N_Permiso_Especial END AS Concesion,
+					c.Permiso_Explotacion
+			FROM candidatos AS c
+			WHERE NOT EXISTS (
+				SELECT 1 FROM resueltos r WHERE r.ID_Solicitud = c.ID_Solicitud
+			)
+			AND (
+				EXISTS (
+					SELECT 1
+					FROM IHTT_DB.dbo.TB_Expediente_X_Tipo_Tramite AS t
+					WHERE t.ID_Solicitud = c.ID_Solicitud
+					AND (
+						(NULLIF(LTRIM(RTRIM(t.N_Permiso_Especial)), N'') = :CONCESION
+							AND NULLIF(LTRIM(RTRIM(c.N_Permiso_Especial)), N'')
+								= NULLIF(LTRIM(RTRIM(t.N_Permiso_Especial)), N''))
+						OR (NULLIF(LTRIM(RTRIM(t.Certificado_Operacion)), N'') = :CONCESION1
+							AND NULLIF(LTRIM(RTRIM(c.Certificado_Operacion)), N'')
+								= NULLIF(LTRIM(RTRIM(t.Certificado_Operacion)), N''))
+					)
+				)
+				OR
+				EXISTS (
+					SELECT 1
+					FROM IHTT_DB.dbo.TB_Solicitud_Vehiculo_Entra AS v1
+					WHERE v1.ID_Solicitud = c.ID_Solicitud
+					AND (
+						v1.ID_Placa IN (:PLACA, :PLACA1)
+						OR v1.ID_Placa_Antes_Replaqueo IN (:PLACA, :PLACA1)
+						OR v1.Numero_PermisoEspecial = :CONCESION2
+						OR v1.Numero_Certificado     = :CONCESION3
+					)
+				)
+				OR
+				EXISTS (
+					SELECT 1
+					FROM IHTT_DB.dbo.TB_Solicitud_Vehiculo_Actual AS v2
+					WHERE v2.ID_Solicitud = c.ID_Solicitud
+					AND (
+						v2.ID_Placa IN (:PLACA, :PLACA1)
+						OR v2.ID_Placa_Antes_Replaqueo IN (:PLACA, :PLACA1)
+						OR v2.Numero_PermisoEspecial = :CONCESION4
+						OR v2.Numero_Certificado     = :CONCESION5
+					)
+				)
+			)";
+
+			$stmt = $this->db->prepare($sql);
+
+			// Forzamos NVARCHAR usando PDO::PARAM_STR (SQLSRV lo trata como NVARCHAR automáticamente)
+			$stmt->bindValue(':PLACA',     $placa,     PDO::PARAM_STR);
+			$stmt->bindValue(':PLACA1',    $placa1,    PDO::PARAM_STR);
+			$stmt->bindValue(':CONCESION', $concesion, PDO::PARAM_STR);
+			$stmt->bindValue(':CONCESION1', $concesion, PDO::PARAM_STR);
+			$stmt->bindValue(':CONCESION2', $concesion, PDO::PARAM_STR);
+			$stmt->bindValue(':CONCESION3', $concesion, PDO::PARAM_STR);
+			$stmt->bindValue(':CONCESION4', $concesion, PDO::PARAM_STR);
+			$stmt->bindValue(':CONCESION5', $concesion, PDO::PARAM_STR);
+
+			$stmt->execute();
+			$Datos = $stmt->fetchAll();
+			$res = $stmt->errorInfo();
+			if (isset($res) and isset($res[3]) and intval(Trim($res[3])) <> 0) {
+				$txt = date('Y m d h:i:s') . ';Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; -- ' . 'API_RAM.PHP Error Select: Error q; ' . $sql . '; $res[0] ' .  $res[0] . ' $res[1] ' . $res[1] . ' $res[2] ' . $res[2] . ' $res[3] ' . $res[3];
+				logErr($txt, '../logs/logs.txt');
+				return false;
+			} else {
+				return $Datos;
+			}
+		} catch (PDOException $e) {
+			// Capturar excepciones de PDO (error de base de datos)
+			$txt = date('Y m d h:i:s') . 'Api_Ram.php	Usuario:; ' . $_SESSION['usuario'] . '; - Error Catch ValidadExpedientes PDOException; ' . $e->getMessage() . ' QUERY ' . $sql;
+			logErr($txt, '../logs/logs.txt');
+			return false; // O devolver un valor indicando error
+		}
 	}
 
 	//*******************************************************************************************************************/
