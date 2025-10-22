@@ -7,7 +7,6 @@ var estanCargadocs = false;
 var requicitosRecuperados = false;
 var arrayOriginalRows = Array();
 var concesionBorradoEnMalla = 0;
-var isFromfGetInputs = false;
 var isError = false;
 var isRecordGetted = Array();
 var isTab = false;
@@ -46,6 +45,13 @@ var chkTramites;
 var fVieneFuncionEditarConcesion = false;
 var requiereCambioDePlaca = false;
 var Reportes = '';
+const LinksConsulta = new Map([
+  ["STEC", ":122/PV/Permiso_Especial_Carga_IHTT.php?permiso="],
+  ["STEP", ":122/PV/Permiso_Especial_Pas_IHTT.php?permiso="],
+  ["STPC", ":122/PV/Certificado_Carga_IHTT.php?certificado="],
+  ["STPP", ":122/PV/Certificado_Pasajero_IHTT.php?certificado="]
+]);
+
 
 // function ////showConcesionTramites(noOcultar = false) {
 //   var ct = document.getElementById("sidebar");
@@ -204,7 +210,7 @@ function addConcesionNumber(ID, ID_CHECK, Monto, Descripcion, ID_Tramite) {
       } else {
         if (
           ID_CHECK === "IHTTTRA-02_CLATRA-02_R_CO" ||
-          ID_CHECK === "IHTTTRA-02_CLATRA-02_R_PS"
+          ID_CHECK === "IHTTTRA-02_CLATRA-03_R_PS"
         ) {
           Cantidad_Vencimientos = document.getElementById(
             "CantidadRenovacionesConcesion"
@@ -524,6 +530,8 @@ function resencuenciarConcesionNumber(cantidad) {
 //* Moviendose al siguiente input
 //************************************************************/
 function moveToNextInput(currentInput, value) {
+  console.log(currentInput,'currentInput On moveToNextInput()');
+  console.log(value,'Value On moveToNextInput()');
   //var inputs = [].slice.call(document.querySelectorAll('input select'));
   var currentIndex = testinputsArray.indexOf(currentInput);
   var wasMoved = false;
@@ -548,7 +556,6 @@ function moveToNextInput(currentInput, value) {
 //**********************************************************************/
 function fGetInputs() {
   isTab = true;
-  isFromfGetInputs = true;
   // Get the element by its ID
   var element = document.getElementById("test-form-" + (currentstep + 1));
   // Get all input elements inside this element
@@ -616,7 +623,9 @@ function fGetInputsSelect() {
           }
           paneerror[currentstep][idinputs.indexOf(input.id)] = 0;
           //Moverse al siguiente input
-          moveToNextInput(input, 0);
+          if (isSaving == false) {
+            moveToNextInput(input, 0);
+          }
         }
       }
     }
@@ -1084,6 +1093,145 @@ function procesarDatosIHTT(Reportes) {
 //**************************************************************************************/
 //* Cargando la información por default que debe usar el formulario
 //**************************************************************************************/
+//**************************************************************************************/
+//* Cargando la información por default que debe usar el formulario
+//**************************************************************************************/
+function f_DataOmisionPaginacion(total_tramites, total_unidades,RAM_O_EXP='RAM') {
+  const pageSize = parseInt(document.getElementById("pageSize").value, 10) || 1;
+  const total_paginas_tramites = Math.ceil(total_tramites / pageSize);
+  const total_paginas_unidades = Math.ceil(total_unidades / pageSize);
+
+  // Get the URL parameters from the current page
+  const urlParams = new URLSearchParams(window.location.search);
+  let RAM = urlParams.get("RAM");       // Número de RAM
+  let Consulta = urlParams.get("Consulta"); // Flag de consulta (puede venir null)
+
+  Consulta = (Consulta == null) ? false : Consulta;
+
+  if (RAM != null) {
+    document.getElementById("RAM-ROTULO").innerHTML = "<strong>" + RAM + "</strong>";
+    document.getElementById("RAM-ROTULO").style = "display:inline-block;";
+    document.getElementById("RAM").value = RAM;
+  } else {
+    RAM = '';
+    document.getElementById("esEditable").value = 1;
+    document.getElementById("RAM-ROTULO").style = "display:none;";
+    document.getElementById("RAM").value = "";
+  }
+  const url = $appcfg_Dominio + "Api_Ram.php";
+  // Función interna recursiva que llama por página
+  const fetchPagina = (pageTramites, pageUnidades) => {
+    let fd = new FormData(document.forms.form1);
+    fd.append("action", "get-datosporomisionpaginacion");
+    fd.append("RAM", RAM);
+    fd.append("RAM_O_EXP", RAM_O_EXP);
+    fd.append("page", pageTramites);
+    fd.append("pageSize", pageSize);
+    fd.append("Consulta", Consulta);
+
+    const options = { method: "POST", body: fd };
+
+    // timeout alto (ya lo tienes), ajusta si deseas
+    return fetchWithTimeout(url, options, 1000000)
+      .then((response) => response.json())
+      .then(function (datos) {
+        if (typeof datos.error !== "undefined") {
+          if (datos.error == 1003) {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg,
+              undefined,
+              undefined,
+              undefined,
+              () => reLoadScreen('src/php/referenciales/infoRam.php'),
+            );
+            return; // corta flujo
+          } else if (datos.error == 1100) {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg,
+              undefined,
+              undefined,
+              undefined,
+              openModalLogin,
+            );
+            return;
+          } else {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg
+            );
+            return;
+          }
+        }
+        //***************************************************************************/
+        //* Armando Objeto de Concesiones Salvadas en Preforma
+        //***************************************************************************/
+        if (typeof datos[5] !== "undefined") {
+          // datos[5] => payload principal; datos[7] => (según tu lógica actual)
+          guardarConcesionSalvadaPreforma(datos[5], datos[7]);
+        }
+        //*****************************************
+        //*Recuperando Reportes
+        //*****************************************
+        if (datos?.['Reportes']) { 
+          procesarDatosIHTT(datos['Reportes'])
+        }        
+        // Calcula siguientes páginas
+        const nextPageTramites = pageTramites + 1;
+        const nextPageUnidades = pageUnidades + 1;
+        // Mientras quede AL MENOS una paginación pendiente, sigue llamando
+        const quedanTramites  = nextPageTramites <= total_paginas_tramites;
+        const quedanUnidades  = nextPageUnidades <= total_paginas_unidades;
+        if (concesionNumber.length < 1) {
+          document.getElementById("input-prefetch").style.display = "none";
+          document.getElementById("toggle-icon").style.display = "none";
+          document.getElementById("rightDiv").style.display = "none";
+          document.getElementById("rightDivPR").style.display = "none";
+        } else {
+          if (esEditable() == true) {
+            document.getElementById("input-prefetch").style.display = "block";
+            document.getElementById("toggle-icon").style.display = "block";
+          } else {
+            document.getElementById("input-prefetch").style.display = "none";
+            document.getElementById("toggle-icon").style.display = "none";
+          }
+          document.getElementById("rightDiv").style.display = "flex";
+          document.getElementById("rightDivPR").style.display = "flex";
+        }
+        if (quedanTramites) {
+          // Avanza 1 y 1, como pediste
+          return fetchPagina(nextPageTramites, nextPageUnidades);
+        }
+        var el = document.getElementById("procesandose_omision");
+        if (el) {
+          document.getElementById("procesandose_omision").style.display = "none";
+        }
+        // Si ya no quedan, fin feliz
+        return;
+      })
+      .catch((error) => {
+        console.log(error, 'catch f_DataOmisionPaginacion');
+        fSweetAlertEventNormal(
+          "OPPS",
+          "ALGO RARO PASÓ. INTÉNTALO DE NUEVO EN UN MOMENTO. SI EL PROBLEMA PERSISTE CONTACTA AL ADMINISTRADOR DEL SISTEMA",
+          "error"
+        );
+      });
+  };
+  // Primera llamada: página 1 y 1
+  fetchPagina(1, 1);
+}
+
+//**************************************************************************************/
+//* Cargando la información por default que debe usar el formulario
+//**************************************************************************************/
 function f_DataOmision() {
   //*****************************************************************************************/
   //* INICIO: Despliega u Oculta la información del stepper content y oculta el gif de procesando    */
@@ -1127,6 +1275,8 @@ function f_DataOmision() {
   //Adjuntando el action al FormData
   fd.append("action", "get-datosporomision");
   fd.append("RAM", RAM);
+  fd.append("page", 1);
+  fd.append("pageSize", document.getElementById("pageSize").value);  
   fd.append("Consulta", Consulta);  
   // Fetch options
   const options = {
@@ -1277,19 +1427,11 @@ function f_DataOmision() {
               }
             } 
             //***************************************************************************/
-            //* Armando Objeto de Concesiones Salvadas en Preforma
-            //***************************************************************************/
-            if (typeof datos[5] != "undefined") {
-              guardarConcesionSalvadaPreforma(datos[5], datos[7]);
-            }
-            //***************************************************************************/
             //* Estableciento el Link del Expediente Cargado para Trabajarlo
             //***************************************************************************/
             if (typeof datos[8] != "undefined" && datos[8] != false) {
               document.getElementById("fileUploaded").style.display = "block";
-              document
-                .getElementById("fileUploadedLink")
-                .setAttribute("href", $appcfg_Dominio + datos[8]);
+              document.getElementById("fileUploadedLink").setAttribute("href", $appcfg_Dominio + datos[8]);
             } else {
               document.getElementById("fileUploaded").style.display = "none";
             }
@@ -1312,14 +1454,16 @@ function f_DataOmision() {
                 estanCargadocs = true;
               }
           }
-
-          //*****************************************
-          //*Recuperando Reportes
-          //*****************************************
-          if (datos?.['Reportes']) { 
-            procesarDatosIHTT(datos['Reportes'])
+          var total_tramites = datos?.[13]?.[0]?.['total_tramites'] ?? 0;
+          var total_unidades = datos?.[14]?.[0]?.['total_Unidades'] ?? 0;
+          //***************************************************************************/
+          //* Armando Objeto de Concesiones Salvadas en Preforma
+          //***************************************************************************/
+          var el = document.getElementById("procesandose_omision");
+          if (el) {
+            document.getElementById("procesandose_omision").style.display = "flex";
           }
-
+          f_DataOmisionPaginacion(total_tramites, total_unidades,datos[99]);
         } else {
           if (typeof datos[15] != "undefined" && datos[15] != false) {
             document.getElementById("idEstado").innerHTML = $appcfg_icono_de_importante + ' ' + datos[15].Desc_Estado;
@@ -1380,22 +1524,6 @@ function f_DataOmision() {
       //* INICIO: Despliega la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
       loading(false, currentstep);
-      if (concesionNumber.length < 1) {
-        document.getElementById("input-prefetch").style.display = "none";
-        document.getElementById("toggle-icon").style.display = "none";
-        document.getElementById("rightDiv").style.display = "none";
-        document.getElementById("rightDivPR").style.display = "none";
-      } else {
-        if (esEditable() == true) {
-          document.getElementById("input-prefetch").style.display = "block";
-          document.getElementById("toggle-icon").style.display = "block";
-        } else {
-          document.getElementById("input-prefetch").style.display = "none";
-          document.getElementById("toggle-icon").style.display = "none";
-        }
-        document.getElementById("rightDiv").style.display = "flex";
-        document.getElementById("rightDivPR").style.display = "flex";
-      }
       //*****************************************************************************************/
       //* FINAL: Despliega la información del stepper content y oculta el gif de procesando    */
       //*****************************************************************************************/
@@ -1554,6 +1682,11 @@ function fCerrarProcesoEnDB() {
             Datos.SOL2 +
             "</a>";
             var html = linkcomprobante + "<br/>" + linkaviso;
+            //***********************************************************************************/
+            //*Lanzar iconos de celebración                                                     */
+            //***********************************************************************************/
+            startCelebration();
+
             fSweetAlertEventNormal(
               title,
               undefined,
@@ -1563,10 +1696,6 @@ function fCerrarProcesoEnDB() {
               undefined,
               'FINALIZAR',
               () => reLoadScreen('src/php/referenciales/infoRam.php'));
-              //***********************************************************************************/
-              //*Lanzar iconos de celebración                                                     */
-              //***********************************************************************************/
-              startCelebration();
           } else {
             var html = Datos.AutoIngreso + "<br/>";
             html += Datos.Resolucion + "<br/>";
@@ -1580,6 +1709,10 @@ function fCerrarProcesoEnDB() {
             if (Datos.ConcesionesExplotacion && Datos.ConcesionesExplotacion != '') {
               html += Datos.ConcesionesExplotacion + "<br/>";
             }
+            //***********************************************************************************/
+            //*Lanzar iconos de celebración                                                     */
+            //***********************************************************************************/
+            startCelebration();
             fSweetAlertEventNormal(
               title,
               undefined,
@@ -1589,10 +1722,6 @@ function fCerrarProcesoEnDB() {
               undefined,
               'FINALIZAR',
               () => reLoadScreen('src/php/referenciales/infoRam.php'));
-              //***********************************************************************************/
-              //*Lanzar iconos de celebración                                                     */
-              //***********************************************************************************/
-              startCelebration();
           }
         }
       }
@@ -2030,11 +2159,9 @@ btnNextListprevious.forEach(function (btn) {
                 error = true;
               } else {
                   if (document.getElementById('concesion_concesion').textContent != '') {
-                    alert("if (document.getElementById('concesion_concesion').textContent != '') { ANTES")
                     isSaving = true;
                     fGetInputs();
                     isSaving = false;
-                    alert("if (document.getElementById('concesion_concesion').textContent != '') { ANTES")
                 }
               }
             }
@@ -2507,6 +2634,16 @@ function f_RenderConcesion(datos) {
           //Inicio
           document.getElementById("row_tramite_X_PS").style.display = "none";
         }
+        if (datos[1][0]["Vencimientos"]["rencon-cantidad"] > 0) {
+          document.getElementById("concesion_fecven").innerHTML =
+            "  " +
+            datos[1][0]["Vencimientos"]["Fecha_Expiracion"] +
+            " ==> " +
+            datos[1][0]["Vencimientos"]["Nueva_Fecha_Expiracion"] +
+            "   (" +
+            datos[1][0]["Vencimientos"]["rencon-cantidad"] +
+            ")";
+        }        
         //Final
       }
     }
@@ -2946,6 +3083,27 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                     );
                 }
 
+                if (unidad?.["Expedientes"]?.[0]) {
+                  html =
+                    html +
+                    mallaDinamica(
+                      {
+                        titulo:
+                          "CERTIFICADO Y/O UNIDAD(ENTRA)  TIENEN EXPEDIENTES EN TRAMITE",
+                        name: "EXPEDIENTES",
+                      },
+                      unidad["Expedientes"],                      
+                      {},
+                      {
+                      title: "text-center fw-bold",
+                      encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                      bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                      },
+                      $appcfg_Dominio_Raiz + ':85/Detalle_Expediente.php?idExpediente=@@__0__@@&idSolicitud=@@__1__@@',
+                      99,
+                    );
+                }
+                
                 if (unidad?.["Preforma"]?.[0]) {
                   html =
                     html +
@@ -2955,10 +3113,18 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                         name: "PREFORMA",
                       },
                       unidad["Preforma"],
+                      {},
+                      {
+                      title: "text-center fw-bold",
+                      encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                      bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                      },
                       $appcfg_Dominio + 'ram.php?consulta=true&RAM=',
                       1,
                     );
                 }
+
+                var links = $appcfg_Dominio_Raiz + LinksConsulta.get(document.getElementById("ID_Clase_Servicio").value);
 
                 if (unidad?.["Placas"]?.[0]) {
                   html =
@@ -2969,7 +3135,15 @@ function f_FetchCallConcesion(idConcesion, event, idinput) {
                           "CERTIFICADO Y/O UNIDADES TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
                         name: "DOCUMENTOS/EXPEDIENTES",
                       },
-                      unidad["Placas"]
+                      unidad["Placas"],
+                      {},
+                      {
+                      title: "text-center fw-bold",
+                      encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                      bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                      },
+                      links,
+                      0
                     );
                 }
 
@@ -3180,6 +3354,27 @@ function fEditarConcesion(idConcesion) {
               );
           }
 
+          if (unidad?.["Expedientes"]?.[0]) {
+            html =
+              html +
+              mallaDinamica(
+                {
+                  titulo:
+                    "CERTIFICADO Y/O UNIDAD(ENTRA) TIENEN EXPEDIENTES EN TRAMITE",
+                  name: "EXPEDIENTES",
+                },
+                unidad["Expedientes"],                      
+                {},
+                {
+                title: "text-center fw-bold",
+                encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                },
+                $appcfg_Dominio_Raiz + ':85/Detalle_Expediente.php?idExpediente=@@__0__@@&idSolicitud=@@__1__@@',
+                99,
+              );
+          }
+
           if (unidad?.["Preforma"]?.[0]) {
             html =
               html +
@@ -3189,12 +3384,19 @@ function fEditarConcesion(idConcesion) {
                   name: "PREFORMA",
                 },
                 unidad["Preforma"],
+                {},
+                {
+                title: "text-center fw-bold",
+                encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                },
                 $appcfg_Dominio + 'ram.php?consulta=true&RAM=',
                 1,
               );
           }
 
           if (unidad?.["Placas"]?.[0]) {
+            var links = $appcfg_Dominio_Raiz + LinksConsulta.get(document.getElementById("ID_Clase_Servicio").value);
             html =
               html +
               mallaDinamica(
@@ -3203,7 +3405,15 @@ function fEditarConcesion(idConcesion) {
                     "CERTIFICADO Y/O UNIDADES TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
                   name: "DOCUMENTOS/EXPEDIENTES",
                 },
-                unidad["Placas"]
+                unidad["Placas"],
+                {},
+                {
+                  title: "text-center fw-bold",
+                  encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                  bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                },
+                links,
+                0
               );
           }
 
@@ -3471,6 +3681,16 @@ function f_RenderConcesionPreforma(datos) {
         document.getElementById("RequiereRenovacionConcesion").value = true;
         document.getElementById("IHTTTRA-02_CLATRA-03_R_PS").checked = true;
         document.getElementById("IHTTTRA-02_CLATRA-03_R_PS").disabled = true;
+        if (datos[1][0]["Vencimientos"]["rencon-cantidad"] > 0) {
+          document.getElementById("concesion_fecven").innerHTML =
+            "  " +
+            datos[1][0]["Vencimientos"]["Fecha_Expiracion"] +
+            " ==> " +
+            datos[1][0]["Vencimientos"]["Nueva_Fecha_Expiracion"] +
+            "   (" +
+            datos[1][0]["Vencimientos"]["rencon-cantidad"] +
+            ")";
+        }
       }
     }
     //***********************************************************************************************************************/
@@ -4005,31 +4225,18 @@ function setTramites() {
         let Cantidad_Vencimientos = 1;
         let Fecha_Expiracion = "";
         let Fecha_Expiracion_Nueva = "";
-
         if (chk.id === "IHTTTRA-02_CLATRA-01_R_PE") {
-          Cantidad_Vencimientos = document.getElementById(
-            "CantidadRenovacionesPerExp"
-          ).value;
-          Fecha_Expiracion_Nueva = document.getElementById(
-            "NuevaFechaVencimientoPerExp"
-          ).value;
-          Fecha_Expiracion = document.getElementById(
-            "NuevaFechaVencimientoPerExp"
-          ).value;
+          Cantidad_Vencimientos = document.getElementById("CantidadRenovacionesPerExp").value;
+          Fecha_Expiracion_Nueva = document.getElementById("NuevaFechaVencimientoPerExp").value;
+          Fecha_Expiracion = document.getElementById("NuevaFechaVencimientoPerExp").value;
         } else {
           if (
             chk.id === "IHTTTRA-02_CLATRA-02_R_CO" ||
-            chk.id === "IHTTTRA-02_CLATRA-02_R_PS"
+            chk.id === "IHTTTRA-02_CLATRA-03_R_PS"
           ) {
-            Cantidad_Vencimientos = document.getElementById(
-              "CantidadRenovacionesConcesion"
-            ).value;
-            Fecha_Expiracion_Nueva = document.getElementById(
-              "NuevaFechaVencimientoConcesion"
-            ).value;
-            Fecha_Expiracion = document.getElementById(
-              "FechaVencimientoConcesion"
-            ).value;
+            Cantidad_Vencimientos = document.getElementById("CantidadRenovacionesConcesion").value;
+            Fecha_Expiracion_Nueva = document.getElementById("NuevaFechaVencimientoConcesion").value;
+            Fecha_Expiracion = document.getElementById("FechaVencimientoConcesion").value;
           }
         }
 
@@ -4037,8 +4244,7 @@ function setTramites() {
           ID: getAttribute(chk, "data-iddb", false),
           ID_Compuesto: chk.id,
           Codigo: chk.value,
-          descripcion: document.getElementById("descripcion_" + chk.value)
-            .innerHTML,
+          descripcion: document.getElementById("descripcion_" + chk.value).innerHTML,
           ID_Tramite: chk.getAttribute("data-id"),
           Monto: chk.getAttribute("data-monto"),
           Total_A_Pagar: parseFloat(
@@ -4064,7 +4270,7 @@ function setTramites() {
 //*********************************************************************************************************/
 //* Inicio: Creando objeto de concesion desde Datos de Preformas
 //*********************************************************************************************************/
-function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
+function guardarConcesionSalvadaPreforma(Tramites, Unidades, actualizar=false) {
   var index = 0;
   var Concesion = "";
   var Concesion_Encriptada;
@@ -4097,12 +4303,9 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
         Permiso_Explotacion_Encriptado = "";
       }
     }
-
     if (Concesion == row["N_Certificado"]) {
-
       esCarga = Boolean(Number(row["esCarga"]));
       esCertificado = Boolean(Number(row["esCertificado"]));      
-
       Placa = row["ID_Placa"];
       var Cantidad_Vencimientos = 1;
       var Fecha_Expiracion_Nueva = "";
@@ -4112,20 +4315,21 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
         row["Vencimientos"] != false
       ) {
         Fecha_Expiracion = row["Fecha_Expiracion_Explotacion"];
-        Cantidad_Vencimientos =
-          row["Vencimientos"]["renper-explotacion-cantidad"];
-        Fecha_Expiracion_Nueva =
-          row["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
+        Cantidad_Vencimientos = row["Vencimientos"]["renper-explotacion-cantidad"];
+        Fecha_Expiracion_Nueva = row["Vencimientos"]["Nueva_Fecha_Expiracion_Explotacion"];
       } else {
+        console.log(2,'2');
         if (
           (row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_CO" ||
-            row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_PS") &&
-          row["Vencimientos"] != false
+           row["ID_CHECK"] == "IHTTTRA-02_CLATRA-03_R_PS") &&
+           row["Vencimientos"] != false
         ) {
+          console.log(3,'3');
           Fecha_Expiracion = row["Fecha_Expiracion"];
-          Cantidad_Vencimientos = row["Vencimientos"]["rencon-cantidad"];
-          Fecha_Expiracion_Nueva =
-            row["Vencimientos"]["Nueva_Fecha_Expiracion"];
+          console.log(31,'31');
+          Cantidad_Vencimientos = row?.["Vencimientos"]?.["rencon-cantidad"] ?? 0;
+          console.log(32,'32');
+          Fecha_Expiracion_Nueva = row?.["Vencimientos"]?.["Nueva_Fecha_Expiracion"]??0;
         }
       }
       ID_Formulario_Solicitud = row["ID_Formulario_Solicitud"];
@@ -4170,6 +4374,7 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
           Unidad1: Unidad1,
           Tramites: TramitesPreforma,
         };
+        console.log(6,'6');
         //***********************************************************************/
         //* Agregando concesion pura */
         //***********************************************************************/
@@ -4231,6 +4436,7 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
         }
       }
     } else {
+      console.log(7,'7');
       //*************************************************************/
       //* Si trae Unidad 1
       //*************************************************************/
@@ -4350,13 +4556,12 @@ function guardarConcesionSalvadaPreforma(Tramites, Unidades) {
       } else {
         if (
           (row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_CO" ||
-            row["ID_CHECK"] == "IHTTTRA-02_CLATRA-02_R_PS") &&
+            row["ID_CHECK"] == "IHTTTRA-02_CLATRA-03_R_PS") &&
           row["Vencimientos"] != false
         ) {
           Fecha_Expiracion = row["Fecha_Expiracion"];
-          Cantidad_Vencimientos = row["Vencimientos"]["rencon-cantidad"];
-          Fecha_Expiracion_Nueva =
-            row["Vencimientos"]["Nueva_Fecha_Expiracion"];
+          Cantidad_Vencimientos = row?.["Vencimientos"]?.["rencon-cantidad"];
+          Fecha_Expiracion_Nueva =row?.["Vencimientos"]?.["Nueva_Fecha_Expiracion"];
         }
       }
       ID_Formulario_Solicitud = row["ID_Formulario_Solicitud"];
@@ -4736,103 +4941,113 @@ function salvarConcesion() {
     fetchWithTimeout(url, options, 300000)
     .then((response) => response.json())
     .then(function (Datos) {
-      //****************************************************************************************************/
-      //* INICIO: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
-      //****************************************************************************************************/
-      if (modalidadDeEntrada == "I") {
-        //****************************************************************************************************/
-        //* Aqui solo se entra la primera vez que se salga una concesion y se genera el RAM
-        //****************************************************************************************************/
-        if (document.getElementById("RAM-ROTULO").innerHTML == "") {
-          document.getElementById("ID_Bitacora").innerHTML = Datos.Bitacora;
-          document.getElementById("ID_Solicitante").value =
-            Datos.Solicitante.ID_Solicitante;
-          document.getElementById("ID_Apoderado").value = Datos.Apoderado;
-          document.getElementById("RAM").value = Datos.RAM;
-          document.getElementById("RAM-ROTULO").innerHTML =
-            "<strong>" + Datos.RAM + "</strong>";
-          document.getElementById("RAM-ROTULO").style = "inline-block;";
-        }
-        //****************************************************************************************************/
-        // Aqui se entra siempre porque es lo que se esta cambiando las unidades y los tramites
-        //****************************************************************************************************/
-        document.getElementById("ID_Unidad").value = Datos.Unidad;
-        Unidad.ID_Unidad = Datos.Unidad;
-        if (Datos.Unidad1 != false) {
-          document.getElementById("ID_Unidad1").value = Datos.Unidad1;
-          Unidad1.ID_Unidad = Datos.Unidad1;
-        } else {
-          document.getElementById("ID_Unidad1").value = "";
-        }
-        for (i = 0; i < Tramites.length; i++) {
-          Tramites[i].ID = Datos.Tramites[i].ID;
-        }
+      if (typeof Datos.error != "undefined") {
+        fSweetAlertEventNormal(
+        Datos.errorhead,
+        '',
+        'error',
+        Datos.error + "- " + Datos.errormsg
+        );
       } else {
-        if (Datos.Unidad1 != undefined && Datos.Unidad1 != false) {
-          if (document.getElementById("ID_Unidad1").value == "") {
+        //****************************************************************************************************/
+        //* INICIO: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
+        //****************************************************************************************************/
+        if (modalidadDeEntrada == "I") {
+          //****************************************************************************************************/
+          //* Aqui solo se entra la primera vez que se salga una concesion y se genera el RAM
+          //****************************************************************************************************/
+          if (document.getElementById("RAM-ROTULO").innerHTML == "") {
+            document.getElementById("ID_Bitacora").innerHTML = Datos.Bitacora;
+            document.getElementById("ID_Solicitante").value =
+              Datos.Solicitante.ID_Solicitante;
+            document.getElementById("ID_Apoderado").value = Datos.Apoderado;
+            document.getElementById("RAM").value = Datos.RAM;
+            document.getElementById("RAM-ROTULO").innerHTML =
+              "<strong>" + Datos.RAM + "</strong>";
+            document.getElementById("RAM-ROTULO").style = "inline-block;";
+          }
+          //****************************************************************************************************/
+          // Aqui se entra siempre porque es lo que se esta cambiando las unidades y los tramites
+          //****************************************************************************************************/
+          document.getElementById("ID_Unidad").value = Datos.Unidad;
+          Unidad.ID_Unidad = Datos.Unidad;
+          if (Datos.Unidad1 != false) {
             document.getElementById("ID_Unidad1").value = Datos.Unidad1;
             Unidad1.ID_Unidad = Datos.Unidad1;
+          } else {
+            document.getElementById("ID_Unidad1").value = "";
+          }
+          for (i = 0; i < Tramites.length; i++) {
+            Tramites[i].ID = Datos.Tramites[i].ID;
           }
         } else {
-          document.getElementById("ID_Unidad1").value = "";
+          if (Datos.Unidad1 != undefined && Datos.Unidad1 != false) {
+            if (document.getElementById("ID_Unidad1").value == "") {
+              document.getElementById("ID_Unidad1").value = Datos.Unidad1;
+              Unidad1.ID_Unidad = Datos.Unidad1;
+            }
+          } else {
+            document.getElementById("ID_Unidad1").value = "";
+          }
         }
+        //****************************************************************************************************/
+        //*Ocultando el boton que permite ver las dos unidades cuando hay cambio de unidad
+        //****************************************************************************************************/
+        document.getElementById("btnCambiarUnidad").style.display = "none";
+        //****************************************************************************************************/
+        //* FINAL: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
+        //****************************************************************************************************/
+        //****************************************************************************************************/
+        //*Llamando funcion para guardar en memoria la concesion salvada                                     */
+        //****************************************************************************************************/
+        guardarConcesionSalvada(Tramites, Unidad, Unidad1);
+        //****************************************************************************************************/
+        //****************************************************************************************************/
+        //*Limpiando pantalla e inicializando banderas para preparar el programa para agregar otra concesion */
+        //****************************************************************************************************/
+        fLimpiarPantalla();
+        //****************************************************************************************************/
+        esCambioDePlaca = false;
+        esCambioDeVehiculo = false;
+        seRecuperoVehiculoDesdeIP = 0;
+        isVehiculeBlock = false;
+        checked = false;
+        //****************************************************************************************************/
+        sendToast(
+          $appcfg_icono_de_success + " PRE-FORMA SALVADA EXITOSAMENTE",
+          $appcfg_milisegundos_toast,
+          "",
+          true,
+          true,
+          "top",
+          $appcfg_pocision_toast,
+          true,
+          $appcfg_style_toast,
+          function () { },
+          "success",
+          $appcfg_offset_toast,
+          $appcfg_icono_toast
+        );
+        document.getElementById("btnCambiarUnidad").style = "display:none;";
+        document.getElementById("btnSalvarConcesion").style = "display:none;";
+        if (concesionNumber.length > 0) {
+          document.getElementById("rightDiv").style.display = "flex";
+          document.getElementById("rightDivPR").style.display = "flex";
+        }
+        var btn = document.getElementById("btnModalidad");
+        if (btn) {
+          btn.style.display = "none";
+          btn.innerHTML = '';
+        }
+        return false;
       }
-      //****************************************************************************************************/
-      //*Ocultando el boton que permite ver las dos unidades cuando hay cambio de unidad
-      //****************************************************************************************************/
-      document.getElementById("btnCambiarUnidad").style.display = "none";
-      //****************************************************************************************************/
-      //* FINAL: CODIGO QUE ESTABLECE LA ETIQUETA DE RAM E ID'S DE TABLAS                                  */
-      //****************************************************************************************************/
-      //****************************************************************************************************/
-      //*Llamando funcion para guardar en memoria la concesion salvada                                     */
-      //****************************************************************************************************/
-      guardarConcesionSalvada(Tramites, Unidad, Unidad1);
-      //****************************************************************************************************/
-      //****************************************************************************************************/
-      //*Limpiando pantalla e inicializando banderas para preparar el programa para agregar otra concesion */
-      //****************************************************************************************************/
-      fLimpiarPantalla();
-      //****************************************************************************************************/
-      esCambioDePlaca = false;
-      esCambioDeVehiculo = false;
-      seRecuperoVehiculoDesdeIP = 0;
-      isVehiculeBlock = false;
-      checked = false;
-      //****************************************************************************************************/
-      sendToast(
-        $appcfg_icono_de_success + " PRE-FORMA SALVADA EXITOSAMENTE",
-        $appcfg_milisegundos_toast,
-        "",
-        true,
-        true,
-        "top",
-        $appcfg_pocision_toast,
-        true,
-        $appcfg_style_toast,
-        function () { },
-        "success",
-        $appcfg_offset_toast,
-        $appcfg_icono_toast
-      );
-      document.getElementById("btnCambiarUnidad").style = "display:none;";
-      document.getElementById("btnSalvarConcesion").style = "display:none;";
-      if (concesionNumber.length > 0) {
-        document.getElementById("rightDiv").style.display = "flex";
-        document.getElementById("rightDivPR").style.display = "flex";
-      }
-      var btn = document.getElementById("btnModalidad");
-      if (btn) {
-        btn.style.display = "none";
-        btn.innerHTML = '';
-      }
-      return false;
-    })
+    }
+    )
     .catch((error) => {
-      console.log("error save-preforma" + error);
+      console.log("catch error save-preforma" + error);
       fSweetAlertEventSelect(
         "",
-        "CATCH salvarConcesion() ",
+        "SALVANDO PRE-FORMA",
         "ALGO RARO PASO. INTENTALO DE NUEVO EN UN MOMENTO, SI EL PROBLEMA PERSISTE CONTACTO AL ADMINISTRADOR DEL SISTEMA",
         "warning"
       );
@@ -4890,38 +5105,80 @@ function fDisplayReports() {
   $("#modalReports").modal("show");
 }
 
-btnSalvarConcesion.addEventListener("click", function (event) {
-  var response = { error: false };
+
+// === COPY & PASTE ===
+
+// Requiere que ya tengas el HTML del spinner:
+/// const $loading_icon_default = '<i class="fad fa-cog fa-spin fa-3x fa-fw"></i><span class="gobierno1"><strong>Loading...</strong></span>';
+
+// ---- Configuración de visibilidad ----
+const MIN_LOADING_MS = 3000;   // mínimo visible del spinner (ajusta: 400..1000 ms)
+const HOLD_AFTER_OK_MS = 1000; // extra tras terminar OK, para que se note (0 para desactivar)
+
+// ---- Helpers de UI ----
+function mostrarLoading(btn, mostrar) {
+  if (!btn) return;
+  if (mostrar) {
+    btn.dataset.original = btn.innerHTML;
+    btn.innerHTML = $loading_icon_default;
+    btn.disabled = true;
+  } else {
+    if (btn.dataset.original !== undefined) btn.innerHTML = btn.dataset.original;
+    btn.disabled = false;
+  }
+}
+
+// Asegura repintado antes de iniciar tarea
+function ensureRepaint() {
+  return new Promise(requestAnimationFrame).then(() => new Promise(requestAnimationFrame));
+}
+
+// Ejecuta una tarea (sync o async) garantizando duración mínima y “hold” opcional al final
+async function runWithTiming(taskLike, { minMs = 400, holdAfterOkMs = 0 } = {}) {
+  const t0 = performance.now();
+  let error;
+  try {
+    const res = await Promise.resolve(taskLike);
+    const elapsed = performance.now() - t0;
+    if (elapsed < minMs) await new Promise(r => setTimeout(r, minMs - elapsed));
+    if (holdAfterOkMs > 0) await new Promise(r => setTimeout(r, holdAfterOkMs));
+    return res;
+  } catch (e) {
+    error = e;
+    const elapsed = performance.now() - t0;
+    if (elapsed < minMs) await new Promise(r => setTimeout(r, minMs - elapsed));
+    throw error;
+  }
+}
+
+// ---- Guard reentradas ----
+let isSavingNow = false;
+
+// Asegura type="button" para evitar submit si está en un <form>
+const btnSalvarConcesion = document.getElementById("btnSalvarConcesion");
+btnSalvarConcesion?.setAttribute("type", "button");
+
+// === Reemplaza tu listener actual por este ===
+btnSalvarConcesion?.addEventListener("click", async function (event) {
+  event.preventDefault?.();
+  if (isSavingNow) return;
+  // --- Tus validaciones existentes (idénticas) ---
   if (currentstep == 2) {
     if (seRecuperoVehiculoDesdeIP == 0 || seRecuperoVehiculoDesdeIP == 3) {
-      const inputPlaca = document.getElementById('concesion_placa');
-      var valorPlaca = inputPlaca ? inputPlaca.value.toUpperCase() : '';      
-      valorPlaca = valorPlaca.toUpperCase();
-      if (esCambioDeVehiculo==false && $appcfg_placas.includes(valorPlaca.substring(0,2))==false) {
-        fSweetAlertEventSelect(
-          event,
-          "ERROR SALVANDO",
-          '',
-          "error",
-          "LOS PRIMEROS DOS DIGITOS DE LA PLACA <strong>("+ inputPlaca.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>'
-        );
-      } else {
-        var inputPlaca1 = document.getElementById('concesion1_placa');
-        var valorPlaca1 = inputPlaca1 ? inputPlaca1.value.toUpperCase() : '';      
-        valorPlaca1 = valorPlaca1.toUpperCase();
-        console.log(document.getElementById('ID_Estado_RAM').value,'document.getElementById(ID_Estado_RAM).value')
-        console.log(valorPlaca1,'valorPlaca1');
-        console.log(esCambioDeVehiculo,'esCambioDeVehiculo');
-        console.log($appcfg_placas.includes(valorPlaca1.substring(0,2)),'$appcfg_placas.includes(valorPlaca1.substring(0,2))');
-        console.log($appcfg_placas,'$appcfg_placas');
-        if (esCambioDeVehiculo==true && document.getElementById('ID_Estado_RAM').value == 'IDE-1' && $appcfg_placas.includes(valorPlaca1.substring(0,2))==false) {
-          fSweetAlertEventSelect(
-            event,
-            "ERROR SALVANDO",
-            '',
-            "error",
-            "LOS PRIMEROS DOS DIGITOS DE LA PLACA QUE ENTRA <strong>("+ inputPlaca1.value.toUpperCase() +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>'
-          );
+      // const inputPlaca = document.getElementById('concesion_placa');
+      // let valorPlaca = inputPlaca ? inputPlaca.value.toUpperCase() : '';
+      // if (!esCambioDeVehiculo && !$appcfg_placas.includes(valorPlaca.substring(0,2))) {
+      //   fSweetAlertEventSelect(event, "ERROR SALVANDO", '', "error",
+      //     "LOS PRIMEROS DOS DIGITOS DE LA PLACA <strong>("+ valorPlaca +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>');
+      //   return;
+      // } else {
+        const inputPlaca1 = document.getElementById('concesion1_placa');
+        let valorPlaca1 = inputPlaca1 ? inputPlaca1.value.toUpperCase() : '';
+        if (esCambioDeVehiculo && document.getElementById('ID_Estado_RAM').value == 'IDE-1'
+            && !$appcfg_placas.includes(valorPlaca1.substring(0,2))) {
+          fSweetAlertEventSelect(event, "ERROR SALVANDO", '', "error",
+            "LOS PRIMEROS DOS DIGITOS DE LA PLACA QUE ENTRA <strong>("+ valorPlaca1 +")</strong> DEBE DE ESTAR DENTRO DEL GRUPO: </br><strong>" + $appcfg_placas.join(' , ')  + '</strong>');
+          return;
         } else {
           //**********************************************************************************************************/
           //**Salvar La Concesion Actual (Certificado de Operación o Permiso Especial)                             ***/
@@ -4931,9 +5188,24 @@ btnSalvarConcesion.addEventListener("click", function (event) {
           fGetInputs();
           isSaving = false;
           setFocus = true;
+
           const sum = paneerror[currentstep].reduce((acc, val) => acc + val, 0);
           if (sum == 0) {
-            salvarConcesion();
+            try {
+              isSavingNow = true;
+              mostrarLoading(btnSalvarConcesion, true);
+              await ensureRepaint(); // que el spinner se pinte antes de bloquear
+
+              // salva con duración mínima garantizada (sirve si salvarConcesion es sync o async)
+              await runWithTiming(
+                Promise.resolve(salvarConcesion()),
+                { minMs: MIN_LOADING_MS, holdAfterOkMs: HOLD_AFTER_OK_MS }
+              );
+
+            } finally {
+              mostrarLoading(btnSalvarConcesion, false);
+              isSavingNow = false;
+            }
           } else {
             fSweetAlertEventSelect(
               event,
@@ -4941,9 +5213,10 @@ btnSalvarConcesion.addEventListener("click", function (event) {
               "SE HAN DETECTADO ERROR(ES) DE DATOS EN LA PANTALLA FAVOR CORRIJA Y VUELVA A INTENTAR SALVAR",
               "error"
             );
+            return;
           }
         }
-      }
+      //}
     } else {
       fSweetAlertEventSelect(
         event,
@@ -4951,47 +5224,48 @@ btnSalvarConcesion.addEventListener("click", function (event) {
         "NO SE HA RECUPERADO/SALVADO LA INFORMACIÓN DEL VEHICULO DESDE EL IP, FAVOR RECUPERAR LA INFORMACIÓN DEL VEHICULO ANTES DE SALVAR LA INFORMACIÓN",
         "error"
       );
+      return;
     }
-  } else {
-    if (currentstep == 3) {
-        //************************************************************************************/
-        //* INICIO: Salvado de Requicitos si no se han salvado y validaciones de pantalla
-        //************************************************************************************/
-        const CA = document.getElementById("flexSwitchCheckContratoArrendamiento");
-        if ((esCambioDeVehiculo == false &&
-            document.getElementById("concesion_rtn").textContent != '' && 
-            document.getElementById("concesion_rtn").textContent != document.getElementById("concesion_identidad_propietario").textContent &&
-            CA.checked == false) &&
-            (esCambioDeVehiculo == true &&
-              document.getElementById("concesion_rtn").textContent != '' && 
-              document.getElementById("concesion_rtn").textContent != document.getElementById("concesion1_identidad_propietario").textContent &&
-              CA.checked == false)) {
-            fSweetAlertEventNormal(
-              "SALVANDO",
-              "EL DUEÑO DE LA UNIDAD ES DISTINTO AL CONCESIONARIO, FAVOR SELECCION EL CONTRATO DE ARRENDAMIENTO",
-              "error"
-            );
-            error = true;
-        } else {
-          if (estanCargadocs==false) {
-            fSweetAlertEventNormal(
-              "SALVANDO",
-              "DEBE CARGAR EL ARCHIVO PDF DEL EXPEDIENTE",
-              "error"
-            );
-            error = true;
-          } else {
-            if (requicitosRecuperados == false) {
-              salvarRequicitos();
-            }
-          }
-        } 
-        //************************************************************************/
-        //* INICIO: Salvado de Requicitos si no se han salvado y validaciones de pantalla
-        //************************************************************************/      
+  } else if (currentstep == 3) {
+    //************************************************************************************/
+    //* Salvado de Requisitos y validaciones                                             */
+    //************************************************************************************/
+    const CA = document.getElementById("flexSwitchCheckContratoArrendamiento");
+    const rtn = document.getElementById("concesion_rtn").textContent || '';
+    const idProp  = document.getElementById("concesion_identidad_propietario").textContent || '';
+    const idProp1 = document.getElementById("concesion1_identidad_propietario")?.textContent || '';
+    if (
+      ((esCambioDeVehiculo == false && rtn && rtn !== idProp  && !CA.checked)) &&
+      ((esCambioDeVehiculo == true  && rtn && rtn !== idProp1 && !CA.checked))
+    ) {
+      fSweetAlertEventNormal(
+        "SALVANDO",
+        "EL DUEÑO DE LA UNIDAD ES DISTINTO AL CONCESIONARIO, FAVOR SELECCION EL CONTRATO DE ARRENDAMIENTO",
+        "error"
+      );
+      return;
+    }
+    if (!estanCargadocs) {
+      fSweetAlertEventNormal("SALVANDO", "DEBE CARGAR EL ARCHIVO PDF DEL EXPEDIENTE", "error");
+      return;
+    }
+    if (!requicitosRecuperados) {
+      // Si deseas spinner aquí también, envuélvelo igual con mostrarLoading + runWithTiming
+      try {
+        mostrarLoading(btnSalvarConcesion, true);
+        await ensureRepaint(); // que el spinner se pinte antes de bloquear
+        // salva con duración mínima garantizada (sirve si salvarConcesion es sync o async)
+        await runWithTiming(
+          Promise.resolve(salvarRequicitos()),
+          { minMs: MIN_LOADING_MS, holdAfterOkMs: HOLD_AFTER_OK_MS }
+        );
+      } finally {
+        mostrarLoading(btnSalvarConcesion, false);
+      }
     }
   }
 });
+
 
 function disabledEdit(){
   document.getElementById("input-prefetch").style.display = "none";
@@ -5020,8 +5294,8 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
         if (esEditable()== true) {
           document.getElementById("btnSalvarConcesion").style = "display:fixed;";
         }
-        document.getElementById("rightDiv").style.display = "flex";
-        document.getElementById("rightDivPR").style.display = "flex";
+        //document.getElementById("rightDiv").style.display = "flex";
+        //document.getElementById("rightDivPR").style.display = "flex";
       }
       document.getElementById("colapoderado").focus();
       break;
@@ -5034,14 +5308,14 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
         if (esEditable()==true) {
           document.getElementById("btnSalvarConcesion").style = "display:fixed;";
         }
-        document.getElementById("rightDiv").style.display = "flex";
-        document.getElementById("rightDivPR").style.display = "flex";
+        //document.getElementById("rightDiv").style.display = "flex";
+        //document.getElementById("rightDivPR").style.display = "flex";
       }
       document.getElementById("rtnsoli").focus();
       break;
     case 2:
       if (document.getElementById("concesion_concesion").textContent != "") {
-        document.getElementById("rightDivTR").style.display = "flex";
+        //document.getElementById("rightDivTR").style.display = "flex";
         //******************************************************************************/
         //* Si el expediente esta en un estado editable de habilita el boton salvar    */
         //******************************************************************************/
@@ -5061,6 +5335,7 @@ stepperFormEl.addEventListener("shown.bs-stepper", function (event) {
           document.getElementById("input-prefetch").style.display = "none";
           document.getElementById("toggle-icon").style.display = "none";
         }
+        
         if (concesionNumber.length > 0) {
           document.getElementById("rightDiv").style.display = "flex";
           document.getElementById("rightDivPR").style.display = "flex";
@@ -5216,7 +5491,7 @@ while (ii < stepperPanList.length) {
           paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
         }
         //Mover al siguiente input
-        if (event.key === "Enter") {
+        if (event.key === "Enter" && isSaving == false) {
           moveToNextInput(input, 0);
         }
       }
@@ -5291,11 +5566,10 @@ testcontrols.forEach(function (input) {
         }
 
         paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
-        if (isTab == false) {
+        if (isTab == false && isSaving == false) {
           moveToNextInput(input, 0);
         }
         isTab = false;
-        isFromfGetInputs = false;
       }
     } else {
       paneerror[currentstep][idinputs.indexOf(idinput)] = 0;
@@ -5374,13 +5648,13 @@ testcontrols.forEach(function (input) {
             isDirty[currentstep] == true;
           } else {
             //Mover al siguiente input
-            if (event.key === "Enter") {
+            if (event.key === "Enter" && isSaving == false) {
               moveToNextInput(input, 0);
             }
           }
         } else {
           //Mover al siguiente input
-          if (event.key === "Enter") {
+          if (event.key === "Enter" && isSaving == false) {
             moveToNextInput(input, 0);
           }
         }
@@ -6142,13 +6416,36 @@ async function getVehiculoDesdeIP(Obj) {
             $appcfg_offset_toast,
             $appcfg_icono_toast
           );
+
           var html = "";
+
           if (vehiculo?.cargaUtil?.Multas?.[0]) {
             html = mallaDinamica(
               { titulo: "LISTADO DE MULTAS", name: "MULTAS" },
               vehiculo.cargaUtil.Multas
             );
           }
+
+          if (vehiculo?.cargaUtil?.Expedientes?.[0]) {
+            html = html +
+              mallaDinamica(
+                {
+                  titulo:
+                    "CERTIFICADO Y/O UNIDAD(ENTRA)  TIENEN EXPEDIENTES EN TRAMITE",
+                  name: "EXPEDIENTES",
+                },
+                vehiculo.cargaUtil.Expedientes,                      
+                {},
+                {
+                title: "text-center fw-bold",
+                encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                },
+                $appcfg_Dominio_Raiz + ':85/Detalle_Expediente.php?idExpediente=@@__0__@@&idSolicitud=@@__1__@@',
+                99,
+              );
+          }
+
           if (vehiculo?.cargaUtil?.Preformas?.[0]) {
             html =
               html +
@@ -6158,11 +6455,19 @@ async function getVehiculoDesdeIP(Obj) {
                   name: "PREFORMAS",
                 },
                 vehiculo.cargaUtil.Preformas,
+                {},
+                {
+                  title: "text-center fw-bold",
+                  encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                  bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                },                                
                 $appcfg_Dominio + 'ram.php?consulta=true&RAM=',
                 1,
               );
           }
+
           if (vehiculo?.cargaUtil?.Placas?.[0]) {
+            var links = $appcfg_Dominio_Raiz + LinksConsulta.get(document.getElementById("ID_Clase_Servicio").value);
             html =
               html +
               mallaDinamica(
@@ -6171,9 +6476,18 @@ async function getVehiculoDesdeIP(Obj) {
                     "CERTIFICADO Y/O UNIDAD ENTRANTE TIENEN DOCUMENTOS PARA IMPRESIÓN Y/O ENTREGA",
                   name: "PREFORMAS",
                 },
-                vehiculo.cargaUtil.Placas
+                vehiculo.cargaUtil.Placas,
+                {},
+                {
+                  title: "text-center fw-bold",
+                  encabezado: "border-bottom fw-bold p-1 bg-success-subtle text-success-emphasis",
+                  bodyRow: "border-bottom shadow-sm p-1 bg-body-tertiary tHover",
+                },                
+                links,
+                0
               );
           }
+
           if (html != "") {
             const result = await fSweetAlertEventNormal(
               "VALIDACIONES",

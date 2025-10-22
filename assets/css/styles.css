@@ -1342,6 +1342,7 @@ body {
 	border: 5px solid #8F7876;
 	font-variant: small-caps;
 	font-weight: 500;
+	transition: border-color 0.3s ease, background-color 0.3s ease;
 }
 
 .btn-primary:hover {
@@ -1352,6 +1353,13 @@ body {
 	-moz-box-shadow: 12px 12px 5px -3px #637B9F;
 	box-shadow: 12px 12px 5px -3px #637B9F;
 	font-variant: small-caps;
+}
+
+.btn-primary:disabled,
+.btn-primary[disabled] {
+  border-color: #db473c;
+  opacity: 0.6; /* opcional: da un efecto visual de “inactivo” */
+  cursor: not-allowed; /* opcional: indica que no se puede hacer clic */
 }
 
 .btn-primary:active,

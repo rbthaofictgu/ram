@@ -2,7 +2,7 @@
 //******INICIO: FUNCION DE ALERTA PARA LOS ERRORES.******/
 //*******************************************************/
 function fSweetAlertEventNormal(title, msg, type,  html = '', width=1400,errorcode = 'success',textBotton = 'Aceptar',funcion = '') {
-    console.log(funcion);
+    //*console.log(funcion);
     const swalWithBootstrapButtons = Swal.mixin({
       customClass: {
         confirmButton: "btn btn-"+errorcode

@@ -11,7 +11,11 @@ function mallaDinamica(
   CampoLink=1,   
   ) 
   {
+  //alert('MALLA DINAMICA');
+  //alert(link);
+  //alert(CampoLink);
   var $html = '';
+  var $link_original = link;
   const entriesArray = Object.entries(data);
   const totalData = entriesArray.length - 1;
   var inicio = 0;
@@ -48,7 +52,16 @@ function mallaDinamica(
         const campox = dataBody[index][0];
         const colClass = cols[index]?.col ? `col-${cols[index].col}` : 'col';
         if (CampoLink != index || link == false) {
-          $html += `<div id="${table.name + '_' + campo}" class="${colClass}">${campo}</div>`;
+          link = link.replace("@@__"+campox+"__@@", campo);
+          link = link.replace("@@__"+campox+"__@@",campo);
+          if (index == 1 && CampoLink == 99) {
+            $html += `<div id="${table.name + '_' + campo}" class="${colClass}">
+            <a href=${link} target="_blank" class="btn btn-primary btn-sm">${campo}</a>
+            </div>`;
+            link = $link_original;
+          } else {
+            $html += `<div id="${table.name + '_' + campo}" class="${colClass}">${campo}</div>`;
+          }
         } else {
           //************************************************************************/
           //*Creación de Link
@@ -56,7 +69,6 @@ function mallaDinamica(
           $html += `<div id="${table.name + '_' + campo}" class="${colClass}">
           <a href=${link}${campo} target="_blank" class="btn btn-primary btn-sm">${campo}</a>
           </div>`;
-          console.log('LINK INSIDE');
         }
     }
     $html += `</div></br>`;

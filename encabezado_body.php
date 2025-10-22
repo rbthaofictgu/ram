@@ -1,5 +1,5 @@
 <meta charset="utf-8">
-<script src="https://kit.fontawesome.com/d40661685b.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <!-- Metas -->
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="description" content="IHTT-INSTITUTO-HONDUREÑO-DE-TRANSPORTE-TERRESTRE-RAM-RENOVACIONES-AUTOMATICAS-MASIVAS">

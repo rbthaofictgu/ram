@@ -20,4 +20,6 @@ var $appcfg_placas = <?php echo json_encode($appcfg_placas); ?>;
 var $appcfg_icono_de_importante = <?php echo json_encode($appcfg_icono_de_importante); ?>;;
 var $appcfg_icono_de_success = <?php echo json_encode($appcfg_icono_de_success); ?>;;
 var $appcfg_icono_de_error = <?php echo json_encode($appcfg_icono_de_error); ?>;
+var $appcfg_max_periodos_anterior_cobrar = <?php echo $appcfg_max_periodos_anterior_cobrar; ?>;
+var $loading_icon_default = `<?php echo $loading_icon_default; ?>`;
 </script>

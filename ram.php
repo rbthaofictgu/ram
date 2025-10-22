@@ -43,8 +43,26 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 <html lang="en" data-bs-theme="auto">
 <head>
   <?php
-  include_once('encabezado.php');
+    include_once('encabezado.php');
   ?>
+  <style>
+  .gear {
+      font-size: 30px;
+      color: #00d9ff;
+      animation: blink 1s infinite alternate, rotate 4s linear infinite;
+    }
+
+    @keyframes blink {
+      0%   { opacity: 1;   text-shadow: 0 0 20px #00d9ff; }
+      50%  { opacity: 0.5; text-shadow: 0 0 10px #007d91; }
+      100% { opacity: 1;   text-shadow: 0 0 25px #00d9ff; }
+    }
+
+    @keyframes rotate {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 
 <body>
@@ -56,6 +74,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <?php } else { ?>
     <input type="hidden" id="Secuencia" value="<?php echo $_SESSION["Secuencia"] ?>">
   <?php } ?>
+  <input type="hidden" id="pageSize" value="150">
   <input type="hidden" id="Permiso_Explotacion" value="false">
   <input type="hidden" id="Permiso_Explotacion_Encriptado" value="">
   <input type="hidden" id="Concesion_Encriptada" value="">
@@ -324,7 +343,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
       data-bs-original-title="Ver malla de todas las concesiones registradas con sus tramites"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fShowConcesiones()" style="display: flex;" id="rightDiv" type="button" class="btn btn-success btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-binoculars fa-2x"></i></button>
+      onclick="fShowConcesiones()" style="display: none;" id="rightDiv" type="button" class="btn btn-success btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-binoculars fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Final de Div De Concesiones y sus Tramites              -->
     <!-- ******************************************************* -->
@@ -335,7 +354,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
       data-bs-original-title="Ver los reportes disponibles para la RAM"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fDisplayReports()" style="display: flex;" id="rightDivPR" type="button" class="btn btn-light btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-print fa-2x"></i></button>
+      onclick="fDisplayReports()" style="display: none;" id="rightDivPR" type="button" class="btn btn-light btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-print fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Inicio de Div De Presentar Lista de Reportes            -->
     <!-- ******************************************************* -->
@@ -377,11 +396,13 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
         &nbsp;&nbsp;
         <button onclick="open1raVezModal()"
+          style="display: none;"
           data-bs-original-title="Primera Vez o Incremento"
           data-bs-toggle="tooltip"
           data-bs-placement="top"
           id="btn1raVez" type="button" class="btn btn-success btn-sm">
           <i class="far fa-plus-square"></i>
+        
         </button>
 
       </div>
@@ -397,6 +418,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
         </button>
         &nbsp;&nbsp;
         <h1 id="idEstado" style="font-size: 1.25rem;" class="gobierno3 fw-bolder fst-italic px-1 mx-4 text-end ms-auto" style="font-style: italic;font-weight: 700;">
+        <i id="procesandose_omision" style="display: none;" class="fa-solid fa-gear gear"></i>
         </h1>
       </div>
 
@@ -845,7 +867,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" id="concesion_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>
+                        <input style="text-transform: uppercase;" id="concesion_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^(?:[A-Za-z]{2}\d{4}|[A-Za-z]{3}\d{4})$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>
                       </div>
                     </div>
 
@@ -1268,7 +1290,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input style="text-transform: uppercase;" id="concesion1_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^[A-Z]{3}\d{4}$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>
+                        <input style="text-transform: uppercase;" id="concesion1_placa" title="La placa debe contener los primeros 3 digitos alfa y los últimos 4 numericos, máximo 7 caracteres" pattern="^(?:[A-Za-z]{2}\d{4}|[A-Za-z]{3}\d{4})$" class="form-control form-control-sm form-control-unbordered test-controls" minlength="7" maxlength="7"></td>
                       </div>
                     </div>
 

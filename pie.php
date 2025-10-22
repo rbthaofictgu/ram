@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.all.min.js"></script>
 <link   href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.4/dist/sweetalert2.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
-<script src="https://kit.fontawesome.com/d40661685b.js" ></script>
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
 <script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/toastify.js"></script>
 <script type="text/javascript" src="<?php echo $appcfg_Dominio;?>assets/js/malladinamica.js"></script>

@@ -1003,8 +1003,11 @@ function mostrarAgregar_fila() {
                   e[2].style.maxWidth = '1200px';
                   e[2].style.minWidth = '1000px';
                   e[2].innerHTML = '';
-                  document.getElementById(`${e[1]}`).setAttribute('visible', '1');
-                  agregar_fila(e[0], e[1], e[2], e[3], e[4], e[5]);
+                  var el = document.getElementById(`${e[1]}`);
+                  if (el) {
+                     document.getElementById(`${e[1]}`).setAttribute('visible', '1');
+                     agregar_fila(e[0], e[1], e[2], e[3], e[4], e[5]);
+                  }
                }, 100);
             }
          }
@@ -1026,11 +1029,14 @@ function mostrarAgregar_fila2() {
                e[2].style.maxWidth = '1200px';
                e[2].style.minWidth = '1000px';
                e[2].innerHTML = '';
-               document.getElementById(`${e[1]}`).setAttribute('visible', '0');
-               document.getElementById(`${e[1]}`).setAttribute('fijarVisible', '0');
-               agregar_fila(e[0], e[1], e[2], e[3], e[4], e[5]);
-               // document.getElementById(`${e[1]}`).setAttribute('visible', '0');
-               e[2].style.display = 'none';
+               var el = document.getElementById(`${e[1]}`);
+               if (el) {
+                  document.getElementById(`${e[1]}`).setAttribute('visible', '0');
+                  document.getElementById(`${e[1]}`).setAttribute('fijarVisible', '0');
+                  agregar_fila(e[0], e[1], e[2], e[3], e[4], e[5]);
+                  // document.getElementById(`${e[1]}`).setAttribute('visible', '0');
+                  e[2].style.display = 'none';
+               }
             }, 100);
          }
       }

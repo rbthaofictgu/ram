@@ -42,6 +42,13 @@ if (isset($_SESSION["user_name"])) {
 } else {
 	$usuario = 'LOGIN';
 }
+$appcfg_fecha_inicial_decreto = '2025-10-06 00:00:01';
+$appcfg_fecha_final_decreto = '2027-08-31 11:59:59';
+$appcfg_dias_vencimiento_modulo19 = 10;
+$appcfg_dias_vencimiento_modulo15 = 3;
+$appcfg_descripcion_anulacion_aviso_cobro = 'ANULACION AUTOMATICA POR SISTEMA DE RAM POR VENCIMIENTO DEL AVISO DE COBRO';
+$appcfg_estadoObjetivo_anulacion = 5; // 3=Anulado
+$appcfg_estadoRequerido_anulacion = 1; // 1=Activo
 // ***********************************************************************************/
 //* Estado Inicial Por Omisión
 // ***********************************************************************************/	
@@ -102,9 +109,13 @@ $_SESSION["appcfg_Dominio_Raiz"] = $appcfg_Dominio_Raiz;
 $_SESSION["appcfg_Dominio"] = $appcfg_Dominio;
 $_SESSION["appcfg_Dominio_Corto"] = $appcfg_Dominio_Corto;
 $_SESSION["appcfg_Dominio_Puerto"] = $appcfg_Dominio_Puerto;
-//****************************/
+//************************************************************************************/
+//* Maxima cantidad de periodos anteriores a cobrar
+//************************************************************************************/
+$appcfg_max_periodos_anterior_cobrar = 2;
+//************************************************************************************/
 //* Tramites en una sola linea
-//****************************/	
+//************************************************************************************/
 $appcfg_tramites_una_linea = true;
 //************************************************************************************/
 //* Toast
@@ -141,9 +152,13 @@ $appcfg_height_logo_modal = "50px";
 $no_of_records_per_page_base = 100;
 //$loading_icon_default = '<i class="fad fa-spinner fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>';
 //$loading_icon_default ='<i class="fad fa-circle-notch fa-spin fa-3x fa-fw"></i><span class="sr-only">Loading...</span>';
-//$loading_icon_default ='<i class="fad fa-sync-alt fa-spin fa-3x fa-fw"></i>span class="sr-only">Loading...</span>';
-$loading_icon_default = '<i class="fad fa-cog fa-spin fa-3x fa-fw"></i><span class="gy_navbar_link"><strong>Loading...</strong></span>';
-
+//!!!$loading_icon_default = '<span style="display:inline-flex;align-items:center;gap:6px;"><i class="fa-solid fa-circle-notch fa-spin" style="font-size:1.4em;"></i><span class="gobierno1"><strong>Loading...</strong></span></span>';
+$loading_icon_default ='<span style="display:inline-flex;align-items:center;gap:6px;">
+    <i class="fa-solid fa-gear fa-spin fa-2x" style="color:#333;"></i>
+    <span class="gobierno1" style="font-size:1.1em;">
+      <strong>Procesando...</strong>
+    </span>
+  </span>';
 $appcfg_favicon = $appcfg_Dominio . "favico.ico";
 $appcfg_background = $appcfg_Dominio . "assets/images/backgrond/tegucigalpa.jpg";
 $logo = $appcfg_Dominio . "assets/images/logos/logotop300x40.jpg"; //"images/logos/logo_b_vb.png";
