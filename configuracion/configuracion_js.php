@@ -12,14 +12,14 @@ var $appcfg_style_toast = {background:  "#ffffff", border: "4px solid #223F76FF"
 var $appcfg_pocision_toast = 'center';
 //var $appcfg_pocision_offset = { x: 20,  y: 100  };
 var $appcfg_offset_toast = false;
-var $appcfg_max_field_on_net = '<?php echo $appcfg_max_field_on_net;?>';
+var $appcfg_max_field_on_net = <?php echo $appcfg_max_field_on_net;?>;
 var $appcfg_icono_de_importante  = '<?php echo $appcfg_icono_de_importante;?>';
 var $appcfg_software_version  = '<?php echo $appcfg_software_version;?>';
 var $appcfg_estado_inicial  = '<?php echo $appcfg_estado_inicial;?>';
-var $appcfg_placas = <?php echo json_encode($appcfg_placas); ?>;
-var $appcfg_icono_de_importante = <?php echo json_encode($appcfg_icono_de_importante); ?>;;
-var $appcfg_icono_de_success = <?php echo json_encode($appcfg_icono_de_success); ?>;;
-var $appcfg_icono_de_error = <?php echo json_encode($appcfg_icono_de_error); ?>;
+var $appcfg_placas = <?php echo json_encode($appcfg_placas);?>;
+var $appcfg_icono_de_success = '<?php echo json_encode($appcfg_icono_de_success);?>';
+var $appcfg_icono_de_error = '<?php echo json_encode($appcfg_icono_de_error); ?>';
 var $appcfg_max_periodos_anterior_cobrar = <?php echo $appcfg_max_periodos_anterior_cobrar; ?>;
-var $loading_icon_default = `<?php echo $loading_icon_default; ?>`;
+var $loading_icon_default = '<?php echo $loading_icon_default; ?>';
 </script>
+

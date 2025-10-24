@@ -1091,145 +1091,107 @@ function procesarDatosIHTT(Reportes) {
   }
 }
 //**************************************************************************************/
-//* Funciones para control de barra de progreso de carga de datos
-//**************************************************************************************/
-function setBar(percent, { state } = {}) {
-  const bar = document.getElementById('pxProgressBar');
-  const track = document.getElementById('pxProgressBarTrack');
-  const pct = document.getElementById('pxProgressPercent');
-  const wrap = document.getElementById('px-progress');
-
-  const p = Math.max(0, Math.min(100, percent | 0));
-  if (bar) bar.style.width = p + '%';
-  if (track) track.setAttribute('aria-valuenow', String(p));
-  if (pct) pct.textContent = p + '%';
-
-  if (wrap) {
-    wrap.classList.remove('px-progress--done', 'px-progress--error');
-    if (state === 'done') wrap.classList.add('px-progress--done');
-    if (state === 'error') wrap.classList.add('px-progress--error');
-  }
-}
-function setDetail(text) {
-  const el = document.getElementById('pxProgressDetail');
-  if (el) el.textContent = text;
-}
-function setStatus(text, show = true) {
-  const el = document.getElementById('pxProgressStatus');
-  if (!el) return;
-  if (show) { el.hidden = false; el.textContent = text; }
-  else { el.hidden = true; el.textContent = ''; }
-}
-function disableCancel(disabled) {
-  const btn = document.getElementById('pxCancelBtn');
-  if (btn) btn.disabled = !!disabled;
-}
-//**************************************************************************************/
 //* Cargando la información por default que debe usar el formulario
 //**************************************************************************************/
 //**************************************************************************************/
-//* Cargando la información por default que debe usar el formulario (paginación)
+//* Cargando la información por default que debe usar el formulario
 //**************************************************************************************/
-function f_DataOmisionPaginacion(total_tramites, RAM_O_EXP = 'RAM') {
-  
-  document.getElementById("px-progress").classList.remove('d-none');
-  document.getElementById("px-progress").classList.add('d-flex');
-
+function f_DataOmisionPaginacion(total_tramites, total_unidades,RAM_O_EXP='RAM') {
   const pageSize = parseInt(document.getElementById("pageSize").value, 10) || 1;
   const total_paginas_tramites = Math.ceil(total_tramites / pageSize);
 
-  // URL y parámetros base
-  const url = $appcfg_Dominio + "Api_Ram.php";
+  // Get the URL parameters from the current page
   const urlParams = new URLSearchParams(window.location.search);
-  let RAM = urlParams.get("RAM") || '';
-  let Consulta = urlParams.get("Consulta");
+  let RAM = urlParams.get("RAM");       // Número de RAM
+  let Consulta = urlParams.get("Consulta"); // Flag de consulta (puede venir null)
+
   Consulta = (Consulta == null) ? false : Consulta;
 
-  // UI inicial (rotulo RAM, editable, etc.) — igual que tu código actual:
-  if (RAM) {
+  if (RAM != null) {
     document.getElementById("RAM-ROTULO").innerHTML = "<strong>" + RAM + "</strong>";
     document.getElementById("RAM-ROTULO").style = "display:inline-block;";
     document.getElementById("RAM").value = RAM;
   } else {
+    RAM = '';
     document.getElementById("esEditable").value = 1;
     document.getElementById("RAM-ROTULO").style = "display:none;";
     document.getElementById("RAM").value = "";
   }
+  const url = $appcfg_Dominio + "Api_Ram.php";
+  // Función interna recursiva que llama por página
+  const fetchPagina = (pageTramites, pageUnidades) => {
+    let fd = new FormData(document.forms.form1);
+    fd.append("action", "get-datosporomisionpaginacion");
+    fd.append("RAM", RAM);
+    fd.append("RAM_O_EXP", RAM_O_EXP);
+    fd.append("page", pageTramites);
+    fd.append("pageSize", pageSize);
+    fd.append("Consulta", Consulta);
 
-  // ---- Barra de progreso (si ya la tienes, mapea estos IDs) ----
-  const $px = document.querySelector('.px-progress');
-  const $bar = document.getElementById('pxProgressBar');
-  const $barTrack = document.getElementById('pxProgressBarTrack');
-  const $percent = document.getElementById('pxProgressPercent');
-  const $detail = document.getElementById('pxProgressDetail');
-  const $status = document.getElementById('pxProgressStatus');
-  const $cancel = document.getElementById('pxCancelBtn');
-  const $title = document.getElementById('pxProgressTitle');
+    const options = { method: "POST", body: fd };
 
-  function setBar(percent, { state } = {}) {
-    if (!$bar || !$barTrack || !$px || !$percent) return;
-    const p = Math.max(0, Math.min(100, percent|0));
-    $bar.style.width = p + '%';
-    $barTrack.setAttribute('aria-valuenow', String(p));
-    $percent.textContent = p + '%';
-    $px.classList.remove('px-progress--done', 'px-progress--error');
-    if (state === 'done') $px.classList.add('px-progress--done');
-    if (state === 'error') $px.classList.add('px-progress--error');
-  }
-  function setDetail(text) { if ($detail) $detail.textContent = text; }
-  function setStatus(text, show = true) {
-    if (!$status) return;
-    if (show) { $status.hidden = false; $status.textContent = text; }
-    else { $status.hidden = true; $status.textContent = ''; }
-  }
-  function disableCancel(disabled) { if ($cancel) $cancel.disabled = !!disabled; }
-
-  // ---- Iniciar worker ----
-  if (window.__PaginationWorker) { window.__PaginationWorker.terminate?.(); }
-  const worker = new Worker('assets/js/paginationWorker.js'); // ajusta ruta si hace falta
-  window.__PaginationWorker = worker;
-
-  const startedAt = performance.now();
-  disableCancel(false);
-  setStatus('', false);
-  setBar(0);
-  if ($title) $title.textContent = 'Cargando trámites…';
-  if ($detail) $detail.textContent = `Página 0 de ${total_paginas_tramites}`;
-
-  worker.onmessage = (e) => {
-    const { type, payload } = e.data || {};
-
-    if (type === 'PROGRESS') {
-      const { page, ms } = payload;
-      const percent = Math.round((page / total_paginas_tramites) * 100);
-      setBar(percent);
-      setDetail(`Página ${page} de ${total_paginas_tramites} — última respuesta ${ms.toFixed(0)} ms`);
-    }
-
-    if (type === 'DATA_PAGE') {
-      const { page, datos5, datos7, Reportes = null } = payload;
-      // 1) Render incremental SIEMPRE
-      if (typeof guardarConcesionSalvadaPreforma === 'function') {
-        console.log('datos5',datos5);
-        console.log('datos7',datos7);
-        try { guardarConcesionSalvadaPreforma(datos5, datos7); }
-        catch (err) { console.warn('guardarConcesionSalvadaPreforma error:', err); }
-      }
-      // 2) Meta y toggles solo en la página 1 (ya con concesionNumber poblado)
-      if (page === 1) {
-        if (Reportes) {
-          try { procesarDatosIHTT(Reportes); }
-          catch (e) { console.warn('procesarDatosIHTT error:', e); }
+    // timeout alto (ya lo tienes), ajusta si deseas
+    return fetchWithTimeout(url, options, 1000000)
+      .then((response) => response.json())
+      .then(function (datos) {
+        if (typeof datos.error !== "undefined") {
+          if (datos.error == 1003) {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg,
+              undefined,
+              undefined,
+              undefined,
+              () => reLoadScreen('src/php/referenciales/infoRam.php'),
+            );
+            return; // corta flujo
+          } else if (datos.error == 1100) {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg,
+              undefined,
+              undefined,
+              undefined,
+              openModalLogin,
+            );
+            return;
+          } else {
+            fSweetAlertEventNormal(
+              datos.errorhead,
+              '',
+              'error',
+              datos.error + "- " + datos.errormsg
+            );
+            return;
+          }
         }
-
-        if (typeof concesionNumber !== 'undefined') {
+        //***************************************************************************/
+        //* Armando Objeto de Concesiones Salvadas en Preforma
+        //***************************************************************************/
+        if (typeof datos[5] !== "undefined") {
+          // datos[5] => payload principal; datos[7] => (según tu lógica actual)
+          guardarConcesionSalvadaPreforma(datos[5], datos[7]);
+        }
+        if (pageTramites == 1) {
+          //*****************************************
+          //*Recuperando Reportes
+          //*****************************************
+          if (datos?.['Reportes']) { 
+            procesarDatosIHTT(datos['Reportes'])
+          }        
           if (concesionNumber.length < 1) {
             document.getElementById("input-prefetch").style.display = "none";
             document.getElementById("toggle-icon").style.display = "none";
+            //document.getElementById("rightDiv").style.display = "none";
+            //document.getElementById("rightDivPR").style.display = "none";
             document.getElementById("rightDiv").classList.remove('d-flex');
-            document.getElementById("rightDiv").classList.add('d-none');
+            document.getElementById("rightDiv").classList.add('d-none');          
             document.getElementById("rightDivPR").classList.remove('d-flex');
-            document.getElementById("rightDivPR").classList.add('d-none');
+            document.getElementById("rightDivPR").classList.add('d-none');          
           } else {
             if (esEditable() == true) {
               document.getElementById("input-prefetch").style.display = "block";
@@ -1238,73 +1200,43 @@ function f_DataOmisionPaginacion(total_tramites, RAM_O_EXP = 'RAM') {
               document.getElementById("input-prefetch").style.display = "none";
               document.getElementById("toggle-icon").style.display = "none";
             }
+            //document.getElementById("rightDiv").style.display = "flex";
+            //document.getElementById("rightDivPR").style.display = "flex";
             document.getElementById("rightDiv").classList.remove('d-none');
-            document.getElementById("rightDiv").classList.add('d-flex');
+            document.getElementById("rightDiv").classList.add('d-flex');          
             document.getElementById("rightDivPR").classList.remove('d-none');
-            document.getElementById("rightDivPR").classList.add('d-flex');
+            document.getElementById("rightDivPR").classList.add('d-flex');          
+          }
+          var el = document.getElementById("procesandose_omision");
+          if (el) {
+            el.classList.remove('d-none');
+            el.classList.add('d-flex');                    
           }
         }
-      }
-    }
-
-    if (type === 'DONE') {
-      const totalMs = (performance.now() - startedAt).toFixed(0);
-      setBar(100, { state: 'done' });
-      setDetail(`Completado en ${totalMs} ms`);
-      setStatus('✅ Carga finalizada sin errores.');
-      disableCancel(true);
-      if ($title) $title.textContent = 'Trámites cargados';
-      // Puedes mostrar un toast:
-      if (typeof fSweetAlertEventNormal === 'function') {
-        fSweetAlertEventNormal('Trámites cargados', `Tiempo total: ${totalMs} ms`, 'success');
-      }
-    }
-
-    if (type === 'CANCELLED') {
-      setStatus('⏹️ Proceso cancelado por el usuario.');
-      disableCancel(true);
-      if ($title) $title.textContent = 'Carga cancelada';
-    }
-
-    if (type === 'ERROR') {
-      const head = payload?.errorhead || 'Error al paginar';
-      const msg  = payload?.errormsg || payload?.detail || 'Error desconocido';
-      setStatus(`❌ ${head} — ${msg}`);
-      setBar(100, { state: 'error' });
-      disableCancel(true);
-      if ($title) $title.textContent = 'Error';
-      if (typeof fSweetAlertEventNormal === 'function') {
-        fSweetAlertEventNormal(head, msg, 'error');
-      }
-    }
+        // Calcula siguientes páginas
+        const nextPageTramites = pageTramites + 1;
+        // Mientras quede AL MENOS una paginación pendiente, sigue llamando
+        const quedanTramites  = nextPageTramites <= total_paginas_tramites;
+        if (quedanTramites) {
+          // Avanza 1 y 1, como pediste
+          return fetchPagina(nextPageTramites, nextPageUnidades);
+        }
+        // Si ya no quedan, fin feliz
+        return;
+      })
+      .catch((error) => {
+        console.log(error, 'catch f_DataOmisionPaginacion');
+        fSweetAlertEventNormal(
+          "OPPS",
+          "ALGO RARO PASÓ. INTÉNTALO DE NUEVO EN UN MOMENTO. SI EL PROBLEMA PERSISTE CONTACTA AL ADMINISTRADOR DEL SISTEMA",
+          "error"
+        );
+      });
   };
-
-  worker.onerror = (err) => {
-    setStatus(`❌ WORKER ERROR — ${err.message || err}`, true);
-    setBar(100, { state: 'error' });
-    disableCancel(true);
-  };
-
-  // Cancelación (si tienes un botón con id pxCancelBtn)
-  if ($cancel) {
-    $cancel.onclick = () => {
-      worker.postMessage('CANCEL');
-      disableCancel(true);
-      setStatus('⏹️ Proceso cancelado por el usuario.');      
-    };
-  }
-
-  // Kick-off
-  worker.postMessage({
-    type: 'START',
-    payload: {
-      url, RAM, RAM_O_EXP, Consulta,
-      pageSize,
-      totalTramites: total_tramites, // usamos solo trámites como paginador
-      timeoutMs: 600000
-    }
-  });
+  // Primera llamada: página 1 y 1
+  fetchPagina(1, 1);
 }
+
 //**************************************************************************************/
 //* Cargando la información por default que debe usar el formulario
 //**************************************************************************************/
@@ -1535,6 +1467,13 @@ function f_DataOmision() {
           //***************************************************************************/
           //* Armando Objeto de Concesiones Salvadas en Preforma
           //***************************************************************************/
+          var el = document.getElementById("procesandose_omision");
+          if (el) {
+            //document.getElementById("procesandose_omision").style.display = "flex";
+            el.classList.remove('d-none');
+            el.classList.add('d-flex');                    
+          }
+          console.log(el,'procesandose_omision d-flex')
           f_DataOmisionPaginacion(total_tramites, total_unidades,datos[99]);
         } else {
           if (typeof datos[15] != "undefined" && datos[15] != false) {

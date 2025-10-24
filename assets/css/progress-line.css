@@ -1,0 +1,24 @@
+.progress-line-wrapper {
+  width: 100%;
+  height: 4px; /* delgada pero visible */
+  background-color: #e9ecef; /* gris claro */
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+  margin-top: 10px;
+}
+.progress-line-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #007bff, #00c6ff);
+  border-radius: 2px;
+  transition: width 0.3s ease-in-out;
+}
+.progress-line-text {
+  position: absolute;
+  top: -18px; /* sobre la barra */
+  right: 0;
+  font-size: 0.8rem;
+  color: #007bff;
+  font-weight: 500;
+}

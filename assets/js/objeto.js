@@ -716,8 +716,8 @@ function handleSearch(event) {
          String(value).toLowerCase().includes(query)
       ) ||
       // Filtrar dentro del arreglo 'Tramites'
-      item.Tramites.some(tramite =>
-         Object.values(tramite).some(value =>
+      item.Tramites.some(t =>
+         Object.values(t).some(value =>
             String(value).toLowerCase().includes(query)
          )
       )
@@ -814,7 +814,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                   td.style.cursor = 'pointer';
                   td.setAttribute("colspan", "2");
                   //!funcion que muestra la revision del vehiculo
-                  crearSpans(value, fila['Unidad'], fila['Unidad1'], td, row, fila['Concesion']);
+                  crearSpans(value, fila['Unidad'], fila['Unidad1'], td, row, fila['Concesion'], fila['Tramites']);
                } else {
                   var estadoRam = document.getElementById("ID_Estado_RAM").value;
                   if (key == 'Concesion') {
@@ -924,7 +924,7 @@ function renderTableRowst(tbody, rowsPerPage, currentPage, filtrardata = '') {
                if (key == 'Placa') {
                   //*quito el cursos de la fila
                   td.style.cursor = 'none';
-                  crearSpans(value, fila['Unidad'], fila['Unidad1'], td, row, fila['Concesion']);
+                  crearSpans(value, fila['Unidad'], fila['Unidad1'], td, row, fila['Concesion'], fila['Tramites']);
                } else {
 
                   if (key == 'Concesion') {
@@ -1359,16 +1359,20 @@ function linkConcesiones(td, ruta, value, tamaño, index, tipo) {
 //***********************************************************************/
 //*funcion que se necarga de crear la tabla de la revision del vehiculo
 //**********************************************************************/
-function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
-   // console.log(unidad, 'unidad span');
-   // console.log(unidad1, 'unidad1 span');
+function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion, tramites) {
+   console.log(unidad, 'unidad span');
+   console.log(unidad1, 'unidad1 span');
+   console.log(tramites, 'tramites');
    var texto = '';
+   //*inicializando varible para evalual la ocnstancia en cambio de placa.
+   var mcp = 'false';
    //console.log(unidad1,unidad,value);
    if (unidad1 != undefined && unidad1 != '' && unidad1 != null) {
       texto = value + '->' + 'S' + '->' + 'C'
    } else {
       texto = value;
    }
+
    //* Separar el texto por el delimitador '->'
    //?nota: "aplit()", para dividir en partes por el elemento o signo.
    // console.log(value,'value undefined')     ;
@@ -1387,6 +1391,13 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
       span.style.marginRight = "8px";
       //* Cambiar el cursor cuando se pasa sobre el span
       span.style.cursor = "pointer";
+
+      const spanc = document.createElement("span");
+      spanc.id = String(row.id) + '_placa' + '_' + index;
+      //* Establecer el espacio entre los spans
+      spanc.style.marginRight = "8px";
+      //* Cambiar el cursor cuando se pasa sobre el span
+      spanc.style.cursor = "pointer";
       //* Asignar texto al span
       // console.log(index,'index');
       if (index === 0) {
@@ -1397,7 +1408,7 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
                '</strong>';
             span.className = "justify-content-center align-items-center borderPlacaSale";
             span.setAttribute("data-bs-toggle", "tooltip");
-            span.setAttribute("title", "Click para ver datos del vehículo");
+            span.setAttribute("title", "Click para ver datos del vehículo 1");
 
             if (JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent == 'add') {
                span.addEventListener("mouseleave", onmouseleaveAccion);
@@ -1410,11 +1421,29 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
                '</strong>';
             span.className = "flex justify-content-center align-items-center borderPlaca";
             span.setAttribute("data-bs-toggle", "tooltip");
-            span.setAttribute("title", "Click para ver datos del vehículo");
+            span.setAttribute("title", "Click para ver datos del vehículo 2");
             if (JSON.parse(localStorage.getItem('setUnSetEvent' + document.getElementById("ID_Usuario").value)).setUnSetEvent == 'add') {
                span.addEventListener("mouseleave", onmouseleaveAccion);
                span.addEventListener("mouseenter", onmouseenterAccion);
             }
+            var tramite = 'MODIFICACIÓN CAMBIO DE PLACA';
+            var tamanoPlaca = value.length;
+            console.log(tamanoPlaca,'tamanoPlaca');
+            tramites.forEach(element => {
+               // console.log('tramites recorridos', element, '->', element['descripcion']);
+               if (tramite == element['descripcion'] && !tramite.includes('MODIFICACIÓN CAMBIO DE UNIDAD') && tamanoPlaca < 7) {
+                  var estadoRam = document.getElementById("ID_Estado_RAM").value;
+                  //*siel parametro se manda y hay cambio de unidad se muestra las constancias.
+                  if (estadosValidosConstancia.includes(estadoRam)) {
+                     // console.log(span, index);
+                     //!funcion encargada de actualizar el icono de la constancia de generar a ver constancia
+                     //*SE MANDA INDEX=2 YA QUE ES CUANDO SE EJECUTA LA CONSTANCIA LA UNIDAD  Y EL SPANC NUEVO
+                     actualizarContenido(spanc, 2, unidad);
+                     //*CONDICION PARA INSERTAR EL SPAN AL FINAL DEL SPAN DE LA PLACA
+                     mcp = 'true';
+                  }
+               }
+            });
          }
       } else if (index === 1) {
          //*?nota: es S cuando si hay cambio de unidad?
@@ -1440,12 +1469,15 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
             }
          }
       } else {
+
          var estadoRam = document.getElementById("ID_Estado_RAM").value;
          //*siel parametro se manda y hay cambio de unidad se muestra las constancias.
          if (estadosValidosConstancia.includes(estadoRam)) {
+            // console.log(span, index);
             //!funcion encargada de actualizar el icono de la constancia de generar a ver constancia
             actualizarContenido(span, index, unidad1);
          }
+
       }
 
       //* Evento de clic para mostrar la constancia
@@ -1464,11 +1496,75 @@ function crearSpans(value, unidad = '', unidad1 = '', td, row, idConcesion) {
       };
       //* Añadir el span al contenedor
       container.appendChild(span);
+      //*SI SE CUNPME ESTA CONDICION SE MANDA EL SPANC CUANDO HAY NO HAY CAMBIO DE UNIDAD PERO HAY CAMBIO DE PLACA 
+      if (mcp == 'true') {
+         //* Evento de clic para mostrar la constancia
+         spanc.onclick = function (event) {
+            //* Evitar que el evento se propague a otros elementos
+            event.stopPropagation();
+            //*Dependiendo de la placa seleccionada, pasamos los valores necesarios
+            //?nota: es 2 cuando hay cambio de unidad y se deben crear las constancias.
+
+            console.log('entro en generar constancia');
+            //!llamamos la funcion constancia que decide si genermaos o vemos al constancia.
+            constancia(unidad['ID_Placa'], unidad['ID_Memo'], unidad, idConcesion);
+         };
+         container.appendChild(spanc);
+      }
    });
 
    //* Añadir el contenedor a la fila (row)
    row.appendChild(container);
 }
+
+/***************************************************************************************************/
+//*funcion encargada de actulaizar las iconos de la constancia de la placas si hay cambio de unidad.
+//**************************************************************************************************/
+// function actualizarContenido(span, index, unidad1) {
+//    if (index === 2 && unidad1 &&
+//       (unidad1['ID_Memo'] === false || unidad1['ID_Memo'] === 'false' || !unidad1['ID_Memo'])
+//    ) {
+
+//       span.innerHTML = `<i id="est_const" class="fas fa-cog" data-bs-toggle="tooltip" title="Click para generar constancia"></i>`;
+//    } else if (index === 2 && unidad1 &&
+//       unidad1['ID_Memo'] !== false && unidad1['ID_Memo'] !== 'false' && unidad1['ID_Memo']
+//    ) {
+//       span.innerHTML = `<i id="est_const" class="fas fa-file-pdf" data-bs-toggle="tooltip" title="Click para ver la constancia"></i>`;
+
+//    }
+// }
+
+/***************************************************************************************************/
+//* Función encargada de actualizar los íconos de constancia de las placas si hay cambio de unidad.
+/***************************************************************************************************/
+function actualizarContenido(span, index, unidad1) {
+   // Verificamos que sea el caso de cambio de unidad (index === 2)
+   if (index !== 2 || !unidad1) return;
+
+   // Extraemos el valor de ID_Memo
+   const memo = unidad1['ID_Memo'];
+
+   // Normalizamos el valor para evaluar correctamente (todo a string)
+   const memoStr = String(memo).trim().toLowerCase();
+
+   // CASO 1: No tiene constancia generada → ⚙️
+   if (
+      memo === false ||             // valor booleano false
+      memoStr === 'false' ||        // texto "false"
+      memoStr === '' ||             // vacío
+      memo === null ||              // nulo
+      memo === undefined ||         // indefinido
+      memoStr === 'null' ||         // texto "null"
+      memoStr === 'undefined'       // texto "undefined"
+   ) {
+      span.innerHTML = `<i id="est_const" class="fas fa-cog" data-bs-toggle="tooltip" title="Click para generar constancia"></i>`;
+      return;
+   }
+
+   // CASO 2: Tiene constancia generada → 📄
+   span.innerHTML = `<i id="est_const" class="fas fa-file-pdf" data-bs-toggle="tooltip" title="Click para ver la constancia"></i>`;
+}
+
 //*******************************************************************/
 //*se encarga de generar la data nuevo sin los elementos excluidos.
 //******************************************************************/
@@ -2090,20 +2186,7 @@ function eliminarConcesionesObjeto(idConcesiones, idRows, originalRows, Monto = 
 //*FINAL: funcion encargada de eliminar las concesiones */
 //**************************************************************/
 
-//***************************************************************************************************/
-//*funcion encargada de actulaizar las iconos de la constancia de la placas si hay cambio de unidad.
-//**************************************************************************************************/
-function actualizarContenido(span, index, unidad1) {
-   // console.log('unidad1*******',unidad1['ID_Memo'], 'memo' );
-   //*si el indix es 2 es cambio de unidad y ID_Memo false que no tiene constancias generada.
-   if (index === 2 && unidad1 != undefined && unidad1 != 'undefined' && unidad1 != null && (unidad1['ID_Memo'] === false || unidad1['ID_Memo'] === 'false')) {
-      span.innerHTML = `<i id="est_const" class="fas fa-cog" data-bs-toggle="tooltip" title="click para generar constancia"></i>`;
-      //*si el indix es 2 es cambio de unidad y ID_Memo tiene datos si tiene constancia entonces la visualizamos
-   } else if (index === 2 && unidad1 != undefined && unidad1 != null && (unidad1['ID_Memo'] !== false || unidad1['ID_Memo'] !== 'false')) {
-      //* En caso de que 'ID_Memo' no sea false y tenga un ID_Memo.
-      span.innerHTML = `<i id="est_const" class="fas fa-file-pdf" data-bs-toggle="tooltip" title="click para ver la constancia"></i>`;
-   }
-}
+
 //***************************************************************************************/
 //*funcion encargada de decidir si se mira o se genera la constancia y evaluar la placa 
 //***************************************************************************************/
@@ -2121,7 +2204,7 @@ function constancia(placa, ID_Memo, unidad1, idConcesion) {
    //*id_memo si genero_contancia es true quiere decir que ya se genero y ponemos 
    //*Memo global que tiene el id_memo que se creo al generar constancia si no es el que se pasa por parametro por que ya existe
    //*Comprobamos si el ID_Memo es una cadena 'true' o un valor booleano true
-   if (ID_Memo === 'false' || ID_Memo === false) {
+   if (ID_Memo === 'false' || ID_Memo === false || ID_Memo === '') {
       //* Llamar a la función generarConstancia
       generarConstancia(unidad1, idConcesion);
    } else {

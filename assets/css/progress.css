@@ -1,0 +1,87 @@
+.px-progress {
+  border: linear-gradient(90deg, #2aa4ff, #5df0d2);
+  transition: width .25s ease;
+  border-radius: 10px;
+  background: #0b1220;            /* fondo oscuro elegante */
+  color: #eaf2ff;
+}
+
+.px-progress--inline {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px 12px 10px; /* 👈 padding inferior de 12px */
+  flex-wrap: wrap;                  /* si no cabe, envuelve sin romper */
+  margin-bottom: 12px; /* 👈 más aire debajo */
+}
+
+/* Título + detalle (texto breve) */
+.px-progress__title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.px-progress__detail {
+  font-size: 0.85rem;
+  color: #9fb3d9;
+  white-space: nowrap;
+}
+
+/* La línea de progreso (muy delgada) */
+.px-progress__track {
+  position: relative;
+  flex: 1 1 240px;                 /* crece, mínimo 240px */
+  height: 4px;                     /* delgada pero visible */
+  background: #1b2232;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.px-progress__bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #2aa4ff, #5df0d2);
+  transition: width .25s ease;
+}
+
+/* Porcentaje a la derecha de la barra */
+.px-progress__percent {
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 40px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* Acciones (Cancelar / Ocultar) compactas */
+.px-progress__actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.px-btn {
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid #42506a;
+  background: #131b2d;
+  color: #cfe3ff;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+.px-btn:hover { filter: brightness(1.08); }
+.px-btn:disabled { opacity: .55; cursor: not-allowed; }
+.px-btn--ghost { background: transparent; }
+
+/* Estado textual (opcional, pequeño) */
+.px-progress__status {
+  font-size: 0.8rem;
+  color: #9fb3d9;
+  white-space: nowrap;
+}
+
+/* Estados visuales */
+.px-progress--done .px-progress__bar { background: linear-gradient(90deg,#38ef7d,#11998e); }
+.px-progress--error .px-progress__bar { background: linear-gradient(90deg,#ff6b6b,#ff2d55); }
+
+/* Helpers si no usas utilidades tipo Bootstrap */
+.d-none { display: none !important; }

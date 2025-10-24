@@ -45,26 +45,8 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <?php
     include_once('encabezado.php');
   ?>
-  <style>
-  .gear {
-      font-size: 30px;
-      color: #00d9ff;
-      animation: blink 1s infinite alternate, rotate 4s linear infinite;
-    }
-
-    @keyframes blink {
-      0%   { opacity: 1;   text-shadow: 0 0 20px #00d9ff; }
-      50%  { opacity: 0.5; text-shadow: 0 0 10px #007d91; }
-      100% { opacity: 1;   text-shadow: 0 0 25px #00d9ff; }
-    }
-
-    @keyframes rotate {
-      from { transform: rotate(0deg); }
-      to   { transform: rotate(360deg); }
-    }
-  </style>
+  <link   href="<?php echo $appcfg_Dominio; ?>assets/css/progress.css" rel="stylesheet">
 </head>
-
 <body>
   <header>
    <?php include_once('menu.php') ?>
@@ -74,7 +56,7 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
   <?php } else { ?>
     <input type="hidden" id="Secuencia" value="<?php echo $_SESSION["Secuencia"] ?>">
   <?php } ?>
-  <input type="hidden" id="pageSize" value="150">
+  <input type="hidden" id="pageSize" value="400">
   <input type="hidden" id="Permiso_Explotacion" value="false">
   <input type="hidden" id="Permiso_Explotacion_Encriptado" value="">
   <input type="hidden" id="Concesion_Encriptada" value="">
@@ -332,7 +314,8 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
       data-bs-original-title="Ver tabla de tramites para la concesión actual"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fShowTramites()" style="display: none;" id="rightDivTR" type="button" class="btn btn-primary btn-sm"><i class="fas fa-clipboard-list fa-2x"></i></button>
+      onclick="fShowTramites()" id="rightDivTR" type="button" class="btn btn-primary btn-sm d-none">
+      <i class="fas fa-clipboard-list fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Final de Div De  Boton Show/Hide Concesion en Pantalla -->
     <!-- ******************************************************* -->
@@ -340,10 +323,11 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <!-- Inicio de Div De Concesiones y sus Tramites              -->
     <!-- ******************************************************* -->
     <button
+      style="display: none;"
       data-bs-original-title="Ver malla de todas las concesiones registradas con sus tramites"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fShowConcesiones()" style="display: none;" id="rightDiv" type="button" class="btn btn-success btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-binoculars fa-2x"></i></button>
+      onclick="fShowConcesiones()" id="rightDiv" type="button" class="btn btn-success btn-sm d-flex justify-content-center align-items-center d-none"><i class="fas fa-binoculars fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Final de Div De Concesiones y sus Tramites              -->
     <!-- ******************************************************* -->
@@ -351,10 +335,11 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <!-- Inicio de Div De  Presentar Lista de Reportes           -->
     <!-- ******************************************************* -->
     <button
+      style="display: none;"
       data-bs-original-title="Ver los reportes disponibles para la RAM"
       data-bs-toggle="tooltip"
       data-bs-placement="top"
-      onclick="fDisplayReports()" style="display: none;" id="rightDivPR" type="button" class="btn btn-light btn-sm d-flex justify-content-center align-items-center"><i class="fas fa-print fa-2x"></i></button>
+      onclick="fDisplayReports()" id="rightDivPR" type="button" class="btn btn-light btn-sm d-flex justify-content-center align-items-center d-none"><i class="fas fa-print fa-2x"></i></button>
     <!-- ******************************************************* -->
     <!-- Inicio de Div De Presentar Lista de Reportes            -->
     <!-- ******************************************************* -->
@@ -370,10 +355,35 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
     <!-- ******************************************************* -->
     <!-- *** -->
     <!-- Body -->
+    <!-- ************************************************************************************** -->
+    <!-- Inicio Sección de Barra de Progreso de Worker de Paginación                            -->
+    <!-- ************************************************************************************** -->
+    <section id="px-progress" class="px-progress px-progress--inline d-none" aria-label="Progreso de carga de trámites">
+      <span id="pxProgressTitle" class="px-progress__title">Cargando trámites…</span>
+      <span id="pxProgressDetail" class="px-progress__detail">Página 0 de 0</span>
+
+      <div class="px-progress__track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="pxProgressBarTrack">
+        <div class="px-progress__bar" id="pxProgressBar"></div>
+      </div>
+
+      <span id="pxProgressPercent" class="px-progress__percent" aria-live="polite">0%</span>
+
+      <div class="px-progress__actions">
+        <button id="pxCancelBtn" type="button" class="px-btn px-btn--ghost">Cancelar</button>
+        <button id="pxCancelHide" type="button" class="px-btn px-btn--ghost"
+                onclick="document.getElementById('px-progress').classList.add('d-none');">
+          Quitar
+        </button>
+      </div>
+
+      <span class="px-progress__status" id="pxProgressStatus" hidden></span>
+    </section>
+    <!-- ************************************************************************************** -->
+    <!-- Inicio Sección de Barra de Progreso de Worker de Paginación                            -->
+    <!-- ************************************************************************************** -->
     <!-- *** -->
     <!-- <div class="mb-4 p-3 bg-white shadow-sm"></div> -->
     <div class="row">
-
       <div class="col-6">
         <h6 style="font-size: 1.25rem;" class="gobierno2 fw-bolder px-1" style="text-decoration: underline;font-weight: 800;"><i class="fas fa-edit gobierno1"></i>&nbsp;INGRESO DE SOLICITUDES PREFORMA&nbsp;&nbsp;&nbsp;
          <a style="display:none" id="avisocobro" href="#" target="_blank"><i id="avisocobroicon" class="fas fa-dollar-sign"></i></a>
@@ -418,7 +428,6 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
         </button>
         &nbsp;&nbsp;
         <h1 id="idEstado" style="font-size: 1.25rem;" class="gobierno3 fw-bolder fst-italic px-1 mx-4 text-end ms-auto" style="font-style: italic;font-weight: 700;">
-        <i id="procesandose_omision" style="display: none;" class="fa-solid fa-gear gear"></i>
         </h1>
       </div>
 
@@ -1050,8 +1059,8 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input title="La capacidad de la unidad no puede tener menos de 2 caracteres ni mas de 9 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
-                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="6" maxlength="9">
+                        <input title="La capacidad de la unidad no puede tener menos de 3 digitos ni mas de 7 caracteres (incluyendo el punto y los dos decimales). Eje: 300 o 300.00 o 18000.00 o 18000" pattern="^\d{3,5}(?:\.\d{0,2})?$"
+                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad" minlength="3" maxlength="8">
                       </div>
                     </div>
 
@@ -1473,8 +1482,8 @@ if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 
                     <div class="col-md-3 bordered-row">
                       <div class="form-group">
-                        <input title="La capacidad de la unidad no puede tener menos de 2 caracteres ni mas de 9 caracteres" pattern="^\d{2,8}(\.\d{1,2})?$"
-                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad1" minlength="6" maxlength="9">
+                        <input title="La capacidad de la unidad no puede tener menos de 3 digitos ni mas de 7 caracteres (incluyendo el punto y los dos decimales). Eje: 300 o 300.00 o 18000.00 o 18000" pattern="^\d{3,5}(?:\.\d{0,2})?$"
+                          class="form-control form-control-sm form-control-unbordered test-controls" id="capacidad1" minlength="3" maxlength="8">
                       </div>
                     </div>
 

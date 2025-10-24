@@ -1,7 +1,6 @@
 /***************************************************************************************************/
 /************************************* Estilos del IHTT  -  RAM ************************************/
 /***************************************************************************************************/
-
 body {
 	background-color: var(--main_color_bg_body);
 }
@@ -1706,7 +1705,7 @@ body {
 	width: 40px;
 	height: 30px;
 	position: fixed;
-	right: 10;
+	right: 10px;
 	top: 50%;
 	transform: translateY(-50%);
 	/* Centers vertically */
@@ -1716,7 +1715,7 @@ body {
 	width: 40px;
 	height: 30px;
 	position: fixed;
-	right: 10;
+	right: 10px;
 	top: 45%;
 	transform: translateY(-45%);
 	/* Centers vertically */
@@ -1726,7 +1725,7 @@ body {
 	width: 40px;
 	height: 30px;
 	position: fixed;
-	right: 10;
+	right: 10px;
 	top: 40%;
 	transform: translateY(-40%);
 	/* Centers vertically */
@@ -2845,4 +2844,20 @@ label {
 	-moz-box-shadow: 12px 12px 5px -3px #8d685a;
 	box-shadow: 12px 12px 5px -3px #8d685a;
 	font-variant: small-caps;
+}
+.gear {
+	font-size: 30px;
+	color: #00d9ff;
+	animation: blink 1s infinite alternate, rotate 4s linear infinite;
+}
+
+@keyframes blink {
+	0%   { opacity: 1;   text-shadow: 0 0 20px #00d9ff; }
+	50%  { opacity: 0.5; text-shadow: 0 0 10px #007d91; }
+	100% { opacity: 1;   text-shadow: 0 0 25px #00d9ff; }
+}
+
+@keyframes rotate {
+	from { transform: rotate(0deg); }
+	to   { transform: rotate(360deg); }
 }

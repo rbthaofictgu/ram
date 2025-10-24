@@ -16,11 +16,11 @@ if (!isset($_SESSION["Es_Renovacion_Automatica"])) {
 if (!isset($_SESSION["Originado_En_Ventanilla"])) {
 	$_SESSION["Originado_En_Ventanilla"] = true;
 }
-ini_set('post_max_size', '100M');
+ini_set('post_max_size', '250M');
 ini_set('upload_max_filesize', '100M');
-ini_set('max_execution_time', '10000');
-ini_set('max_input_time', '10000');
-ini_set('memory_limit', '256M');
+ini_set('max_execution_time', '100000');
+ini_set('max_input_time', '100000');
+ini_set('memory_limit', '512M');
 date_default_timezone_set("America/Tegucigalpa");
 /**************************************************************************************************/
 // Autoload de las librerias
@@ -1491,7 +1491,8 @@ require_once("../qr/qrlib.php");
 					WHEN CO.[Clase Servicio] IN ('STPC', 'STPP') THEN CO.CertificadoEncriptado
 					WHEN CO.[Clase Servicio] = 'STEP' THEN CO.PermisoEspecialEncriptado
 					ELSE CO.PermisoEspecialEncriptado
-				END AS CertificadoEncriptado,				
+				END AS CertificadoEncriptado,		
+				CO.PermisoEspecialEncriptado,		
 				CASE 
 					WHEN CO.[Clase Servicio] IN ('STPC', 'STPP') THEN CO.Permiso_Explotacion_Encriptado
 					WHEN CO.[Clase Servicio] = 'STEP' THEN 'NO TRAE'
@@ -1526,7 +1527,6 @@ require_once("../qr/qrlib.php");
 			OFFSET CAST(:offset as int) ROWS
         	FETCH NEXT CAST(:pageSize as int) ROWS ONLY;";
 		$rows = $this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"],':offset' => $offset,':pageSize' => $pageSize));
-		print_r($rows);
 		$max = count($rows);
 		for ($i=0; $i<$max; $i++) {
 			$Permiso_Explotacion_Encriptado = '';
@@ -1612,7 +1612,8 @@ protected function getTramitesEXPTotales()
 					WHEN CO.[Clase Servicio] IN ('STPC', 'STPP') THEN CO.CertificadoEncriptado
 					WHEN CO.[Clase Servicio] = 'STEP' THEN CO.PermisoEspecialEncriptado
 					ELSE CO.PermisoEspecialEncriptado
-				END AS CertificadoEncriptado,				
+				END AS CertificadoEncriptado,		
+				CO.PermisoEspecialEncriptado,		
 				CASE 
 					WHEN CO.[Clase Servicio] IN ('STPC', 'STPP') THEN CO.Permiso_Explotacion_Encriptado
 					WHEN CO.[Clase Servicio] = 'STEP' THEN 'NO TRAE'
@@ -1732,12 +1733,13 @@ protected function getTramitesEXPTotales()
 		$concesiones = '(';
 		for ($i = 0; $i < $c; $i++) {
 			$concesiones .= "'" . $TRAMITES[$i]["N_Certificado"] . "'";
+			if ($i == 0 and $TRAMITES[$i]["ID_Clase_Servicio"]) {$ID_Clase_Servicio = $TRAMITES[$i]["ID_Clase_Servicio"];}
 		}
 		$concesiones .=	 ')';
 		//*****************************************************************************************************/
 		//* Dependiendo si son certificados o permisos especiales se arma la condicion
 		//*****************************************************************************************************/
-		if ($concesiones == '()') {
+		if ($ID_Clase_Servicio == 'STPC' or $ID_Clase_Servicio == 'STPP') {
 			$condicion = "N_Certificado IN " . $concesiones;
 		} else {
 			$condicion = "N_Permiso_Especial IN " . $concesiones;
@@ -1753,7 +1755,7 @@ protected function getTramitesEXPTotales()
 			ELSE RTRIM(sol.N_Permiso_Especial)
 			END AS Certificado_Operacion,
 			sol.Permiso_Explotacion
-			FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] sol where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud AND ". condicion . "
+			FROM [IHTT_PREFORMA].[dbo].[TB_Solicitud] sol where sol.ID_Formulario_Solicitud = :ID_Formulario_Solicitud AND ". $condicion . "
 		)
 		SELECT 
 			CASE 
@@ -1806,7 +1808,7 @@ protected function getTramitesEXPTotales()
 				WHERE c.Chasis_Entra = veh.Chasis 
 				AND c.Placa_Entra = veh.ID_Placa 
 				AND c.ID_Estado = 'IDE-1' 
-				AND veh.Estado = 'ENTRA'),
+				AND (veh.Estado = 'ENTRA' or (veh.Estado = 'NORMAL' and LEN(LTRIM(RTRIM(ID_Placa))) < 7)),
 				'false'
 			) AS ID_Memo
 		FROM 
@@ -1863,6 +1865,7 @@ protected function getUnidadesEXPTotales()
 			echo json_encode($this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"])));
 		}
 	}	
+
 	protected function getUnidadesEXP($TRAMITES)
 	{
 		//*****************************************************************************************************/
@@ -1884,179 +1887,161 @@ protected function getUnidadesEXPTotales()
 		//*****************************************************************************************************/
 		//* Armando SQL de Unidades
 		//*****************************************************************************************************/
-		$q = "WITH Unidades AS (SELECT 
-				Certificado_Operacion, 
-				[Clase Servicio],
-				DESC_Tipo_Vehiculo,
-				ID_Formulario_Solicitud,
-				[ID],
-				[RTN_Propietario],
-				[Nombre_Propietario],
-				[ID_Placa],
-				Marca,
-				[Anio],
-				[Modelo],
-				[Tipo_Vehiculo],
-				Color,
-				[Motor],
-				[Chasis],
-				Estado,
-				[Sistema_Fecha],
-				Permiso_Explotacion,
-				[VIN],
-				[Combustible],
-				[Alto],
-				[Ancho],
-				[Largo],
-				[Capacidad_Carga],
-				[Peso_Unidad],
-				[ID_Placa_Antes_Replaqueo],
-				[ID_Memo]
-			FROM
-			(
-				-- Vehículos actuales
-				SELECT 	
-					CASE 
-						WHEN ISNULL(ex.[Certificado_Operacion],'') != '' THEN RTRIM(ex.[Certificado_Operacion])
-						WHEN ISNULL(ex.[N_Permiso_Especial],'') != '' THEN RTRIM(ex.[N_Permiso_Especial])
-						WHEN ISNULL(veh.[Numero_Certificado],'') != '' THEN RTRIM(veh.[Numero_Certificado])
-						WHEN ISNULL(veh.[Numero_PermisoEspecial],'') != '' THEN RTRIM(veh.[Numero_PermisoEspecial])
-						ELSE 'SIN-CONCESION'
-					END AS Certificado_Operacion,				
-					vl.[Clase Servicio],
-					CASE 
-						WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
-							(SELECT DESC_Tipo_Vehiculo 
+		$q = "WITH Unidades AS (
+			SELECT 
+				-- Certificado unificado (toma el primero no vacío)
+				COALESCE(NULLIF(RTRIM(ex.[Certificado_Operacion]),''),
+						NULLIF(RTRIM(ex.[N_Permiso_Especial]),''),
+						NULLIF(RTRIM(veh.[Numero_Certificado]),''),
+						NULLIF(RTRIM(veh.[Numero_PermisoEspecial]),''),
+						'SIN-CONCESION') AS Certificado_Operacion,
+				vl.[Clase Servicio],
+				CASE 
+					WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
+						(
+							SELECT tt.DESC_Tipo_Vehiculo 
 							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] vv
-							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
-							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
-							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
-						ELSE 
-							(SELECT DESC_Tipo_Vehiculo_Transporte_Pas 
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp 
+								ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt 
+								ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo
+						)
+					ELSE 
+						(
+							SELECT tt.DESC_Tipo_Vehiculo_Transporte_Pas 
 							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] vv
-							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
-							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
-							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
-					END AS DESC_Tipo_Vehiculo,			
-					veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
-					veh.[ID],
-					veh.[RTN_Propietario],
-					veh.[Nombre_Propietario],
-					veh.[ID_Placa],
-					CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
-					veh.[Anio],
-					veh.[Modelo],
-					veh.[Tipo_Vehiculo],
-					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
-					veh.[Motor],
-					veh.[Chasis],
-					'AAAAAAAA-NORMAL' AS Estado,
-					veh.[Sistema_Fecha],
-					veh.[Numero_Explotacion] AS Permiso_Explotacion,
-					veh.[VIN],
-					veh.[Combustible],
-					veh.[Alto],
-					veh.[Ancho],
-					veh.[Largo],
-					veh.[Capacidad_Carga],
-					veh.[Peso_Unidad],
-					veh.[ID_Placa_Antes_Replaqueo],
-					'' as [ID_Memo]					
-				FROM 
-					[IHTT_DB].[dbo].[TB_Expedientes] ex
-				JOIN 
-					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] veh on veh.ID_Solicitud = ex.ID_Solicitud
-				JOIN 
-					[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
-				JOIN 
-					[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
-				JOIN
-					[IHTT_SGCERP].[dbo].[v_Listado_General] vl ON 
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = ex.Certificado_Operacion) or
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = ex.N_Permiso_Especial) or
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = veh.Numero_Certificado) or
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = veh.Numero_PermisoEspecial) 
-				WHERE ex.Preforma = :ID_Solicitud
-				UNION
-				-- Vehículos entra
-				SELECT 	
-					CASE 
-						WHEN ISNULL(ex.[Certificado_Operacion],'') != '' THEN RTRIM(ex.[Certificado_Operacion])
-						WHEN ISNULL(ex.[N_Permiso_Especial],'') != '' THEN RTRIM(ex.[N_Permiso_Especial])
-						WHEN ISNULL(veh.[Numero_Certificado],'') != '' THEN RTRIM(veh.[Numero_Certificado])
-						WHEN ISNULL(veh.[Numero_PermisoEspecial],'') != '' THEN RTRIM(veh.[Numero_PermisoEspecial])
-						ELSE 'SIN-CONCESION'
-					END AS Certificado_Operacion,				
-					vl.[Clase Servicio],
-					CASE 
-						WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
-							(SELECT DESC_Tipo_Vehiculo 
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp 
+								ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt 
+								ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo
+						)
+				END AS DESC_Tipo_Vehiculo,
+				veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
+				veh.[ID],
+				veh.[RTN_Propietario],
+				veh.[Nombre_Propietario],
+				veh.[ID_Placa],
+				CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
+				veh.[Anio],
+				veh.[Modelo],
+				veh.[Tipo_Vehiculo],
+				CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
+				veh.[Motor],
+				veh.[Chasis],
+				'AAAAAAAA-NORMAL' AS Estado,
+				veh.[Sistema_Fecha],
+				veh.[Numero_Explotacion] AS Permiso_Explotacion,
+				veh.[VIN],
+				veh.[Combustible],
+				veh.[Alto],
+				veh.[Ancho],
+				veh.[Largo],
+				veh.[Capacidad_Carga],
+				veh.[Peso_Unidad],
+				veh.[ID_Placa_Antes_Replaqueo],
+				ISNULL((
+					SELECT TOP 1 c.ID_Memo 
+					FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
+					WHERE c.Chasis_Entra = veh.Chasis 
+					AND c.Placa_Entra  = veh.ID_Placa 
+					AND c.ID_Estado    = 'IDE-1'
+				), 'false') AS [ID_Memo]
+			FROM [IHTT_DB].[dbo].[TB_Expedientes] ex
+			JOIN [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] veh ON veh.ID_Solicitud = ex.ID_Solicitud
+			JOIN [IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
+			JOIN [IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
+			JOIN [IHTT_SGCERP].[dbo].[v_Listado_General] vl 
+				ON vl.N_Certificado IN (
+						COALESCE(NULLIF(ex.Certificado_Operacion,''), ''),
+						COALESCE(NULLIF(ex.N_Permiso_Especial,''), ''),
+						COALESCE(NULLIF(veh.Numero_Certificado,''), ''),
+						COALESCE(NULLIF(veh.Numero_PermisoEspecial,''), '')
+					)
+			WHERE ex.Preforma = :ID_Solicitud
+
+			UNION ALL
+
+			SELECT 
+				COALESCE(NULLIF(RTRIM(ex.[Certificado_Operacion]),''),
+						NULLIF(RTRIM(ex.[N_Permiso_Especial]),''),
+						NULLIF(RTRIM(veh.[Numero_Certificado]),''),
+						NULLIF(RTRIM(veh.[Numero_PermisoEspecial]),''),
+						'SIN-CONCESION') AS Certificado_Operacion,
+				vl.[Clase Servicio],
+				CASE 
+					WHEN vl.[Clase Servicio] IN ('STEC', 'STPC') THEN 
+						(
+							SELECT tt.DESC_Tipo_Vehiculo 
 							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga] vv
-							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
-							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
-							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo)
-						ELSE 
-							(SELECT DESC_Tipo_Vehiculo_Transporte_Pas 
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Carga_x_Placa] pp 
+								ON vv.ID_Vehiculo_Carga = pp.ID_Vehiculo_Carga
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Carga] tt 
+								ON vv.ID_Tipo_Vehiculo_Carga = tt.ID_Tipo_Vehiculo_Carga
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Carga = vl.ID_Vehiculo
+						)
+					ELSE 
+						(
+							SELECT tt.DESC_Tipo_Vehiculo_Transporte_Pas 
 							FROM [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero] vv
-							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
-							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
-							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo)
-					END AS DESC_Tipo_Vehiculo,			
-					veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
-					veh.[ID],
-					veh.[RTN_Propietario],
-					veh.[Nombre_Propietario],
-					veh.[ID_Placa],
-					CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
-					veh.[Anio],
-					veh.[Modelo],
-					veh.[Tipo_Vehiculo],
-					CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
-					veh.[Motor],
-					veh.[Chasis],
-					'ENTRA' AS Estado,
-					veh.[Sistema_Fecha],
-					veh.[Numero_Explotacion] AS Permiso_Explotacion,
-					veh.[VIN],
-					veh.[Combustible],
-					veh.[Alto],
-					veh.[Ancho],
-					veh.[Largo],
-					veh.[Capacidad_Carga],
-					veh.[Peso_Unidad],
-					veh.[ID_Placa_Antes_Replaqueo],
-					ISNULL(
-					(SELECT TOP 1 c.ID_Memo 
-								FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
-								WHERE c.Chasis_Entra = veh.Chasis 
-								AND c.Placa_Entra = veh.ID_Placa 
-								AND c.ID_Estado = 'IDE-1'),
-								'false'
-					) AS [ID_Memo]
-				FROM 
-					[IHTT_DB].[dbo].[TB_Expedientes] ex
-				JOIN 
-					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] veh on veh.ID_Solicitud = ex.ID_Solicitud
-				JOIN 
-					[IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
-				JOIN 
-					[IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
-				JOIN
-					[IHTT_SGCERP].[dbo].[v_Listado_General] vl ON 
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = ex.Certificado_Operacion) or
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = ex.N_Permiso_Especial) or
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = veh.Numero_Certificado) or
-					(ISNULL(vl.N_Certificado,'') != '' AND vl.N_Certificado = veh.Numero_PermisoEspecial) 
-				WHERE ex.Preforma = :ID_Solicitud1
-			) AS result)
-			select * from Unidades where " . $condicion . " ORDER BY ESTADO,Certificado_Operacion;";
+							JOIN [IHTT_SGCERP].[dbo].[TB_Vehiculo_Transporte_Pasajero_x_Placa] pp 
+								ON vv.ID_Tipo_Vehiculo_Transporte_Pas = pp.ID_Vehiculo_Transporte
+							JOIN [IHTT_SGCERP].[dbo].[TB_Tipo_Vehiculo_Transporte_Pasajero] tt 
+								ON vv.ID_Tipo_Vehiculo_Transporte_Pas = tt.ID_Tipo_Vehiculo_Transporte_Pas
+							WHERE pp.Estado = 'ACTIVA' AND vv.ID_Vehiculo_Transporte = vl.ID_Vehiculo
+						)
+				END AS DESC_Tipo_Vehiculo,
+				veh.[ID_Solicitud] AS ID_Formulario_Solicitud,
+				veh.[ID],
+				veh.[RTN_Propietario],
+				veh.[Nombre_Propietario],
+				veh.[ID_Placa],
+				CONCAT(veh.[ID_Marca], ' => ', mar.Desc_Marca) AS Marca,
+				veh.[Anio],
+				veh.[Modelo],
+				veh.[Tipo_Vehiculo],
+				CONCAT(veh.[ID_Color], ' => ', col.Desc_Color) AS Color,
+				veh.[Motor],
+				veh.[Chasis],
+				'ENTRA' AS Estado,
+				veh.[Sistema_Fecha],
+				veh.[Numero_Explotacion] AS Permiso_Explotacion,
+				veh.[VIN],
+				veh.[Combustible],
+				veh.[Alto],
+				veh.[Ancho],
+				veh.[Largo],
+				veh.[Capacidad_Carga],
+				veh.[Peso_Unidad],
+				veh.[ID_Placa_Antes_Replaqueo],
+				ISNULL((
+					SELECT TOP 1 c.ID_Memo 
+					FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
+					WHERE c.Chasis_Entra = veh.Chasis 
+					AND c.Placa_Entra  = veh.ID_Placa 
+					AND c.ID_Estado    = 'IDE-1'
+				), 'false') AS [ID_Memo]
+			FROM [IHTT_DB].[dbo].[TB_Expedientes] ex
+			JOIN [IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Entra] veh ON veh.ID_Solicitud = ex.ID_Solicitud
+			JOIN [IHTT_SGCERP].[dbo].[TB_Marca_Vehiculo] mar ON veh.ID_Marca = mar.ID_Marca
+			JOIN [IHTT_SGCERP].[dbo].[TB_Color_Vehiculos] col ON veh.ID_Color = col.ID_Color
+			JOIN [IHTT_SGCERP].[dbo].[v_Listado_General] vl 
+				ON vl.N_Certificado IN (
+						COALESCE(NULLIF(ex.Certificado_Operacion,''), ''),
+						COALESCE(NULLIF(ex.N_Permiso_Especial,''), ''),
+						COALESCE(NULLIF(veh.Numero_Certificado,''), ''),
+						COALESCE(NULLIF(veh.Numero_PermisoEspecial,''), '')
+					)
+			WHERE ex.Preforma = :ID_Solicitud1
+		)
+		select * from Unidades where " . $condicion . " ORDER BY ESTADO,Certificado_Operacion;";
 		if (!isset($_POST["echo"])) {
 			return $this->select($q, array(':ID_Solicitud' => $_POST["RAM"],':ID_Solicitud1' => $_POST["RAM"]), PDO::FETCH_GROUP);
 		} else {
 			echo json_encode($this->select($q, array(':ID_Formulario_Solicitud' => $_POST["RAM"]), PDO::FETCH_GROUP));
 		}
-	}
-
+	}	
 	protected function validarAccesoEstadoInicial()
 	{
 		$p = array(":usuario" => $_SESSION['user_name'],":ID_Estado" => $this->appcfg_estado_inicial);
@@ -2215,7 +2200,7 @@ protected function getUnidadesEXPTotales()
 					if (is_array($datos[5]) and count($datos[5]) > 0) {
 						if (isset($_POST["page"]) && (int) $_POST["page"] == 1) {
 							$datos['Reportes'] = $this->getLinkReportes($datos[4],$datos[5],false);
-						}							
+						}				
 						$datos[7]  = $this->getUnidades($datos[5]);						
 					}
 					$datos[99] = 'RAM';
@@ -2242,8 +2227,9 @@ protected function getUnidadesEXPTotales()
 					}
 					$datos[12] = $_POST['RAM'];
 					$datos[99] = 'EXP';
-					echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-					return;
+					echo json_encode($datos, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+					flush(); // empuja el buffer al servidor web
+					exit;    
 				} else {
 					echo json_encode([
 						"error"     => 90002,
@@ -2539,8 +2525,7 @@ protected function getUnidadesEXPTotales()
 			FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
 			WHERE c.Chasis_Entra = veh.Chasis 
 			AND c.Placa_Entra = veh.ID_Placa 
-			AND c.ID_Estado = 'IDE-1' 
-			AND veh.Estado = 'ENTRA'),
+			AND c.ID_Estado = 'IDE-1'),
 			'false'
 		) AS ID_Memo
 			FROM 
@@ -2648,7 +2633,14 @@ protected function getUnidadesEXPTotales()
 					veh.[Capacidad_Carga],
 					veh.[Peso_Unidad],
 					veh.[ID_Placa_Antes_Replaqueo],
-					'' as [ID_Memo] 
+					ISNULL(
+					(SELECT TOP 1 c.ID_Memo 
+								FROM [IHTT_Autos].[dbo].[TB_Ingreso_Constancias] c 
+								WHERE c.Chasis_Entra = veh.Chasis 
+								AND c.Placa_Entra = veh.ID_Placa 
+								AND c.ID_Estado = 'IDE-1'),
+								'false'
+					) AS [ID_Memo]
 				FROM 
 					[IHTT_DB].[dbo].[TB_Solicitud_Vehiculo_Actual] veh
 				JOIN 
